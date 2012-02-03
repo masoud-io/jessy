@@ -9,23 +9,22 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.persist.EntityStore;
 import com.sleepycat.persist.PrimaryIndex;
+import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
 
 /**
  * @author Masoud Saeida Ardekani
  * 
- * 
+ *         This class wraps the DPI of BerkeleyDB into a generic key-value API.
  */
 
 public class DataStore {
 	private Environment env;
 	private Map<String, EntityStore> entityStores;
 
-	private Map<String, EntityStore> entityStores2;
-
-	public DataStore(File envHome, boolean readOnly) {
-		entityStores = new HashMap<String, EntityStore>();
+	public DataStore(File envHome, boolean readOnly, String storeName) {
 		setupEnvironment(envHome, readOnly);
+		setupStore(readOnly, storeName);
 	}
 
 	/**
@@ -44,6 +43,15 @@ public class DataStore {
 		env = new Environment(envHome, envConfig);
 	}
 
+	private void setupStore(boolean readonly,String storeName){
+		StoreConfig storeConfig = new StoreConfig();
+		storeConfig.setAllowCreate(true);
+		EntityStore store= new EntityStore(env, storeName, storeConfig);
+
+		entityStores = new HashMap<String, EntityStore>();
+		entityStores.put(storeName, store);		
+	}
+	
 	public void close() {
 		if (env != null) {
 			try {
@@ -54,27 +62,35 @@ public class DataStore {
 		}
 	}
 
-	public boolean setupPrimaryIndexes(String entityStoreName,
-			boolean readOnly, Map<Class, Class> entities) {
-
-		if (!entityStores.containsKey(entityStoreName)) {
-			StoreConfig storeConfig = new StoreConfig();
-			storeConfig.setAllowCreate(readOnly);
-			EntityStore store = new EntityStore(env, entityStoreName,
-					storeConfig);
-
-			entityStores.put(entityStoreName, store);
-
-			for (Class entityClass : entities.keySet()) {
-				Class primaryIndexClass = entities.get(entityClass);
-				PrimaryIndex<primaryIndexClass, entityClass> indx = new store.getPrimaryIndex(
-						primaryIndexClass, entityClass);
-			}
-
-			return true;
-		}
-		return false;
-
+	/**
+	 * @return the entityStores
+	 */
+	public Map<String, EntityStore> getEntityStores() {
+		return entityStores;
 	}
+
+	
+	
+	/*
+	 * public <PK, SK, E> void addEntityPrimaryIndex(String storeName, Class<PK>
+	 * primaryKeyIndexClass, Class<SK> secondaryKeyIndexClass, String
+	 * secondaryKeyName, Class<E> entityClass) {
+	 * 
+	 * EntityStore store; if (!entity2Stores.containsKey(storeName)) {
+	 * StoreConfig storeConfig = new StoreConfig();
+	 * storeConfig.setAllowCreate(true); store = new EntityStore(env, storeName,
+	 * storeConfig); entity2Stores.put(storeName, store);
+	 * 
+	 * PrimaryIndex<PK, E> pindex= store.getPrimaryIndex(primaryKeyIndexClass,
+	 * entityClass); entity2PrimaryIndexes.put(storeName, pindex);
+	 * 
+	 * SecondaryIndex<SK,PK, E> sindex=store.getSecondaryIndex(pindex,
+	 * secondaryKeyIndexClass, secondaryKeyName);
+	 * entity2SecondaryIndexes.put(storeName, sindex);
+	 * 
+	 * } else { // The store already exists.
+	 * 
+	 * }
+	 */
 
 }
