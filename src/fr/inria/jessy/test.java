@@ -5,6 +5,7 @@ package fr.inria.jessy;
 
 import java.io.File;
 
+import com.sleepycat.persist.EntityCursor;
 import com.sleepycat.persist.EntityStore;
 
 import fr.inria.jessy.store.DataStore;
@@ -26,22 +27,47 @@ public class test {
 		System.out.println(executionPath);
 		
 		DataStore ds=new DataStore(new File(executionPath), false, "myStore");
+		ds.addPrimaryIndex("myStore", EntClass.class);
 		
-		EntityStore store=ds.getEntityStores().get("myStore");
+		ds.addSecondaryIndex("myStore", EntClass.class, String.class, "classValue");
 		
-		AccessEntClass access=new AccessEntClass(store);
-		AccessEntClass2 access2=new AccessEntClass2(store);
+		EntClass ec=new EntClass();
+		ec.setClassValue("OK");
+		ds.put(ec);
 		
-		EntClass ec=new EntClass("p1", "s1", "Value");
-		access.pindex.put(ec);
+		ec=new EntClass();
+		ec.setClassValue("OK2");
+		ds.put(ec);
 		
-		EntClass2 ec2=new EntClass2("p1", "s2", "Value2");
-		access2.pindex.put(ec2);
+		EntClass ecc= ds.get("myStore", EntClass.class, "classValue", "OK2", null);
+		
+		System.out.println("put done" + ecc.getClassValue().toString());
+//		EntityStore store=ds.getEntityStores().get("myStore");
+//		
+//		AccessEntClass access=new AccessEntClass(store);
+//		AccessEntClass2 access2=new AccessEntClass2(store);
+		
+//		EntClass ec=new EntClass("s1", "Value");
+//		access.pindex.put(ec);
+//		ec=new EntClass("s1", "Value");
+//		access.pindex.put(ec);
+//		
+//		EntityCursor<EntClass> cur= access.sindex.subIndex("s1").entities();
+//		for(EntClass ecc: cur){
+//			System.out.println(ecc.getSecondaryKey().toString());			
+//		}
 
-		EntClass readc=access.pindex.get("p1");
-		EntClass2 readc2=access2.pindex.get("p1");
-		System.out.println(readc.getsKey().toString());
-		System.out.println(readc2.getsKey().toString());
+//		EntClass2 ec2=new EntClass2("p1", "s1", "Value1");
+//		access2.pindex.put(ec2);
+//
+//		ec2=new EntClass2("p1", "s2", "Value2");
+//		access2.pindex.put(ec2);
+//
+//		EntityCursor<EntClass2> cur=access2.pindex.entities();
+//		for(EntClass2 ecc: cur){
+//			System.out.println(ecc.getClassValue().toString());			
+//		}
+	
 	}
 
 }

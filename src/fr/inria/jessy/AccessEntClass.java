@@ -10,13 +10,13 @@ import com.sleepycat.persist.SecondaryIndex;
  */
 public class AccessEntClass {
 
-	PrimaryIndex<String, EntClass> pindex;
-	SecondaryIndex<String, String, EntClass> sindex;
+	PrimaryIndex<Long, EntClass> pindex;
+	SecondaryIndex<String, Long, EntClass> sindex;
 
 	public AccessEntClass(EntityStore store) {
-		pindex = store.getPrimaryIndex(String.class, EntClass.class);
+		pindex = store.getPrimaryIndex(Long.class, EntClass.class);
 
-		sindex = store.getSecondaryIndex(pindex, String.class, "sKey");
+		sindex = store.getSecondaryIndex(pindex, String.class, "secondaryKey");
 
 	}
 }
