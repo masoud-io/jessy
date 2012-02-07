@@ -9,5 +9,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="/data/msaeida/Java Packages/junit4.10/junit-4.10.jar"/>
+	<classpathentry kind="lib" path="/Fractal/src" sourcepath="/Fractal/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

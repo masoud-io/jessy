@@ -45,8 +45,8 @@ public class DataStore {
 	private Map<String, PrimaryIndex<Long, ? extends JessyEntity>> primaryIndexes;
 
 	/**
-	 * Store all secondary indexes of all entities manage by this DataStore Each
-	 * entity class can have multiple secondary keys. Thus, the key is the
+	 * Store all secondary indexes of all entities manage by this DataStore.
+	 * Each entity class can have multiple secondary keys. Thus, the key is the
 	 * concatenation of entity class name and secondarykey name.
 	 */
 	private Map<String, SecondaryIndex<?, ?, ? extends JessyEntity>> secondaryIndexes;
@@ -114,8 +114,10 @@ public class DataStore {
 	 * Create a primary index for an entity class that extends JessyEntity
 	 * 
 	 * @param <E>
+	 *            the type that extends JessyEntity
 	 * @param storeName
-	 *            Name of the store that the primary key is created for.
+	 *            the name of the store that the primary index works in. The
+	 *            primary index stores entities inside this store.
 	 * @param entityClass
 	 *            A class that extends JessyEntity
 	 */
@@ -140,15 +142,21 @@ public class DataStore {
 	 * Create a secondary index for an entity class that extends JessyEntity
 	 * 
 	 * @param <E>
+	 *            the type that extends JessyEntity
 	 * @param <SK>
+	 *            the type of the secondary key field (annotated with
+	 *            @SecondaryIndex)
 	 * @param storeName
-	 *            Name of the store that the primary key is created for.
+	 *            the name of the store that the primary index works in. The
+	 *            primary index stores entities inside this store.
 	 * @param entityClass
-	 *            Class that extends JessyEntity
+	 *            the class that extends JessyEntity
 	 * @param secondaryKeyClass
-	 *            Class of the field that is annotated with @SecondaryIndex
+	 *            Class of the secondary key field (annotated with
+	 *            @SecondaryIndex)
 	 * @param secondaryKeyName
-	 *            Name of the field that is annotated with @SecondaryIndex
+	 *            Name of the secondary key field (annotated with
+	 *            @SecondaryIndex)
 	 */
 	public <E extends JessyEntity, SK> void addSecondaryIndex(String storeName,
 			Class<E> entityClass, Class<SK> secondaryKeyClass,
@@ -181,8 +189,7 @@ public class DataStore {
 	 * entry
 	 * 
 	 * @param <E>
-	 *            Type of the entity. Needed for finding the associate primary
-	 *            key.
+	 *            the type that extends JessyEntity
 	 * @param entity
 	 *            entity to put inside the store
 	 */
@@ -198,6 +205,24 @@ public class DataStore {
 		}
 	}
 
+	/**
+	 * Get the value of an entity object previously put.
+	 * @param <E>
+	 *            the type that extends JessyEntity
+	 * @param <SK>
+	 *            the type of the secondary key field (annotated with
+	 *            @SecondaryIndex)
+	 * @param <V>
+	 * @param entityClass
+	 *            the class that extends JessyEntity
+	 * @param secondaryKeyName
+	 *            Name of the secondary key field (annotated with
+	 *            @SecondaryIndex)
+	 * @param keyValue the value of the secondary key.
+	 * @param vectors
+	 * @return
+	 * @throws NullPointerException
+	 */
 	public <E extends JessyEntity, SK, V> E get(Class<E> entityClass,
 			String secondaryKeyName, SK keyValue, ArrayList<V> vectors)
 			throws NullPointerException {
@@ -215,6 +240,18 @@ public class DataStore {
 		}
 	}
 
+	/**
+	 * 
+	 * @param <E>
+	 *            the type that extends JessyEntity
+	 * @param <SK>
+	 * @param <V>
+	 * @param entityClass
+	 * @param secondaryKeyName
+	 * @param keyValue
+	 * @return
+	 * @throws NullPointerException
+	 */
 	public <E extends JessyEntity, SK, V> int getEntityCounts(
 			Class<E> entityClass, String secondaryKeyName, SK keyValue)
 			throws NullPointerException {
