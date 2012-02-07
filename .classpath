@@ -7,5 +7,6 @@
 			<attribute name="javadoc_location" value="file:/data/msaeida/Berkeley DB je-5.0.34/docs/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/data/msaeida/Java Packages/junit4.10/junit-4.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -26,7 +26,15 @@ import fr.inria.jessy.EntClass;
 public class DataStore {
 	private Environment env;
 
-	// Stores all EntityStores defined for this DataStore
+	/**
+	 * Indicates the default store that put and get operations should be
+	 * executed in.
+	 */
+	private String defaultStore;
+
+	/**
+	 * Stores all EntityStores defined for this DataStore
+	 */
 	private Map<String, EntityStore> entityStores;
 
 	/**
@@ -43,12 +51,15 @@ public class DataStore {
 	 */
 	private Map<String, SecondaryIndex<?, ?, ? extends JessyEntity>> secondaryIndexes;
 
-	public DataStore(File envHome, boolean readOnly, String storeName) {
-		setupEnvironment(envHome, readOnly);
-		setupStore(readOnly, storeName);
-
+	public DataStore(File envHome, boolean readOnly, String storeName)
+			throws Exception {
+		entityStores = new HashMap<String, EntityStore>();
 		primaryIndexes = new HashMap<String, PrimaryIndex<Long, ? extends JessyEntity>>();
 		secondaryIndexes = new HashMap<String, SecondaryIndex<?, ?, ? extends JessyEntity>>();
+
+		setupEnvironment(envHome, readOnly);
+		addStore(readOnly, storeName);
+		defaultStore = storeName;
 	}
 
 	/**
@@ -67,16 +78,29 @@ public class DataStore {
 		env = new Environment(envHome, envConfig);
 	}
 
-	private void setupStore(boolean readonly, String storeName) {
-		StoreConfig storeConfig = new StoreConfig();
-		storeConfig.setAllowCreate(true);
-		EntityStore store = new EntityStore(env, storeName, storeConfig);
+	/**
+	 * Add a new store in BerkeleyDB. One store is automatically created when a
+	 * datastore object is initialised.
+	 * 
+	 * @param readonly
+	 *            true if the store is only for performing read operations.
+	 * @param storeName
+	 *            a unique store name.
+	 */
+	public void addStore(boolean readonly, String storeName) throws Exception {
+		if (!entityStores.containsKey(storeName)) {
+			StoreConfig storeConfig = new StoreConfig();
+			storeConfig.setAllowCreate(true);
+			EntityStore store = new EntityStore(env, storeName, storeConfig);
 
-		entityStores = new HashMap<String, EntityStore>();
-		entityStores.put(storeName, store);
+			entityStores.put(storeName, store);
+		} else {
+			throw new Exception("Store already exists");
+		}
 	}
 
 	public void close() {
+		// TODO close stores!
 		if (env != null) {
 			try {
 				env.close();
@@ -87,77 +111,130 @@ public class DataStore {
 	}
 
 	/**
+	 * Create a primary index for an entity class that extends JessyEntity
+	 * 
+	 * @param <E>
+	 * @param storeName
+	 *            Name of the store that the primary key is created for.
+	 * @param entityClass
+	 *            A class that extends JessyEntity
+	 */
+	public <E extends JessyEntity> void addPrimaryIndex(String storeName,
+			Class<E> entityClass) throws Exception {
+		try {
+			PrimaryIndex<Long, E> pindex = entityStores.get(storeName)
+					.getPrimaryIndex(Long.class, entityClass);
+			primaryIndexes.put(entityClass.getName(), pindex);
+		} catch (NullPointerException ex) {
+			throw new NullPointerException("Store with the name " + storeName
+					+ " does not exists.");
+		}
+	}
+
+	public <E extends JessyEntity> void addPrimaryIndex(Class<E> entityClass)
+			throws Exception {
+		addPrimaryIndex(defaultStore, entityClass);
+	}
+
+	/**
+	 * Create a secondary index for an entity class that extends JessyEntity
+	 * 
+	 * @param <E>
+	 * @param <SK>
+	 * @param storeName
+	 *            Name of the store that the primary key is created for.
+	 * @param entityClass
+	 *            Class that extends JessyEntity
+	 * @param secondaryKeyClass
+	 *            Class of the field that is annotated with @SecondaryIndex
+	 * @param secondaryKeyName
+	 *            Name of the field that is annotated with @SecondaryIndex
+	 */
+	public <E extends JessyEntity, SK> void addSecondaryIndex(String storeName,
+			Class<E> entityClass, Class<SK> secondaryKeyClass,
+			String secondaryKeyName) throws Exception {
+		try {
+			PrimaryIndex<Long, ? extends JessyEntity> pindex = primaryIndexes
+					.get(entityClass.getName());
+
+			EntityStore store = entityStores.get(storeName);
+
+			SecondaryIndex<SK, Long, ? extends JessyEntity> sindex = store
+					.getSecondaryIndex(pindex, secondaryKeyClass,
+							secondaryKeyName);
+			secondaryIndexes.put(entityClass.getName() + secondaryKeyName,
+					sindex);
+		} catch (Exception ex) {
+			throw new Exception("StoreName or PrimaryIndex does not exists");
+		}
+	}
+
+	public <E extends JessyEntity, SK> void addSecondaryIndex(
+			Class<E> entityClass, Class<SK> secondaryKeyClass,
+			String secondaryKeyName) throws Exception {
+		addSecondaryIndex(defaultStore, entityClass, secondaryKeyClass,
+				secondaryKeyName);
+	}
+
+	/**
+	 * Put the entity in the store using the primary key. Always adds a new
+	 * entry
+	 * 
+	 * @param <E>
+	 *            Type of the entity. Needed for finding the associate primary
+	 *            key.
+	 * @param entity
+	 *            entity to put inside the store
+	 */
+	public <E extends JessyEntity> void put(E entity)
+			throws NullPointerException {
+		try {
+			@SuppressWarnings("unchecked")
+			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
+					.get(entity.getClass().getName());
+			pindex.put(entity);
+		} catch (NullPointerException ex) {
+			throw new NullPointerException("PrimaryIndex cannot be found");
+		}
+	}
+
+	public <E extends JessyEntity, SK, V> E get(Class<E> entityClass,
+			String secondaryKeyName, SK keyValue, ArrayList<V> vectors)
+			throws NullPointerException {
+		try {
+			@SuppressWarnings("unchecked")
+			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
+					.get(entityClass.getName() + secondaryKeyName);
+
+			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
+
+			// TODO Return according to VV rules!
+			return cur.last();
+		} catch (NullPointerException ex) {
+			throw new NullPointerException("SecondaryIndex cannot be found");
+		}
+	}
+
+	/**
+	 * @return the defaultStore
+	 */
+	public String getDefaultStore() {
+		return defaultStore;
+	}
+
+	/**
+	 * @param defaultStore
+	 *            the defaultStore to set
+	 */
+	public void setDefaultStore(String defaultStore) {
+		this.defaultStore = defaultStore;
+	}
+
+	/**
 	 * @return the entityStores
 	 */
 	public Map<String, EntityStore> getEntityStores() {
 		return entityStores;
 	}
-
-	public <E extends JessyEntity> void addPrimaryIndex(String storeName,
-			Class<E> entityClass) {
-		//TODO Error Handling
-		PrimaryIndex<Long, E> pindex = entityStores.get(storeName)
-				.getPrimaryIndex(Long.class, entityClass);
-		primaryIndexes.put(entityClass.getName(), pindex);
-	}
-
-	public <E extends JessyEntity, SK> void addSecondaryIndex(String storeName,
-			Class<E> entityClass, Class<SK> secondaryKeyClass,
-			String secondaryKeyName) {
-		//TODO Commenting
-		//TODO Error Handling
-		PrimaryIndex<Long, ? extends JessyEntity> pindex = primaryIndexes
-				.get(entityClass.getName());
-
-		EntityStore store = entityStores.get(storeName);
-
-		SecondaryIndex<SK, Long, ? extends JessyEntity> sindex = store
-				.getSecondaryIndex(pindex, secondaryKeyClass, secondaryKeyName);
-		secondaryIndexes.put(entityClass.getName()
-				+ secondaryKeyName, sindex);
-	}
-
-	public <E extends JessyEntity> void put(E entity) {
-		//TODO Commenting
-		//TODO Error Handling
-		@SuppressWarnings("unchecked")
-		PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
-				.get(entity.getClass().getName());
-		pindex.put(entity);
-	}
-
-	public <E extends JessyEntity, SK, V> E get(String storeName,
-			Class<E> entityClass, String secondaryKeyName, SK keyValue, ArrayList<V> vectors) {
-
-		SecondaryIndex<SK, Long, E> sindex =(SecondaryIndex<SK, Long, E>) secondaryIndexes
-		.get(entityClass.getName() + secondaryKeyName);
-		
-
-		EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
-		//TODO Return according to VV rules!
-		return cur.first();
-	}
-
-	/*
-	 * public <PK, SK, E> void addEntityPrimaryIndex(String storeName, Class<PK>
-	 * primaryKeyIndexClass, Class<SK> secondaryKeyIndexClass, String
-	 * secondaryKeyName, Class<E> entityClass) {
-	 * 
-	 * EntityStore store; if (!entity2Stores.containsKey(storeName)) {
-	 * StoreConfig storeConfig = new StoreConfig();
-	 * storeConfig.setAllowCreate(true); store = new EntityStore(env, storeName,
-	 * storeConfig); entity2Stores.put(storeName, store);
-	 * 
-	 * PrimaryIndex<PK, E> pindex= store.getPrimaryIndex(primaryKeyIndexClass,
-	 * entityClass); entity2PrimaryIndexes.put(storeName, pindex);
-	 * 
-	 * SecondaryIndex<SK,PK, E> sindex=store.getSecondaryIndex(pindex,
-	 * secondaryKeyIndexClass, secondaryKeyName);
-	 * entity2SecondaryIndexes.put(storeName, sindex);
-	 * 
-	 * } else { // The store already exists.
-	 * 
-	 * }
-	 */
 
 }

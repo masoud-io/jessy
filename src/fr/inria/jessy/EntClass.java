@@ -24,6 +24,23 @@ public class EntClass extends JessyEntity{
 	@SecondaryKey(relate = MANY_TO_ONE)	
 	private String classValue;
 
+	private String data;
+
+	/**
+	 * @return the data
+	 */
+	public String getData() {
+		return data;
+	}
+
+
+	/**
+	 * @param data the data to set
+	 */
+	public void setData(String data) {
+		this.data = data;
+	}
+
 
 	/**
 	 * @return the classValue
