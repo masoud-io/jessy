@@ -30,7 +30,6 @@ public class test {
 			
 			ds.addPrimaryIndex("myStore", EntClass.class);
 			
-			ds.addPrimaryIndex("myStore", EntClass.class);
 
 			ds.addSecondaryIndex("myStore", EntClass.class, String.class,
 					"classValue");
@@ -40,15 +39,17 @@ public class test {
 			ec.setData("ver1");
 			ds.put(ec);
 
-			ec = new EntClass();
-			ec.setClassValue("OK");
-			ec.setData("ver2");
-			ds.put(ec);
+			EntClass ec2 = new EntClass();
+			ec2.setClassValue("OK");
+			ec2.setData("ver1");
+			ds.put(ec2);
 
-			EntClass ecc = ds.get( EntClass.class, "classValue",
-					"OK", null);
-
-			System.out.println("put done: " + ecc.getData().toString());
+			System.out.println(ds.getEntityCounts(EntClass.class, "classValue", "OK"));
+			
+//			EntClass ecc = ds.get( EntClass.class, "classValue",
+//					"OK2", null);
+//			if (ecc != null)
+//			System.out.println("put done: " + ecc.getPrimaryKey() + " " + ecc.getData());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -80,5 +81,4 @@ public class test {
 		// }
 
 	}
-
 }

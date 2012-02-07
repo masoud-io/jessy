@@ -215,6 +215,24 @@ public class DataStore {
 		}
 	}
 
+	public <E extends JessyEntity, SK, V> int getEntityCounts(
+			Class<E> entityClass, String secondaryKeyName, SK keyValue)
+			throws NullPointerException {
+		try {
+			@SuppressWarnings("unchecked")
+			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
+					.get(entityClass.getName() + secondaryKeyName);
+
+			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
+			if (cur.iterator().hasNext())
+				return cur.count();
+			else
+				return 0;
+		} catch (NullPointerException ex) {
+			throw new NullPointerException("SecondaryIndex cannot be found");
+		}
+	}
+
 	/**
 	 * @return the defaultStore
 	 */
