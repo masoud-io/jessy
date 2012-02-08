@@ -89,6 +89,7 @@ public class DataStoreTest {
 
 	/**
 	 * Test method for {@link fr.inria.jessy.store.DataStore#put(fr.inria.jessy.store.JessyEntity)}.
+	 * 
 	 */
 	@Test(timeout=1000)
 	public void testPutPerformance() {
