@@ -20,9 +20,14 @@ public class TestEntityClass extends JessyEntity{
 		super();
 	}
 
+	public TestEntityClass(Integer entityID, String data){
+		super();
+		this.entityID=entityID;
+		this.data=data;
+	}
 
 	@SecondaryKey(relate = MANY_TO_ONE)	
-	private String entityID;
+	private Integer entityID;
 
 	private String data;
 
@@ -45,7 +50,7 @@ public class TestEntityClass extends JessyEntity{
 	/**
 	 * @return the entityID
 	 */
-	public String getEntityID() {
+	public Integer getEntityID() {
 		return entityID;
 	}
 
@@ -53,7 +58,7 @@ public class TestEntityClass extends JessyEntity{
 	/**
 	 * @param entityID the entityID to set
 	 */
-	public void setEntityID(String entityID) {
+	public void setEntityID(Integer entityID) {
 		this.entityID = entityID;
 	}
 

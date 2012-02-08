@@ -5,6 +5,7 @@ import net.sourceforge.fractal.*;
  * @author Masoud Saeida Ardekani
  * This class implements dependence vector for jessy objects.
  */
-public class DependenceVector<K , V> extends ValueVector<K, V> {
+public class DependenceVector<K , V>  {
+ 
  
 }

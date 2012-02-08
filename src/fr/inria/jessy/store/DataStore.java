@@ -14,8 +14,6 @@ import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
 
-import fr.inria.jessy.EntClass;
-
 /**
  * @author Masoud Saeida Ardekani
  * 
@@ -74,7 +72,18 @@ public class DataStore {
 		EnvironmentConfig envConfig = new EnvironmentConfig();
 		envConfig.setReadOnly(readOnly);
 		envConfig.setAllowCreate(!readOnly);
+		
+		envConfig.setTransactional(false);
+		
 
+		//TODO database should be clean manually. EFFECT THE PERFORMANCE SUBSTANTIALLY
+		envConfig.setLocking(false); //The cleaner becomes disable here! Influence the performance tremendously!
+
+		envConfig.setSharedCache(true); //Does not effect the prformance much!
+
+		//TODO subject to change for optimization
+		envConfig.setCachePercent(90); 
+		
 		env = new Environment(envHome, envConfig);
 	}
 
@@ -91,6 +100,10 @@ public class DataStore {
 		if (!entityStores.containsKey(storeName)) {
 			StoreConfig storeConfig = new StoreConfig();
 			storeConfig.setAllowCreate(true);
+			
+			//Caution: Durability cannot be ensured!
+			storeConfig.setDeferredWrite(true);
+			
 			EntityStore store = new EntityStore(env, storeName, storeConfig);
 
 			entityStores.put(storeName, store);
