@@ -258,8 +258,11 @@ public class DataStore {
 	 * @param <E>
 	 *            the type that extends JessyEntity
 	 * @param <SK>
+	 *            the type of the secondary key field (annotated with
+	 *            @SecondaryIndex)
 	 * @param <V>
 	 * @param entityClass
+	 *            the class that extends JessyEntity
 	 * @param secondaryKeyName
 	 * @param keyValue
 	 * @return
