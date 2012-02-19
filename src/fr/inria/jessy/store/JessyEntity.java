@@ -3,6 +3,8 @@ package fr.inria.jessy.store;
 import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
 
+import fr.inria.jessy.vector.IVector;
+
 /**
  * @author Masoud Saeida Ardekani
  *
@@ -14,7 +16,7 @@ import com.sleepycat.persist.model.PrimaryKey;
 @Persistent
 public class JessyEntity {
 
-	//TODO DEFINE VV here!
+	private IVector<String> localVector;
 	
 	@PrimaryKey(sequence="Jessy_Sequence")
 	private Long primaryKey;
@@ -37,4 +39,9 @@ public class JessyEntity {
 		this.primaryKey = primaryKey;
 	}
 
+	public IVector<String> getLocalVector() {
+		return localVector;
+	}
+
+		
 }

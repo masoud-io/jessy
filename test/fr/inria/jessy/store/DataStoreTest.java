@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.inria.jessy.EntClass;
+import fr.EntClass;
 
 /**
  * @author Masoud Saeida Ardekani
