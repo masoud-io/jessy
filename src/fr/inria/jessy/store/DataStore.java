@@ -79,7 +79,7 @@ public class DataStore {
 		
 
 		//TODO database should be clean manually. EFFECT THE PERFORMANCE SUBSTANTIALLY
-		envConfig.setLocking(false); //The cleaner becomes disable here! Influence the performance tremendously!
+//		envConfig.setLocking(false); //The cleaner becomes disable here! Influence the performance tremendously!
 
 		envConfig.setSharedCache(true); //Does not effect the prformance much!
 

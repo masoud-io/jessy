@@ -3,6 +3,7 @@ package fr.inria.jessy.store;
 import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
 
+import fr.inria.jessy.vector.DependenceVector;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -14,16 +15,16 @@ import fr.inria.jessy.vector.Vector;
  */
 
 @Persistent
-public class JessyEntity {
+public abstract class JessyEntity {
 
 	private Vector<String> localVector;
 	
+	public JessyEntity(Vector<String> vector){
+		localVector=vector;
+	}
+	
 	@PrimaryKey(sequence="Jessy_Sequence")
 	private Long primaryKey;
-	
-	
-	public JessyEntity(){
-	}
 	
 	/**
 	 * @return the primaryKey
@@ -43,5 +44,5 @@ public class JessyEntity {
 		return localVector;
 	}
 
-		
+	public abstract String getJessyEntityVectorKey();
 }

@@ -3,7 +3,7 @@ package fr.inria.jessy.vector;
 import java.io.*;
 import java.util.*;
 
-import net.sourceforge.fractal.Messageable;
+import com.sleepycat.persist.model.Persistent;
 
 import static fr.inria.jessy.vector.ValueVector.ComparisonResult.*;
 
@@ -24,9 +24,8 @@ import static fr.inria.jessy.vector.ValueVector.ComparisonResult.*;
  * @param <V>
  *            the type of the values of the vector.
  */
-
-public class ValueVector<K, V extends Comparable<V>> implements Cloneable,
-	Messageable {
+@Persistent
+public class ValueVector<K, V extends Comparable<V>> implements Cloneable{
 
 	//
 	// CONSTANTS

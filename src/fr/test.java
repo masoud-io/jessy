@@ -28,6 +28,7 @@ public class test {
 			DataStore ds = new DataStore(new File(executionPath), false,
 					"myStore");
 			
+			System.out.println("phase 1 ok");
 			ds.addPrimaryIndex("myStore", EntClass.class);
 			
 

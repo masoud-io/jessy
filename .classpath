@@ -3,8 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="/Fractal/src" sourcepath="/Fractal/src"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Fractal"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JessyLibs"/>
+	<classpathentry kind="lib" path="/data/msaeida/Java Packages/Berkeley DB je-5.0.34/lib/je-5.0.34.jar"/>
+	<classpathentry kind="lib" path="/data/msaeida/Java Packages/junit4.10/junit-4.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

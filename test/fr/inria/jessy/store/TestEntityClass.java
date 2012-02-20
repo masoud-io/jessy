@@ -7,6 +7,7 @@ import static com.sleepycat.persist.model.Relationship.*;
 import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.vector.Vector;
 
 /**
  * @author Masoud Saeida Ardekani
@@ -16,12 +17,12 @@ import fr.inria.jessy.store.JessyEntity;
 @Entity
 public class TestEntityClass extends JessyEntity{
 	
-	public TestEntityClass(){
-		super();
-	}
+//	public TestEntityClass(){
+//		super();
+//	}
 
 	public TestEntityClass(Integer entityID, String data){
-		super();
+		super(vector);
 		this.entityID=entityID;
 		this.data=data;
 	}
@@ -61,10 +62,5 @@ public class TestEntityClass extends JessyEntity{
 	public void setEntityID(Integer entityID) {
 		this.entityID = entityID;
 	}
-
-
-  
-
-	
 
 }

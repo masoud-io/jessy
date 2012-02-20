@@ -1,10 +1,18 @@
 package fr.inria.jessy.vector;
 
 import java.util.List;
+
+import com.sleepycat.persist.model.Persistent;
+
 import fr.inria.jessy.vector.ValueVector;;
 
+@Persistent
 public abstract class Vector<K> extends ValueVector<K,Integer>{
 
+	public Vector(){
+		super(-1);		
+	}
+	
 	public abstract  boolean isReadable(Vector<K> other) throws NullPointerException;
 
 	public abstract boolean isReadable(List<Vector<K>> otherList)
