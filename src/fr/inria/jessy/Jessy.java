@@ -24,6 +24,10 @@ public class Jessy {
 		localDataStore.addSecondaryIndex(entityClass, secondaryKeyClass, secondaryKeyName);
 	}
 	
+	public void startTransaction(){
+		
+	}
+	
 	
 
 }

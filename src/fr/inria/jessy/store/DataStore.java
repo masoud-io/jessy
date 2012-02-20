@@ -1,11 +1,8 @@
 package fr.inria.jessy.store;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import com.sleepycat.je.DatabaseException;
@@ -17,8 +14,7 @@ import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
 
-import fr.inria.jessy.vector.IVector;
-import fr.inria.jessy.vector.ValueVector;
+import fr.inria.jessy.vector.Vector;
 
 /**
  * @author Masoud Saeida Ardekani
@@ -242,8 +238,8 @@ public class DataStore {
 	 * @return
 	 * @throws NullPointerException
 	 */
-	public <E extends JessyEntity, SK, K, V extends ValueVector<K, Integer> & IVector<K>> E get(Class<E> entityClass,
-			String secondaryKeyName, SK keyValue, List<V> readList)
+	public <E extends JessyEntity, SK> E get(Class<E> entityClass,
+			String secondaryKeyName, SK keyValue, List<Vector<String>> readList)
 			throws NullPointerException {
 		try {
 			@SuppressWarnings("unchecked")
@@ -253,13 +249,14 @@ public class DataStore {
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
 			E entity= cur.last();
 			while (entity!= null){
-				if (entity.getLocalVector().isListReadable(readList)){
-					
+				if (entity.getLocalVector().isReadable(readList)){
+					return entity;
 				}
-			}
-						
-			// TODO Return according to VV rules!
-			return cur.last();
+				else{
+					entity=cur.prev();
+				}
+			}						
+			return null;
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}

@@ -6,26 +6,16 @@ import java.util.List;
  * @author Masoud Saeida Ardekani This class implements dependence vector for
  *         jessy objects.
  */
-public class DependenceVector<K> extends ValueVector<K, Integer> implements IVector<K>{
+public class DependenceVector<K> extends Vector<K>{
 
-	K selfKey;
 
-	public DependenceVector(K selfKey) {
-		super(-1);
-		this.selfKey = selfKey;
-	}
-	
-	public K getSelfKey() {
-		return selfKey;
-	}
-
-	public Integer getSelfValue() {
-		return super.getValue(selfKey);
+	public DependenceVector(K selfKey){
+		super(selfKey);
 	}
  
 	@Override
-	public <V extends ValueVector<K, Integer> & IVector<K>> boolean isReadable(
-			V other) throws NullPointerException {
+	public boolean isReadable(
+			Vector<K> other) throws NullPointerException {
 		// check special values
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
@@ -47,14 +37,14 @@ public class DependenceVector<K> extends ValueVector<K, Integer> implements IVec
  
 
 	@Override
-	public <V extends ValueVector<K, Integer> & IVector<K>> boolean isListReadable(
-			List<V> otherList) throws NullPointerException {
+	public boolean isReadable(
+			List<Vector<K>> otherList) throws NullPointerException {
 		// check special values
 		if (otherList == null) {
 			throw new NullPointerException("Input Vector is Null");
 		}
 
-		for (V other : otherList) {
+		for (Vector<K> other : otherList) {
 			if (isReadable(other) == false)
 				return false;
 		}
@@ -62,13 +52,12 @@ public class DependenceVector<K> extends ValueVector<K, Integer> implements IVec
 	}
 	
 	@Override
-	public <V extends ValueVector<K, Integer> & IVector<K>> void update(
-			List<V> readList, List<V> writeList) {
-		for(V readVector:readList){
+	public void update(List<Vector<K>> readList, List<Vector<K>> writeList) {
+		for(Vector<K> readVector:readList){
 			super.update(readVector);
 		}
 		
-		for(V writeVector:writeList){
+		for(Vector<K> writeVector:writeList){
 			super.update(writeVector);
 			super.setValue(writeVector.getSelfKey(), writeVector.getSelfValue()+1);
 		}
