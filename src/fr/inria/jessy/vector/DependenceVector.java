@@ -14,7 +14,7 @@ public class DependenceVector<K> extends Vector<K>{
 	}
  
 	@Override
-	public boolean isReadable(
+	public boolean isCompatible(
 			Vector<K> other) throws NullPointerException {
 		// check special values
 		if (other == null) {
@@ -37,7 +37,7 @@ public class DependenceVector<K> extends Vector<K>{
  
 
 	@Override
-	public boolean isReadable(
+	public boolean isCompatible(
 			List<Vector<K>> otherList) throws NullPointerException {
 		// check special values
 		if (otherList == null) {
@@ -45,7 +45,7 @@ public class DependenceVector<K> extends Vector<K>{
 		}
 
 		for (Vector<K> other : otherList) {
-			if (isReadable(other) == false)
+			if (isCompatible(other) == false)
 				return false;
 		}
 		return true;

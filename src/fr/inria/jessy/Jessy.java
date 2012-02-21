@@ -29,5 +29,17 @@ public class Jessy {
 	}
 	
 	
+//	public <E extends JessyEntity, T> E read(T t){
+//		
+//	}
+//
+//	public void write(E e){
+//		
+//	}
+//	
+//	public void create(E e){
+//		
+//	}
+
 
 }

@@ -74,18 +74,19 @@ public class DataStore {
 		EnvironmentConfig envConfig = new EnvironmentConfig();
 		envConfig.setReadOnly(readOnly);
 		envConfig.setAllowCreate(!readOnly);
-		
+
 		envConfig.setTransactional(false);
-		
 
-		//TODO database should be clean manually. EFFECT THE PERFORMANCE SUBSTANTIALLY
-//		envConfig.setLocking(false); //The cleaner becomes disable here! Influence the performance tremendously!
+		// TODO database should be clean manually. EFFECT THE PERFORMANCE
+		// SUBSTANTIALLY
+		// envConfig.setLocking(false); //The cleaner becomes disable here!
+		// Influence the performance tremendously!
 
-		envConfig.setSharedCache(true); //Does not effect the prformance much!
+		envConfig.setSharedCache(true); // Does not effect the prformance much!
 
-		//TODO subject to change for optimization
-		envConfig.setCachePercent(90); 
-		
+		// TODO subject to change for optimization
+		envConfig.setCachePercent(90);
+
 		env = new Environment(envHome, envConfig);
 	}
 
@@ -102,10 +103,10 @@ public class DataStore {
 		if (!entityStores.containsKey(storeName)) {
 			StoreConfig storeConfig = new StoreConfig();
 			storeConfig.setAllowCreate(true);
-			
-			//Caution: Durability cannot be ensured!
+
+			// Caution: Durability cannot be ensured!
 			storeConfig.setDeferredWrite(true);
-			
+
 			EntityStore store = new EntityStore(env, storeName, storeConfig);
 
 			entityStores.put(storeName, store);
@@ -160,7 +161,7 @@ public class DataStore {
 	 *            the type that extends JessyEntity
 	 * @param <SK>
 	 *            the type of the secondary key field (annotated with
-	 *            @SecondaryIndex)
+	 * @SecondaryIndex)
 	 * @param storeName
 	 *            the name of the store that the primary index works in. The
 	 *            primary index stores entities inside this store.
@@ -168,10 +169,10 @@ public class DataStore {
 	 *            the class that extends JessyEntity
 	 * @param secondaryKeyClass
 	 *            Class of the secondary key field (annotated with
-	 *            @SecondaryIndex)
+	 * @SecondaryIndex)
 	 * @param secondaryKeyName
 	 *            Name of the secondary key field (annotated with
-	 *            @SecondaryIndex)
+	 * @SecondaryIndex)
 	 */
 	public <E extends JessyEntity, SK> void addSecondaryIndex(String storeName,
 			Class<E> entityClass, Class<SK> secondaryKeyClass,
@@ -222,18 +223,20 @@ public class DataStore {
 
 	/**
 	 * Get the value of an entity object previously put.
+	 * 
 	 * @param <E>
 	 *            the type that extends JessyEntity
 	 * @param <SK>
 	 *            the type of the secondary key field (annotated with
-	 *            @SecondaryIndex)
+	 * @SecondaryIndex)
 	 * @param <V>
 	 * @param entityClass
 	 *            the class that extends JessyEntity
 	 * @param secondaryKeyName
 	 *            Name of the secondary key field (annotated with
-	 *            @SecondaryIndex)
-	 * @param keyValue the value of the secondary key.
+	 * @SecondaryIndex)
+	 * @param keyValue
+	 *            the value of the secondary key.
 	 * @param vectors
 	 * @return
 	 * @throws NullPointerException
@@ -247,19 +250,28 @@ public class DataStore {
 					.get(entityClass.getName() + secondaryKeyName);
 
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
-			E entity= cur.last();
-			while (entity!= null){
-				if (entity.getLocalVector().isReadable(readList)){
+			E entity = cur.last();
+
+			if (readList == null) {
+				return entity;
+			}
+
+			while (entity != null) {
+				if (entity.getLocalVector().isCompatible(readList)) {
 					return entity;
+				} else {
+					entity = cur.prev();
 				}
-				else{
-					entity=cur.prev();
-				}
-			}						
+			}
 			return null;
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}
+	}
+
+	public <E extends JessyEntity, SK> E get(Class<E> entityClass,
+			String secondaryKeyName, SK keyValue) throws NullPointerException {
+		return get(entityClass, secondaryKeyName, keyValue, null);
 	}
 
 	/**
@@ -268,7 +280,7 @@ public class DataStore {
 	 *            the type that extends JessyEntity
 	 * @param <SK>
 	 *            the type of the secondary key field (annotated with
-	 *            @SecondaryIndex)
+	 * @SecondaryIndex)
 	 * @param <V>
 	 * @param entityClass
 	 *            the class that extends JessyEntity

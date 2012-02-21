@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.inria.jessy.vector.DependenceVector;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -82,7 +83,7 @@ public class DataStoreTest {
 		//TODO incorporate vectors in the test 
 		TestEntityClass ec = new TestEntityClass(1,"ver1");
 
-		TestEntityClass result=dsGet.get(TestEntityClass.class, "entityID", 1, new Vector<String>());
+		TestEntityClass result=dsGet.get(TestEntityClass.class, "entityID", 1);
 		
 		assertEquals("Result",(Integer) 1, result.getEntityID());
 	}

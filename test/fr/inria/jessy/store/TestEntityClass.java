@@ -7,6 +7,7 @@ import static com.sleepycat.persist.model.Relationship.*;
 import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.vector.DependenceVector;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -22,7 +23,7 @@ public class TestEntityClass extends JessyEntity{
 //	}
 
 	public TestEntityClass(Integer entityID, String data){
-		super(vector);
+		super(new DependenceVector<String>(TestEntityClass.class.toString() + entityID));
 		this.entityID=entityID;
 		this.data=data;
 	}
@@ -62,5 +63,12 @@ public class TestEntityClass extends JessyEntity{
 	public void setEntityID(Integer entityID) {
 		this.entityID = entityID;
 	}
+
+
+	@Override
+	public <T> String getLocalVectorSelfKey(T entityID) {
+		return TestEntityClass.class.toString() + entityID;
+	}
+
 
 }
