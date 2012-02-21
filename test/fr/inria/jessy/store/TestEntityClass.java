@@ -18,9 +18,9 @@ import fr.inria.jessy.vector.Vector;
 @Entity
 public class TestEntityClass extends JessyEntity{
 	
-//	public TestEntityClass(){
-//		super();
-//	}
+	public TestEntityClass(){
+		super(new DependenceVector<String>(""));
+	}
 
 	public TestEntityClass(Integer entityID, String data){
 		super(new DependenceVector<String>(TestEntityClass.class.toString() + entityID));

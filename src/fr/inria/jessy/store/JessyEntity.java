@@ -18,6 +18,10 @@ public abstract class JessyEntity {
 
 	private Vector<String> localVector;
 
+	public JessyEntity(){
+		
+	}
+	
 	public JessyEntity(Vector<String> vector) {
 		localVector = vector;
 	}

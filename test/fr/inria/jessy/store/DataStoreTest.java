@@ -21,6 +21,7 @@ public class DataStoreTest {
 	DataStore dsPut;
 	
 	DataStore dsGet;
+	DataStore dsGet2;
 		
 	/**
 	 * @throws java.lang.Exception
@@ -45,6 +46,12 @@ public class DataStoreTest {
 		"GetStore");
 		dsGet.addPrimaryIndex("GetStore", TestEntityClass.class);
 		dsGet.addSecondaryIndex("GetStore", TestEntityClass.class, Integer.class,
+		"entityID");
+		
+		dsGet2 = new DataStore(new File(executionPath), false,
+		"GetStore");
+		dsGet2.addPrimaryIndex("GetStore", TestEntityClass.class);
+		dsGet2.addSecondaryIndex("GetStore", TestEntityClass.class, Integer.class,
 		"entityID");
 		
 		TestEntityClass ec;
@@ -83,7 +90,7 @@ public class DataStoreTest {
 		//TODO incorporate vectors in the test 
 		TestEntityClass ec = new TestEntityClass(1,"ver1");
 
-		TestEntityClass result=dsGet.get(TestEntityClass.class, "entityID", 1);
+		TestEntityClass result=dsGet2.get(TestEntityClass.class, "entityID", 1);
 		
 		assertEquals("Result",(Integer) 1, result.getEntityID());
 	}
@@ -114,10 +121,10 @@ public class DataStoreTest {
 		int id;
 		
 		TestEntityClass result;
-		for (int i=0;i< 15000; i++ )
+		for (int i=0;i< 10000; i++ )
 		{
 			id=rnd.nextInt(10000);
-			result=dsGet.get(TestEntityClass.class, "entityID",  id, null);
+			result=dsGet2.get(TestEntityClass.class, "entityID",  id);
 		}
 		
 		assertTrue(true);

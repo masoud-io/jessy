@@ -2,13 +2,23 @@ package fr.inria.jessy.vector;
 
 import java.util.List;
 
+import com.sleepycat.persist.model.Persistent;
+
 /**
  * @author Masoud Saeida Ardekani This class implements dependence vector for
  *         jessy objects.
  */
+
+//TODO test cases should be written for this class. 
+//TODO this class has not been tested yet.
+@Persistent
 public class DependenceVector<K> extends Vector<K>{
 
 
+	public DependenceVector(){
+		super();
+	}
+	
 	public DependenceVector(K selfKey){
 		super(selfKey);
 	}
