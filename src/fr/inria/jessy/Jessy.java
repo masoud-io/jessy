@@ -10,9 +10,10 @@ import fr.inria.jessy.store.JessyEntity;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class Jessy {
+public abstract class Jessy {
 
 	DataStore localDataStore;
+		
 
 	public Jessy(File environmentHome, boolean readOnly, String storeName) throws Exception{
 		localDataStore = new DataStore(environmentHome, readOnly, storeName);
@@ -24,22 +25,17 @@ public class Jessy {
 		localDataStore.addSecondaryIndex(entityClass, secondaryKeyClass, secondaryKeyName);
 	}
 	
-	public void startTransaction(){
+	public abstract void startTransaction();
+	
+	public abstract boolean commitTransaction();
+	
+	public abstract boolean abortTransaction();
 		
-	}
+	public abstract <E extends JessyEntity, SK> E read(SK k);
 	
+	public abstract <E extends JessyEntity> void write(E e);	
 	
-//	public <E extends JessyEntity, T> E read(T t){
-//		
-//	}
-//
-//	public void write(E e){
-//		
-//	}
-//	
-//	public void create(E e){
-//		
-//	}
+	public abstract <E extends JessyEntity> void create(E e);
 
 
 }
