@@ -39,14 +39,14 @@ public class DataStore {
 
 	/**
 	 * Store all primary indexes of all entities manage by this DataStore Each
-	 * entity class can have only one primary key. Thus, the key is the name of
+	 * entity class can have only one primary key. Thus, the key of the map is the name of
 	 * the entity class.
 	 */
 	private Map<String, PrimaryIndex<Long, ? extends JessyEntity>> primaryIndexes;
 
 	/**
 	 * Store all secondary indexes of all entities manage by this DataStore.
-	 * Each entity class can have multiple secondary keys. Thus, the key is the
+	 * Each entity class can have multiple secondary keys. Thus, the key of the map is the
 	 * concatenation of entity class name and secondarykey name.
 	 */
 	private Map<String, SecondaryIndex<?, ?, ? extends JessyEntity>> secondaryIndexes;

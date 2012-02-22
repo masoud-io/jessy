@@ -1,7 +1,10 @@
 package fr.inria.jessy.store;
 
+import static com.sleepycat.persist.model.Relationship.MANY_TO_ONE;
+
 import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
+import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.vector.Vector;
 
@@ -29,6 +32,9 @@ public abstract class JessyEntity {
 	@PrimaryKey(sequence = "Jessy_Sequence")
 	private Long primaryKey;
 
+	@SecondaryKey(relate = MANY_TO_ONE)	
+	private String secondaryKey;
+	
 	/**
 	 * @return the primaryKey
 	 */
@@ -43,11 +49,23 @@ public abstract class JessyEntity {
 	public void setPrimaryKey(Long primaryKey) {
 		this.primaryKey = primaryKey;
 	}
+	
+	
+
+	public String getSecondaryKey() {
+		return secondaryKey;
+	}
+
+	public void setSecondaryKey(String secondaryKey) {
+		this.secondaryKey = secondaryKey;
+	}
 
 	public Vector<String> getLocalVector() {
 		return localVector;
 	}
 
 	public abstract <T> String getLocalVectorSelfKey(T entityID);
+	
+	public abstract String getUniqueName();
 
 }
