@@ -1,4 +1,4 @@
-package fr.inria.jessy;
+package fr.inria.transaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
