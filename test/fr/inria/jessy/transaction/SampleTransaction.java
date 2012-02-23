@@ -3,7 +3,7 @@ package fr.inria.jessy.transaction;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.Sample2EntityClass;
 import fr.inria.jessy.store.SampleEntityClass;
-import fr.inria.transaction.*;
+import fr.inria.jessy.transaction.*;
 
 public class SampleTransaction extends Transaction {
 
