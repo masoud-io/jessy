@@ -39,25 +39,25 @@ public class DataStoreTest {
 		dsPut = new DataStore(new File(executionPath), false,
 		"myStore");
 		dsPut.addPrimaryIndex("myStore", TestEntityClass.class);
-		dsPut.addSecondaryIndex("myStore", TestEntityClass.class, Integer.class,
-		"entityID");
+		dsPut.addSecondaryIndex("myStore", TestEntityClass.class, String.class,
+		"secondaryKey");
 		
 		dsGet = new DataStore(new File(executionPath), false,
 		"GetStore");
 		dsGet.addPrimaryIndex("GetStore", TestEntityClass.class);
-		dsGet.addSecondaryIndex("GetStore", TestEntityClass.class, Integer.class,
-		"entityID");
+		dsGet.addSecondaryIndex("GetStore", TestEntityClass.class, String.class,
+		"secondaryKey");
 		
 		dsGet2 = new DataStore(new File(executionPath), false,
 		"GetStore");
 		dsGet2.addPrimaryIndex("GetStore", TestEntityClass.class);
-		dsGet2.addSecondaryIndex("GetStore", TestEntityClass.class, Integer.class,
-		"entityID");
+		dsGet2.addSecondaryIndex("GetStore", TestEntityClass.class, String.class,
+		"secondaryKey");
 		
 		TestEntityClass ec;
 		for (int i=0;i< 10000; i++ )
 		{
-			ec = new TestEntityClass( i,"ver1");
+			ec = new TestEntityClass(""+ i,"ver1");
 			dsGet.put(ec);
 		}
 
@@ -68,18 +68,18 @@ public class DataStoreTest {
 	 */
 	@Test
 	public void testPut() {
-		TestEntityClass ec = new TestEntityClass(1,"ver1");
+		TestEntityClass ec = new TestEntityClass("1","ver1");
 		dsPut.put(ec);
 
-		ec = new TestEntityClass(1,"ver2");
+		ec = new TestEntityClass("1","ver2");
 		dsPut.put(ec);
 		
-		assertEquals("Result", 2, dsPut.getEntityCounts(TestEntityClass.class, "entityID", 1));
+		assertEquals("Result", 2, dsPut.getEntityCounts(TestEntityClass.class, "secondaryKey", "1"));
 		
-		ec = new TestEntityClass(2,"ver1");
+		ec = new TestEntityClass("2","ver1");
 		dsPut.put(ec);
 		
-		assertEquals("Result", 1, dsPut.getEntityCounts(TestEntityClass.class, "entityID", 2));
+		assertEquals("Result", 1, dsPut.getEntityCounts(TestEntityClass.class, "secondaryKey", "2"));
 	}
 	
 	/**
@@ -88,11 +88,11 @@ public class DataStoreTest {
 	@Test
 	public void testGet() {
 		//TODO incorporate vectors in the test 
-		TestEntityClass ec = new TestEntityClass(1,"ver1");
+		TestEntityClass ec = new TestEntityClass("1","ver1");
 
-		TestEntityClass result=dsGet2.get(TestEntityClass.class, "entityID", 1);
+		TestEntityClass result=dsGet2.get(TestEntityClass.class, "secondaryKey", "1");
 		
-		assertEquals("Result",(Integer) 1, result.getEntityID());
+		assertEquals("Result", "1", result.getSecondaryKey());
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class DataStoreTest {
 		TestEntityClass ec;
 		for (int i=0;i< 50000; i++ )
 		{
-			ec = new TestEntityClass( i,"ver1");
+			ec = new TestEntityClass(""+ i,"ver1");
 			dsPut.put(ec);
 		}
 		
@@ -124,7 +124,7 @@ public class DataStoreTest {
 		for (int i=0;i< 10000; i++ )
 		{
 			id=rnd.nextInt(10000);
-			result=dsGet2.get(TestEntityClass.class, "entityID",  id);
+			result=dsGet2.get(TestEntityClass.class, "secondaryKey",  ""+id);
 		}
 		
 		assertTrue(true);

@@ -66,6 +66,6 @@ public abstract class JessyEntity {
 
 	public abstract <T> String getLocalVectorSelfKey(T entityID);
 	
-	public abstract String getUniqueName();
+//	public abstract String getUniqueName();
 
 }

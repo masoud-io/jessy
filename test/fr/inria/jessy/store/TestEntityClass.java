@@ -22,14 +22,11 @@ public class TestEntityClass extends JessyEntity{
 		super(new DependenceVector<String>(""));
 	}
 
-	public TestEntityClass(Integer entityID, String data){
+	public TestEntityClass(String entityID, String data){
 		super(new DependenceVector<String>(TestEntityClass.class.toString() + entityID));
-		this.entityID=entityID;
+		this.setSecondaryKey(entityID);
 		this.data=data;
 	}
-
-	@SecondaryKey(relate = MANY_TO_ONE)	
-	private Integer entityID;
 
 	private String data;
 
@@ -48,23 +45,7 @@ public class TestEntityClass extends JessyEntity{
 		this.data = data;
 	}
 
-
-	/**
-	 * @return the entityID
-	 */
-	public Integer getEntityID() {
-		return entityID;
-	}
-
-
-	/**
-	 * @param entityID the entityID to set
-	 */
-	public void setEntityID(Integer entityID) {
-		this.entityID = entityID;
-	}
-
-
+ 
 	@Override
 	public <T> String getLocalVectorSelfKey(T entityID) {
 		return TestEntityClass.class.toString() + entityID;
