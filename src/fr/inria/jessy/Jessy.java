@@ -199,4 +199,30 @@ public abstract class Jessy {
 
 	public abstract void abortTransaction(TransactionHandler transactionHandler);
 
+	/**
+	 * Executes a non-transactional read on local datastore.
+	 *  This read is performed on {@link JessyEntity#getSecondaryKey()}
+	 * @param <E>
+	 *            Type of the entity to read the value from.
+	 * @param entityClass
+	 *            Class of the entity to read the value from.
+	 * @param keyValue
+	 * @return An entity with the secondary key value equals keyValue
+	 */
+	public <E extends JessyEntity> E nonTransactionalRead(
+			Class<E> entityClass, String keyValue) {
+		return performRead(entityClass, "secondaryKey", keyValue, null);
+	}
+	
+	/**
+	 * Write the entity into the local datastore 
+	 * This write is performed on {@link JessyEntity#getSecondaryKey()}
+	 * @param <E> Type of the entity to read the value from.
+	 * @param entity the object to be written into the local datastore.
+	 */
+	public <E extends JessyEntity> void nonTransactionalWrite(E entity){
+		dataStore.put(entity);
+	}
+	
+	
 }
