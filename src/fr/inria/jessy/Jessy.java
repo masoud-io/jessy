@@ -13,9 +13,9 @@ import sun.nio.cs.HistoricallyNamedCharset;
 
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.Vector;
-import fr.inria.transaction.ExecutionHistory;
-import fr.inria.transaction.TransactionHandler;
 
 /**
  * 
