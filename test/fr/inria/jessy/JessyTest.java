@@ -31,6 +31,8 @@ public class JessyTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
+		jessy=LocalJessy.getInstance();
+		
 		// First, we have to define the entities read or written inside the transaction
 		jessy.addEntity(SampleEntityClass.class);
 		jessy.addEntity(Sample2EntityClass.class);

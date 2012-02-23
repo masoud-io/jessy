@@ -32,13 +32,15 @@ public abstract class Jessy {
 	protected Jessy() throws Exception {
 
 		// TODO load from system property
-		File environmentHome = new File("");
+		File environmentHome = new File(System.getProperty("user.dir"));
 		boolean readOnly = false;
 		String storeName = "store";
 
 		dataStore = new DataStore(environmentHome, readOnly, storeName);
 
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
+		
+		executionHistoryTemplate=new ExecutionHistory();
 
 		transactionId = new Random(System.currentTimeMillis());
 	}
