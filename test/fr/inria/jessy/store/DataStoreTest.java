@@ -38,26 +38,26 @@ public class DataStoreTest {
 		String executionPath = System.getProperty("user.dir");
 		dsPut = new DataStore(new File(executionPath), false,
 		"myStore");
-		dsPut.addPrimaryIndex("myStore", TestEntityClass.class);
-		dsPut.addSecondaryIndex("myStore", TestEntityClass.class, String.class,
+		dsPut.addPrimaryIndex("myStore", SampleEntityClass.class);
+		dsPut.addSecondaryIndex("myStore", SampleEntityClass.class, String.class,
 		"secondaryKey");
 		
 		dsGet = new DataStore(new File(executionPath), false,
 		"GetStore");
-		dsGet.addPrimaryIndex("GetStore", TestEntityClass.class);
-		dsGet.addSecondaryIndex("GetStore", TestEntityClass.class, String.class,
+		dsGet.addPrimaryIndex("GetStore", SampleEntityClass.class);
+		dsGet.addSecondaryIndex("GetStore", SampleEntityClass.class, String.class,
 		"secondaryKey");
 		
 		dsGet2 = new DataStore(new File(executionPath), false,
 		"GetStore");
-		dsGet2.addPrimaryIndex("GetStore", TestEntityClass.class);
-		dsGet2.addSecondaryIndex("GetStore", TestEntityClass.class, String.class,
+		dsGet2.addPrimaryIndex("GetStore", SampleEntityClass.class);
+		dsGet2.addSecondaryIndex("GetStore", SampleEntityClass.class, String.class,
 		"secondaryKey");
 		
-		TestEntityClass ec;
+		SampleEntityClass ec;
 		for (int i=0;i< 10000; i++ )
 		{
-			ec = new TestEntityClass(""+ i,"ver1");
+			ec = new SampleEntityClass(""+ i,"ver1");
 			dsGet.put(ec);
 		}
 
@@ -68,18 +68,18 @@ public class DataStoreTest {
 	 */
 	@Test
 	public void testPut() {
-		TestEntityClass ec = new TestEntityClass("1","ver1");
+		SampleEntityClass ec = new SampleEntityClass("1","ver1");
 		dsPut.put(ec);
 
-		ec = new TestEntityClass("1","ver2");
+		ec = new SampleEntityClass("1","ver2");
 		dsPut.put(ec);
 		
-		assertEquals("Result", 2, dsPut.getEntityCounts(TestEntityClass.class, "secondaryKey", "1"));
+		assertEquals("Result", 2, dsPut.getEntityCounts(SampleEntityClass.class, "secondaryKey", "1"));
 		
-		ec = new TestEntityClass("2","ver1");
+		ec = new SampleEntityClass("2","ver1");
 		dsPut.put(ec);
 		
-		assertEquals("Result", 1, dsPut.getEntityCounts(TestEntityClass.class, "secondaryKey", "2"));
+		assertEquals("Result", 1, dsPut.getEntityCounts(SampleEntityClass.class, "secondaryKey", "2"));
 	}
 	
 	/**
@@ -88,9 +88,9 @@ public class DataStoreTest {
 	@Test
 	public void testGet() {
 		//TODO incorporate vectors in the test 
-		TestEntityClass ec = new TestEntityClass("1","ver1");
+		SampleEntityClass ec = new SampleEntityClass("1","ver1");
 
-		TestEntityClass result=dsGet2.get(TestEntityClass.class, "secondaryKey", "1");
+		SampleEntityClass result=dsGet2.get(SampleEntityClass.class, "secondaryKey", "1");
 		
 		assertEquals("Result", "1", result.getSecondaryKey());
 	}
@@ -101,10 +101,10 @@ public class DataStoreTest {
 	 */
 	@Test(timeout=1000)
 	public void testPutPerformance() {
-		TestEntityClass ec;
+		SampleEntityClass ec;
 		for (int i=0;i< 50000; i++ )
 		{
-			ec = new TestEntityClass(""+ i,"ver1");
+			ec = new SampleEntityClass(""+ i,"ver1");
 			dsPut.put(ec);
 		}
 		
@@ -120,11 +120,11 @@ public class DataStoreTest {
 		Random rnd=new Random(System.currentTimeMillis());
 		int id;
 		
-		TestEntityClass result;
+		SampleEntityClass result;
 		for (int i=0;i< 10000; i++ )
 		{
 			id=rnd.nextInt(10000);
-			result=dsGet2.get(TestEntityClass.class, "secondaryKey",  ""+id);
+			result=dsGet2.get(SampleEntityClass.class, "secondaryKey",  ""+id);
 		}
 		
 		assertTrue(true);

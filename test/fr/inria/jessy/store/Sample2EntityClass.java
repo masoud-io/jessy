@@ -16,14 +16,14 @@ import fr.inria.jessy.vector.Vector;
  */
 
 @Entity
-public class TestEntityClass extends JessyEntity{
+public class Sample2EntityClass extends JessyEntity{
 	
-	public TestEntityClass(){
+	public Sample2EntityClass(){
 		super(new DependenceVector<String>(""));
 	}
 
-	public TestEntityClass(String entityID, String data){
-		super(new DependenceVector<String>(TestEntityClass.class.toString() + entityID));
+	public Sample2EntityClass(String entityID, String data){
+		super(new DependenceVector<String>(Sample2EntityClass.class.toString() + entityID));
 		this.setSecondaryKey(entityID);
 		this.data=data;
 	}
@@ -48,7 +48,7 @@ public class TestEntityClass extends JessyEntity{
  
 	@Override
 	public <T> String getLocalVectorSelfKey(T entityID) {
-		return TestEntityClass.class.toString() + entityID;
+		return Sample2EntityClass.class.toString() + entityID;
 	}
 
 
