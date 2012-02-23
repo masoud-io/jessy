@@ -7,25 +7,27 @@ import fr.inria.jessy.transaction.*;
 
 public class SampleTransaction extends Transaction {
 
-	public SampleTransaction(Jessy jessy,TransactionHandler transactionHandler) {
-		super(jessy,transactionHandler);
+	public SampleTransaction(Jessy jessy) {
+		super(jessy);
 	}
 
 	@Override
 	public boolean execute() {
 		try {
-			// First, we have to define the entities read or written inside the transaction
-			getJessy().addEntity(SampleEntityClass.class);
-			getJessy().addEntity(Sample2EntityClass.class);
-
-		
+	
 			SampleEntityClass se=new SampleEntityClass("1", "sampleentity1");
 			Sample2EntityClass se2=new Sample2EntityClass("1", "sampleentity2");
-			
-			
 
-
-			return true;
+			write(se);
+			write(se2);
+			
+			SampleEntityClass readentity=read(SampleEntityClass.class, "1");
+			
+			if (readentity.getData()=="sampleentity1"){
+				write(new Sample2EntityClass("2", "sampleentity2-2"));
+			}
+			
+			return commitTransaction();			
 		} catch (Exception ex) {
 			return false;
 		}		
