@@ -4,23 +4,37 @@ import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.JessyEntity;
 
 public abstract class Transaction {
-	
+
 	Jessy jessy;
 	TransactionHandler transactionHandler;
 
-	public Transaction(Jessy jessy, TransactionHandler transactionHandler) {
+	public Transaction(Jessy jessy) {
 		this.jessy = jessy;
-		this.transactionHandler=transactionHandler;
+		this.transactionHandler = jessy.startTransaction();
 	}
 
 	public abstract boolean execute();
-
-	public Jessy getJessy() {
-		return jessy;
-	}
 
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
 			throws Exception {
 		return jessy.read(transactionHandler, entityClass, keyValue);
 	}
+
+	public <E extends JessyEntity> void write(E entity)
+			throws NullPointerException {
+		jessy.write(transactionHandler, entity);
+	}
+
+	public <E extends JessyEntity> void create(E entity) {
+		jessy.create(transactionHandler, entity);
+	}
+
+	public boolean commitTransaction() {
+		return jessy.commitTransaction(transactionHandler);
+	}
+
+	public void abortTransaction(){
+		jessy.abortTransaction(transactionHandler);
+	}
+
 }
