@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import sun.nio.cs.HistoricallyNamedCharset;
 
@@ -29,6 +30,9 @@ public abstract class Jessy {
 	ExecutionHistory executionHistoryTemplate;
 	Random transactionId;
 
+	CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
+	CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
+
 	protected Jessy() throws Exception {
 
 		// TODO load from system property
@@ -43,6 +47,9 @@ public abstract class Jessy {
 		executionHistoryTemplate=new ExecutionHistory();
 
 		transactionId = new Random(System.currentTimeMillis());
+		
+		commitedTransactions=new CopyOnWriteArraySet<TransactionHandler>();
+		abortedTransactions=new CopyOnWriteArraySet<TransactionHandler>();
 	}
 
 	protected DataStore getDataStore() {
@@ -52,6 +59,18 @@ public abstract class Jessy {
 	protected ExecutionHistory getExecutionHistory(
 			TransactionHandler transactionHandler) {
 		return handler2executionHistory.get(transactionHandler);
+	}
+
+	
+	
+	protected CopyOnWriteArraySet<TransactionHandler> getAbortedTransactions() {
+		return abortedTransactions;
+	}
+
+
+
+	protected CopyOnWriteArraySet<TransactionHandler> getCommitedTransactions() {
+		return commitedTransactions;
 	}
 
 	/**
@@ -226,5 +245,6 @@ public abstract class Jessy {
 		dataStore.put(entity);
 	}
 	
+	protected abstract boolean canCommit(TransactionHandler transactionHandler);
 	
 }
