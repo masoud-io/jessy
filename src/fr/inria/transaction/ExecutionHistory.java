@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.vector.Vector;
@@ -14,22 +16,22 @@ public class ExecutionHistory {
 	 * readList and writeList maps works as follows: ClassName > SecondaryKey >
 	 * Entity
 	 */
-	Map<String, Map<String, ? extends JessyEntity>> readList;
-	Map<String, Map<String, ? extends JessyEntity>> writeList;
-	Map<String, Class<? extends JessyEntity>> classList;
+	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> readList;
+	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> writeList;
+	ConcurrentMap<String, Class<? extends JessyEntity>> classList;
 	List<Vector<String>> readVectors;
 
 	public ExecutionHistory() {
-		writeList = new HashMap<String, Map<String, ? extends JessyEntity>>();
-		readList = new HashMap<String, Map<String, ? extends JessyEntity>>();
-		classList = new HashMap<String, Class<? extends JessyEntity>>();
+		writeList = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
+		readList = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
+		classList = new ConcurrentHashMap<String, Class<? extends JessyEntity>>();
 		readVectors = new ArrayList<Vector<String>>();
 	}
 
 	public <E extends JessyEntity> void addEntity(Class<E> entityClass) {
 		// initialize readList and writeList
-		readList.put(entityClass.toString(), new HashMap<String, E>());
-		writeList.put(entityClass.toString(), new HashMap<String, E>());
+		readList.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
+		writeList.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
 		classList.put(entityClass.toString(), entityClass);
 	}
 
@@ -62,7 +64,7 @@ public class ExecutionHistory {
 	}	
 	
 	public <E extends JessyEntity> void addToWriteSet(E entity) {
-		Map<String, E> writes = (Map<String, E>) writeList.get(entity
+		ConcurrentMap<String, E> writes = (ConcurrentMap<String, E>) writeList.get(entity
 				.getClass().toString());
 		writes.put(entity.getSecondaryKey(), entity);
 		writeList.put(entity.getClass().toString(), writes);

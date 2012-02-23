@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import sun.nio.cs.HistoricallyNamedCharset;
 
@@ -23,7 +25,7 @@ import fr.inria.transaction.TransactionHandler;
 public abstract class Jessy {
 
 	DataStore dataStore;
-	Map<TransactionHandler, ExecutionHistory> handler2executionHistory;
+	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	ExecutionHistory executionHistoryTemplate;
 	Random transactionId;
 
@@ -36,7 +38,7 @@ public abstract class Jessy {
 
 		dataStore = new DataStore(environmentHome, readOnly, storeName);
 
-		handler2executionHistory = new HashMap<TransactionHandler, ExecutionHistory>();
+		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 
 		transactionId = new Random(System.currentTimeMillis());
 	}
