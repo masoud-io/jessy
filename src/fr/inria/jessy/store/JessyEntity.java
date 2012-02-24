@@ -7,6 +7,7 @@ import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.vector.VectorFactory;
 
 /**
  * @author Masoud Saeida Ardekani
@@ -25,8 +26,8 @@ public abstract class JessyEntity {
 		
 	}
 	
-	public JessyEntity(Vector<String> vector) {
-		localVector = vector;
+	public JessyEntity(String className, String id) {
+		localVector = VectorFactory.getVector(className + id);
 	}
 
 	@PrimaryKey(sequence = "Jessy_Sequence")

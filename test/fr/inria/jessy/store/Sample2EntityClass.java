@@ -19,11 +19,11 @@ import fr.inria.jessy.vector.Vector;
 public class Sample2EntityClass extends JessyEntity{
 	
 	public Sample2EntityClass(){
-		super(new DependenceVector<String>(""));
+		super( "", "");
 	}
 
 	public Sample2EntityClass(String entityID, String data){
-		super(new DependenceVector<String>(Sample2EntityClass.class.toString() + entityID));
+		super( Sample2EntityClass.class.toString(), entityID) ;
 		this.setSecondaryKey(entityID);
 		this.data=data;
 	}
