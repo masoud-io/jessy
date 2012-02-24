@@ -3,6 +3,7 @@ package fr.inria.jessy;
 import java.util.List;
 
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.Vector;
 
@@ -53,6 +54,9 @@ public class LocalJessy extends Jessy {
 
 	@Override
 	protected boolean canCommit(TransactionHandler transactionHandler) {
+		ExecutionHistory executionHistory=getExecutionHistory(transactionHandler);
+		
+		
 		// TODO Check to see whether the transaction can commit locally or not.
 		return false;
 	}

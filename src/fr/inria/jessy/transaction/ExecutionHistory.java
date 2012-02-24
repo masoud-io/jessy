@@ -1,5 +1,8 @@
 package fr.inria.jessy.transaction;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,11 +40,12 @@ public class ExecutionHistory {
 	}
 
 	public <E extends JessyEntity> void addEntity(Class<E> entityClass) {
-		// initialize readList and writeList
+		// initialize writeList
 		writeList.put(entityClass.toString(),
 				new ConcurrentHashMap<String, E>());
 		classList.put(entityClass.toString(), entityClass);
 
+		// initialize readLists
 		readKeyList = new CopyOnWriteArrayList<String>();
 		readVectorList = new CopyOnWriteArrayList<Vector<String>>();
 	}
@@ -83,5 +87,21 @@ public class ExecutionHistory {
 				.get(entity.getClass().toString());
 		writes.put(entity.getSecondaryKey(), entity);
 		writeList.put(entity.getClass().toString(), writes);
+	}
+
+	public List<? extends JessyEntity> getWriteList() {
+		List<JessyEntity> result = new ArrayList<JessyEntity>();
+
+		Collection<ConcurrentMap<String, ? extends JessyEntity>> writeListValues = writeList
+				.values();
+
+		Iterator<ConcurrentMap<String, ? extends JessyEntity>> itr = writeListValues
+				.iterator();
+		while (itr.hasNext()) {
+			ConcurrentMap<String, ? extends JessyEntity> entities = itr.next();
+			result.addAll(entities.values());
+		}
+
+		return result;
 	}
 }
