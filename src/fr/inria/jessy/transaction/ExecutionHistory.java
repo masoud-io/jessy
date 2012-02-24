@@ -19,6 +19,7 @@ public class ExecutionHistory {
 	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> readList;
 	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> writeList;
 	ConcurrentMap<String, Class<? extends JessyEntity>> classList;
+	//TODO readVector for each transaction
 	List<Vector<String>> readVectors;
 
 	public ExecutionHistory() {

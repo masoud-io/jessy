@@ -8,7 +8,7 @@ public abstract class Transaction {
 	Jessy jessy;
 	TransactionHandler transactionHandler;
 
-	public Transaction(Jessy jessy) {
+	public Transaction(Jessy jessy) throws Exception{
 		this.jessy = jessy;
 		this.transactionHandler = jessy.startTransaction();
 	}

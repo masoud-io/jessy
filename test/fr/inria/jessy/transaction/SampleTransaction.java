@@ -7,7 +7,7 @@ import fr.inria.jessy.transaction.*;
 
 public class SampleTransaction extends Transaction {
 
-	public SampleTransaction(Jessy jessy) {
+	public SampleTransaction(Jessy jessy) throws Exception{
 		super(jessy);
 	}
 

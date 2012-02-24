@@ -1,14 +1,16 @@
 package fr.inria.jessy.transaction;
 
+import java.util.UUID;
+
 public class TransactionHandler {
 
-	int id;
+	UUID id;
 	
-	public TransactionHandler(int id){
-		this.id=id;
+	public TransactionHandler(){
+		this.id=UUID.randomUUID();
 	}
 
-	protected int getId() {
+	protected UUID getId() {
 		return id;
 	}
 	

@@ -25,13 +25,33 @@ import fr.inria.jessy.vector.Vector;
  */
 public abstract class Jessy {
 
+	public enum ExecutionMode {
+		/**
+		 * Jessy only executes transactional operations.
+		 */
+		TRANSACTIONAL,
+		/**
+		 * Jessy only executes non-transactional operations.
+		 */
+		NON_TRANSACTIONAL,
+		/**
+		 * execution mode is not defined yet.
+		 */
+		UNDEFINED,
+	};
+
 	DataStore dataStore;
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	ExecutionHistory executionHistoryTemplate;
-	Random transactionId;
 
 	CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
 	CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
+
+	/**
+	 * If true, then only transactional operation can be executed over Jessy. If
+	 * false, only non-transactional operations can be executed.
+	 */
+	ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
 	protected Jessy() throws Exception {
 
@@ -43,13 +63,11 @@ public abstract class Jessy {
 		dataStore = new DataStore(environmentHome, readOnly, storeName);
 
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
-		
-		executionHistoryTemplate=new ExecutionHistory();
 
-		transactionId = new Random(System.currentTimeMillis());
-		
-		commitedTransactions=new CopyOnWriteArraySet<TransactionHandler>();
-		abortedTransactions=new CopyOnWriteArraySet<TransactionHandler>();
+		executionHistoryTemplate = new ExecutionHistory();		
+
+		commitedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
+		abortedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
 	}
 
 	protected DataStore getDataStore() {
@@ -61,13 +79,9 @@ public abstract class Jessy {
 		return handler2executionHistory.get(transactionHandler);
 	}
 
-	
-	
 	protected CopyOnWriteArraySet<TransactionHandler> getAbortedTransactions() {
 		return abortedTransactions;
 	}
-
-
 
 	protected CopyOnWriteArraySet<TransactionHandler> getCommitedTransactions() {
 		return commitedTransactions;
@@ -189,9 +203,8 @@ public abstract class Jessy {
 
 		if (executionHistory == null) {
 			throw new NullPointerException("Transaction has not been started");
-		}
-
-		executionHistory.addToWriteSet(entity);
+		} else
+			executionHistory.addToWriteSet(entity);
 	}
 
 	/**
@@ -201,12 +214,19 @@ public abstract class Jessy {
 	public abstract <E extends JessyEntity> void create(
 			TransactionHandler transactionHandler, E entity);
 
-	public TransactionHandler startTransaction() {
-		TransactionHandler transactionHandler = new TransactionHandler(
-				transactionId.nextInt(1000000));
-		handler2executionHistory.put(transactionHandler,
-				executionHistoryTemplate);
-		return transactionHandler;
+	public TransactionHandler startTransaction() throws Exception {
+		if (transactionalAccess == ExecutionMode.UNDEFINED)
+			transactionalAccess = ExecutionMode.TRANSACTIONAL;
+
+		if (transactionalAccess == ExecutionMode.TRANSACTIONAL) {
+			TransactionHandler transactionHandler = new TransactionHandler();
+			handler2executionHistory.put(transactionHandler,
+					executionHistoryTemplate);
+			return transactionHandler;
+
+		}
+		throw new Exception(
+				"Jessy has been accessed in non-transactional way. It cannot be accesesed transactionally");
 	}
 
 	/**
@@ -221,8 +241,9 @@ public abstract class Jessy {
 	public abstract void abortTransaction(TransactionHandler transactionHandler);
 
 	/**
-	 * Executes a non-transactional read on local datastore.
-	 *  This read is performed on {@link JessyEntity#getSecondaryKey()}
+	 * Executes a non-transactional read on local datastore. This read is
+	 * performed on {@link JessyEntity#getSecondaryKey()}
+	 * 
 	 * @param <E>
 	 *            Type of the entity to read the value from.
 	 * @param entityClass
@@ -230,21 +251,40 @@ public abstract class Jessy {
 	 * @param keyValue
 	 * @return An entity with the secondary key value equals keyValue
 	 */
-	public <E extends JessyEntity> E nonTransactionalRead(
-			Class<E> entityClass, String keyValue) {
-		return performRead(entityClass, "secondaryKey", keyValue, null);
+	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
+			throws Exception {
+		if (transactionalAccess == ExecutionMode.UNDEFINED)
+			transactionalAccess = ExecutionMode.NON_TRANSACTIONAL;
+
+		if (transactionalAccess == ExecutionMode.NON_TRANSACTIONAL) {
+			return performRead(entityClass, "secondaryKey", keyValue, null);
+		}
+
+		throw new Exception(
+				"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
 	}
-	
+
 	/**
-	 * Write the entity into the local datastore 
-	 * This write is performed on {@link JessyEntity#getSecondaryKey()}
-	 * @param <E> Type of the entity to read the value from.
-	 * @param entity the object to be written into the local datastore.
+	 * Write the entity into the local datastore This write is performed on
+	 * {@link JessyEntity#getSecondaryKey()}
+	 * 
+	 * @param <E>
+	 *            Type of the entity to read the value from.
+	 * @param entity
+	 *            the object to be written into the local datastore.
 	 */
-	public <E extends JessyEntity> void nonTransactionalWrite(E entity){
-		dataStore.put(entity);
+	public <E extends JessyEntity> void write(E entity) throws Exception {
+		if (transactionalAccess == ExecutionMode.UNDEFINED)
+			transactionalAccess = ExecutionMode.NON_TRANSACTIONAL;
+
+		if (transactionalAccess==ExecutionMode.NON_TRANSACTIONAL) {
+			dataStore.put(entity);
+		}
+
+		throw new Exception(
+				"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
 	}
-	
+
 	protected abstract boolean canCommit(TransactionHandler transactionHandler);
-	
+
 }
