@@ -1,5 +1,7 @@
 package fr.inria.jessy.consistency;
 
-public class Consistency {
+import fr.inria.jessy.transaction.ExecutionHistory;
 
+public interface Consistency {
+	public boolean certify(ExecutionHistory executionHistory);
 }
