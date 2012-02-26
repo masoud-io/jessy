@@ -39,4 +39,12 @@ public abstract class Vector<K> extends ValueVector<K,Integer>{
 		return super.getValue(selfKey);
 	}
 	
+	public Vector<K> clone(){		
+		Vector<K> result= (Vector<K>) super.clone();
+		result.selfKey=selfKey;
+		
+		return result;
+	}
+	
+	
 }

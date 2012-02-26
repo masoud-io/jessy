@@ -9,23 +9,21 @@ import com.sleepycat.persist.model.Persistent;
  *         jessy objects.
  */
 
-//TODO test cases should be written for this class. 
-//TODO this class has not been tested yet.
+// TODO test cases should be written for this class.
+// TODO this class has not been tested yet.
 @Persistent
-public class DependenceVector<K> extends Vector<K>{
+public class DependenceVector<K> extends Vector<K> {
 
-
-	public DependenceVector(){
+	public DependenceVector() {
 		super();
 	}
-	
-	public DependenceVector(K selfKey){
+
+	public DependenceVector(K selfKey) {
 		super(selfKey);
 	}
- 
+
 	@Override
-	public boolean isCompatible(
-			Vector<K> other) throws NullPointerException {
+	public boolean isCompatible(Vector<K> other) throws NullPointerException {
 		// check special values
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
@@ -44,11 +42,10 @@ public class DependenceVector<K> extends Vector<K>{
 
 		return false;
 	}
- 
 
 	@Override
-	public boolean isCompatible(
-			List<Vector<K>> otherList) throws NullPointerException {
+	public boolean isCompatible(List<Vector<K>> otherList)
+			throws NullPointerException {
 		// check special values
 		if (otherList == null) {
 			throw new NullPointerException("Input Vector is Null");
@@ -60,21 +57,24 @@ public class DependenceVector<K> extends Vector<K>{
 		}
 		return true;
 	}
-	
+
 	@Override
 	public void update(List<Vector<K>> readList, List<Vector<K>> writeList) {
-		for(Vector<K> readVector:readList){
+		for (Vector<K> readVector : readList) {
 			super.update(readVector);
 		}
-		
-		for(Vector<K> writeVector:writeList){
+
+		for (Vector<K> writeVector : writeList) {
 			super.update(writeVector);
-			super.setValue(writeVector.getSelfKey(), writeVector.getSelfValue()+1);
+			super.setValue(writeVector.getSelfKey(),
+					writeVector.getSelfValue() + 1);
 		}
-		
+
 	}
 
+	@Override
+	public DependenceVector<K> clone() {
+		return (DependenceVector<K>)super.clone();
+	}
 
-
- 
 }

@@ -14,11 +14,22 @@ import fr.inria.jessy.vector.Vector;
 
 public class ExecutionHistory {
 
+	public enum TransactionType {
+		/**
+		 * the execution history is for a read only transaction
+		 */
+		READONLY_TRANSACTION,
+		/**
+		 * the execution history is for an update transaction
+		 */
+		UPDATE_TRANSACTION
+	};
+
 	/**
 	 * writeList maps works as follows: ClassName > SecondaryKey > Entity
 	 * 
 	 */
-	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> writeList;
+	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> writeSet;
 
 	ConcurrentMap<String, Class<? extends JessyEntity>> classList;
 
@@ -26,38 +37,44 @@ public class ExecutionHistory {
 	 * readKeyList stores all the keys of entities used in read operations as
 	 * follows: ClassaName + SecondaryKey
 	 */
-	CopyOnWriteArrayList<String> readKeyList;
+	CopyOnWriteArrayList<String> readSetKeys;
 
 	/**
-	 * readVectorList stores Vectors of read entities.
+	 * stores Vectors of read and write entities.
 	 */
-	CopyOnWriteArrayList<Vector<String>> readVectorList;
+	CopyOnWriteArrayList<Vector<String>> readSetVectors;
+	CopyOnWriteArrayList<Vector<String>> writeSetVectors;
 
 	public ExecutionHistory() {
-		writeList = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
+		writeSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
 		classList = new ConcurrentHashMap<String, Class<? extends JessyEntity>>();
 
 	}
 
 	public <E extends JessyEntity> void addEntity(Class<E> entityClass) {
 		// initialize writeList
-		writeList.put(entityClass.toString(),
+		writeSet.put(entityClass.toString(),
 				new ConcurrentHashMap<String, E>());
 		classList.put(entityClass.toString(), entityClass);
 
 		// initialize readLists
-		readKeyList = new CopyOnWriteArrayList<String>();
-		readVectorList = new CopyOnWriteArrayList<Vector<String>>();
+		readSetKeys = new CopyOnWriteArrayList<String>();
+		readSetVectors = new CopyOnWriteArrayList<Vector<String>>();
+		writeSetVectors= new CopyOnWriteArrayList<Vector<String>>();
 	}
 
-	public List<Vector<String>> getReadSetVector() {
-		return readVectorList;
+	public List<Vector<String>> getReadSetVectors() {
+		return readSetVectors;
+	}
+	
+	public List<Vector<String>> getWriteSetVectors() {
+		return writeSetVectors;
 	}
 
 	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> E getFromWriteSet(Class<E> entityClass,
 			String keyValue) {
-		Map<String, E> writes = (Map<String, E>) writeList.get(entityClass
+		Map<String, E> writes = (Map<String, E>) writeSet.get(entityClass
 				.toString());
 		return writes.get(keyValue);
 	}
@@ -65,7 +82,7 @@ public class ExecutionHistory {
 	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> boolean writeSetContains(
 			Class<E> entityClass, String keyValue) {
-		Map<String, E> writes = (Map<String, E>) writeList.get(entityClass
+		Map<String, E> writes = (Map<String, E>) writeSet.get(entityClass
 				.toString());
 		E entity = writes.get(keyValue);
 		if (entity != null) {
@@ -76,23 +93,25 @@ public class ExecutionHistory {
 	}
 
 	public <E extends JessyEntity> void addToReadSet(E entity) {
-		readKeyList
+		readSetKeys
 				.add(entity.getClass().toString() + entity.getSecondaryKey());
-		readVectorList.add(entity.getLocalVector());
+		readSetVectors.add(entity.getLocalVector());
 	}
 
 	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> void addToWriteSet(E entity) {
-		ConcurrentMap<String, E> writes = (ConcurrentMap<String, E>) writeList
+		writeSetVectors.add(entity.getLocalVector());
+		
+		ConcurrentMap<String, E> writes = (ConcurrentMap<String, E>) writeSet
 				.get(entity.getClass().toString());
 		writes.put(entity.getSecondaryKey(), entity);
-		writeList.put(entity.getClass().toString(), writes);
+		writeSet.put(entity.getClass().toString(), writes);
 	}
 
-	public List<? extends JessyEntity> getWriteList() {
+	public List<? extends JessyEntity> getWriteSet() {
 		List<JessyEntity> result = new ArrayList<JessyEntity>();
 
-		Collection<ConcurrentMap<String, ? extends JessyEntity>> writeListValues = writeList
+		Collection<ConcurrentMap<String, ? extends JessyEntity>> writeListValues = writeSet
 				.values();
 
 		Iterator<ConcurrentMap<String, ? extends JessyEntity>> itr = writeListValues
@@ -103,5 +122,13 @@ public class ExecutionHistory {
 		}
 
 		return result;
+	}
+	
+
+	public TransactionType getTransactionType() {
+		if (writeSet.size() > 0)
+			return TransactionType.UPDATE_TRANSACTION;
+		else
+			return TransactionType.READONLY_TRANSACTION;
 	}
 }

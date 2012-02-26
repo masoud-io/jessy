@@ -39,13 +39,14 @@ public abstract class Jessy {
 		 */
 		UNDEFINED,
 	};
-
+	
 	DataStore dataStore;
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	ExecutionHistory executionHistoryTemplate;
 
 	CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
 	CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
+	ConcurrentMap<String, ConcurrentMap<String, List<? extends JessyEntity>>> commitedTransactionsWriteSet;
 
 	/**
 	 * If true, then only transactional operation can be executed over Jessy. If
@@ -68,6 +69,8 @@ public abstract class Jessy {
 
 		commitedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
 		abortedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
+		
+		commitedTransactionsWriteSet=new ConcurrentHashMap<String, ConcurrentMap<String,List<? extends JessyEntity>>>();
 	}
 
 	protected DataStore getDataStore() {
@@ -152,7 +155,7 @@ public abstract class Jessy {
 
 		if (entity == null) {
 			entity = performRead(entityClass, "secondaryKey", keyValue,
-					executionHistory.getReadSetVector());
+					executionHistory.getReadSetVectors());
 		}
 
 		if (entity != null) {

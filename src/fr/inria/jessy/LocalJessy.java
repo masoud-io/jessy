@@ -7,6 +7,8 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.Vector;
 
+//TODO Garabage collect upon commit
+
 public class LocalJessy extends Jessy {
 
 	private static LocalJessy localJessy = null;
