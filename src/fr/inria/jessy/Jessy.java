@@ -1,8 +1,6 @@
 package fr.inria.jessy;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +14,6 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.ValueVector.ComparisonResult;
 
 /**
  * 

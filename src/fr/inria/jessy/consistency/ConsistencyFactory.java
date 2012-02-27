@@ -8,7 +8,7 @@ public class ConsistencyFactory {
 	private static String ConsistencyType = readConfig();
 	
 	public static Consistency getConsistency() {
-		if (ConsistencyType== "nmsi") {
+		if (ConsistencyType.equals("nmsi")) {
 			return new NonMonotonicSnapshotIsolation();
 		}
 		return null;

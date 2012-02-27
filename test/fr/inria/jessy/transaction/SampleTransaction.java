@@ -15,8 +15,9 @@ public class SampleTransaction extends Transaction {
 	public boolean execute() {
 		try {
 	
-			SampleEntityClass se=new SampleEntityClass("1", "sampleentity1");
+			SampleEntityClass se=new SampleEntityClass("1", "sampleentity1");			
 			write(se);
+
 			
 			Sample2EntityClass se2=new Sample2EntityClass("1", "sampleentity2");	
 			write(se2);
@@ -25,6 +26,7 @@ public class SampleTransaction extends Transaction {
 			if (readentity.getData()=="sampleentity1"){
 				write(new Sample2EntityClass("2", "sampleentity2-2"));
 			}
+			
 			
 			return commitTransaction();			
 		} catch (Exception ex) {

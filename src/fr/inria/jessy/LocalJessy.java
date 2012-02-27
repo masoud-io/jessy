@@ -39,8 +39,8 @@ public class LocalJessy extends Jessy {
 	public synchronized boolean terminateTransaction(
 			TransactionHandler transactionHandler) {
 
-		 return consistency.certify(lastCommittedEntities, handler2executionHistory.get(transactionHandler));		
+		return consistency.certify(lastCommittedEntities,
+				handler2executionHistory.get(transactionHandler));
 	}
-
 
 }
