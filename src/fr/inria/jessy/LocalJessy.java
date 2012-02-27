@@ -3,7 +3,6 @@ package fr.inria.jessy;
 import java.util.List;
 
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.Vector;
 
@@ -37,30 +36,11 @@ public class LocalJessy extends Jessy {
 	}
 
 	@Override
-	public synchronized boolean commitTransaction(
+	public synchronized boolean terminateTransaction(
 			TransactionHandler transactionHandler) {
-		boolean result = false;
 
-		result=canCommit(transactionHandler);
-		
-		if (result == true)
-			getCommitedTransactions().add(transactionHandler);
-		return result;
+		 return consistency.certify(lastCommittedEntities, handler2executionHistory.get(transactionHandler));		
 	}
 
-	@Override
-	public void abortTransaction(TransactionHandler transactionHandler) {
-		getAbortedTransactions().add(transactionHandler);
-		// TODO re-execute the transaction
-	}
-
-	@Override
-	protected boolean canCommit(TransactionHandler transactionHandler) {
-		ExecutionHistory executionHistory=getExecutionHistory(transactionHandler);
-		
-		
-		// TODO Check to see whether the transaction can commit locally or not.
-		return false;
-	}
 
 }

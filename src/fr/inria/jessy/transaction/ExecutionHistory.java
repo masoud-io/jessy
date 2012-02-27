@@ -63,6 +63,10 @@ public class ExecutionHistory {
 		writeSetVectors= new CopyOnWriteArrayList<Vector<String>>();
 	}
 
+	public Class<? extends JessyEntity> getEntityClass(String className){
+		return classList.get(className);
+	}
+	
 	public List<Vector<String>> getReadSetVectors() {
 		return readSetVectors;
 	}

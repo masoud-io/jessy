@@ -52,7 +52,6 @@ public abstract class JessyEntity {
 	}
 	
 	
-
 	public String getSecondaryKey() {
 		return secondaryKey;
 	}
@@ -64,9 +63,12 @@ public abstract class JessyEntity {
 	public Vector<String> getLocalVector() {
 		return localVector;
 	}
-
-	public abstract <T> String getLocalVectorSelfKey(T entityID);
 	
-//	public abstract String getUniqueName();
+	public void setLocalVector(Vector<String> localVector){
+		this.localVector=localVector;
+	}
+
+	
+	public abstract String getKey();
 
 }

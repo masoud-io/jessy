@@ -2,21 +2,21 @@ package fr.inria.jessy;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import sun.nio.cs.HistoricallyNamedCharset;
-
+import fr.inria.jessy.consistency.Consistency;
+import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.vector.ValueVector.ComparisonResult;
 
 /**
  * 
@@ -39,19 +39,24 @@ public abstract class Jessy {
 		 */
 		UNDEFINED,
 	};
-	
+
 	DataStore dataStore;
+	Consistency consistency;
+
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	ExecutionHistory executionHistoryTemplate;
 
 	CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
 	CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
-	ConcurrentMap<String, ConcurrentMap<String, List<? extends JessyEntity>>> commitedTransactionsWriteSet;
 
 	/**
-	 * If true, then only transactional operation can be executed over Jessy. If
-	 * false, only non-transactional operations can be executed.
+	 * Stores the last committed entities in a concurrent map. This is used
+	 * during certification to check for conflicting concurrent transactions.
+	 * The key is the concatenation of entity class name and entity secondary
+	 * key {@link JessyEntity#getKey()} . The value is the entity.
 	 */
+	ConcurrentMap<String, ? extends JessyEntity> lastCommittedEntities;
+
 	ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
 	protected Jessy() throws Exception {
@@ -62,15 +67,16 @@ public abstract class Jessy {
 		String storeName = "store";
 
 		dataStore = new DataStore(environmentHome, readOnly, storeName);
+		consistency = ConsistencyFactory.getConsistency();
 
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 
-		executionHistoryTemplate = new ExecutionHistory();		
+		executionHistoryTemplate = new ExecutionHistory();
 
 		commitedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
 		abortedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
-		
-		commitedTransactionsWriteSet=new ConcurrentHashMap<String, ConcurrentMap<String,List<? extends JessyEntity>>>();
+
+		lastCommittedEntities = new ConcurrentHashMap<String, JessyEntity>();
 	}
 
 	protected DataStore getDataStore() {
@@ -82,12 +88,8 @@ public abstract class Jessy {
 		return handler2executionHistory.get(transactionHandler);
 	}
 
-	protected CopyOnWriteArraySet<TransactionHandler> getAbortedTransactions() {
-		return abortedTransactions;
-	}
-
-	protected CopyOnWriteArraySet<TransactionHandler> getCommitedTransactions() {
-		return commitedTransactions;
+	public JessyEntity getLastCommittedEntity(String key) {
+		return lastCommittedEntities.get(key);
 	}
 
 	/**
@@ -233,15 +235,47 @@ public abstract class Jessy {
 	}
 
 	/**
-	 * Commit the open transaction. This method should be implemented with
-	 * synchronized identifier
+	 * Commit the open transaction.
 	 * 
 	 * @return
 	 */
-	public abstract boolean commitTransaction(
+	public boolean commitTransaction(TransactionHandler transactionHandler) {
+
+		if (terminateTransaction(transactionHandler)) {
+			// certification test has returned true. we can commit.
+			commitedTransactions.add(transactionHandler);
+			applyUpdates(transactionHandler);
+			return true;
+		}
+		return false;
+
+	}
+
+	public abstract boolean terminateTransaction(
 			TransactionHandler transactionHandler);
 
-	public abstract void abortTransaction(TransactionHandler transactionHandler);
+	public void abortTransaction(TransactionHandler transactionHandler) {
+		abortedTransactions.add(transactionHandler);
+	}
+
+	/**
+	 * Apply changes of a committed transaction to the datastore.
+	 * 
+	 * @param transactionHandler
+	 *            handler of a committed transaction.
+	 */
+	public void applyUpdates(TransactionHandler transactionHandler) {
+		ExecutionHistory executionHistory = handler2executionHistory
+				.get(transactionHandler);
+
+		Iterator<? extends JessyEntity> itr = executionHistory.getWriteSet()
+				.iterator();
+
+		while (itr.hasNext()) {
+			dataStore.put(itr.next());
+		}
+
+	}
 
 	/**
 	 * Executes a non-transactional read on local datastore. This read is
@@ -280,14 +314,12 @@ public abstract class Jessy {
 		if (transactionalAccess == ExecutionMode.UNDEFINED)
 			transactionalAccess = ExecutionMode.NON_TRANSACTIONAL;
 
-		if (transactionalAccess==ExecutionMode.NON_TRANSACTIONAL) {
+		if (transactionalAccess == ExecutionMode.NON_TRANSACTIONAL) {
 			dataStore.put(entity);
 		}
 
 		throw new Exception(
 				"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
 	}
-
-	protected abstract boolean canCommit(TransactionHandler transactionHandler);
 
 }

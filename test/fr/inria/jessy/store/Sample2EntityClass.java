@@ -45,11 +45,11 @@ public class Sample2EntityClass extends JessyEntity{
 		this.data = data;
 	}
 
- 
 	@Override
-	public <T> String getLocalVectorSelfKey(T entityID) {
-		return Sample2EntityClass.class.toString() + entityID;
+	public String getKey() {		
+		return Sample2EntityClass.class.toString() + this.getSecondaryKey();
 	}
 
+  
 
 }
