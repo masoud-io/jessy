@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class TransactionHandler {
 
-	UUID id;
+	private  UUID id;
 	
 	public TransactionHandler(){
 		this.id=UUID.randomUUID();

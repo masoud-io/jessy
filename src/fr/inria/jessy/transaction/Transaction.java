@@ -5,8 +5,8 @@ import fr.inria.jessy.store.JessyEntity;
 
 public abstract class Transaction {
 
-	Jessy jessy;
-	TransactionHandler transactionHandler;
+	private Jessy jessy;
+	private TransactionHandler transactionHandler;
 
 	public Transaction(Jessy jessy) throws Exception{
 		this.jessy = jessy;

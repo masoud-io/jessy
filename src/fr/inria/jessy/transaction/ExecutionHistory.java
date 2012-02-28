@@ -30,16 +30,16 @@ public class ExecutionHistory {
 	 * Entity
 	 * 
 	 */
-	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> writeSet;
-	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> readSet;
+	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> writeSet;
+	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> readSet;
 
 	/**
 	 * stores Vectors of read and write entities. This is for fast retrieval.
 	 * TODO if the performance is good enough, writeSetVectors can be removed.
 	 * It can directly be computed from {@link ExecutionHistory#getWriteSet()}
 	 */
-	CopyOnWriteArrayList<Vector<String>> readSetVectors;
-	CopyOnWriteArrayList<Vector<String>> writeSetVectors;
+	private CopyOnWriteArrayList<Vector<String>> readSetVectors;
+	private CopyOnWriteArrayList<Vector<String>> writeSetVectors;
 
 	public ExecutionHistory() {
 		readSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();

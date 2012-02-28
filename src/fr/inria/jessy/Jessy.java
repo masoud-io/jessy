@@ -16,9 +16,7 @@ import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.Vector;
 
 /**
- * 
  * @author Masoud Saeida Ardekani
- * 
  */
 public abstract class Jessy {
 
@@ -37,14 +35,14 @@ public abstract class Jessy {
 		UNDEFINED,
 	};
 
-	DataStore dataStore;
+	private DataStore dataStore;
 	Consistency consistency;
 
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
-	ExecutionHistory executionHistoryTemplate;
+	private ExecutionHistory executionHistoryTemplate;
 
-	CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
-	CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
+	private CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
+	private CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
 
 	/**
 	 * Stores the last committed entities in a concurrent map. This is used
@@ -54,7 +52,7 @@ public abstract class Jessy {
 	 */
 	ConcurrentMap<String, JessyEntity> lastCommittedEntities;
 
-	ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
+	private ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
 	protected Jessy() throws Exception {
 
