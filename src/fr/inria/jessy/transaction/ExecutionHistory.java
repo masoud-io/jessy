@@ -26,53 +26,50 @@ public class ExecutionHistory {
 	};
 
 	/**
-	 * writeList maps works as follows: ClassName > SecondaryKey > Entity
+	 * readSet and writeSet maps works as follows: ClassName > SecondaryKey >
+	 * Entity
 	 * 
 	 */
 	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> writeSet;
-
-	ConcurrentMap<String, Class<? extends JessyEntity>> classList;
-
-	/**
-	 * readKeyList stores all the keys of entities used in read operations as
-	 * follows: ClassaName + SecondaryKey
-	 */
-	CopyOnWriteArrayList<String> readSetKeys;
+	ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> readSet;
 
 	/**
-	 * stores Vectors of read and write entities.
+	 * stores Vectors of read and write entities. This is for fast retrieval.
+	 * TODO if the performance is good enough, writeSetVectors can be removed.
+	 * It can directly be computed from {@link ExecutionHistory#getWriteSet()}
 	 */
 	CopyOnWriteArrayList<Vector<String>> readSetVectors;
 	CopyOnWriteArrayList<Vector<String>> writeSetVectors;
 
 	public ExecutionHistory() {
-		writeSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
-		classList = new ConcurrentHashMap<String, Class<? extends JessyEntity>>();
+		readSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
+		readSetVectors = new CopyOnWriteArrayList<Vector<String>>();
 
+		writeSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
+		writeSetVectors = new CopyOnWriteArrayList<Vector<String>>();
 	}
 
 	public <E extends JessyEntity> void addEntity(Class<E> entityClass) {
 		// initialize writeList
-		writeSet.put(entityClass.toString(),
-				new ConcurrentHashMap<String, E>());
-		classList.put(entityClass.toString(), entityClass);
+		writeSet.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
+		readSet.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
 
-		// initialize readLists
-		readSetKeys = new CopyOnWriteArrayList<String>();
-		readSetVectors = new CopyOnWriteArrayList<Vector<String>>();
-		writeSetVectors= new CopyOnWriteArrayList<Vector<String>>();
 	}
 
-	public Class<? extends JessyEntity> getEntityClass(String className){
-		return classList.get(className);
-	}
-	
 	public List<Vector<String>> getReadSetVectors() {
 		return readSetVectors;
 	}
-	
+
 	public List<Vector<String>> getWriteSetVectors() {
 		return writeSetVectors;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <E extends JessyEntity> E getFromReadSet(Class<E> entityClass,
+			String keyValue) {
+		Map<String, E> reads = (Map<String, E>) readSet.get(entityClass
+				.toString());
+		return reads.get(keyValue);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -84,8 +81,23 @@ public class ExecutionHistory {
 	}
 
 	@SuppressWarnings("unchecked")
+	public <E extends JessyEntity> boolean readSetContains(
+			Class<E> entityClass, String keyValue) {
+
+		Map<String, E> reads = (Map<String, E>) readSet.get(entityClass
+				.toString());
+		E entity = reads.get(keyValue);
+		if (entity != null) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> boolean writeSetContains(
 			Class<E> entityClass, String keyValue) {
+
 		Map<String, E> writes = (Map<String, E>) writeSet.get(entityClass
 				.toString());
 		E entity = writes.get(keyValue);
@@ -96,16 +108,20 @@ public class ExecutionHistory {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> void addToReadSet(E entity) {
-		readSetKeys
-				.add(entity.getClass().toString() + entity.getSecondaryKey());
 		readSetVectors.add(entity.getLocalVector());
+
+		ConcurrentMap<String, E> reads = (ConcurrentMap<String, E>) readSet
+				.get(entity.getClass().toString());
+		reads.put(entity.getSecondaryKey(), entity);
+		readSet.put(entity.getClass().toString(), reads);
 	}
 
 	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> void addToWriteSet(E entity) {
 		writeSetVectors.add(entity.getLocalVector());
-		
+
 		ConcurrentMap<String, E> writes = (ConcurrentMap<String, E>) writeSet
 				.get(entity.getClass().toString());
 		writes.put(entity.getSecondaryKey(), entity);
@@ -127,7 +143,6 @@ public class ExecutionHistory {
 
 		return result;
 	}
-	
 
 	public TransactionType getTransactionType() {
 		if (writeSet.size() > 0)

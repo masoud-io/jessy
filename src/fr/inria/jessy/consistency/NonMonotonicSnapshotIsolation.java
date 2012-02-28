@@ -26,8 +26,8 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 	 * transaction can commit or not.
 	 */
 	@Override
-	public <T extends JessyEntity> boolean certify(
-			ConcurrentMap<String, T> lastCommittedEntities,
+	public boolean certify(
+			ConcurrentMap<String, JessyEntity> lastCommittedEntities,
 			ExecutionHistory executionHistory) {
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 			return true;

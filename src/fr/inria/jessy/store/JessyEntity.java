@@ -6,15 +6,16 @@ import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.SecondaryKey;
 
+import fr.inria.jessy.Jessy;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
 
 /**
  * @author Masoud Saeida Ardekani
  * 
- *         This class provides one uniform key for every entity defined inside
- *         JessyStore. A primary key with Long type
- * 
+ *         This class provides two keys to every object stored by {@link Jessy}}
+ *         PrimaryKey is of type {@link Long}
+ *         SecondaryKey is of type {@link String}
  */
 
 @Persistent

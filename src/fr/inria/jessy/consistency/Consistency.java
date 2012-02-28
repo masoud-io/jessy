@@ -8,5 +8,5 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 
 public interface Consistency {
 	
-	public <T extends JessyEntity> boolean certify(ConcurrentMap<String, T> lastCommittedEntities, ExecutionHistory executionHistory);
+	public  boolean certify(ConcurrentMap<String, JessyEntity> lastCommittedEntities, ExecutionHistory executionHistory);
 }

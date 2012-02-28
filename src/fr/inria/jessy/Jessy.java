@@ -52,7 +52,7 @@ public abstract class Jessy {
 	 * The key is the concatenation of entity class name and entity secondary
 	 * key {@link JessyEntity#getKey()} . The value is the entity.
 	 */
-	ConcurrentMap<String, ? extends JessyEntity> lastCommittedEntities;
+	ConcurrentMap<String, JessyEntity> lastCommittedEntities;
 
 	ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
@@ -150,11 +150,20 @@ public abstract class Jessy {
 			throw new NullPointerException("Transaction has not been started");
 		}
 
-		E entity = executionHistory.getFromWriteSet(entityClass, keyValue);
+		E entity;
+		entity = executionHistory.getFromWriteSet(entityClass, keyValue);
 
+		// we first check it this entity has been updated in this transaction
+		// before!
 		if (entity == null) {
-			entity = performRead(entityClass, "secondaryKey", keyValue,
-					executionHistory.getReadSetVectors());
+
+			// if the entity has not been updated, we check if it has been read
+			// in the same transaction before.
+			entity = executionHistory.getFromReadSet(entityClass, keyValue);
+
+			if (entity == null)
+				entity = performRead(entityClass, "secondaryKey", keyValue,
+						executionHistory.getReadSetVectors());
 		}
 
 		if (entity != null) {
@@ -269,7 +278,14 @@ public abstract class Jessy {
 				.iterator();
 
 		while (itr.hasNext()) {
-			dataStore.put(itr.next());
+			JessyEntity tmp = itr.next();
+
+			// Send the entity to the datastore to be saved
+			dataStore.put(tmp);
+
+			// Store the entity as the last committed entity for this particular
+			// key.
+			lastCommittedEntities.put(tmp.getKey(), tmp);
 		}
 
 	}
