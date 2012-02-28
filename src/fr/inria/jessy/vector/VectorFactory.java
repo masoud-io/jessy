@@ -8,7 +8,7 @@ public class VectorFactory {
 	private static String vectorType = readConfig();
 
 	public static <K> Vector<K> getVector(K selfKey) {
-		if (vectorType == "dependencevector") {
+		if (vectorType.equals("dependencevector")) {
 			return new DependenceVector<K>(selfKey);
 		}
 		return null;
