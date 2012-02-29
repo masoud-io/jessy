@@ -16,7 +16,7 @@ import junit.framework.TestSuite;
  * @author Masoud Saeida Ardekani
  *
  */
-public class LocalJessy_NMSI {
+public class NMSIWithLocalJessyTest {
 
 	LocalJessy jessy;
 	SampleTransaction1 st1;
@@ -38,7 +38,7 @@ public class LocalJessy_NMSI {
 	}
 	
 	public static Test suite() {
-		TestSuite suite = new TestSuite(LocalJessy_NMSI.class.getName());
+		TestSuite suite = new TestSuite(NMSIWithLocalJessyTest.class.getName());
 		//$JUnit-BEGIN$
 
 		//$JUnit-END$
