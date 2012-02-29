@@ -18,7 +18,7 @@ import fr.inria.jessy.store.SampleEntityClass;
  * @author msaeida
  *
  */
-public class SampleTransaction1Test extends TestCase{
+public class TransactionTest extends TestCase{
 
 	LocalJessy jessy;
 	SampleTransaction1 st1;
