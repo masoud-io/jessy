@@ -59,19 +59,26 @@ public class TransactionTest extends TestCase {
 	 */
 	@Test
 	public void testTransaction() throws Exception {
-		ExecutorService pool = Executors.newFixedThreadPool(2);
+		ExecutorService pool = Executors.newFixedThreadPool(3);
 
+		Future<Boolean> future;
+		future = pool.submit(new SampleInitTransaction(jessy));
+		
 		Future<Boolean> future1;
-		future1 = pool.submit(new SampleInitTransaction(jessy));
-
+		future1 = pool.submit(new SampleTransaction1(jessy));
+		
 		Future<Boolean> future2;
 		future2 = pool.submit(new SampleTransaction2(jessy));
 
-		Boolean result1=future1.get();
-		Boolean result2=future2.get();
+		Boolean result=future.get();
+		assertTrue(result);
 		
+		Boolean result1=future1.get();
+		assertTrue(result1);
+		
+//		Boolean result2=future2.get();
+//		
 
-		assertEquals("Result", true, result1 & result2);
 
 	}
 

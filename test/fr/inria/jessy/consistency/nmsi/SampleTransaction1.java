@@ -15,11 +15,12 @@ public class SampleTransaction1 extends Transaction {
 	public boolean execute() {
 		try {
 	
+			Thread.sleep(10000);
+			
 			SampleEntityClass se=read(SampleEntityClass.class, "1");			
 			se.setData("Second Trans");
 			write(se);
-
-			Thread.sleep(10000);
+			
 			
 			return commitTransaction();			
 		} catch (Exception ex) {

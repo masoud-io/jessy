@@ -15,6 +15,8 @@ public class SampleTransaction2 extends Transaction {
 	public boolean execute() {
 		try {
 	
+			Thread.sleep(5000);
+			
 			SampleEntityClass se=read(SampleEntityClass.class, "1");			
 			se.setData("Second Trans");
 			write(se);
