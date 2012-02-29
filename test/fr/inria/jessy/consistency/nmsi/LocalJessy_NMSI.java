@@ -1,9 +1,10 @@
 /**
  * 
  */
-package fr.inria.jessy.transaction;
+package fr.inria.jessy.consistency.nmsi;
 
 import fr.inria.jessy.LocalJessy;
+import fr.inria.jessy.transaction.SampleTransaction1;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
