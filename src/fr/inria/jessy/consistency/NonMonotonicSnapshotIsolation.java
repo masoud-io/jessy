@@ -29,12 +29,14 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 	public boolean certify(
 			ConcurrentMap<String, JessyEntity> lastCommittedEntities,
 			ExecutionHistory executionHistory) {
+		
+		//if the transaction is a read-only transaction, it commits right away.
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 			return true;
 
 		List<? extends JessyEntity> writeSet = executionHistory.getWriteSet();
 
-		// updatedVector is a updated vector.
+		// updatedVector is a cloned updated vector. It will be used as a new vector for all modified vectors.
 		Vector<String> updatedVector = writeSet.get(0).getLocalVector().clone();
 		updatedVector.update(executionHistory.getReadSetVectors(),
 				executionHistory.getWriteSetVectors());

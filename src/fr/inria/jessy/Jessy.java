@@ -212,26 +212,41 @@ public abstract class Jessy {
 
 		if (executionHistory == null) {
 			throw new NullPointerException("Transaction has not been started");
-		} else
+		} else {
+
+			// First checks if we have already read an entity with the same key!
+			// TODO make this conditional according to user definition! (if
+			// disabled, performance gain)
+			JessyEntity tmp = executionHistory.getFromReadSet(
+					entity.getClass(), entity.getSecondaryKey());
+			if (tmp == null) {
+				// the opeation is a blind write! First issue a read operation.
+				try {
+					read(entity.getClass(), entity.getSecondaryKey());
+				} catch (Exception e) {
+					// if this is a first write opeation, then it comes here!
+				}
+			}
 			executionHistory.addToWriteSet(entity);
+		}
 	}
 
 	/**
-	 * Creates an entity in the system. 
-	 * It simply calls the write method, and passes the arguments.
-	 * TODO Read_Before_Write logic cannot be ensured for this method since there is no entity to be read before.
-	 * TODO one solution is to add version zero of all entities! 
+	 * Creates an entity in the system. It simply calls the write method, and
+	 * passes the arguments. TODO Read_Before_Write logic cannot be ensured for
+	 * this method since there is no entity to be read before. TODO one solution
+	 * is to add version zero of all entities!
 	 */
 	public <E extends JessyEntity> void create(
-			TransactionHandler transactionHandler, E entity){
+			TransactionHandler transactionHandler, E entity) {
 		write(transactionHandler, entity);
 	}
-	
+
 	public <E extends JessyEntity> void remove(
 			TransactionHandler transactionHandler, E entity)
 			throws NullPointerException {
 		entity.removoe();
-		write(transactionHandler, entity);		
+		write(transactionHandler, entity);
 	}
 
 	public TransactionHandler startTransaction() throws Exception {
