@@ -25,6 +25,31 @@ public class ExecutionHistory {
 		UPDATE_TRANSACTION
 	};
 
+	public enum TransactionState {
+		/**
+		 * the transaction has not strated yet.
+		 */
+		NOT_STARTED,
+		/**
+		 * the transaction has been started and is executing
+		 */
+		EXECUTING,
+		/**
+		 * the transaction has been executed and is committing
+		 */
+		COMMITTING,
+		/**
+		 * the transaction has been committed
+		 */
+		COMMITTED,
+		/**
+		 * the transaction has been aborted
+		 */
+		ABORTED
+	};
+
+	private TransactionState transactionState;
+	
 	/**
 	 * readSet and writeSet maps works as follows: ClassName > SecondaryKey >
 	 * Entity
@@ -150,4 +175,14 @@ public class ExecutionHistory {
 		else
 			return TransactionType.READONLY_TRANSACTION;
 	}
+
+	public TransactionState getTransactionState() {
+		return transactionState;
+	}
+
+	public void setTransactionState(TransactionState transactionState) {
+		this.transactionState = transactionState;
+	}
+	
+	
 }
