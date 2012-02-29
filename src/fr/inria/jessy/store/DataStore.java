@@ -39,15 +39,15 @@ public class DataStore {
 
 	/**
 	 * Store all primary indexes of all entities manage by this DataStore Each
-	 * entity class can have only one primary key. Thus, the key of the map is the name of
-	 * the entity class.
+	 * entity class can have only one primary key. Thus, the key of the map is
+	 * the name of the entity class.
 	 */
 	private Map<String, PrimaryIndex<Long, ? extends JessyEntity>> primaryIndexes;
 
 	/**
 	 * Store all secondary indexes of all entities manage by this DataStore.
-	 * Each entity class can have multiple secondary keys. Thus, the key of the map is the
-	 * concatenation of entity class name and secondarykey name.
+	 * Each entity class can have multiple secondary keys. Thus, the key of the
+	 * map is the concatenation of entity class name and secondarykey name.
 	 */
 	private Map<String, SecondaryIndex<?, ?, ? extends JessyEntity>> secondaryIndexes;
 
@@ -272,6 +272,33 @@ public class DataStore {
 	public <E extends JessyEntity, SK> E get(Class<E> entityClass,
 			String secondaryKeyName, SK keyValue) throws NullPointerException {
 		return get(entityClass, secondaryKeyName, keyValue, null);
+	}
+
+	/**
+	 * Delete an entity with the provided secondary key from the berkeyley DB.
+	 * 
+	 * @param <E>
+	 *            the type that extends JessyEntity
+	 * @param <SK>
+	 *            the type of the secondary key field (annotated with
+	 * @param entityClass
+	 *            the class that extends JessyEntity
+	 * @param secondaryKeyName
+	 *            Name of the secondary key field (annotated with the value of
+	 *            the secondary key.
+	 * @throws NullPointerException
+	 */
+	public <E extends JessyEntity, SK> boolean delete(Class<E> entityClass,
+			String secondaryKeyName, SK keyValue) throws NullPointerException {
+		try {
+			@SuppressWarnings("unchecked")
+			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
+					.get(entityClass.getName() + secondaryKeyName);
+
+			return sindex.delete(keyValue);
+		} catch (NullPointerException ex) {
+			throw new NullPointerException("SecondaryIndex cannot be found");
+		}
 	}
 
 	/**

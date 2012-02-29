@@ -20,15 +20,31 @@ import fr.inria.jessy.vector.VectorFactory;
 
 @Persistent
 public abstract class JessyEntity {
-
+	
+	
 	private Vector<String> localVector;
+
+	private boolean removoed=false;
+	
+	public boolean isRemovoed() {
+		return removoed;
+	}
+
+	/**
+	 * Set the entity to be removed by the garbage collector.
+	 * TODO set localVector to null to save memory! (safety might be broken)
+	 * 
+	 */
+	public void removoe() {
+		this.removoed = true;
+	}
 
 	public JessyEntity(){
 		
 	}
 	
-	public JessyEntity(String className, String id) {
-		localVector = VectorFactory.getVector(className + id);
+	public JessyEntity(String entityClassName, String entityId) {
+		localVector = VectorFactory.getVector(entityClassName + entityId);
 	}
 
 	@PrimaryKey(sequence = "Jessy_Sequence")
@@ -69,7 +85,6 @@ public abstract class JessyEntity {
 		this.localVector=localVector;
 	}
 
-	
 	public abstract String getKey();
-
+	
 }

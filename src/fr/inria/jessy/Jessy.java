@@ -217,11 +217,22 @@ public abstract class Jessy {
 	}
 
 	/**
-	 * Creates an entity in the system. This method should be implemented
-	 * according to the specific implementation of Jessy.
+	 * Creates an entity in the system. 
+	 * It simply calls the write method, and passes the arguments.
+	 * TODO Read_Before_Write logic cannot be ensured for this method since there is no entity to be read before.
+	 * TODO one solution is to add version zero of all entities! 
 	 */
-	public abstract <E extends JessyEntity> void create(
-			TransactionHandler transactionHandler, E entity);
+	public <E extends JessyEntity> void create(
+			TransactionHandler transactionHandler, E entity){
+		write(transactionHandler, entity);
+	}
+	
+	public <E extends JessyEntity> void remove(
+			TransactionHandler transactionHandler, E entity)
+			throws NullPointerException {
+		entity.removoe();
+		write(transactionHandler, entity);		
+	}
 
 	public TransactionHandler startTransaction() throws Exception {
 		if (transactionalAccess == ExecutionMode.UNDEFINED)

@@ -30,12 +30,6 @@ public class LocalJessy extends Jessy {
 	}
 
 	@Override
-	public <E extends JessyEntity> void create(
-			TransactionHandler transactionHandler, E entity) {
-		write(transactionHandler, entity);
-	}
-
-	@Override
 	public synchronized boolean terminateTransaction(
 			TransactionHandler transactionHandler) {
 
