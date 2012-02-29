@@ -1,9 +1,11 @@
 package fr.inria.jessy.transaction;
 
+import java.util.concurrent.Callable;
+
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.JessyEntity;
 
-public abstract class Transaction {
+public abstract class Transaction implements Callable<Boolean>{
 
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
@@ -35,6 +37,10 @@ public abstract class Transaction {
 
 	public void abortTransaction(){
 		jessy.abortTransaction(transactionHandler);
+	}
+	
+	public Boolean call(){
+		return execute();
 	}
 
 }

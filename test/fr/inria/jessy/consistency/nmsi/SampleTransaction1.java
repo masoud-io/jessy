@@ -23,7 +23,7 @@ public class SampleTransaction1 extends Transaction {
 				write(new Sample2EntityClass("2", "sampleentity2-2"));
 			}
 			
-			this.wait(10000);
+			Thread.sleep(10000);
 			
 			return commitTransaction();			
 		} catch (Exception ex) {
