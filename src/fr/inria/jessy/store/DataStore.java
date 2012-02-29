@@ -105,7 +105,7 @@ public class DataStore {
 			storeConfig.setAllowCreate(true);
 
 			// Caution: Durability cannot be ensured!
-			storeConfig.setDeferredWrite(true);
+			// storeConfig.setDeferredWrite(true);
 
 			EntityStore store = new EntityStore(env, storeName, storeConfig);
 
@@ -258,11 +258,13 @@ public class DataStore {
 
 			while (entity != null) {
 				if (entity.getLocalVector().isCompatible(readList)) {
+					cur.close();
 					return entity;
 				} else {
 					entity = cur.prev();
 				}
 			}
+			cur.close();
 			return null;
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("SecondaryIndex cannot be found");
@@ -325,10 +327,14 @@ public class DataStore {
 					.get(entityClass.getName() + secondaryKeyName);
 
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
-			if (cur.iterator().hasNext())
-				return cur.count();
-			else
+			if (cur.iterator().hasNext()) {
+				int result=cur.count();
+				cur.close();				
+				return result;
+			} else{
+				cur.close();
 				return 0;
+			}				
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}
