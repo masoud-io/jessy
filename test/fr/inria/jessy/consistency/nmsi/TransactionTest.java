@@ -76,9 +76,8 @@ public class TransactionTest extends TestCase {
 		Boolean result1=future1.get();
 		assertTrue(result1);
 		
-//		Boolean result2=future2.get();
-//		
-
+		Boolean result2=future2.get();
+		assertTrue(result2);
 
 	}
 
