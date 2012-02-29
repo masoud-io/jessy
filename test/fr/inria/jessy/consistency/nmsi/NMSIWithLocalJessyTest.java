@@ -40,7 +40,8 @@ public class NMSIWithLocalJessyTest {
 	public static Test suite() {
 		TestSuite suite = new TestSuite(NMSIWithLocalJessyTest.class.getName());
 		//$JUnit-BEGIN$
-
+		suite.addTestSuite(SampleTransaction1Test.class);
+		suite.addTestSuite(SampleTransaction2Test.class);
 		//$JUnit-END$
 		return suite;
 	}

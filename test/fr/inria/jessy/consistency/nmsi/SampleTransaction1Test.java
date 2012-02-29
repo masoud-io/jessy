@@ -4,6 +4,7 @@
 package fr.inria.jessy.consistency.nmsi;
 
 import static org.junit.Assert.*;
+import junit.framework.TestCase;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -17,7 +18,7 @@ import fr.inria.jessy.store.SampleEntityClass;
  * @author msaeida
  *
  */
-public class SampleTransaction1Test {
+public class SampleTransaction1Test extends TestCase{
 
 	LocalJessy jessy;
 	SampleTransaction1 st1;

@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.Random;
 
+import junit.framework.TestCase;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,7 +18,7 @@ import fr.inria.jessy.vector.Vector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class DataStoreTest {
+public class DataStoreTest extends TestCase{
 
 	DataStore dsPut;
 
