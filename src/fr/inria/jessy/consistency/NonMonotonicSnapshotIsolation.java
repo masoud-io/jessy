@@ -3,8 +3,6 @@ package fr.inria.jessy.consistency;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
-
-import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
@@ -29,14 +27,15 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 	public boolean certify(
 			ConcurrentMap<String, JessyEntity> lastCommittedEntities,
 			ExecutionHistory executionHistory) {
-		
-		//if the transaction is a read-only transaction, it commits right away.
+
+		// if the transaction is a read-only transaction, it commits right away.
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 			return true;
 
 		List<? extends JessyEntity> writeSet = executionHistory.getWriteSet();
 
-		// updatedVector is a cloned updated vector. It will be used as a new vector for all modified vectors.
+		// updatedVector is a cloned updated vector. It will be used as a new
+		// vector for all modified vectors.
 		Vector<String> updatedVector = writeSet.get(0).getLocalVector().clone();
 		updatedVector.update(executionHistory.getReadSetVectors(),
 				executionHistory.getWriteSetVectors());
