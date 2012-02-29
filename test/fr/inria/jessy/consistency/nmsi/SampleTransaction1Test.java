@@ -17,10 +17,10 @@ import fr.inria.jessy.store.SampleEntityClass;
  * @author msaeida
  *
  */
-public class TransactionTest {
+public class SampleTransaction1Test {
 
 	LocalJessy jessy;
-	SampleTransaction st;
+	SampleTransaction1 st1;
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -39,7 +39,7 @@ public class TransactionTest {
 		jessy.addEntity(SampleEntityClass.class);
 		jessy.addEntity(Sample2EntityClass.class);
 		
-		st=new SampleTransaction(jessy);
+		st1=new SampleTransaction1(jessy);
 	}
 
 	/**
@@ -47,18 +47,9 @@ public class TransactionTest {
 	 */
 	@Test
 	public void testTransaction() {
-		boolean result=st.execute();
+		boolean result=st1.execute();
 		assertEquals("Result", true, result);
 
-	}
-
-	/**
-	 * Test method for {@link fr.inria.jessy.transaction.Transaction#execute()}.
-	 */
-	@Test
-	public void testExecute() {
-		
-		fail("Not yet implemented");
 	}
 
 }
