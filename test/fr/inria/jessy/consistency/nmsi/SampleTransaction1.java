@@ -15,14 +15,10 @@ public class SampleTransaction1 extends Transaction {
 	public boolean execute() {
 		try {
 	
-			SampleEntityClass se=new SampleEntityClass("1", "sampleentity1");			
+			SampleEntityClass se=read(SampleEntityClass.class, "1");			
+			se.setData("Second Trans");
 			write(se);
 
-			SampleEntityClass readentity=read(SampleEntityClass.class, "1");			
-			if (readentity.getData()=="sampleentity1"){
-				write(new Sample2EntityClass("2", "sampleentity2-2"));
-			}
-			
 			Thread.sleep(10000);
 			
 			return commitTransaction();			

@@ -62,7 +62,7 @@ public class TransactionTest extends TestCase {
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 
 		Future<Boolean> future1;
-		future1 = pool.submit(new SampleTransaction1(jessy));
+		future1 = pool.submit(new SampleInitTransaction(jessy));
 
 		Future<Boolean> future2;
 		future2 = pool.submit(new SampleTransaction2(jessy));

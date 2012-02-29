@@ -49,7 +49,7 @@ public class ExecutionHistory {
 	};
 
 	private TransactionState transactionState;
-	
+
 	/**
 	 * readSet and writeSet maps works as follows: ClassName > SecondaryKey >
 	 * Entity
@@ -66,15 +66,19 @@ public class ExecutionHistory {
 	private CopyOnWriteArrayList<Vector<String>> readSetVectors;
 	private CopyOnWriteArrayList<Vector<String>> writeSetVectors;
 
-	public ExecutionHistory() {
+	public ExecutionHistory(List<Class<? extends JessyEntity>> entityClasses) {
 		readSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
 		readSetVectors = new CopyOnWriteArrayList<Vector<String>>();
 
 		writeSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
 		writeSetVectors = new CopyOnWriteArrayList<Vector<String>>();
+
+		for (Class<? extends JessyEntity> entityClass: entityClasses) {
+			addEntityClass(entityClass);
+		}
 	}
 
-	public <E extends JessyEntity> void addEntity(Class<E> entityClass) {
+	private <E extends JessyEntity> void addEntityClass(Class<E> entityClass) {
 		// initialize writeList
 		writeSet.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
 		readSet.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
@@ -183,6 +187,5 @@ public class ExecutionHistory {
 	public void setTransactionState(TransactionState transactionState) {
 		this.transactionState = transactionState;
 	}
-	
-	
+
 }

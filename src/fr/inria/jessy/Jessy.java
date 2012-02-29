@@ -1,6 +1,7 @@
 package fr.inria.jessy;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +40,7 @@ public abstract class Jessy {
 	Consistency consistency;
 
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
-	private ExecutionHistory executionHistoryTemplate;
+	private List<Class<? extends JessyEntity>> entityClasses;
 
 	private CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
 	private CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
@@ -66,7 +67,7 @@ public abstract class Jessy {
 
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 
-		executionHistoryTemplate = new ExecutionHistory();
+		entityClasses=new ArrayList<Class<? extends JessyEntity>>();
 
 		commitedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
 		abortedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
@@ -111,8 +112,8 @@ public abstract class Jessy {
 		dataStore.addPrimaryIndex(entityClass);
 		dataStore.addSecondaryIndex(entityClass, secondaryKeyClass,
 				secondaryKeyName);
-
-		executionHistoryTemplate.addEntity(entityClass);
+		
+		entityClasses.add(entityClass);
 
 	}
 
@@ -256,7 +257,7 @@ public abstract class Jessy {
 		if (transactionalAccess == ExecutionMode.TRANSACTIONAL) {
 			TransactionHandler transactionHandler = new TransactionHandler();
 			handler2executionHistory.put(transactionHandler,
-					executionHistoryTemplate);
+					new ExecutionHistory(entityClasses));
 			return transactionHandler;
 
 		}

@@ -5,21 +5,19 @@ import fr.inria.jessy.store.Sample2EntityClass;
 import fr.inria.jessy.store.SampleEntityClass;
 import fr.inria.jessy.transaction.*;
 
-public class SampleTransaction2 extends Transaction {
+public class SampleInitTransaction extends Transaction {
 
-	public SampleTransaction2(Jessy jessy) throws Exception{
+	public SampleInitTransaction(Jessy jessy) throws Exception{
 		super(jessy);
 	}
 
 	@Override
 	public boolean execute() {
 		try {
-	
-			SampleEntityClass se=read(SampleEntityClass.class, "1");			
-			se.setData("Second Trans");
+				
+			
+			SampleEntityClass se=new SampleEntityClass("1", "sampleentity1_INITIAL");			
 			write(se);
-
-			Thread.sleep(10000);
 			
 			return commitTransaction();			
 		} catch (Exception ex) {
