@@ -20,7 +20,7 @@ import fr.inria.jessy.store.SampleEntityClass;
 public class TransactionTest {
 
 	LocalJessy jessy;
-	SampleTransaction st;
+	SampleTransaction1 st;
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -39,7 +39,7 @@ public class TransactionTest {
 		jessy.addEntity(SampleEntityClass.class);
 		jessy.addEntity(Sample2EntityClass.class);
 		
-		st=new SampleTransaction(jessy);
+		st=new SampleTransaction1(jessy);
 	}
 
 	/**
