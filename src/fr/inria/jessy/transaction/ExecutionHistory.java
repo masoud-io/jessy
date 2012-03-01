@@ -79,6 +79,8 @@ public class ExecutionHistory {
 		writeSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
 		writeSetVectors = new CopyOnWriteArrayList<Vector<String>>();
 
+		transactionState2StartingTime= new ConcurrentHashMap<ExecutionHistory.TransactionState, Long>();
+		
 		for (Class<? extends JessyEntity> entityClass: entityClasses) {
 			addEntityClass(entityClass);
 		}
