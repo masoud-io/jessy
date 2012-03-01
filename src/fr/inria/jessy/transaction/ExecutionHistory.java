@@ -43,12 +43,18 @@ public class ExecutionHistory {
 		 */
 		COMMITTED,
 		/**
-		 * the transaction has been aborted
+		 * the transaction has been aborted because of the certification test
 		 */
-		ABORTED
+		ABORTED_BY_CERTIFICATION,
+		/**
+		 * the transaction has been aborted by the client.
+		 */
+		ABORTED_BY_CLIENT,		
 	};
 
-	private TransactionState transactionState;
+	private TransactionState transactionState=TransactionState.NOT_STARTED;
+	
+	private ConcurrentMap<TransactionState, Long> transactionState2StartingTime;
 
 	/**
 	 * readSet and writeSet maps works as follows: ClassName > SecondaryKey >
@@ -76,6 +82,7 @@ public class ExecutionHistory {
 		for (Class<? extends JessyEntity> entityClass: entityClasses) {
 			addEntityClass(entityClass);
 		}
+		
 	}
 
 	private <E extends JessyEntity> void addEntityClass(Class<E> entityClass) {
@@ -184,8 +191,8 @@ public class ExecutionHistory {
 		return transactionState;
 	}
 
-	public void setTransactionState(TransactionState transactionState) {
-		this.transactionState = transactionState;
+	public void changeState(TransactionState transactionNewState){
+		transactionState=transactionNewState;
+		transactionState2StartingTime.put(transactionState, System.currentTimeMillis());
 	}
-
 }

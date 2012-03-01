@@ -12,7 +12,7 @@ public class SampleTransaction1 extends Transaction {
 	}
 
 	@Override
-	public boolean execute() {
+	public ExecutionHistory execute() {
 		try {
 	
 			Thread.sleep(1000);
@@ -25,7 +25,7 @@ public class SampleTransaction1 extends Transaction {
 			return commitTransaction();			
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return false;
+			return null;
 		}		
 	}
 

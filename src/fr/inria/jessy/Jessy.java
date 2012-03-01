@@ -2,6 +2,7 @@ package fr.inria.jessy;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +14,7 @@ import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.Vector;
 
@@ -67,7 +69,7 @@ public abstract class Jessy {
 
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 
-		entityClasses=new ArrayList<Class<? extends JessyEntity>>();
+		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
 
 		commitedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
 		abortedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
@@ -112,7 +114,7 @@ public abstract class Jessy {
 		dataStore.addPrimaryIndex(entityClass);
 		dataStore.addSecondaryIndex(entityClass, secondaryKeyClass,
 				secondaryKeyName);
-		
+
 		entityClasses.add(entityClass);
 
 	}
@@ -256,8 +258,10 @@ public abstract class Jessy {
 
 		if (transactionalAccess == ExecutionMode.TRANSACTIONAL) {
 			TransactionHandler transactionHandler = new TransactionHandler();
-			handler2executionHistory.put(transactionHandler,
-					new ExecutionHistory(entityClasses));
+			ExecutionHistory executionHistory = new ExecutionHistory(
+					entityClasses);
+			executionHistory.changeState(TransactionState.EXECUTING);
+			handler2executionHistory.put(transactionHandler, executionHistory);
 			return transactionHandler;
 
 		}
@@ -266,26 +270,44 @@ public abstract class Jessy {
 	}
 
 	/**
-	 * Commit the open transaction.
+	 * Commit the open transaction, and garbage collect it.
 	 * 
 	 * @return
 	 */
-	public boolean commitTransaction(TransactionHandler transactionHandler) {
+	public ExecutionHistory commitTransaction(
+			TransactionHandler transactionHandler) {
+		ExecutionHistory result = handler2executionHistory
+				.get(transactionHandler);
+
+		result.changeState(TransactionState.COMMITTING);
 
 		if (terminateTransaction(transactionHandler)) {
 			// certification test has returned true. we can commit.
 			commitedTransactions.add(transactionHandler);
 			applyUpdates(transactionHandler);
-			return true;
-		}
-		return false;
+			result.changeState(TransactionState.COMMITTED);
 
+		} else {
+			result.changeState(TransactionState.ABORTED_BY_CERTIFICATION);
+
+		}
+
+		garbageCollectTransaction(transactionHandler);
+		return result;
 	}
 
 	public abstract boolean terminateTransaction(
 			TransactionHandler transactionHandler);
 
+	/**
+	 * Put the transaction in the aborted list, and does nothing else. TODO
+	 * re-execute the transaction.
+	 * 
+	 * @param transactionHandler
+	 */
 	public void abortTransaction(TransactionHandler transactionHandler) {
+		handler2executionHistory.get(transactionHandler).changeState(
+				TransactionState.ABORTED_BY_CLIENT);
 		abortedTransactions.add(transactionHandler);
 	}
 
@@ -358,6 +380,10 @@ public abstract class Jessy {
 
 		throw new Exception(
 				"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
+	}
+
+	private void garbageCollectTransaction(TransactionHandler transactionHandler) {
+		handler2executionHistory.remove(transactionHandler);
 	}
 
 }

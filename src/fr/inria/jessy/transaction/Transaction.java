@@ -5,7 +5,7 @@ import java.util.concurrent.Callable;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.JessyEntity;
 
-public abstract class Transaction implements Callable<Boolean>{
+public abstract class Transaction implements Callable<ExecutionHistory>{
 
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
@@ -15,7 +15,7 @@ public abstract class Transaction implements Callable<Boolean>{
 		this.transactionHandler = jessy.startTransaction();
 	}
 
-	public abstract boolean execute();
+	public abstract ExecutionHistory execute();
 
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
 			throws Exception {
@@ -31,7 +31,7 @@ public abstract class Transaction implements Callable<Boolean>{
 		jessy.create(transactionHandler, entity);
 	}
 
-	public boolean commitTransaction() {
+	public ExecutionHistory commitTransaction() {
 		return jessy.commitTransaction(transactionHandler);
 	}
 
@@ -39,7 +39,7 @@ public abstract class Transaction implements Callable<Boolean>{
 		jessy.abortTransaction(transactionHandler);
 	}
 	
-	public Boolean call(){
+	public ExecutionHistory call(){
 		return execute();
 	}
 

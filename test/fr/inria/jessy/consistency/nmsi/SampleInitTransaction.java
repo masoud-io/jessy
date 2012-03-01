@@ -12,7 +12,7 @@ public class SampleInitTransaction extends Transaction {
 	}
 
 	@Override
-	public boolean execute() {
+	public ExecutionHistory execute() {
 		try {
 				
 			
@@ -22,7 +22,7 @@ public class SampleInitTransaction extends Transaction {
 			return commitTransaction();			
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return false;
+			return null;
 		}		
 	}
 

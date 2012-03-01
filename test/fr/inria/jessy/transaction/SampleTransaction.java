@@ -11,7 +11,7 @@ public class SampleTransaction extends Transaction {
 	}
 
 	@Override
-	public boolean execute() {
+	public ExecutionHistory execute() {
 		try {
 	
 			SampleEntityClass se=new SampleEntityClass("1", "sampleentity1");			
@@ -26,7 +26,7 @@ public class SampleTransaction extends Transaction {
 			return commitTransaction();			
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return false;
+			return null;
 		}		
 	}
 

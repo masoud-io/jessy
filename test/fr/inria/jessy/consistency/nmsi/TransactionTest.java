@@ -21,6 +21,8 @@ import org.junit.Test;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.store.Sample2EntityClass;
 import fr.inria.jessy.store.SampleEntityClass;
+import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 
 /**
  * @author msaeida
@@ -61,23 +63,23 @@ public class TransactionTest extends TestCase {
 	public void testTransaction() throws Exception {
 		ExecutorService pool = Executors.newFixedThreadPool(3);
 
-		Future<Boolean> future;
+		Future<ExecutionHistory> future;
 		future = pool.submit(new SampleInitTransaction(jessy));
 		
-		Future<Boolean> future1;
+		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransaction1(jessy));
 		
-		Future<Boolean> future2;
+		Future<ExecutionHistory> future2;
 		future2 = pool.submit(new SampleTransaction2(jessy));
 
-		Boolean result=future.get();
-		assertTrue(result);
+		ExecutionHistory result=future.get();
+		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
 		
-		Boolean result1=future1.get();
-		assertTrue(result1);
+		ExecutionHistory result1=future1.get();
+		assertEquals("Result", TransactionState.COMMITTED, result1.getTransactionState());
 		
-		Boolean result2=future2.get();
-		assertTrue(result2);
+		ExecutionHistory result2=future2.get();
+		assertEquals("Result", TransactionState.COMMITTED, result2.getTransactionState());
 
 	}
 

@@ -12,6 +12,7 @@ import org.junit.Test;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.store.Sample2EntityClass;
 import fr.inria.jessy.store.SampleEntityClass;
+import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 
 /**
  * @author msaeida
@@ -47,8 +48,8 @@ public class TransactionTest {
 	 */
 	@Test
 	public void testTransaction() {
-		boolean result=st.execute();
-		assertEquals("Result", true, result);
+		ExecutionHistory result=st.execute();
+		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
 
 	}
 
