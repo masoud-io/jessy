@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import sun.org.mozilla.javascript.WrapFactory;
+
+import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.vector.Vector;
 
@@ -49,137 +52,64 @@ public class ExecutionHistory {
 		/**
 		 * the transaction has been aborted by the client.
 		 */
-		ABORTED_BY_CLIENT,		
+		ABORTED_BY_CLIENT,
 	};
 
-	private TransactionState transactionState=TransactionState.NOT_STARTED;
-	
+	private TransactionState transactionState = TransactionState.NOT_STARTED;
+
 	private ConcurrentMap<TransactionState, Long> transactionState2StartingTime;
 
 	/**
-	 * readSet and writeSet maps works as follows: ClassName > SecondaryKey >
-	 * Entity
+	 * readSet and writeSet to store read and written entities
 	 * 
 	 */
-	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> writeSet;
-	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> readSet;
 
-	/**
-	 * stores Vectors of read and write entities. This is for fast retrieval.
-	 * TODO if the performance is good enough, writeSetVectors can be removed.
-	 * It can directly be computed from {@link ExecutionHistory#getWriteSet()}
-	 */
-	private CopyOnWriteArrayList<Vector<String>> readSetVectors;
-	private CopyOnWriteArrayList<Vector<String>> writeSetVectors;
+	private EntitySet writeSet;
+	private EntitySet readSet;
 
 	public ExecutionHistory(List<Class<? extends JessyEntity>> entityClasses) {
-		readSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
-		readSetVectors = new CopyOnWriteArrayList<Vector<String>>();
+		readSet = new EntitySet();
 
-		writeSet = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
-		writeSetVectors = new CopyOnWriteArrayList<Vector<String>>();
+		writeSet = new EntitySet();
 
-		transactionState2StartingTime= new ConcurrentHashMap<ExecutionHistory.TransactionState, Long>();
-		
-		for (Class<? extends JessyEntity> entityClass: entityClasses) {
+		transactionState2StartingTime = new ConcurrentHashMap<ExecutionHistory.TransactionState, Long>();
+
+		for (Class<? extends JessyEntity> entityClass : entityClasses) {
 			addEntityClass(entityClass);
 		}
-		
+
 	}
 
 	private <E extends JessyEntity> void addEntityClass(Class<E> entityClass) {
 		// initialize writeList
-		writeSet.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
-		readSet.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
-
+		readSet.addEntityClass(entityClass);
+		writeSet.addEntityClass(entityClass);
 	}
 
-	public List<Vector<String>> getReadSetVectors() {
-		return readSetVectors;
+	public EntitySet getReadSet() {
+		return readSet;
 	}
 
-	public List<Vector<String>> getWriteSetVectors() {
-		return writeSetVectors;
+	public EntitySet getWriteSet() {
+		return writeSet;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> E getFromReadSet(Class<E> entityClass,
+	public <E extends JessyEntity> E getReadEntity(Class<E> entityClass,
 			String keyValue) {
-		Map<String, E> reads = (Map<String, E>) readSet.get(entityClass
-				.toString());
-		return reads.get(keyValue);
+		return readSet.getEntity(entityClass, keyValue);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> E getFromWriteSet(Class<E> entityClass,
+	public <E extends JessyEntity> E getWriteEntity(Class<E> entityClass,
 			String keyValue) {
-		Map<String, E> writes = (Map<String, E>) writeSet.get(entityClass
-				.toString());
-		return writes.get(keyValue);
+		return writeSet.getEntity(entityClass, keyValue);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> boolean readSetContains(
-			Class<E> entityClass, String keyValue) {
-
-		Map<String, E> reads = (Map<String, E>) readSet.get(entityClass
-				.toString());
-		E entity = reads.get(keyValue);
-		if (entity != null) {
-			return true;
-		} else {
-			return false;
-		}
+	public <E extends JessyEntity> void addReadEntity(E entity) {
+		readSet.addEntity(entity);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> boolean writeSetContains(
-			Class<E> entityClass, String keyValue) {
-
-		Map<String, E> writes = (Map<String, E>) writeSet.get(entityClass
-				.toString());
-		E entity = writes.get(keyValue);
-		if (entity != null) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> void addToReadSet(E entity) {
-		readSetVectors.add(entity.getLocalVector());
-
-		ConcurrentMap<String, E> reads = (ConcurrentMap<String, E>) readSet
-				.get(entity.getClass().toString());
-		reads.put(entity.getSecondaryKey(), entity);
-		readSet.put(entity.getClass().toString(), reads);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> void addToWriteSet(E entity) {
-		writeSetVectors.add(entity.getLocalVector());
-
-		ConcurrentMap<String, E> writes = (ConcurrentMap<String, E>) writeSet
-				.get(entity.getClass().toString());
-		writes.put(entity.getSecondaryKey(), entity);
-		writeSet.put(entity.getClass().toString(), writes);
-	}
-
-	public List<? extends JessyEntity> getWriteSet() {
-		List<JessyEntity> result = new ArrayList<JessyEntity>();
-
-		Collection<ConcurrentMap<String, ? extends JessyEntity>> writeListValues = writeSet
-				.values();
-
-		Iterator<ConcurrentMap<String, ? extends JessyEntity>> itr = writeListValues
-				.iterator();
-		while (itr.hasNext()) {
-			ConcurrentMap<String, ? extends JessyEntity> entities = itr.next();
-			result.addAll(entities.values());
-		}
-
-		return result;
+	public <E extends JessyEntity> void addWriteEntity(E entity) {
+		writeSet.addEntity(entity);
 	}
 
 	public TransactionType getTransactionType() {
@@ -193,17 +123,16 @@ public class ExecutionHistory {
 		return transactionState;
 	}
 
-	public void changeState(TransactionState transactionNewState){
-		transactionState=transactionNewState;
-		transactionState2StartingTime.put(transactionState, System.currentTimeMillis());
+	public void changeState(TransactionState transactionNewState) {
+		transactionState = transactionNewState;
+		transactionState2StartingTime.put(transactionState,
+				System.currentTimeMillis());
 	}
-	
-	public String toString(){
-		String result;
-		result=transactionState.toString() + "\n";
 
-				
-		
+	public String toString() {
+		String result;
+		result = transactionState.toString() + "\n";
+
 		return result;
 	}
 }

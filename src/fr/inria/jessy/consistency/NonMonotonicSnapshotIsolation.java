@@ -32,13 +32,13 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 			return true;
 
-		List<? extends JessyEntity> writeSet = executionHistory.getWriteSet();
+		List<? extends JessyEntity> writeSet = executionHistory.getWriteSet().getEntities();
 
 		// updatedVector is a cloned updated vector. It will be used as a new
 		// vector for all modified vectors.
 		Vector<String> updatedVector = writeSet.get(0).getLocalVector().clone();
-		updatedVector.update(executionHistory.getReadSetVectors(),
-				executionHistory.getWriteSetVectors());
+		updatedVector.update(executionHistory.getReadSet().getVectors(),
+				executionHistory.getWriteSet().getVectors());
 
 		JessyEntity lastComittedEntity;
 

@@ -152,7 +152,7 @@ public abstract class Jessy {
 		}
 
 		E entity;
-		entity = executionHistory.getFromWriteSet(entityClass, keyValue);
+		entity = executionHistory.getWriteEntity(entityClass, keyValue);
 
 		// we first check it this entity has been updated in this transaction
 		// before!
@@ -160,15 +160,15 @@ public abstract class Jessy {
 
 			// if the entity has not been updated, we check if it has been read
 			// in the same transaction before.
-			entity = executionHistory.getFromReadSet(entityClass, keyValue);
+			entity = executionHistory.getReadEntity(entityClass, keyValue);
 
 			if (entity == null)
 				entity = performRead(entityClass, "secondaryKey", keyValue,
-						executionHistory.getReadSetVectors());
+						executionHistory.getReadSet().getVectors());
 		}
 
 		if (entity != null) {
-			executionHistory.addToReadSet(entity);
+			executionHistory.addReadEntity(entity);
 			return entity;
 		} else {
 			return null;
@@ -220,7 +220,7 @@ public abstract class Jessy {
 			// First checks if we have already read an entity with the same key!
 			// TODO make this conditional according to user definition! (if
 			// disabled, performance gain)
-			JessyEntity tmp = executionHistory.getFromReadSet(
+			JessyEntity tmp = executionHistory.getReadEntity(
 					entity.getClass(), entity.getSecondaryKey());
 			if (tmp == null) {
 				// the opeation is a blind write! First issue a read operation.
@@ -230,7 +230,7 @@ public abstract class Jessy {
 					// if this is a first write opeation, then it comes here!
 				}
 			}
-			executionHistory.addToWriteSet(entity);
+			executionHistory.addWriteEntity(entity);
 		}
 	}
 
@@ -321,7 +321,7 @@ public abstract class Jessy {
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);
 
-		Iterator<? extends JessyEntity> itr = executionHistory.getWriteSet()
+		Iterator<? extends JessyEntity> itr = executionHistory.getWriteSet().getEntities()
 				.iterator();
 
 		while (itr.hasNext()) {
