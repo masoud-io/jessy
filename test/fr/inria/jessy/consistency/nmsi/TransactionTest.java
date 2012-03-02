@@ -74,17 +74,17 @@ public class TransactionTest extends TestCase {
 
 		ExecutionHistory result=future.get();
 		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
+		System.out.println(result.toString());
 		
 		ExecutionHistory result1=future1.get();
 		assertEquals("Result", TransactionState.COMMITTED, result1.getTransactionState());
+		System.out.println(result1.toString());
 		
 		ExecutionHistory result2=future2.get();
 		assertEquals("Result", TransactionState.COMMITTED, result2.getTransactionState());
+		System.out.println(result2.toString());
 
 	}
 	
-	private void toPrint(ExecutionHistory executionHistory){
-		
-	}
 
 }

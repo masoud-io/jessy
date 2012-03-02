@@ -132,7 +132,7 @@ public class ExecutionHistory {
 	public String toString() {
 		String result;
 		result = transactionState.toString() + "\n";
-
+		result = result + writeSet.toString() + "\n";
 		return result;
 	}
 }
