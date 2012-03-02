@@ -9,8 +9,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.apache.log4j.Logger;
+
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
+import fr.inria.jessy.consistency.NonMonotonicSnapshotIsolation;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -23,6 +26,8 @@ import fr.inria.jessy.vector.Vector;
  */
 public abstract class Jessy {
 
+
+	
 	public enum ExecutionMode {
 		/**
 		 * Jessy only executes transactional operations.
@@ -333,6 +338,7 @@ public abstract class Jessy {
 			// Store the entity as the last committed entity for this particular
 			// key.
 			lastCommittedEntities.put(tmp.getKey(), tmp);
+
 		}
 
 	}

@@ -70,9 +70,6 @@ public class DependenceVector<K> extends Vector<K> {
 			super.setValue(writeVector.getSelfKey(),
 					writeVector.getSelfValue() + 1);
 		}
-		System.out.println("INPUT READ" + readList.toString());
-		System.out.println("INPUT Write" + writeList.toString());
-		System.out.println("OUTPUT" + super.toString());
 	}
 
 	@Override

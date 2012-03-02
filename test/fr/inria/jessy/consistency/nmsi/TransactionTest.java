@@ -14,6 +14,7 @@ import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,6 +38,7 @@ public class TransactionTest extends TestCase {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+			
 	}
 
 	/**
@@ -44,6 +46,7 @@ public class TransactionTest extends TestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
+		PropertyConfigurator.configure("log4j.properties");	
 		jessy = LocalJessy.getInstance();
 
 		// First, we have to define the entities read or written inside the
@@ -74,15 +77,15 @@ public class TransactionTest extends TestCase {
 
 		ExecutionHistory result=future.get();
 		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
-		System.out.println(result.toString());
+//		System.out.println(result.toString());
 		
 		ExecutionHistory result1=future1.get();
 		assertEquals("Result", TransactionState.COMMITTED, result1.getTransactionState());
-		System.out.println(result1.toString());
+//		System.out.println(result1.toString());
 		
 		ExecutionHistory result2=future2.get();
 		assertEquals("Result", TransactionState.COMMITTED, result2.getTransactionState());
-		System.out.println(result2.toString());
+//		System.out.println(result2.toString());
 
 	}
 	
