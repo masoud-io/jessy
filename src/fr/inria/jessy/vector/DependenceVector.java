@@ -20,6 +20,7 @@ public class DependenceVector<K> extends Vector<K> {
 
 	public DependenceVector(K selfKey) {
 		super(selfKey);
+		super.setValue(selfKey, 0);
 	}
 
 	@Override
