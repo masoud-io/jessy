@@ -197,4 +197,13 @@ public class ExecutionHistory {
 		transactionState=transactionNewState;
 		transactionState2StartingTime.put(transactionState, System.currentTimeMillis());
 	}
+	
+	public String toString(){
+		String result;
+		result=transactionState.toString() + "\n";
+
+				
+		
+		return result;
+	}
 }

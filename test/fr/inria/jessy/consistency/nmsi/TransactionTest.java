@@ -82,5 +82,9 @@ public class TransactionTest extends TestCase {
 		assertEquals("Result", TransactionState.COMMITTED, result2.getTransactionState());
 
 	}
+	
+	private void toPrint(ExecutionHistory executionHistory){
+		
+	}
 
 }
