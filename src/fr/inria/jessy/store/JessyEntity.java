@@ -13,36 +13,35 @@ import fr.inria.jessy.vector.VectorFactory;
 /**
  * @author Masoud Saeida Ardekani
  * 
- *         This class provides two keys to every object stored by {@link Jessy}}
- *         PrimaryKey is of type {@link Long}
- *         SecondaryKey is of type {@link String}
+ *         This class provides two keys to every object stored by {@link Jessy}
+ *         PrimaryKey is of type {@link Long} SecondaryKey is of type
+ *         {@link String}
  */
 
 @Persistent
 public abstract class JessyEntity {
-	
-	
+
 	private Vector<String> localVector;
 
-	private boolean removoed=false;
-	
+	private boolean removoed = false;
+
 	public boolean isRemovoed() {
 		return removoed;
 	}
 
 	/**
-	 * Set the entity to be removed by the garbage collector.
-	 * TODO set localVector to null to save memory! (safety might be broken)
+	 * Set the entity to be removed by the garbage collector. TODO set
+	 * localVector to null to save memory! (safety might be broken)
 	 * 
 	 */
 	public void removoe() {
 		this.removoed = true;
 	}
 
-	public JessyEntity(){
-		
+	@SuppressWarnings("unused")
+	private JessyEntity() {
 	}
-	
+
 	public JessyEntity(String entityClassName, String entityId) {
 		localVector = VectorFactory.getVector(entityClassName + entityId);
 	}
@@ -50,9 +49,9 @@ public abstract class JessyEntity {
 	@PrimaryKey(sequence = "Jessy_Sequence")
 	private Long primaryKey;
 
-	@SecondaryKey(relate = MANY_TO_ONE)	
+	@SecondaryKey(relate = MANY_TO_ONE)
 	private String secondaryKey;
-	
+
 	/**
 	 * @return the primaryKey
 	 */
@@ -67,8 +66,7 @@ public abstract class JessyEntity {
 	public void setPrimaryKey(Long primaryKey) {
 		this.primaryKey = primaryKey;
 	}
-	
-	
+
 	public String getSecondaryKey() {
 		return secondaryKey;
 	}
@@ -80,11 +78,11 @@ public abstract class JessyEntity {
 	public Vector<String> getLocalVector() {
 		return localVector;
 	}
-	
-	public void setLocalVector(Vector<String> localVector){
-		this.localVector=localVector;
+
+	public void setLocalVector(Vector<String> localVector) {
+		this.localVector = localVector;
 	}
 
 	public abstract String getKey();
-	
+
 }
