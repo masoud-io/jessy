@@ -7,7 +7,7 @@ import com.sleepycat.persist.model.Entity;
 
 import fr.inria.jessy.store.JessyEntity;
 
-
+ 
 
 @Entity
 public class JessyYCSBEntity extends JessyEntity {
