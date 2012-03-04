@@ -6,6 +6,7 @@ import java.util.Set;
 import com.sleepycat.persist.model.Entity;
 
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.SampleEntityClass;
 
 @Entity
 public class YCSBEntity extends JessyEntity {
@@ -41,8 +42,7 @@ public class YCSBEntity extends JessyEntity {
 
 	@Override
 	public String getKey() {
-		// TODO Auto-generated method stub
-		return null;
+		return SampleEntityClass.class.toString() + this.getSecondaryKey();
 	}
 
 }
