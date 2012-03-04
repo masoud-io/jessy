@@ -64,23 +64,22 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 
 			if (lastCommittedEntities.containsKey(tmp.getKey())) {
 				lastComittedEntity = lastCommittedEntities.get(tmp.getKey());
-				logger.debug("Last Committed Entity in NMSI"
-						+ lastComittedEntity.getLocalVector());
+
 				if (!lastComittedEntity.getLocalVector().isCompatible(
-						updatedVector)) {
+						tmp.getLocalVector())) {
 					return false;
 				}
 			}
 			// set the selfkey of the updated vector and put it back in the
 			// entity.
 			updatedVector.setSelfKey(tmp.getLocalVector().getSelfKey());
-			tmp.setLocalVector(updatedVector);
+			tmp.setLocalVector(updatedVector.clone());
+			logger.debug("ResultSet Vectors"
+					+ tmp.getLocalVector().toString());
+
 
 		}
 		result = true;
-
-		logger.debug("ResultSet Vectors"
-				+ executionHistory.getWriteSet().getVectors().toString());
 
 		return result;
 	}
