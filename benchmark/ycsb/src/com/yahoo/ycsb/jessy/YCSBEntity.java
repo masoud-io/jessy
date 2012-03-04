@@ -7,45 +7,42 @@ import com.sleepycat.persist.model.Entity;
 
 import fr.inria.jessy.store.JessyEntity;
 
- 
-
 @Entity
-public class JessyYCSBEntity extends JessyEntity {
-	private int order = 0;
+public class YCSBEntity extends JessyEntity {
 
-	private HashMap <String , String > fields;
-	public JessyYCSBEntity() {
-		super("","");
-	
+	private HashMap<String, String> fields;
+
+	public YCSBEntity(String entityClassName, String entityId) {
+		super(entityClassName, entityId);
+
 		fields = new HashMap<String, String>();
-		order++;
+
 	}
-	
-	@Override
-	public <T> String getLocalVectorSelfKey(T entityID) {
-		
-		return null;
-	}
-	
-	
+
 	public Set<String> getFields() {
-		return fields.keySet();	
+		return fields.keySet();
 	}
-	public void addField(String f){
+
+	public void addField(String f) {
 		getFields().add(f);
 	}
-	
+
 	public void addFieldID(String fieldID) {
 		fields.keySet().add(fieldID);
 	}
-	
-	public void put (String field,String value) {
+
+	public void put(String field, String value) {
 		fields.put(field, value);
 	}
-	
-	
-	public void get ( String field ) {
+
+	public void getField(String field) {
 		fields.get(field);
 	}
-	
+
+	@Override
+	public String getKey() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -39,10 +39,6 @@ public abstract class JessyEntity {
 		this.removoed = true;
 	}
 
-	public JessyEntity(){
-		
-	}
-	
 	public JessyEntity(String entityClassName, String entityId) {
 		localVector = VectorFactory.getVector(entityClassName + entityId);
 	}
