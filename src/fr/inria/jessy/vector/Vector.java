@@ -21,11 +21,15 @@ public abstract class Vector<K> extends ValueVector<K,Integer>{
 	}
 	
 	public abstract  boolean isCompatible(Vector<K> other) throws NullPointerException;
+	
+	public abstract  boolean isCompatible(CompactVector<K> other) throws NullPointerException;
 
 	public abstract boolean isCompatible(List<Vector<K>> otherList)
 			throws NullPointerException;
 
 	public abstract void update(List<Vector<K>> readList, List<Vector<K>> writeList);
+	
+	public abstract void update(CompactVector<K> readSet, CompactVector<K> writeSet);
 	
 	public K getSelfKey() {
 		return selfKey;

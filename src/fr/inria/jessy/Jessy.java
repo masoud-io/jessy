@@ -16,6 +16,7 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 import fr.inria.jessy.transaction.TransactionHandler;
+import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -164,7 +165,7 @@ public abstract class Jessy {
 
 			if (entity == null)
 				entity = performRead(entityClass, "secondaryKey", keyValue,
-						executionHistory.getReadSet().getVectors());
+						executionHistory.getReadSet().getCompactVector());
 		}
 
 		if (entity != null) {
@@ -196,7 +197,7 @@ public abstract class Jessy {
 	 */
 	protected abstract <E extends JessyEntity, SK> E performRead(
 			Class<E> entityClass, String keyName, SK keyValue,
-			List<Vector<String>> readList);
+			CompactVector<String> readSet);
 
 	/**
 	 * Stores the entity locally. The locally stored entities will be stored in

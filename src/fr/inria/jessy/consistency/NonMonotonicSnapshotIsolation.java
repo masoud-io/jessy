@@ -12,6 +12,8 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.ValueVector.ComparisonResult;
 import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.vector.VectorFactory;
+
 import org.apache.log4j.PropertyConfigurator;
 
 /**
@@ -37,12 +39,13 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 			ExecutionHistory executionHistory) {
 
 		logger.debug("ReadSet Vector"
-				+ executionHistory.getReadSet().getVectors().toString());
+				+ executionHistory.getReadSet().getCompactVector().toString());
 		logger.debug("WriteSet Vectors"
-				+ executionHistory.getWriteSet().getVectors().toString());
+				+ executionHistory.getWriteSet().getCompactVector().toString());
 
 		boolean result;
-
+		JessyEntity lastComittedEntity;
+		
 		// if the transaction is a read-only transaction, it commits right away.
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 			return true;
@@ -52,11 +55,10 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 
 		// updatedVector is a cloned updated vector. It will be used as a new
 		// vector for all modified vectors.
-		Vector<String> updatedVector = writeSet.get(0).getLocalVector().clone();
-		updatedVector.update(executionHistory.getReadSet().getVectors(),
-				executionHistory.getWriteSet().getVectors());
+		Vector<String> updatedVector = VectorFactory.getVector("");
+		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
+				executionHistory.getWriteSet().getCompactVector());
 
-		JessyEntity lastComittedEntity;
 
 		Iterator<? extends JessyEntity> itr = writeSet.iterator();
 		while (itr.hasNext()) {
@@ -74,9 +76,7 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 			// entity.
 			updatedVector.setSelfKey(tmp.getLocalVector().getSelfKey());
 			tmp.setLocalVector(updatedVector.clone());
-			logger.debug("ResultSet Vectors"
-					+ tmp.getLocalVector().toString());
-
+			logger.debug("ResultSet Vectors" + tmp.getLocalVector().toString());
 
 		}
 		result = true;

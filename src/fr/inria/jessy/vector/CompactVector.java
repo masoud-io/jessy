@@ -25,9 +25,21 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 		super(-1);
 		keys = new ArrayList<K>();
 	}
+	
+	public void update(Vector<K> vector){
+		super.update(vector);
+		keys.add(vector.getSelfKey());
+	}
 
-	public void addItem(K key, Integer value) {
-		super.setValue(key, value);
-		keys.add(key);
+	public List<K> getKeys(){
+		return keys;
+	}
+	
+	public Integer getValue(K key){
+		return super.getValue(key);
+	}
+	
+	public int size(){
+		return keys.size();
 	}
 }

@@ -14,6 +14,7 @@ import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
 
+import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -242,7 +243,7 @@ public class DataStore {
 	 * @throws NullPointerException
 	 */
 	public <E extends JessyEntity, SK> E get(Class<E> entityClass,
-			String secondaryKeyName, SK keyValue, List<Vector<String>> readList)
+			String secondaryKeyName, SK keyValue, CompactVector<String> readSet)
 			throws NullPointerException {
 		try {
 			@SuppressWarnings("unchecked")
@@ -252,12 +253,12 @@ public class DataStore {
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
 			E entity = cur.last();
 
-			if (readList == null) {
+			if (readSet == null) {
 				return entity;
 			}
 
 			while (entity != null) {
-				if (entity.getLocalVector().isCompatible(readList)) {
+				if (entity.getLocalVector().isCompatible(readSet)) {
 					cur.close();
 					return entity;
 				} else {

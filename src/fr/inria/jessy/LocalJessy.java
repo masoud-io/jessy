@@ -4,6 +4,7 @@ import java.util.List;
 
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.TransactionHandler;
+import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 
 //TODO Garabage collect upon commit
@@ -25,8 +26,8 @@ public class LocalJessy extends Jessy {
 
 	@Override
 	protected <E extends JessyEntity, SK> E performRead(Class<E> entityClass,
-			String keyName, SK keyValue, List<Vector<String>> readList) {
-		return getDataStore().get(entityClass, keyName, keyValue, readList);
+			String keyName, SK keyValue, CompactVector<String> readSet) {
+		return getDataStore().get(entityClass, keyName, keyValue, readSet);
 	}
 
 	@Override

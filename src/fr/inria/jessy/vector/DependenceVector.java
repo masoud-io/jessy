@@ -45,6 +45,37 @@ public class DependenceVector<K> extends Vector<K> {
 	}
 
 	@Override
+	public boolean isCompatible(CompactVector<K> other)
+			throws NullPointerException {
+		// check special values
+		if (other == null) {
+			throw new NullPointerException("Input Vector is Null");
+		}
+
+		Integer selfValueOnSelfKey = getSelfValue();
+		Integer otherValueOnSelfKey = other.getValue(selfKey);
+
+		if (selfValueOnSelfKey < otherValueOnSelfKey) {
+			return false;
+		}
+
+		Integer selfValueOnOtherKey ;
+		Integer otherValueOnOtherKey;
+
+		for (K k : other.getKeys()) {
+			selfValueOnOtherKey = getValue(k);
+			otherValueOnOtherKey = other.getValue(k);
+
+			if (otherValueOnOtherKey < selfValueOnOtherKey) {
+				return false;
+			}
+
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isCompatible(List<Vector<K>> otherList)
 			throws NullPointerException {
 		// check special values
@@ -71,10 +102,17 @@ public class DependenceVector<K> extends Vector<K> {
 					writeVector.getSelfValue() + 1);
 		}
 	}
+	
+	@Override
+	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
+		super.update(readSet);
+		super.update(writeSet);
+		
+	}
 
 	@Override
 	public DependenceVector<K> clone() {
-		return (DependenceVector<K>)super.clone();
+		return (DependenceVector<K>) super.clone();
 	}
 
 }

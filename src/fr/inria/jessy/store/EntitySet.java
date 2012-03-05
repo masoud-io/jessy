@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -29,16 +30,11 @@ public class EntitySet {
 	 */
 	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> entities;
 
-	/**
-	 * stores Vectors of entities. This is for fast retrieval. TODO if the
-	 * performance is good enough, entityVectors can be removed. It can directly
-	 * be computed from {@link EntitySet#getEntities()}
-	 */
-	private CopyOnWriteArrayList<Vector<String>> vectors;
+	private CompactVector<String> compactVector;
 
 	public EntitySet() {
 		entities = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
-		vectors = new CopyOnWriteArrayList<Vector<String>>();
+		compactVector = new CompactVector<String>();
 	}
 
 	public <E extends JessyEntity> void addEntityClass(Class<E> entityClass) {
@@ -46,8 +42,8 @@ public class EntitySet {
 		entities.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
 	}
 
-	public List<Vector<String>> getVectors() {
-		return vectors;
+	public CompactVector<String> getCompactVector() {
+		return compactVector;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -60,7 +56,7 @@ public class EntitySet {
 
 	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> void addEntity(E entity) {
-		vectors.add(entity.getLocalVector());
+		compactVector.update(entity.getLocalVector());
 
 		ConcurrentMap<String, E> temp = (ConcurrentMap<String, E>) entities
 				.get(entity.getClass().toString());
@@ -86,7 +82,7 @@ public class EntitySet {
 	}
 
 	public int size() {
-		return vectors.size();
+		return compactVector.size();
 	}
 
 	@SuppressWarnings("unchecked")
