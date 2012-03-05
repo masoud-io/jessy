@@ -1,19 +1,16 @@
 package fr.inria.jessy;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.apache.log4j.Logger;
-
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
-import fr.inria.jessy.consistency.NonMonotonicSnapshotIsolation;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -26,8 +23,6 @@ import fr.inria.jessy.vector.Vector;
  */
 public abstract class Jessy {
 
-
-	
 	public enum ExecutionMode {
 		/**
 		 * Jessy only executes transactional operations.

@@ -2,10 +2,13 @@ package fr.inria.jessy.store;
 
 import static com.sleepycat.persist.model.Relationship.MANY_TO_ONE;
 
+import java.io.Serializable;
+
 import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.SecondaryKey;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
@@ -19,7 +22,10 @@ import fr.inria.jessy.vector.VectorFactory;
  */
 
 @Persistent
-public abstract class JessyEntity {
+public abstract class JessyEntity implements Serializable{
+	
+	private static final long serialVersionUID = ConstantPool.JESSY_MID;
+
 
 	private Vector<String> localVector;
 
