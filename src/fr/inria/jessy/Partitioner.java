@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sourceforge.fractal.membership.Group;
+import net.sourceforge.fractal.membership.Membership;
+
 import org.apache.commons.lang3.StringUtils;
-import java.util.regex.*;
 
 /**
  * This class implements a partitioner, that is a function that maps
@@ -43,20 +46,25 @@ import java.util.regex.*;
 
 public class Partitioner {
 	
+	private static Partitioner instance;
+	
 	public static enum Distribution{
 		UNIFORM,
 		NORMAL,
 		ZIPF
 	};
 	
-	private Set<Group> groups;
 	private Map<Group,Set<String>> g2rk; // groups to rootkeys
 	private Map<String,Group> rk2g; // rootkeys to groups
+
+	public static Partitioner getInstance() {
+		if(instance==null) instance = new Partitioner();
+		return instance;
+	}
 	
-	public Partitioner(Set<Group> s){
-		groups = s;
+	private Partitioner(){
 		g2rk = new HashMap<Group, Set<String>>();
-		for(Group g : groups){
+		for(Group g : Membership.getInstance().allGroups()){
 			g2rk.put(g,new HashSet<String>());
 		}
 		rk2g = new HashMap<String, Group>();
@@ -64,11 +72,13 @@ public class Partitioner {
 	
 	/**
 	 * Assign rootkeys to a group according to the keyspace definition <i>ks</i> 
-	 * and the distribution <i>dist</i>.
+	 * and the distribution <i>dist</i> such that each group maintains the same 
+	 * amount of keys to be requested according to the probalistic distribution.
 	 * 
 	 * @param rk a keyspace definition
 	 * @param a distribution
 	 */
+	// TODO: do not take all ports!
 	public void assign(String ks, Distribution dist) throws InvalidParameterException{
 		
 		Pattern p = Pattern.compile("([:xdigit:]*#)*");
@@ -78,13 +88,13 @@ public class Partitioner {
 		if(dist==Distribution.UNIFORM){
 			String [] ms = ks.split("#");
 			String rootkey;
-			for(int i=0; i<groups.size();i++){
+			for(int i=0; i<Membership.getInstance().allGroups().size();i++){
 				rootkey = new String();
-				for(char c : Integer.toString(i*(10^(ms.length)/groups.size())).toCharArray()){
+				for(char c : Integer.toString(i*(10^(ms.length)/Membership.getInstance().allGroups().size())).toCharArray()){
 					rootkey+=ms[i]+c;
 				}
-				g2rk.get(groups.toArray()[i]).add(rootkey);
-				rk2g.put(rootkey, (Group)groups.toArray()[i]);
+				g2rk.get(Membership.getInstance().allGroups().toArray()[i]).add(rootkey);
+				rk2g.put(rootkey, (Group)Membership.getInstance().allGroups().toArray()[i]);
 			}
 		}else{
 			throw new RuntimeException("NIY");
@@ -100,6 +110,10 @@ public class Partitioner {
 	 */
 	public Group resolve(String k){
 		return rk2g.get(closestRootkeyOf(k));
+	}
+	
+	public boolean isLocal(String k){
+		return Membership.getInstance().myGroups().contains(resolve(k));
 	}
 	
 	//
