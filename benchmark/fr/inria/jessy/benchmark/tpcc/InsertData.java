@@ -1,6 +1,7 @@
 package fr.inria.jessy.benchmark.tpcc;
 
 import fr.inria.jessy.Jessy;
+import fr.inria.jessy.benchmark.tpcc.entities.*;
 import fr.inria.jessy.store.*;
 import fr.inria.jessy.transaction.*;
 import java.util.*;
@@ -12,7 +13,7 @@ public class InsertData extends Transaction {
 	}
 
 	@Override
-	public boolean execute() {
+	public ExecutionHistory execute() {
 		try {
 			int i, j, k;
 			Random rand = new Random();			
