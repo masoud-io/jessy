@@ -1,4 +1,4 @@
-package fr.inria.jessy.store;
+package fr.inria.jessy.benchmark.tpcc.entities;
 
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
@@ -19,13 +19,8 @@ import fr.inria.jessy.vector.Vector;
 @Entity
 public class Item extends JessyEntity {
 
-	public Item() {
-		super("", "");
-	}
-
 	public Item(String entityID) {
 		super(Item.class.toString(), entityID);
-		this.setSecondaryKey(entityID);
 	}
 
 	private String I_ID;
@@ -82,8 +77,8 @@ public class Item extends JessyEntity {
 	}
 
 	@Override
-	public <T> String getLocalVectorSelfKey(T entityID) {
-		return Item.class.toString() + entityID;
+	public String getKey() {
+		return Customer.class.toString() + this.getSecondaryKey();
 	}
 
 }

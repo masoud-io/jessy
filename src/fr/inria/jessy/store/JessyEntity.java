@@ -50,6 +50,7 @@ public abstract class JessyEntity implements Serializable{
 
 	public JessyEntity(String entityClassName, String entityId) {
 		localVector = VectorFactory.getVector(entityClassName + entityId);
+		this.secondaryKey=entityId;
 	}
 
 	@PrimaryKey(sequence = "Jessy_Sequence")

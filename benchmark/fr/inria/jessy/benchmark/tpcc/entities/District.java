@@ -1,4 +1,4 @@
-package fr.inria.jessy.store;
+package fr.inria.jessy.benchmark.tpcc.entities;
 
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
@@ -19,13 +19,10 @@ import fr.inria.jessy.vector.Vector;
 @Entity
 public class District extends JessyEntity {
 
-	public District() {
-		super("", "");
-	}
+ 
 
 	public District(String entityID) {
 		super(District.class.toString(), entityID);
-		this.setSecondaryKey(entityID);
 	}
 
 
@@ -141,9 +138,9 @@ public class District extends JessyEntity {
 	public void setD_NEXT_O(int D_NEXT_O) {
 		this.D_NEXT_O = D_NEXT_O;
 	}
-	@Override
-	public <T> String getLocalVectorSelfKey(T entityID) {
-		return District.class.toString() + entityID;
-	}
 
+	@Override
+	public String getKey() {
+		return Customer.class.toString() + this.getSecondaryKey();
+	}
 }

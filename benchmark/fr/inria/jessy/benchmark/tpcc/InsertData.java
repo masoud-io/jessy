@@ -1,4 +1,4 @@
-package fr.inria.jessy.transaction;
+package fr.inria.jessy.benchmark.tpcc;
 
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.*;

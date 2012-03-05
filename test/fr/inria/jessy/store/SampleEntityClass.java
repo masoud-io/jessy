@@ -24,7 +24,6 @@ public class SampleEntityClass extends JessyEntity {
 
 	public SampleEntityClass(String entityID, String data) {
 		super(SampleEntityClass.class.toString(), entityID);
-		this.setSecondaryKey(entityID);
 		this.data = data;
 	}
 
