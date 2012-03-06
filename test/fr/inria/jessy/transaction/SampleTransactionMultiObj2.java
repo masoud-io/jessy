@@ -2,6 +2,7 @@ package fr.inria.jessy.transaction;
 
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.entity.Sample2EntityClass;
+import fr.inria.jessy.entity.SampleEntityClass;
 
 public class SampleTransactionMultiObj2 extends Transaction {
 
@@ -16,6 +17,9 @@ public class SampleTransactionMultiObj2 extends Transaction {
 			Thread.sleep(1000);
 			
 			Sample2EntityClass se=read(Sample2EntityClass.class, "1");			
+			SampleEntityClass se2=read(SampleEntityClass.class, "1");
+			
+			
 			se.setData("Second Trans");
 			write(se);
 			

@@ -19,13 +19,24 @@ import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
+import fr.inria.jessy.transaction.Sample2EntityInitTransaction;
 import fr.inria.jessy.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj1;
+import fr.inria.jessy.transaction.SampleTransactionMultiObj2;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj3;
 
 /**
- * @author msaeida
- * 
+ * @author Masoud Saeida Ardekani This a test class for checking NMSI in a
+ *         multi-object scenario.
+ *         <p>
+ *         The scenario is as follows: {@link SampleEntityInitTransaction} and
+ *         {@link Sample2EntityInitTransaction} initialize two obejcts.
+ *         {@link SampleTransactionMultiObj1} reads and writes on the first
+ *         object. {@link SampleTransactionMultiObj3} reads and writes on the
+ *         second object. {@link SampleTransactionMultiObj3} reads the initial
+ *         values and writes after all transaction has been committed.
+ *         Therefore, {@link SampleTransactionMultiObj3} should abort by the
+ *         certification test, and the other should commit.
  */
 public class MultiObjNMSITest extends TestCase {
 
@@ -36,7 +47,7 @@ public class MultiObjNMSITest extends TestCase {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-			
+
 	}
 
 	/**
@@ -44,7 +55,7 @@ public class MultiObjNMSITest extends TestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		PropertyConfigurator.configure("log4j.properties");	
+		PropertyConfigurator.configure("log4j.properties");
 		jessy = LocalJessy.getInstance();
 
 		// First, we have to define the entities read or written inside the
@@ -58,7 +69,8 @@ public class MultiObjNMSITest extends TestCase {
 	 * Test method for
 	 * {@link fr.inria.jessy.transaction.Transaction#Transaction(fr.inria.jessy.Jessy, fr.inria.jessy.transaction.TransactionHandler)}
 	 * .
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	@Test
 	public void testTransaction() throws Exception {
@@ -68,35 +80,37 @@ public class MultiObjNMSITest extends TestCase {
 		futureInit1 = pool.submit(new SampleEntityInitTransaction(jessy));
 
 		Future<ExecutionHistory> futureInit2;
-		futureInit2 = pool.submit(new SampleEntityInitTransaction(jessy));
+		futureInit2 = pool.submit(new Sample2EntityInitTransaction(jessy));
 
-		
 		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransactionMultiObj1(jessy));
-		
-//		Future<ExecutionHistory> future2;
-//		future2 = pool.submit(new SampleTransactionMultiObj2(jessy));
+
+		Future<ExecutionHistory> future2;
+		future2 = pool.submit(new SampleTransactionMultiObj2(jessy));
 
 		Future<ExecutionHistory> future3;
 		future3 = pool.submit(new SampleTransactionMultiObj3(jessy));
-		
-		ExecutionHistory resultInit1=futureInit1.get();
-		assertEquals("Result", TransactionState.COMMITTED, resultInit1.getTransactionState());
 
-		ExecutionHistory resultInit2=futureInit2.get();
-		assertEquals("Result", TransactionState.COMMITTED, resultInit2.getTransactionState());
+		ExecutionHistory resultInit1 = futureInit1.get();
+		assertEquals("Result", TransactionState.COMMITTED,
+				resultInit1.getTransactionState());
 
-		
-		ExecutionHistory result1=future1.get();
-		assertEquals("Result", TransactionState.COMMITTED, result1.getTransactionState());
-		
-//		ExecutionHistory result2=future2.get();
-//		assertEquals("Result", TransactionState.ABORTED_BY_CERTIFICATION, result2.getTransactionState());
+		ExecutionHistory resultInit2 = futureInit2.get();
+		assertEquals("Result", TransactionState.COMMITTED,
+				resultInit2.getTransactionState());
 
-		ExecutionHistory result3=future3.get();
-		assertEquals("Result", TransactionState.COMMITTED, result3.getTransactionState());
+		ExecutionHistory result1 = future1.get();
+		assertEquals("Result", TransactionState.COMMITTED,
+				result1.getTransactionState());
+
+		ExecutionHistory result2 = future2.get();
+		assertEquals("Result", TransactionState.ABORTED_BY_CERTIFICATION,
+				result2.getTransactionState());
+
+		ExecutionHistory result3 = future3.get();
+		assertEquals("Result", TransactionState.COMMITTED,
+				result3.getTransactionState());
 
 	}
-	
 
 }
