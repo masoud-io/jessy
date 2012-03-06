@@ -48,7 +48,7 @@ public class DependenceVector<K> extends Vector<K> {
 	public boolean isCompatible(CompactVector<K> other)
 			throws NullPointerException {
 		// check special values
-
+		
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
 		}

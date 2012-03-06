@@ -24,6 +24,7 @@ import fr.inria.jessy.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj1;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj2;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj3;
+import fr.inria.jessy.transaction.SampleTransactionMultiObj4;
 
 /**
  * @author Masoud Saeida Ardekani This a test class for checking NMSI in a
@@ -34,9 +35,13 @@ import fr.inria.jessy.transaction.SampleTransactionMultiObj3;
  *         {@link SampleTransactionMultiObj1} reads and writes on the first
  *         object. {@link SampleTransactionMultiObj3} reads and writes on the
  *         second object. {@link SampleTransactionMultiObj3} reads the initial
- *         values and writes after all transaction has been committed.
- *         Therefore, {@link SampleTransactionMultiObj3} should abort by the
- *         certification test, and the other should commit.
+ *         values of two objects and writes after all transaction has been
+ *         committed. Therefore, {@link SampleTransactionMultiObj3} should abort
+ *         by the certification test, and the other should commit. There is also
+ *         one read only transaction {@link SampleTransactionMultiObj4} that
+ *         first reads the initial value for {@link SampleEntityClass} and when
+ *         all update transaction have committed, reads
+ *         {@link Sample2EntityClass}
  */
 public class MultiObjNMSITest extends TestCase {
 
@@ -91,6 +96,9 @@ public class MultiObjNMSITest extends TestCase {
 		Future<ExecutionHistory> future3;
 		future3 = pool.submit(new SampleTransactionMultiObj3(jessy));
 
+		Future<ExecutionHistory> future4;
+		future4 = pool.submit(new SampleTransactionMultiObj4(jessy));
+
 		ExecutionHistory resultInit1 = futureInit1.get();
 		assertEquals("Result", TransactionState.COMMITTED,
 				resultInit1.getTransactionState());
@@ -110,6 +118,10 @@ public class MultiObjNMSITest extends TestCase {
 		ExecutionHistory result3 = future3.get();
 		assertEquals("Result", TransactionState.COMMITTED,
 				result3.getTransactionState());
+
+		ExecutionHistory result4 = future4.get();
+		assertEquals("Result", TransactionState.COMMITTED,
+				result4.getTransactionState());
 
 	}
 
