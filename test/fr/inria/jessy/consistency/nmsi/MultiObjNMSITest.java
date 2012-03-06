@@ -22,7 +22,7 @@ import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 import fr.inria.jessy.transaction.SampleInitTransactionMultiObj;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj2;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj3;
-import fr.inria.jessy.transaction.SampleTransactionMultiObj4;
+import fr.inria.jessy.transaction.SampleTransactionMultiObj1;
 
 /**
  * @author msaeida
@@ -69,22 +69,25 @@ public class MultiObjNMSITest extends TestCase {
 		future = pool.submit(new SampleInitTransactionMultiObj(jessy));
 		
 		Future<ExecutionHistory> future1;
-		future1 = pool.submit(new SampleTransactionMultiObj2(jessy));
+		future1 = pool.submit(new SampleTransactionMultiObj1(jessy));
 		
 		Future<ExecutionHistory> future2;
-		future2 = pool.submit(new SampleTransactionMultiObj3(jessy));
+		future2 = pool.submit(new SampleTransactionMultiObj2(jessy));
 
 		Future<ExecutionHistory> future3;
-		future3 = pool.submit(new SampleTransactionMultiObj4(jessy));
+		future3 = pool.submit(new SampleTransactionMultiObj3(jessy));
 		
 		ExecutionHistory result=future.get();
 		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
 		
 		ExecutionHistory result1=future1.get();
-		assertEquals("Result", TransactionState.ABORTED_BY_CERTIFICATION, result1.getTransactionState());
+		assertEquals("Result", TransactionState.COMMITTED, result1.getTransactionState());
 		
 		ExecutionHistory result2=future2.get();
 		assertEquals("Result", TransactionState.ABORTED_BY_CERTIFICATION, result2.getTransactionState());
+
+		ExecutionHistory result3=future3.get();
+		assertEquals("Result", TransactionState.ABORTED_BY_CERTIFICATION, result3.getTransactionState());
 
 	}
 	

@@ -3,9 +3,9 @@ package fr.inria.jessy.transaction;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.entity.SampleEntityClass;
 
-public class SampleTransactionMultiObj4 extends Transaction {
+public class SampleTransactionMultiObj1 extends Transaction {
 
-	public SampleTransactionMultiObj4(Jessy jessy) throws Exception{
+	public SampleTransactionMultiObj1(Jessy jessy) throws Exception{
 		super(jessy);
 	}
 
