@@ -8,10 +8,9 @@ import com.sleepycat.persist.model.Persistent;
 /**
  * @author Masoud Saeida Ardekani This class implements dependence vector for
  *         jessy objects.
+ *         TODO WRITE DOCs
  */
 
-// TODO test cases should be written for this class.
-// TODO this class has not been tested yet.
 @Persistent
 public class DependenceVector<K> extends Vector<K> {
 
@@ -49,6 +48,7 @@ public class DependenceVector<K> extends Vector<K> {
 	public boolean isCompatible(CompactVector<K> other)
 			throws NullPointerException {
 		// check special values
+
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
 		}
@@ -63,6 +63,7 @@ public class DependenceVector<K> extends Vector<K> {
 			return false;
 		}
 
+		
 		Integer selfValueOnOtherKey;
 		Integer otherValueOnOtherKey;
 
@@ -71,12 +72,12 @@ public class DependenceVector<K> extends Vector<K> {
 			otherValueOnOtherKey = other.getValue(k);
 
 			if (otherValueOnOtherKey < selfValueOnOtherKey) {
-				return false;
+				return false;				
 			}
 
 		}
 
-		return false;
+		return true;
 	}
 
 	@Override

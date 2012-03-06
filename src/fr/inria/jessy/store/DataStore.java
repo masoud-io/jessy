@@ -246,7 +246,7 @@ public class DataStore {
 			String secondaryKeyName, SK keyValue, CompactVector<String> readSet)
 			throws NullPointerException {
 		try {
-			@SuppressWarnings("unchecked")
+			@SuppressWarnings("unchecked")			
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
 					.get(entityClass.getName() + secondaryKeyName);
 

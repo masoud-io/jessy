@@ -14,11 +14,11 @@ public class SampleTransactionMultiObj2 extends Transaction {
 	public ExecutionHistory execute() {
 		try {
 	
-			Thread.sleep(1000);
+			Thread.sleep(500);
 			
-			Sample2EntityClass se=read(Sample2EntityClass.class, "1");			
 			SampleEntityClass se2=read(SampleEntityClass.class, "1");
 			
+			Sample2EntityClass se=read(Sample2EntityClass.class, "1");			
 			
 			se.setData("Second Trans");
 			write(se);
