@@ -1,7 +1,5 @@
 package fr.inria.jessy.store;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 import java.util.Random;
 
@@ -11,8 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.inria.jessy.vector.DependenceVector;
-import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.entity.SampleEntityClass;
 
 /**
  * @author Masoud Saeida Ardekani

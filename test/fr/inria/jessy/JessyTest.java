@@ -3,14 +3,14 @@
  */
 package fr.inria.jessy;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.inria.jessy.store.Sample2EntityClass;
-import fr.inria.jessy.store.SampleEntityClass;
+import fr.inria.jessy.entity.Sample2EntityClass;
+import fr.inria.jessy.entity.SampleEntityClass;
 
 /**
  * @author msaeida

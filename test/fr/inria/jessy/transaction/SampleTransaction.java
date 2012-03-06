@@ -1,8 +1,8 @@
 package fr.inria.jessy.transaction;
 
 import fr.inria.jessy.Jessy;
-import fr.inria.jessy.store.Sample2EntityClass;
-import fr.inria.jessy.store.SampleEntityClass;
+import fr.inria.jessy.entity.Sample2EntityClass;
+import fr.inria.jessy.entity.SampleEntityClass;
 
 public class SampleTransaction extends Transaction {
 
