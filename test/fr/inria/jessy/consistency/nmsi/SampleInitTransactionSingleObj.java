@@ -5,9 +5,9 @@ import fr.inria.jessy.store.Sample2EntityClass;
 import fr.inria.jessy.store.SampleEntityClass;
 import fr.inria.jessy.transaction.*;
 
-public class SampleInitTransaction extends Transaction {
+public class SampleInitTransactionSingleObj extends Transaction {
 
-	public SampleInitTransaction(Jessy jessy) throws Exception{
+	public SampleInitTransactionSingleObj(Jessy jessy) throws Exception{
 		super(jessy);
 	}
 

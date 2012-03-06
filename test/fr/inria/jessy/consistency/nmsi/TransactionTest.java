@@ -67,13 +67,13 @@ public class TransactionTest extends TestCase {
 		ExecutorService pool = Executors.newFixedThreadPool(3);
 
 		Future<ExecutionHistory> future;
-		future = pool.submit(new SampleInitTransaction(jessy));
+		future = pool.submit(new SampleInitTransactionSingleObj(jessy));
 		
 		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransactionSingleObj1(jessy));
 		
 		Future<ExecutionHistory> future2;
-		future2 = pool.submit(new SampleTransaction2(jessy));
+		future2 = pool.submit(new SampleTransactionSingleObj2(jessy));
 
 		ExecutionHistory result=future.get();
 		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
