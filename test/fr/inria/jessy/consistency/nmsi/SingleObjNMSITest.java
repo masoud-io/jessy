@@ -19,7 +19,7 @@ import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
-import fr.inria.jessy.transaction.SampleInitTransactionSingleObj;
+import fr.inria.jessy.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.transaction.SampleTransactionSingleObj1;
 import fr.inria.jessy.transaction.SampleTransactionSingleObj2;
 
@@ -65,7 +65,7 @@ public class SingleObjNMSITest extends TestCase {
 		ExecutorService pool = Executors.newFixedThreadPool(3);
 
 		Future<ExecutionHistory> future;
-		future = pool.submit(new SampleInitTransactionSingleObj(jessy));
+		future = pool.submit(new SampleEntityInitTransaction(jessy));
 		
 		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransactionSingleObj1(jessy));

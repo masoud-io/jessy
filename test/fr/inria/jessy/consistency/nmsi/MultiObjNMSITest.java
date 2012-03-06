@@ -19,10 +19,9 @@ import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
-import fr.inria.jessy.transaction.SampleInitTransactionMultiObj;
-import fr.inria.jessy.transaction.SampleTransactionMultiObj2;
-import fr.inria.jessy.transaction.SampleTransactionMultiObj3;
+import fr.inria.jessy.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj1;
+import fr.inria.jessy.transaction.SampleTransactionMultiObj3;
 
 /**
  * @author msaeida
@@ -65,8 +64,12 @@ public class MultiObjNMSITest extends TestCase {
 	public void testTransaction() throws Exception {
 		ExecutorService pool = Executors.newFixedThreadPool(4);
 
-		Future<ExecutionHistory> future;
-		future = pool.submit(new SampleInitTransactionMultiObj(jessy));
+		Future<ExecutionHistory> futureInit1;
+		futureInit1 = pool.submit(new SampleEntityInitTransaction(jessy));
+
+		Future<ExecutionHistory> futureInit2;
+		futureInit2 = pool.submit(new SampleEntityInitTransaction(jessy));
+
 		
 		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransactionMultiObj1(jessy));
@@ -77,8 +80,12 @@ public class MultiObjNMSITest extends TestCase {
 		Future<ExecutionHistory> future3;
 		future3 = pool.submit(new SampleTransactionMultiObj3(jessy));
 		
-		ExecutionHistory result=future.get();
-		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
+		ExecutionHistory resultInit1=futureInit1.get();
+		assertEquals("Result", TransactionState.COMMITTED, resultInit1.getTransactionState());
+
+		ExecutionHistory resultInit2=futureInit2.get();
+		assertEquals("Result", TransactionState.COMMITTED, resultInit2.getTransactionState());
+
 		
 		ExecutionHistory result1=future1.get();
 		assertEquals("Result", TransactionState.COMMITTED, result1.getTransactionState());

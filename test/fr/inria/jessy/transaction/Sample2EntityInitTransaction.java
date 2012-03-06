@@ -1,11 +1,11 @@
 package fr.inria.jessy.transaction;
 
 import fr.inria.jessy.Jessy;
-import fr.inria.jessy.entity.SampleEntityClass;
+import fr.inria.jessy.entity.Sample2EntityClass;
 
-public class SampleInitTransactionSingleObj extends Transaction {
+public class Sample2EntityInitTransaction extends Transaction {
 
-	public SampleInitTransactionSingleObj(Jessy jessy) throws Exception{
+	public Sample2EntityInitTransaction(Jessy jessy) throws Exception{
 		super(jessy);
 	}
 
@@ -14,7 +14,7 @@ public class SampleInitTransactionSingleObj extends Transaction {
 		try {
 				
 			
-			SampleEntityClass se=new SampleEntityClass("1", "sampleentity1_INITIAL");			
+			Sample2EntityClass se=new Sample2EntityClass("1", "sample2entity2_INITIAL");			
 			write(se);
 			
 			return commitTransaction();			
