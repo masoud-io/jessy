@@ -1,4 +1,4 @@
-package fr.inria.jessy.store;
+package fr.inria.jessy.entity;
 
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
