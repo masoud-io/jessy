@@ -21,6 +21,11 @@ import fr.inria.jessy.vector.Vector;
 public class Order_line extends JessyEntity {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public Order_line(String entityID) {
 		super(Order.class.toString(), entityID);
 	}

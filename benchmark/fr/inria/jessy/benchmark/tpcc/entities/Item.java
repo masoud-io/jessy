@@ -19,6 +19,11 @@ import fr.inria.jessy.vector.Vector;
 @Entity
 public class Item extends JessyEntity {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public Item(String entityID) {
 		super(Item.class.toString(), entityID);
 	}

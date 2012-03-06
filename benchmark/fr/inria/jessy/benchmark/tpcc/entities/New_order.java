@@ -18,6 +18,11 @@ import fr.inria.jessy.vector.Vector;
 @Entity
 public class New_order extends JessyEntity {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public New_order(String entityID) {
 		super(New_order.class.toString(), entityID);
 	}

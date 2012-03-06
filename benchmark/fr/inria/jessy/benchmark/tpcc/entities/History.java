@@ -22,6 +22,10 @@ import fr.inria.jessy.vector.Vector;
 public class History extends JessyEntity {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public History(String entityID) {
 		super(History.class.toString(), entityID);
 	}

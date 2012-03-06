@@ -18,7 +18,7 @@ public class InsertData extends Transaction {
 		try {
 			int i, j, k;
 			Random rand = new Random();			
-			String s;
+			String key;
 			Warehouse wh = new Warehouse();
 			
 			District dis = new District();
@@ -34,8 +34,8 @@ public class InsertData extends Transaction {
 				wh.setW_NAME("Warehouse"+i);
 				wh.setW_TAX((int) rand.nextFloat());
 				wh.setW_YTD((int) rand.nextFloat());
-				s = "W_"+i;  /*W_id*/
-				wh.setSecondaryKey(s); /*key = W_id*/
+				key = "W_"+i;  /*W_id*/
+				wh.setSecondaryKey(key); /*key = W_id*/
 				write(wh);
 				
 				/*each warehouse has 10 district*/
@@ -48,32 +48,28 @@ public class InsertData extends Transaction {
 					dis.setD_YTD((int) rand.nextFloat());
 					dis.setD_NEXT_O(1);
 					
-					s = "D_W_"+i+"_D_"+j;
+					key = "D_W_"+i+"_D_"+j;
 					
-					dis.setSecondaryKey(s);
+					dis.setSecondaryKey(key);
 
 					write(dis);
-					
+					/*each district has 3k customer*/
 					for(k=0; k<3000; k++){
 						cus.setC_ID(Integer.toString(k));
 						cus.setC_D_ID(dis.getD_ID());
 						cus.setC_W_ID(wh.getW_ID());
 						
-						s = "C_W_"+i+"_C_D_"+j+"_C_"+k;
+						key = "C_W_"+i+"_C_D_"+j+"_C_"+k;
 						
-						cus.setSecondaryKey(s);
-						write(cus);
-						
+						cus.setSecondaryKey(key);
+						write(cus);						
 						
 					}
 				}
-				
-				
-
 					
-
 			}
 			
+			/*for whole system, we have 10k different items*/
 			/*10k items*/
 			for(i=0; i<10000; i++){
 				it.setI_ID(Integer.toString(i));
@@ -81,9 +77,9 @@ public class InsertData extends Transaction {
 				it.setI_NAME("item"+i);
 				it.setI_PRICE(rand.nextInt(5000 - 1) + 1);
 				
-				s = "I_"+i;
+				key = "I_"+i;
 				
-				it.setSecondaryKey(s);
+				it.setSecondaryKey(key);
 				write(it);
 			}
 				
@@ -102,7 +98,7 @@ public class InsertData extends Transaction {
 			return commitTransaction();			
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return false;
+			return ;
 		}		
 	}
 
