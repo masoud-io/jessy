@@ -70,7 +70,7 @@ public class TransactionTest extends TestCase {
 		future = pool.submit(new SampleInitTransaction(jessy));
 		
 		Future<ExecutionHistory> future1;
-		future1 = pool.submit(new SampleTransaction1(jessy));
+		future1 = pool.submit(new SampleTransactionSingleObj1(jessy));
 		
 		Future<ExecutionHistory> future2;
 		future2 = pool.submit(new SampleTransaction2(jessy));
