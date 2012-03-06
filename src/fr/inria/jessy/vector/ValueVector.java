@@ -127,6 +127,10 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable{
 		}
 		return bydefault;
 	}
+	
+	public Set<Map.Entry<K,V>> getEntrySet(){
+		return map.entrySet();
+	}
 
 	//
 	// UPDATE

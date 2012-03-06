@@ -1,6 +1,7 @@
 package fr.inria.jessy.vector;
 
 import java.util.List;
+import java.util.Map;
 
 import com.sleepycat.persist.model.Persistent;
 
@@ -52,6 +53,9 @@ public class DependenceVector<K> extends Vector<K> {
 			throw new NullPointerException("Input Vector is Null");
 		}
 
+		if (other.size() == 0)
+			return true;
+
 		Integer selfValueOnSelfKey = getSelfValue();
 		Integer otherValueOnSelfKey = other.getValue(selfKey);
 
@@ -59,7 +63,7 @@ public class DependenceVector<K> extends Vector<K> {
 			return false;
 		}
 
-		Integer selfValueOnOtherKey ;
+		Integer selfValueOnOtherKey;
 		Integer otherValueOnOtherKey;
 
 		for (K k : other.getKeys()) {
@@ -102,12 +106,32 @@ public class DependenceVector<K> extends Vector<K> {
 					writeVector.getSelfValue() + 1);
 		}
 	}
+
 	
+	/**
+	 * update method gets two {@link CompactVector} as readSet and writeSet
+	 * and applies them into its local vector.
+	 * <b> this implementation does not assume read before write rule <\b> 
+	 */
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
+		// Readset can be simply applied by using the update method of
+		// ValueVector Class
 		super.update(readSet);
-		super.update(writeSet);
-		
+
+		// Write set is more involved.
+		Integer value;
+
+		for (Map.Entry<K, Integer> entry : writeSet.getEntrySet()) {
+			K key = entry.getKey();
+			value = entry.getValue();
+			if (writeSet.getKeys().contains(key))
+				value++;
+			if (getValue(key).compareTo(value) < 0) {
+				setValue(key, value);
+			}
+		}
+
 	}
 
 	@Override

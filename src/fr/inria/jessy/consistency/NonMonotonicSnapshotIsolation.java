@@ -11,10 +11,13 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.ValueVector.ComparisonResult;
+import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
 
 import org.apache.log4j.PropertyConfigurator;
+
+import sun.text.CompactByteArray;
 
 /**
  * This class implements Non-Monotonic Snapshot Isolation consistency criterion.
@@ -50,10 +53,10 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 			return true;
 
-		List<? extends JessyEntity> writeSet = executionHistory.getWriteSet()
+		List<? extends JessyEntity> writeSet= executionHistory.getWriteSet()
 				.getEntities();
 
-		// updatedVector is a cloned updated vector. It will be used as a new
+		// updatedVector is a new vector. It will be used as a new
 		// vector for all modified vectors.
 		Vector<String> updatedVector = VectorFactory.getVector("");
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
