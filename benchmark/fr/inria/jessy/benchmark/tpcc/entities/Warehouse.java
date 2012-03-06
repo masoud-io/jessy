@@ -7,8 +7,17 @@ import fr.inria.jessy.store.JessyEntity;
 public class Warehouse extends JessyEntity {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public Warehouse(String entityID) {
 		super(Warehouse.class.toString(), entityID);
+	}
+
+	public Warehouse() {
+		super("","");
 	}
 
 	private String W_ID;

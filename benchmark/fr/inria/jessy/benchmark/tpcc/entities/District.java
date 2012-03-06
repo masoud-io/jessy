@@ -21,8 +21,17 @@ public class District extends JessyEntity {
 
  
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public District(String entityID) {
 		super(District.class.toString(), entityID);
+	}
+
+
+	public District() {
+		super("","");
 	}
 
 
@@ -40,9 +49,6 @@ public class District extends JessyEntity {
 	/**
 	 * @return the data
 	 */
-	public District_data getData() {
-		return data;
-	}
 
 	public String getD_ID() {
 		return D_ID;
@@ -91,9 +97,6 @@ public class District extends JessyEntity {
 	 * @param data
 	 *            the data to set
 	 */
-	public void setData(District_data data) {
-		this.data = data;
-	}
 	
 	public void setD_ID(String D_ID) {
 		this.D_ID = D_ID;

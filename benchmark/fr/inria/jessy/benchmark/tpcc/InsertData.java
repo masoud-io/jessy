@@ -4,6 +4,7 @@ import fr.inria.jessy.Jessy;
 import fr.inria.jessy.benchmark.tpcc.entities.*;
 import fr.inria.jessy.store.*;
 import fr.inria.jessy.transaction.*;
+
 import java.util.*;
 
 public class InsertData extends Transaction {
@@ -29,10 +30,10 @@ public class InsertData extends Transaction {
 			/*for i  warehouses*/
 			for(i=0; i<1; i++){			
 
-				wh_d.setW_ID(Integer.toString(i));
-				wh_d.setW_NAME("Warehouse"+i);
-				wh_d.setW_TAX(rand.nextFloat());
-				wh_d.setW_YTD(rand.nextFloat());
+				wh.setW_ID(Integer.toString(i));
+				wh.setW_NAME("Warehouse"+i);
+				wh.setW_TAX((int) rand.nextFloat());
+				wh.setW_YTD((int) rand.nextFloat());
 				s = "W_"+i;  /*W_id*/
 				wh.setSecondaryKey(s); /*key = W_id*/
 				write(wh);
@@ -40,12 +41,12 @@ public class InsertData extends Transaction {
 				/*each warehouse has 10 district*/
 				for(j=0; i<10; i++){
 					
-					dis_d.setD_ID(Integer.toString(j));
-					dis_d.setW_ID(wh_d.getW_ID());
-					dis_d.setD_NAME("D(istrict"+j);
-					dis_d.setD_TAX(rand.nextFloat());
-					dis_d.setD_YTD(rand.nextFloat());
-					dis_d.setD_NEXT_O(1);
+					dis.setD_ID(Integer.toString(j));
+					dis.setD_W_ID(wh.getW_ID());
+					dis.setD_NAME("D(istrict"+j);
+					dis.setD_TAX((int) rand.nextFloat());
+					dis.setD_YTD((int) rand.nextFloat());
+					dis.setD_NEXT_O(1);
 					
 					s = "D_W_"+i+"_D_"+j;
 					
@@ -54,9 +55,9 @@ public class InsertData extends Transaction {
 					write(dis);
 					
 					for(k=0; k<3000; k++){
-						cus_d.setC_ID(Integer.toString(k));
-						cus_d.setC_D_ID(dis_d.getD_ID());
-						cus_d.setC_W_ID(wh_d.getW_ID());
+						cus.setC_ID(Integer.toString(k));
+						cus.setC_D_ID(dis.getD_ID());
+						cus.setC_W_ID(wh.getW_ID());
 						
 						s = "C_W_"+i+"_C_D_"+j+"_C_"+k;
 						
@@ -75,15 +76,14 @@ public class InsertData extends Transaction {
 			
 			/*10k items*/
 			for(i=0; i<10000; i++){
-				it_d.I_ID = Integer.toString(i);
-				it_d.I_IM_ID = Integer.toString(k);
-				it_d.I_NAME = "item"+i;
-				it_d.I_PRICE = rand.nextInt(5000 - 1) + 1;
+				it.setI_ID(Integer.toString(i));
+				it.setI_IM_ID(Integer.toString(k));
+				it.setI_NAME("item"+i);
+				it.setI_PRICE(rand.nextInt(5000 - 1) + 1);
 				
 				s = "I_"+i;
 				
 				it.setSecondaryKey(s);
-				it.setData(it_d);
 				write(it);
 			}
 				

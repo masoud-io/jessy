@@ -1,5 +1,7 @@
 package fr.inria.jessy.benchmark.tpcc.entities;
 
+import java.util.Date;
+
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
 import static com.sleepycat.persist.model.Relationship.*;
@@ -28,7 +30,7 @@ public class Order extends JessyEntity {
 	private String O_D_ID;
 	private String O_W_ID;
 	private String O_C_ID;
-	private date O_ENTRY_D;
+	private Date O_ENTRY_D;
 	private String O_CARRIER_ID;
 	private int O_OL_CNT;
 	private int O_ALL_LOCAL;

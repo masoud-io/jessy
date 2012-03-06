@@ -1,5 +1,7 @@
 package fr.inria.jessy.benchmark.tpcc.entities;
 
+import java.util.Date;
+
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
 import static com.sleepycat.persist.model.Relationship.*;
@@ -19,8 +21,17 @@ import fr.inria.jessy.vector.Vector;
 public class Customer extends JessyEntity {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public Customer(String entityID) {
 		super(Customer.class.toString(), entityID);
+	}
+
+	public Customer() {
+		super("","");
 	}
 
 	private String C_ID;
@@ -35,7 +46,7 @@ public class Customer extends JessyEntity {
 	private String C_STATE;
 	private String C_ZIP;
 	private String C_PHONE;
-	private date C_SINCE;
+	private Date C_SINCE;
 	private String C_Credit;
 	private int C_CREDIT_LIM;
 	private int C_DISCOUNT;
@@ -96,7 +107,7 @@ public class Customer extends JessyEntity {
 		return C_PHONE;
 	}
 
-	public date getC_SINCE() {
+	public Date getC_SINCE() {
 		return C_SINCE;
 	}
 
@@ -132,9 +143,6 @@ public class Customer extends JessyEntity {
 	 * @param data
 	 *            the data to set
 	 */
-	public void setData(Customer_data data) {
-		this.C_ID = C_ID;
-	}
 
 	public void setC_ID(String C_ID) {
 		this.C_ID = C_ID;
@@ -148,7 +156,7 @@ public class Customer extends JessyEntity {
 		this.C_W_ID = C_W_ID;
 	}
 
-	public void setData(String C_FIRST) {
+	public void setC_FIRST(String C_FIRST) {
 		this.C_FIRST = C_FIRST;
 	}
 
@@ -184,7 +192,7 @@ public class Customer extends JessyEntity {
 		this.C_PHONE = C_PHONE;
 	}
 
-	public void setC_SINCE(date C_SINCE) {
+	public void setC_SINCE(Date C_SINCE) {
 		this.C_SINCE = C_SINCE;
 	}
 

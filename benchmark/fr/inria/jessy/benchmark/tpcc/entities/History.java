@@ -1,5 +1,7 @@
 package fr.inria.jessy.benchmark.tpcc.entities;
 
+import java.util.Date;
+
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
 import static com.sleepycat.persist.model.Relationship.*;
