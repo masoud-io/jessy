@@ -3,11 +3,6 @@
  */
 package fr.inria.jessy.consistency.nmsi;
 
-import static org.junit.Assert.*;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -20,6 +15,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.LocalJessy;
+import fr.inria.jessy.consistency.nmsi.transaction.SampleInitTransactionSingleObj;
+import fr.inria.jessy.consistency.nmsi.transaction.SampleTransactionSingleObj1;
+import fr.inria.jessy.consistency.nmsi.transaction.SampleTransactionSingleObj2;
 import fr.inria.jessy.store.Sample2EntityClass;
 import fr.inria.jessy.store.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
