@@ -27,7 +27,7 @@ import fr.inria.jessy.transaction.SampleTransactionSingleObj2;
  * @author msaeida
  * 
  */
-public class TransactionTest extends TestCase {
+public class SingleObjNMSITest extends TestCase {
 
 	LocalJessy jessy;
 

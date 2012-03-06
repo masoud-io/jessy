@@ -16,7 +16,8 @@ import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 
 /**
- * @author msaeida
+ * @author Masoud Saeida Ardekani
+ * This is a simple test case for transaction.
  *
  */
 public class TransactionTest {
