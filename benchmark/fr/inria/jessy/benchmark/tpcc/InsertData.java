@@ -2,7 +2,6 @@ package fr.inria.jessy.benchmark.tpcc;
 
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.benchmark.tpcc.entities.*;
-import fr.inria.jessy.store.*;
 import fr.inria.jessy.transaction.*;
 
 import java.util.*;
@@ -43,7 +42,7 @@ public class InsertData extends Transaction {
 					
 					dis.setD_ID(Integer.toString(j));
 					dis.setD_W_ID(wh.getW_ID());
-					dis.setD_NAME("D(istrict"+j);
+					dis.setD_NAME("District"+j);
 					dis.setD_TAX((int) rand.nextFloat());
 					dis.setD_YTD((int) rand.nextFloat());
 					dis.setD_NEXT_O(1);
