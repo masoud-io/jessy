@@ -59,6 +59,8 @@ public class TpccTestInsertData {
 		/*test execution*/
 		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
 	
+		/*test inserted what we expected */
+		wh = read(Warehouse.class, "W_1");
 	}
 
 
