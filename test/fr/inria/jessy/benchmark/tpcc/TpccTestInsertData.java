@@ -8,10 +8,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.benchmark.tpcc.entities.*;
-import fr.inria.jessy.Jessy;
-import fr.inria.jessy.store.*;
 import fr.inria.jessy.transaction.*;
-import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 
 
@@ -19,7 +16,7 @@ import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
  * @author WANG Haiyun & ZHAO Guang
  * 
  */
-public class TpccTestInsertData {
+public class TpccTestInsertData{
 
 	LocalJessy jessy;
 	InsertData id;
@@ -52,15 +49,21 @@ public class TpccTestInsertData {
 
 	/**
 	 * Test method for {@link fr.inria.jessy.BenchmarkTpcc.InsertData}.
+	 * @throws Exception 
 	 */
 	@Test
-	public void testInsertData() {
+	public void testInsertData() throws Exception {
 		ExecutionHistory result=id.execute();
 		/*test execution*/
 		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
 	
 		/*test inserted what we expected */
-		wh = read(Warehouse.class, "W_1");
+		wh = jessy.read(Warehouse.class, "W_1");
+		assertEquals("Warehouse name", "Warehouse1", wh.getW_ID());
+		
+		di = jessy.read(District.class, "W_1_D_1");
+		assertEquals("District name", "District1", di.getD_ID());
+		
 	}
 
 
