@@ -6,12 +6,12 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import fr.inria.jessy.LocalJessy;
-import fr.inria.jessy.store.Sample2EntityClass;
-import fr.inria.jessy.store.SampleEntityClass;
+import fr.inria.jessy.benchmark.tpcc.entities.*;
+import fr.inria.jessy.Jessy;
+import fr.inria.jessy.store.*;
+import fr.inria.jessy.transaction.*;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.SampleTransaction;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 
 
@@ -23,6 +23,11 @@ public class TpccTestInsertData {
 
 	LocalJessy jessy;
 	InsertData id;
+	Warehouse wh;
+	District di;
+	Item it;
+	Customer cu;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -38,6 +43,11 @@ public class TpccTestInsertData {
 		jessy=LocalJessy.getInstance();
 		
 		id=new InsertData(jessy);
+		wh = new Warehouse();
+		di = new District();
+		it = new Item();
+		cu = new Customer();
+		
 	}
 
 	/**
@@ -46,9 +56,9 @@ public class TpccTestInsertData {
 	@Test
 	public void testInsertData() {
 		ExecutionHistory result=id.execute();
+		/*test execution*/
 		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
-		
-		
+	
 	}
 
 
