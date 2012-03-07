@@ -73,7 +73,7 @@ public class InsertData extends Transaction {
 			/*10k items*/
 			for(i=0; i<10000; i++){
 				it.setI_ID(Integer.toString(i));
-				it.setI_IM_ID(Integer.toString(k));
+				it.setI_IM_ID(Integer.toString(i));
 				it.setI_NAME("item"+i);
 				it.setI_PRICE(rand.nextInt(5000 - 1) + 1);
 				
@@ -82,23 +82,11 @@ public class InsertData extends Transaction {
 				it.setSecondaryKey(key);
 				write(it);
 			}
-				
-			
-			SampleEntityClass se=new SampleEntityClass("1", "sampleentity1");
-			write(se);
-			
-			Sample2EntityClass se2=new Sample2EntityClass("1", "sampleentity2");	
-			write(se2);
-			
-			SampleEntityClass readentity=read(SampleEntityClass.class, "1");			
-			if (readentity.getData()=="sampleentity1"){
-				write(new Sample2EntityClass("2", "sampleentity2-2"));
-			}
 			
 			return commitTransaction();			
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return ;
+			return null;
 		}		
 	}
 
