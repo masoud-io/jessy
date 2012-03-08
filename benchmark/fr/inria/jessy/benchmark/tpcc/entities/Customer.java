@@ -52,6 +52,7 @@ public class Customer extends JessyEntity {
 	private int C_DISCOUNT;
 	private int C_BALANCE;
 	private int C_YTD_PAYMENT;
+	private int C_PAYMENT_CNT;
 	private int C_DELIVERY_CNT;
 	private String C_DATA;
 
@@ -130,7 +131,11 @@ public class Customer extends JessyEntity {
 	public int getC_YTD_PAYMENT() {
 		return C_YTD_PAYMENT;
 	}
-
+	
+	public int getC_PAYMENT_CNT() {
+		return C_PAYMENT_CNT;
+	}
+	
 	public int getC_DELIVERY_CNT() {
 		return C_DELIVERY_CNT;
 	}
@@ -216,6 +221,10 @@ public class Customer extends JessyEntity {
 		this.C_YTD_PAYMENT = C_YTD_PAYMENT;
 	}
 
+	public void setC_PAYMENT_CNT(int C_PAYMENT_CNT) {
+		this.C_PAYMENT_CNT = C_PAYMENT_CNT;
+	}
+	
 	public void setC_DELIVERY_CNT(int C_DELIVERY_CNT) {
 		this.C_DELIVERY_CNT = C_DELIVERY_CNT;
 	}
