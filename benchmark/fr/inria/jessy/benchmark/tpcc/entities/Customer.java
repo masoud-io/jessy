@@ -30,10 +30,6 @@ public class Customer extends JessyEntity {
 		super(Customer.class.toString(), entityID);
 	}
 
-	public Customer() {
-		super("","");
-	}
-
 	private String C_ID;
 	private String C_D_ID;
 	private String C_W_ID;

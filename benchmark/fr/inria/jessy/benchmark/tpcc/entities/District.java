@@ -30,11 +30,6 @@ public class District extends JessyEntity {
 	}
 
 
-	public District() {
-		super("","");
-	}
-
-
 	private String D_ID;
 	private String D_W_ID;
 	private String D_NAME;

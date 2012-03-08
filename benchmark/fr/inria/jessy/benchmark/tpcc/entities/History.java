@@ -26,10 +26,7 @@ public class History extends JessyEntity {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	public History() {
-		super("","");
-	}
+
 	
 	public History(String entityID) {
 		super(History.class.toString(), entityID);
