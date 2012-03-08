@@ -7,7 +7,7 @@ import com.yahoo.ycsb.DB;
 
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.LocalJessy;
-import fr.inria.jessy.store.JessyEntity;
+
 
 public class JessyDBClient extends DB {
 	/*Jessy Client*/
