@@ -378,6 +378,7 @@ public abstract class Jessy {
 
 		if (transactionalAccess == ExecutionMode.NON_TRANSACTIONAL) {
 			dataStore.put(entity);
+			return;
 		}
 
 		throw new Exception(
