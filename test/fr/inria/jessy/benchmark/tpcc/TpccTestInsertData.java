@@ -8,7 +8,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.benchmark.tpcc.entities.*;
-import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.*;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 
