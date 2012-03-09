@@ -29,6 +29,10 @@ public class Order extends JessyEntity {
 	public Order(String entityID) {
 		super(Order.class.toString(), entityID);
 	}
+	
+	public Order() {
+		super("","");
+	}
 
 	private String O_ID;
 	private String O_D_ID;

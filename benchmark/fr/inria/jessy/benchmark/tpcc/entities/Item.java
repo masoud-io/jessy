@@ -27,6 +27,10 @@ public class Item extends JessyEntity {
 	public Item(String entityID) {
 		super(Item.class.toString(), entityID);
 	}
+	
+	public Item() {
+		super("","");
+	}
 
 
 	private String I_ID;

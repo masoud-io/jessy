@@ -27,6 +27,10 @@ public class Stock extends JessyEntity {
 	public Stock(String entityID) {
 		super(Stock.class.toString(), entityID);
 	}
+	
+	public Stock() {
+		super("","");
+	}
 
 	private String S_I_ID;
 	private String S_W_ID;

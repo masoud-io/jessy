@@ -28,6 +28,10 @@ public class District extends JessyEntity {
 	public District(String entityID) {
 		super(District.class.toString(), entityID);
 	}
+	
+	public District() {
+		super("","");
+	}
 
 
 	private String D_ID;

@@ -29,6 +29,10 @@ public class Order_line extends JessyEntity {
 	public Order_line(String entityID) {
 		super(Order.class.toString(), entityID);
 	}
+	
+	public Order_line() {
+		super("","");
+	}
 
 	private String OL_O_ID;
 	private String OL_D_ID;

@@ -31,6 +31,10 @@ public class History extends JessyEntity {
 	public History(String entityID) {
 		super(History.class.toString(), entityID);
 	}
+	
+	public History() {
+		super("","");
+	}
 
 
 	private String H_C_ID;
