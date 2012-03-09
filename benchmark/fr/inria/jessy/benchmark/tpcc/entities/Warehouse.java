@@ -15,6 +15,10 @@ public class Warehouse extends JessyEntity {
 	public Warehouse(String entityID) {
 		super(Warehouse.class.toString(), entityID);
 	}
+	
+	public Warehouse() {
+		super("", "");
+	}
 
 	private String W_ID;
 	private String W_NAME;
