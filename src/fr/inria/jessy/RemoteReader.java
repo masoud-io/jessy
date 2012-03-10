@@ -18,6 +18,7 @@ import net.sourceforge.fractal.rmcast.WanMessage;
 import utils.ExecutorPool;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.TransactionHandler;
+import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -39,31 +40,28 @@ import fr.inria.jessy.vector.Vector;
 public class RemoteReader implements Learner{
 
 	private static RemoteReader instance;
+	static{
+		instance = new RemoteReader();
+	}
 	
 	private ExecutorPool pool;
 	private RMCastStream stream;
 	private Map<TransactionHandler,Future<JessyEntity>> replies;
 	
-	
 	public static RemoteReader getInstance(){
-		if(instance==null)
-			instance = new RemoteReader();
 		return instance;
 	}
 	
-	private RemoteReader(){
-		
+	private RemoteReader(){	
 		Membership.getInstance().getOrCreateTCPGroup("ALLNODES");
 		stream = FractalManager.getInstance().getOrCreateRMCastStream("RemoteReaderStream",Membership.getInstance().myGroup().name());
 		stream.registerLearner("RemoteReadRequestMessage", this);
 		stream.registerLearner("RemoteReadReplyMessage", this);
-
 		pool = new ExecutorPool(100);
 		replies = new HashMap<TransactionHandler,Future<JessyEntity>>();
-		
 	}
 	
-	public Future<JessyEntity> remoteRead(TransactionHandler h, Vector<String> v, String k){
+	public Future<JessyEntity> remoteRead(TransactionHandler h, CompactVector<String> v, String k){
 		assert !Partitioner.getInstance().isLocal(k);
 		Future<JessyEntity> reply = pool.submit(new RemoteReadRequestTask(new RemoteReadRequest(h,v,k)));
 		replies.put(h, reply);
@@ -91,10 +89,10 @@ public class RemoteReader implements Learner{
 		
 		private static final long serialVersionUID = ConstantPool.JESSY_MID;
 		TransactionHandler handler;
-		Vector<String> vector;
+		CompactVector<String> vector;
 		String key;
 		
-		RemoteReadRequest(TransactionHandler h, Vector<String> v, String k) {
+		RemoteReadRequest(TransactionHandler h, CompactVector<String> v, String k) {
 			handler = h;
 			vector = v;
 			key = k;

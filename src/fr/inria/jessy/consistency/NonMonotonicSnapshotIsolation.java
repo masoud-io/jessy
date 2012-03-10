@@ -30,7 +30,6 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 	private static Logger logger = Logger
 			.getLogger(NonMonotonicSnapshotIsolation.class);
 
-	// TODO check if the transaction has read before write or not!!!
 	/**
 	 * This method performs two main tasks. First, it updates the local vector
 	 * of all update entities to a new vector. Second it checks whether this
