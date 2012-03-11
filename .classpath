@@ -11,5 +11,9 @@
 	<classpathentry kind="lib" path="lib/fractal.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-mini-1.9.5.jar"/>
+	<classpathentry kind="lib" path="/Users/hamidouche/Desktop/ycsb-0.1.4/hbase-binding/lib/hbase-binding-0.1.4.jar"/>
+	<classpathentry kind="lib" path="/Users/hamidouche/Desktop/ycsb-0.1.4/voldemort-binding/lib/voldemort-binding-0.1.4.jar"/>
+	<classpathentry kind="lib" path="/Users/hamidouche/Downloads/slf4j-1-1.6.4/slf4j-api-1.6.4.jar"/>
+	<classpathentry kind="lib" path="/Users/hamidouche/Downloads/mongo-2.7.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
