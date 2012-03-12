@@ -1,6 +1,7 @@
 package fr.inria.jessy.transaction;
 
 import fr.inria.jessy.Jessy;
+import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 
 public class SampleEntityInitTransaction extends Transaction {
@@ -15,7 +16,10 @@ public class SampleEntityInitTransaction extends Transaction {
 				
 			
 			SampleEntityClass se=new SampleEntityClass("1", "sampleentity1_INITIAL");			
-			write(se);
+			create(se);
+			
+			Sample2EntityClass se2=new Sample2EntityClass("1", "sample2entity2_INITIAL");			
+			create(se2);
 			
 			return commitTransaction();			
 		} catch (Exception ex) {

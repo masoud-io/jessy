@@ -6,7 +6,6 @@ import java.util.concurrent.ConcurrentMap;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 
-
 public class ExecutionHistory {
 
 	public enum TransactionType {
@@ -17,7 +16,11 @@ public class ExecutionHistory {
 		/**
 		 * the execution history is for an update transaction
 		 */
-		UPDATE_TRANSACTION
+		UPDATE_TRANSACTION,
+		/**
+		 * the execution history is for an initialization transaction
+		 */
+		INIT_TRANSACTION
 	};
 
 	public enum TransactionState {
@@ -56,6 +59,7 @@ public class ExecutionHistory {
 	 * 
 	 */
 
+	private EntitySet createSet;
 	private EntitySet writeSet;
 	private EntitySet readSet;
 
@@ -63,6 +67,8 @@ public class ExecutionHistory {
 		readSet = new EntitySet();
 
 		writeSet = new EntitySet();
+
+		createSet = new EntitySet();
 
 		transactionState2StartingTime = new ConcurrentHashMap<ExecutionHistory.TransactionState, Long>();
 
@@ -76,6 +82,7 @@ public class ExecutionHistory {
 		// initialize writeList
 		readSet.addEntityClass(entityClass);
 		writeSet.addEntityClass(entityClass);
+		createSet.addEntityClass(entityClass);
 	}
 
 	public EntitySet getReadSet() {
@@ -84,6 +91,10 @@ public class ExecutionHistory {
 
 	public EntitySet getWriteSet() {
 		return writeSet;
+	}
+
+	public EntitySet getCreateSet() {
+		return createSet;
 	}
 
 	public <E extends JessyEntity> E getReadEntity(Class<E> entityClass,
@@ -96,6 +107,11 @@ public class ExecutionHistory {
 		return writeSet.getEntity(entityClass, keyValue);
 	}
 
+	public <E extends JessyEntity> E getCreateEntity(Class<E> entityClass,
+			String keyValue) {
+		return createSet.getEntity(entityClass, keyValue);
+	}
+
 	public <E extends JessyEntity> void addReadEntity(E entity) {
 		readSet.addEntity(entity);
 	}
@@ -104,8 +120,14 @@ public class ExecutionHistory {
 		writeSet.addEntity(entity);
 	}
 
+	public <E extends JessyEntity> void addCreateEntity(E entity) {
+		createSet.addEntity(entity);
+	}
+
 	public TransactionType getTransactionType() {
-		if (writeSet.size() > 0)
+		if (createSet.size() > 0 && writeSet.size() == 0 && readSet.size() == 0)
+			return TransactionType.INIT_TRANSACTION;
+		else if (writeSet.size() > 0)
 			return TransactionType.UPDATE_TRANSACTION;
 		else
 			return TransactionType.READONLY_TRANSACTION;

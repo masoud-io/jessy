@@ -65,6 +65,17 @@ public class EntitySet {
 		entities.put(entity.getClass().toString(), temp);
 	}
 
+	public void addEntity(EntitySet entitySet) {
+		Iterator<? extends JessyEntity> itr = entitySet.getEntities()
+				.iterator();
+		while (itr.hasNext()) {
+			JessyEntity jessyEntity=itr.next();
+			addEntity(jessyEntity);
+			compactVector.update(jessyEntity.getLocalVector());
+		}
+
+	}
+
 	public List<? extends JessyEntity> getEntities() {
 		List<JessyEntity> result = new ArrayList<JessyEntity>();
 
@@ -98,17 +109,20 @@ public class EntitySet {
 			return false;
 		}
 	}
-	
-	public String toString(){
-		String result="";
-		
-		Iterator<? extends JessyEntity> itr=getEntities().iterator();
-		while (itr.hasNext()){
-			JessyEntity temp=itr.next();
-			result=temp.getKey() + "--" + temp.getLocalVector() +  "\n";
+
+	public String toString() {
+		String result = "";
+
+		Iterator<? extends JessyEntity> itr = getEntities().iterator();
+		while (itr.hasNext()) {
+			JessyEntity temp = itr.next();
+			result = temp.getKey() + "--" + temp.getLocalVector() + "\n";
 		}
-		
+
 		return result;
 	}
 
+	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> getEntitiesMap() {
+		return entities;
+	}
 }

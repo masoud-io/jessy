@@ -221,8 +221,8 @@ public abstract class Jessy {
 			// First checks if we have already read an entity with the same key!
 			// TODO make this conditional according to user definition! (if
 			// disabled, performance gain)
-			JessyEntity tmp = executionHistory.getReadEntity(
-					entity.getClass(), entity.getSecondaryKey());
+			JessyEntity tmp = executionHistory.getReadEntity(entity.getClass(),
+					entity.getSecondaryKey());
 			if (tmp == null) {
 				// the opeation is a blind write! First issue a read operation.
 				try {
@@ -236,14 +236,23 @@ public abstract class Jessy {
 	}
 
 	/**
-	 * Creates an entity in the system. It simply calls the write method, and
-	 * passes the arguments. TODO Read_Before_Write logic cannot be ensured for
-	 * this method since there is no entity to be read before. TODO one solution
-	 * is to add version zero of all entities!
+	 * Add the entity into the createSet.
+	 * <p>
+	 * TODO It should be checked whether this entity has been put or not.
+	 * If the above rule is ensured by the client, then create is much faster. (only one write)
 	 */
 	public <E extends JessyEntity> void create(
-			TransactionHandler transactionHandler, E entity) {
-		write(transactionHandler, entity);
+			TransactionHandler transactionHandler, E entity)
+			throws NullPointerException {
+
+		ExecutionHistory executionHistory = handler2executionHistory
+				.get(transactionHandler);
+
+		if (executionHistory == null) {
+			throw new NullPointerException("Transaction has not been started");
+		} else {
+			executionHistory.addCreateEntity(entity);
+		}
 	}
 
 	public <E extends JessyEntity> void remove(
@@ -285,7 +294,8 @@ public abstract class Jessy {
 		if (terminateTransaction(transactionHandler)) {
 			// certification test has returned true. we can commit.
 			commitedTransactions.add(transactionHandler);
-			applyUpdates(transactionHandler);
+			applyWriteSet(transactionHandler);
+			applyCreateSet(transactionHandler);
 			result.changeState(TransactionState.COMMITTED);
 
 		} else {
@@ -313,17 +323,17 @@ public abstract class Jessy {
 	}
 
 	/**
-	 * Apply changes of a committed transaction to the datastore.
+	 * Apply changes of a writeSet of a committed transaction to the datastore.
 	 * 
 	 * @param transactionHandler
 	 *            handler of a committed transaction.
 	 */
-	public void applyUpdates(TransactionHandler transactionHandler) {
+	private void applyWriteSet(TransactionHandler transactionHandler) {
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);
 
-		Iterator<? extends JessyEntity> itr = executionHistory.getWriteSet().getEntities()
-				.iterator();
+		Iterator<? extends JessyEntity> itr = executionHistory.getWriteSet()
+				.getEntities().iterator();
 
 		while (itr.hasNext()) {
 			JessyEntity tmp = itr.next();
@@ -336,7 +346,32 @@ public abstract class Jessy {
 			lastCommittedEntities.put(tmp.getKey(), tmp);
 
 		}
+	}
+	
+	/**
+	 * Apply changes of a createSet of a committed transaction to the datastore.
+	 * 
+	 * @param transactionHandler
+	 *            handler of a committed transaction.
+	 */
+	private void applyCreateSet(TransactionHandler transactionHandler) {
+		ExecutionHistory executionHistory = handler2executionHistory
+				.get(transactionHandler);
 
+		Iterator<? extends JessyEntity> itr = executionHistory.getCreateSet()
+				.getEntities().iterator();
+
+		while (itr.hasNext()) {
+			JessyEntity tmp = itr.next();
+
+			// Send the entity to the datastore to be saved
+			dataStore.put(tmp);
+
+			// Store the entity as the last committed entity for this particular
+			// key.
+			lastCommittedEntities.put(tmp.getKey(), tmp);
+
+		}
 	}
 
 	/**
@@ -364,7 +399,8 @@ public abstract class Jessy {
 	}
 
 	/**
-	 * Write the entity into the local datastore This write is performed on
+	 * Executes a non-transactional write. Write the entity into the local
+	 * datastore This write is performed on
 	 * {@link JessyEntity#getSecondaryKey()}
 	 * 
 	 * @param <E>

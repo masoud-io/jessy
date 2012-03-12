@@ -40,19 +40,52 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 			ConcurrentMap<String, JessyEntity> lastCommittedEntities,
 			ExecutionHistory executionHistory) {
 
+		JessyEntity lastComittedEntity;
+
+		TransactionType transactionType = executionHistory.getTransactionType();
+
+		logger.debug(transactionType.toString());
 		logger.debug("ReadSet Vector"
 				+ executionHistory.getReadSet().getCompactVector().toString());
 		logger.debug("WriteSet Vectors"
 				+ executionHistory.getWriteSet().getCompactVector().toString());
 
-		boolean result;
-		JessyEntity lastComittedEntity;
-		
-		// if the transaction is a read-only transaction, it commits right away.
-		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
+		/*
+		 * if the transaction is a read-only transaction, it commits right away.
+		 */
+		if (transactionType == TransactionType.READONLY_TRANSACTION) {
+			logger.debug("READONLY_TRANSACTION Committed" + "\n");
 			return true;
+		}
 
-		List<? extends JessyEntity> writeSet= executionHistory.getWriteSet()
+		/*
+		 * if the transaction is an initalization transaction, it first
+		 * increaments the vectors and then commits.
+		 */
+		if (transactionType == TransactionType.INIT_TRANSACTION) {
+			List<? extends JessyEntity> createSet = executionHistory
+					.getCreateSet().getEntities();
+			Iterator<? extends JessyEntity> itr = createSet.iterator();
+			while (itr.hasNext()) {
+				JessyEntity tmp = itr.next();
+
+				// set the selfkey of the created vector and put it back in the
+				// entity.
+				tmp.getLocalVector().increament();
+			}
+			logger.debug("INIT_TRANSACTION Committed" + "\n");
+			return true;
+		}
+
+		/*
+		 * If the transaction is not read-only or init, we consider the create
+		 * operations as update operations. Thus, we move them to the writeSet
+		 * List.
+		 */
+		executionHistory.getWriteSet().addEntity(
+				executionHistory.getCreateSet());
+
+		List<? extends JessyEntity> writeSet = executionHistory.getWriteSet()
 				.getEntities();
 
 		// updatedVector is a new vector. It will be used as a new
@@ -60,7 +93,6 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 		Vector<String> updatedVector = VectorFactory.getVector("");
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
-
 
 		Iterator<? extends JessyEntity> itr = writeSet.iterator();
 		while (itr.hasNext()) {
@@ -71,9 +103,12 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 
 				if (!lastComittedEntity.getLocalVector().isCompatible(
 						tmp.getLocalVector())) {
+					
+					logger.debug("UPDATE_TRANSACTION Aborted \n");
 					return false;
 				}
 			}
+
 			// set the selfkey of the updated vector and put it back in the
 			// entity.
 			updatedVector.setSelfKey(tmp.getLocalVector().getSelfKey());
@@ -81,8 +116,8 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 			logger.debug("ResultSet Vectors" + tmp.getLocalVector().toString());
 
 		}
-		result = true;
+		logger.debug("UPDATE_TRANSACTION Committed \n");
 
-		return result;
+		return true;
 	}
 }

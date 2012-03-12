@@ -84,8 +84,8 @@ public class MultiObjNMSITest extends TestCase {
 		Future<ExecutionHistory> futureInit1;
 		futureInit1 = pool.submit(new SampleEntityInitTransaction(jessy));
 
-		Future<ExecutionHistory> futureInit2;
-		futureInit2 = pool.submit(new Sample2EntityInitTransaction(jessy));
+//		Future<ExecutionHistory> futureInit2;
+//		futureInit2 = pool.submit(new Sample2EntityInitTransaction(jessy));
 
 		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransactionMultiObj1(jessy));
@@ -103,9 +103,9 @@ public class MultiObjNMSITest extends TestCase {
 		assertEquals("Result", TransactionState.COMMITTED,
 				resultInit1.getTransactionState());
 
-		ExecutionHistory resultInit2 = futureInit2.get();
-		assertEquals("Result", TransactionState.COMMITTED,
-				resultInit2.getTransactionState());
+//		ExecutionHistory resultInit2 = futureInit2.get();
+//		assertEquals("Result", TransactionState.COMMITTED,
+//				resultInit2.getTransactionState());
 
 		ExecutionHistory result1 = future1.get();
 		assertEquals("Result", TransactionState.COMMITTED,
