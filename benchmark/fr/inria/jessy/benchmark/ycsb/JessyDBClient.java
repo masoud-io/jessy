@@ -16,9 +16,11 @@ public class JessyDBClient extends DB {
 
 	/*JessyDbClientCOnstructor*/
 	public JessyDBClient() throws Exception {
+		super();
 		initDB();
 	}
 	private static void initDB() throws Exception {
+		
 		jessy = LocalJessy.getInstance();
 		jessy.addEntity(YCSBEntity.class);
 		//TODO : Finish this work

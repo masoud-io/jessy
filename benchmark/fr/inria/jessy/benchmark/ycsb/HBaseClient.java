@@ -20,6 +20,7 @@ package fr.inria.jessy.benchmark.ycsb;
 
 import com.yahoo.ycsb.DBException;
 
+
 import java.io.IOException;
 import java.util.*;
 //import java.util.HashMap;
@@ -27,18 +28,18 @@ import java.util.*;
 //import java.util.Set;
 //import java.util.Vector;
 
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.HTable;
-//import org.apache.hadoop.hbase.client.Scanner;
+
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
-//import org.apache.hadoop.hbase.io.Cell;
-//import org.apache.hadoop.hbase.io.RowResult;
+
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 
@@ -49,7 +50,7 @@ public class HBaseClient extends com.yahoo.ycsb.DB
 {
     // BFC: Change to fix broken build (with HBase 0.20.6)
     //private static final Configuration config = HBaseConfiguration.create();
-    private static final HBaseConfiguration config = new HBaseConfiguration();
+    private static final Configuration  config = HBaseConfiguration.create();
 
     public boolean _debug=false;
 
@@ -68,9 +69,15 @@ public class HBaseClient extends com.yahoo.ycsb.DB
 	/**
 	 * Initialize any state for this DB.
 	 * Called once per DB instance; there is one DB instance per client thread.
+	 * @throws DBException 
 	 */
+    public HBaseClient () throws DBException {
+    	super();
+    	init();
+    }
 	public void init() throws DBException
 	{
+		getProperties().setProperty("columnfamily", "value");
 		if ( (getProperties().getProperty("debug")!=null) &&
 				(getProperties().getProperty("debug").compareTo("true")==0) )
 		{
@@ -390,7 +397,7 @@ public class HBaseClient extends com.yahoo.ycsb.DB
 
         return Ok;
     }
-
+	/*
     public static void main(String[] args)
     {
         if (args.length!=3)
@@ -451,8 +458,8 @@ public class HBaseClient extends com.yahoo.ycsb.DB
                             
                             rescode=cli.read("table1", key, s, result);
                             //rescode=cli.delete("table1",key);
-                            rescode=cli.read("table1", key, s, result);
-                            */
+                            //rescode=cli.read("table1", key, s, result);
+                            
                             HashSet<String> scanFields = new HashSet<String>();
                             scanFields.add("field1");
                             scanFields.add("field3");
@@ -506,7 +513,7 @@ public class HBaseClient extends com.yahoo.ycsb.DB
 
         System.out.println("Throughput: "+((1000.0)*(((double)(opcount*threadcount))/((double)(en-st))))+" ops/sec");
 
-    }
+    } */
 }
 
 /* For customized vim control
