@@ -87,16 +87,7 @@ public class RemoteReader implements Learner{
 	
 	class RemoteReadRequest implements Serializable{
 		
-		private static final long serialVersionUID = ConstantPool.JESSY_MID;
-		TransactionHandler handler;
-		CompactVector<String> vector;
-		String key;
-		
-		RemoteReadRequest(TransactionHandler h, CompactVector<String> v, String k) {
-			handler = h;
-			vector = v;
-			key = k;
-		}
+dd
 
 	}
 	

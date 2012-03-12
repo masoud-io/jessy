@@ -1,11 +1,8 @@
 package fr.inria.jessy;
 
-import java.util.List;
-
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.CompactVector;
-import fr.inria.jessy.vector.Vector;
 
 //TODO Garabage collect upon commit
 
