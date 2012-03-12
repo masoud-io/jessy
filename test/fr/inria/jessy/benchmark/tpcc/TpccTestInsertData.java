@@ -20,6 +20,7 @@ public class TpccTestInsertData{
 
 	LocalJessy jessy;
 	InsertData id;
+	TpccVerifyInsertedData vid;
 	Warehouse wh;
 	District di;
 	Item it;
@@ -44,6 +45,7 @@ public class TpccTestInsertData{
 		jessy.addEntity(Customer.class);
 		jessy.addEntity(Item.class);
 		id=new InsertData(jessy);
+		vid = new TpccVerifyInsertedData(jessy);
 		
 	}
 
@@ -57,13 +59,22 @@ public class TpccTestInsertData{
 			ExecutionHistory result=id.execute();
 			/*test execution*/
 			assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
-		/*
-			/*test inserted what we expected 
-			wh = jessy.read(Warehouse.class, "W_1");
-			assertEquals("Warehouse name", "Warehouse1", wh.getW_ID());
-			di = jessy.read(District.class, "W_1_D_1");
-			assertEquals("District name", "District1", di.getD_ID());
-		*/
+		
+			/*test inserted what we expected*/
+			ExecutionHistory result1=vid.execute();
+			assertEquals("Result1", TransactionState.COMMITTED, result1.getTransactionState());
+			
+			wh = vid.getW();
+			di = vid.getD();
+			cu = vid.getC();
+			it = vid.getI();
+			
+			
+			assertEquals("Warehouse id", "W_1", wh.getW_ID());
+			assertEquals("District id", "D_1", di.getD_ID());
+			assertEquals("customer id", "C_1", cu.getC_ID());
+			assertEquals("item id", "I_1", it.getI_ID());
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
