@@ -27,8 +27,8 @@ public class InsertData extends Transaction {
 				wh = new Warehouse("W_"+i);
 				wh.setW_ID(Integer.toString(i));
 				wh.setW_NAME("Warehouse"+i);
-				wh.setW_TAX((int) rand.nextFloat());
-				wh.setW_YTD((int) rand.nextFloat());
+				wh.setW_TAX(rand.nextFloat());
+				wh.setW_YTD(rand.nextFloat());
 
 				write(wh);
 				
@@ -38,8 +38,8 @@ public class InsertData extends Transaction {
 					dis.setD_ID(Integer.toString(j));
 					dis.setD_W_ID(wh.getW_ID());
 					dis.setD_NAME("District"+j);
-					dis.setD_TAX((int) rand.nextFloat());
-					dis.setD_YTD((int) rand.nextFloat());
+					dis.setD_TAX(rand.nextFloat());
+					dis.setD_YTD(rand.nextFloat());
 					dis.setD_NEXT_O(1);
 
 					write(dis);

@@ -42,8 +42,8 @@ public class District extends JessyEntity {
 	private String D_CITY;
 	private String D_STATE;
 	private String D_ZIP;
-	private int D_TAX;
-	private int D_YTD;
+	private float D_TAX;
+	private float D_YTD;
 	private int D_NEXT_O;
 	/**
 	 * @return the data
@@ -81,11 +81,11 @@ public class District extends JessyEntity {
 		return D_ZIP;
 	}
 	
-	public int getD_TAX() {
+	public float getD_TAX() {
 		return D_TAX;
 	}
 	
-	public int getD_YTD() {
+	public float getD_YTD() {
 		return D_YTD;
 	}
 	
@@ -129,11 +129,11 @@ public class District extends JessyEntity {
 		this.D_ZIP = D_ZIP;
 	}
 	
-	public void setD_TAX(int D_TAX) {
+	public void setD_TAX(float D_TAX) {
 		this.D_TAX = D_TAX;
 	}
 	
-	public void setD_YTD(int D_YTD) {
+	public void setD_YTD(float D_YTD) {
 		this.D_YTD = D_YTD;
 	}
 	

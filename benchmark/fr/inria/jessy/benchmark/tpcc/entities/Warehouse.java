@@ -27,8 +27,8 @@ public class Warehouse extends JessyEntity {
 	private String W_CITY;
 	private String W_STATE;
 	private String W_ZIP;
-	private int W_TAX;
-	private int W_YTD;
+	private float W_TAX;
+	private float W_YTD;
 
 	/**
 	 * @return the data
@@ -62,11 +62,11 @@ public class Warehouse extends JessyEntity {
 		return W_ZIP;
 	}
 
-	public int getW_TAX() {
+	public float getW_TAX() {
 		return W_TAX;
 	}
 
-	public int getW_YTD() {
+	public float getW_YTD() {
 		return W_YTD;
 	}
 
@@ -103,11 +103,11 @@ public class Warehouse extends JessyEntity {
 		this.W_ZIP = W_ZIP;
 	}
 
-	public void setW_TAX(int W_TAX) {
+	public void setW_TAX(float W_TAX) {
 		this.W_TAX = W_TAX;
 	}
 
-	public void setW_YTD(int W_YTD) {
+	public void setW_YTD(float W_YTD) {
 		this.W_YTD = W_YTD;
 	}
 
