@@ -65,15 +65,19 @@ public class TpccTestInsertData {
 		assertEquals("Result1", TransactionState.COMMITTED,
 				result1.getTransactionState());
 
-		wh = vid.getW();
-		di = vid.getD();
-		cu = vid.getC();
-		it = vid.getI();
-
-		assertEquals("Warehouse id", "W_1", wh.getW_ID());
-		assertEquals("District id", "D_1", di.getD_ID());
-		assertEquals("customer id", "C_1", cu.getC_ID());
-		assertEquals("item id", "I_1", it.getI_ID());
+// TODO the following part is wrong. 
+//		Inside your TpccVerifyInsertedData, you have to verify whether the data has been inserted or not.
+//		Here, you are only allowed to execute a transaction, and assert its status. Nothing else. 		
+		
+//		wh = vid.getW();
+//		di = vid.getD();
+//		cu = vid.getC();
+//		it = vid.getI();
+//
+//		assertEquals("Warehouse id", "W_1", wh.getW_ID());
+//		assertEquals("District id", "D_1", di.getD_ID());
+//		assertEquals("customer id", "C_1", cu.getC_ID());
+//		assertEquals("item id", "I_1", it.getI_ID());
 
 	}
 
