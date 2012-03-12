@@ -30,7 +30,7 @@ public class InsertData extends Transaction {
 				wh.setW_TAX(rand.nextFloat());
 				wh.setW_YTD(rand.nextFloat());
 
-				write(wh);
+				create(wh);
 				
 				/*each warehouse has 10 district*/
 				for(j=0; i<10; i++){
@@ -42,7 +42,7 @@ public class InsertData extends Transaction {
 					dis.setD_YTD(rand.nextFloat());
 					dis.setD_NEXT_O(1);
 
-					write(dis);
+					create(dis);
 					
 					/*each district has 3k customer*/
 					for(k=0; k<3000; k++){
@@ -51,7 +51,7 @@ public class InsertData extends Transaction {
 						cus.setC_D_ID(dis.getD_ID());
 						cus.setC_W_ID(wh.getW_ID());
 
-						write(cus);
+						create(cus);
 						
 						
 					}
@@ -68,7 +68,7 @@ public class InsertData extends Transaction {
 				it.setI_NAME("item"+i);
 				it.setI_PRICE(rand.nextInt(5000 - 1) + 1);
 				
-				write(it);
+				create(it);
 			}
 			
 			return commitTransaction();			
