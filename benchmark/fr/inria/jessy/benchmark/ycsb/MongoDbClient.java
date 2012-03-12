@@ -7,7 +7,7 @@
  *
  */
 
-package com.yahoo.ycsb.db;
+package fr.inria.jessy.benchmark.ycsb;
 
 import java.util.HashMap;
 import java.util.Iterator;
