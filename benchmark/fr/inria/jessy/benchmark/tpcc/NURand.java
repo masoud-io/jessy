@@ -36,7 +36,8 @@ public class NURand {
 		
 		//TODO 
 		//how can I generate C according to tpcc standard?
-		
+		//the C is random generated(0..A) per field (C_LAST, C_ID, and OL_I_ID)
+
 		return ((or+C)%(y-x+1)) + x; 
 	}
 	public int getA() {
