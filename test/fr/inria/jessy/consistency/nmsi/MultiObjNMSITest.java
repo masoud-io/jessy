@@ -19,7 +19,6 @@ import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
-import fr.inria.jessy.transaction.Sample2EntityInitTransaction;
 import fr.inria.jessy.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj1;
 import fr.inria.jessy.transaction.SampleTransactionMultiObj2;

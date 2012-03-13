@@ -271,6 +271,56 @@ public class DataStore {
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}
 	}
+	
+	/**
+	 * Get the value of an entity object previously put.
+	 * 
+	 * @param <E>
+	 *            the type that extends JessyEntity
+	 * @param <SK>
+	 *            the type of the secondary key field (annotated with
+	 * @SecondaryIndex)
+	 * @param <V>
+	 * @param entityClass
+	 *            the class that extends JessyEntity
+	 * @param secondaryKeyName
+	 *            Name of the secondary key field (annotated with
+	 * @SecondaryIndex)
+	 * @param keyValue
+	 *            the value of the secondary key.
+	 * @param vectors
+	 * @return
+	 * @throws NullPointerException
+	 */
+	public <E extends JessyEntity, SK> E get(ReadRequest<E, SK> readRequest)
+			throws NullPointerException {
+		try {
+			@SuppressWarnings("unchecked")			
+			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
+					.get(readRequest.getEntityClass().getName()+ readRequest.getSecondaryKeyName());
+
+			EntityCursor<E> cur = sindex.subIndex(readRequest.getKeyvalue()).entities();
+			E entity = cur.last();
+
+			if (readRequest.getReadSet() == null) {
+				return entity;
+			}
+
+			while (entity != null) {
+				if (entity.getLocalVector().isCompatible(readRequest.getReadSet())) {
+					cur.close();
+					return entity;
+				} else {
+					entity = cur.prev();
+				}
+			}
+			cur.close();
+			return null;
+		} catch (NullPointerException ex) {
+			throw new NullPointerException("SecondaryIndex cannot be found");
+		}
+	}
+
 
 	public <E extends JessyEntity, SK> E get(Class<E> entityClass,
 			String secondaryKeyName, SK keyValue) throws NullPointerException {

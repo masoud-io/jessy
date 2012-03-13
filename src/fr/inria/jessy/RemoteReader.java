@@ -17,6 +17,7 @@ import net.sourceforge.fractal.rmcast.RMCastStream;
 import net.sourceforge.fractal.rmcast.WanMessage;
 import utils.ExecutorPool;
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
@@ -63,7 +64,7 @@ public class RemoteReader implements Learner{
 	
 	public Future<JessyEntity> remoteRead(TransactionHandler h, CompactVector<String> v, String k){
 		assert !Partitioner.getInstance().isLocal(k);
-		Future<JessyEntity> reply = pool.submit(new RemoteReadRequestTask(new RemoteReadRequest(h,v,k)));
+		Future<JessyEntity> reply = pool.submit(new ReadRequestTask(new ReadRequest(h,v,k)));
 		replies.put(h, reply);
 		return reply;
 	}
@@ -121,12 +122,12 @@ dd
 	public class RemoteReadRequestMessage extends WanMessage {
 
 		private static final long serialVersionUID = ConstantPool.JESSY_MID;
-		RemoteReadRequest request;
+		ReadRequest request;
 
 		// For Fractal
 		public RemoteReadRequestMessage() {}
 		
-		RemoteReadRequestMessage(RemoteReadRequest r, Set<String> dest) {
+		RemoteReadRequestMessage(ReadRequest r, Set<String> dest) {
 			super(r, dest, Membership.getInstance().myGroup().name(),Membership.getInstance().myId());
 		}
 	
@@ -144,7 +145,7 @@ dd
 		public JessyEntity call() throws Exception {
 			Set<String> dest = new HashSet<String>(1);
 			dest.add(Partitioner.getInstance().resolve(request.key).name());
-			stream.reliableMulticast(new RemoteReadRequestMessage(request,dest));
+			stream.reliableMulticast(new ReadRequestMessage(request,dest));
 			replies.get(request.handler).wait();
 			return replies.get(request.handler).get();
 		}
@@ -160,6 +161,9 @@ dd
 		}
 
 		public Object call() throws Exception {
+			ReadRequest rr = message.request;
+			DistributedJessy.getInstance().getDataStore().get(rr.getEntityClass(),
+						rr.getSecondaryKeyName(), rr.getKeyvalue());
 			// FIXME the JessyEntity returned should not be null !
 			RemoteReadReply r = new RemoteReadReply(null,message.request.handler);
 			Membership.getInstance().getOrCreateTCPGroup("ALLNODES").unicastSW(message.source,new RemoteReadReplyMessage(r));
