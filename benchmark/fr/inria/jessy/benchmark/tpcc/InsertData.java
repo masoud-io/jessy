@@ -7,7 +7,7 @@ import fr.inria.jessy.transaction.*;
 import java.util.*;
 
 public class InsertData extends Transaction {
-	
+	/*tpcc   section 4.3*/
 	public InsertData(Jessy jessy) throws Exception{
 		super(jessy);
 	}
