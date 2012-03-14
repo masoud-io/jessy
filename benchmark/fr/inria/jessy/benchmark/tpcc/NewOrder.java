@@ -107,7 +107,7 @@ public class NewOrder extends Transaction {
 				 * OL_NUMBER(last attribute in the constructor) is set to a unique value within all the ORDER-LINE rows that have the same OL_O_ID value
 				 * here my solution is put "i" in this field, because i is from 0-14, and it's unique
 				 */
-				ol= new Order_line("OL_W_"+wh.getW_ID()+"_OL_D_"+dis.getD_ID()+"_OL_O_"+o.getO_ID()+"_OL_"+ol_cnt);
+				ol= new Order_line("OL_W_"+wh.getW_ID()+"_OL_D_"+dis.getD_ID()+"_OL_O_"+o.getO_ID()+"_OL_"+i);
 				ol.setOL_AMOUNT(OL_QUANTITY*it.getI_PRICE());
 				Pattern p = Pattern.compile("*ORIGINAL*");
 				Matcher m1 = p.matcher(it.getI_DATA());

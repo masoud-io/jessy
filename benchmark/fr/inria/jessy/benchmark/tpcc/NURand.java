@@ -29,7 +29,7 @@ public class NURand {
 		exp1 = rand.nextInt(A - 1) + 1;
 		
 		/*random(x,y)*/
-		exp2 = rand.nextInt(y - x) + 1;
+		exp2 = rand.nextInt(y - x) + x;
 		
 		/* or*/
 		or = exp1 | exp2;
