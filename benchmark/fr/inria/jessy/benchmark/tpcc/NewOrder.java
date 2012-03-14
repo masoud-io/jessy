@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NewOrder extends Transaction {
-	
+	/* this class is written according to tpcc section 2.4.2*/
 	public NewOrder(Jessy jessy) throws Exception{
 		super(jessy);
 	}
