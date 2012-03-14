@@ -1,6 +1,5 @@
 package fr.inria.jessy;
 
-import net.sourceforge.fractal.replication.database.ReadRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.TransactionHandler;
@@ -26,9 +25,8 @@ public class LocalJessy extends Jessy {
 	@Override
 	protected <E extends JessyEntity, SK> E performRead(Class<E> entityClass,
 			String keyName, SK keyValue, CompactVector<String> readSet) {
-		ReadRequest<E, SK> readRequest=new ReadRequest<E, SK>(entityClass, keyName, keyValue, readSet);
-		ReadRequest rr=readRequest;
-		return (E) getDataStore().get(rr);
+		ReadRequest<E, SK> readRequest=new ReadRequest<E, SK>(entityClass, keyName, keyValue, readSet);		
+		return getDataStore().get(readRequest).getEntity();
 //		return getDataStore().get(entityClass, keyName, keyValue, readSet);
 	}
 

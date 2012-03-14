@@ -223,7 +223,9 @@ public class DataStore {
 	}
 
 	/**
-	 * Get the value of an entity object previously put.
+	 * Get an entity object previously put inside data store. This entity object
+	 * should be {@link Vector#isCompatible(CompactVector)} with the readSet
+	 * vector.
 	 * 
 	 * @param <E>
 	 *            the type that extends JessyEntity
@@ -238,15 +240,17 @@ public class DataStore {
 	 * @SecondaryIndex)
 	 * @param keyValue
 	 *            the value of the secondary key.
-	 * @param vectors
+	 * @param readSet
+	 *            a compact vector that compactly contains versions of all
+	 *            previously read entities.
 	 * @return
 	 * @throws NullPointerException
 	 */
-	public <E extends JessyEntity, SK> E get(Class<E> entityClass,
+	private <E extends JessyEntity, SK> E get(Class<E> entityClass,
 			String secondaryKeyName, SK keyValue, CompactVector<String> readSet)
 			throws NullPointerException {
 		try {
-			@SuppressWarnings("unchecked")			
+			@SuppressWarnings("unchecked")
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
 					.get(entityClass.getName() + secondaryKeyName);
 
@@ -271,7 +275,7 @@ public class DataStore {
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}
 	}
-	
+
 	/**
 	 * Get the value of an entity object previously put.
 	 * 
@@ -279,53 +283,18 @@ public class DataStore {
 	 *            the type that extends JessyEntity
 	 * @param <SK>
 	 *            the type of the secondary key field (annotated with
-	 * @SecondaryIndex)
-	 * @param <V>
-	 * @param entityClass
-	 *            the class that extends JessyEntity
-	 * @param secondaryKeyName
-	 *            Name of the secondary key field (annotated with
-	 * @SecondaryIndex)
-	 * @param keyValue
-	 *            the value of the secondary key.
-	 * @param vectors
+	 * @param readRequest
 	 * @return
 	 * @throws NullPointerException
 	 */
-	public <E extends JessyEntity, SK> E get(ReadRequest<E, SK> readRequest)
+	public <E extends JessyEntity, SK> ReadReply<E> get(ReadRequest<E, SK> readRequest)
 			throws NullPointerException {
-		try {
-			@SuppressWarnings("unchecked")			
-			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
-					.get(readRequest.getEntityClass().getName()+ readRequest.getSecondaryKeyName());
-
-			EntityCursor<E> cur = sindex.subIndex(readRequest.getKeyvalue()).entities();
-			E entity = cur.last();
-
-			if (readRequest.getReadSet() == null) {
-				return entity;
-			}
-
-			while (entity != null) {
-				if (entity.getLocalVector().isCompatible(readRequest.getReadSet())) {
-					cur.close();
-					return entity;
-				} else {
-					entity = cur.prev();
-				}
-			}
-			cur.close();
-			return null;
-		} catch (NullPointerException ex) {
-			throw new NullPointerException("SecondaryIndex cannot be found");
-		}
+		E entity= get(readRequest.getEntityClass(), readRequest.getKeyName(),
+				readRequest.getKeyvalue(),readRequest.getReadSet());
+		
+		return new ReadReply<E>(entity, readRequest.getReadRequestId());
 	}
 
-
-	public <E extends JessyEntity, SK> E get(Class<E> entityClass,
-			String secondaryKeyName, SK keyValue) throws NullPointerException {
-		return get(entityClass, secondaryKeyName, keyValue, null);
-	}
 
 	/**
 	 * Delete an entity with the provided secondary key from the berkeyley DB.
@@ -379,13 +348,13 @@ public class DataStore {
 
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
 			if (cur.iterator().hasNext()) {
-				int result=cur.count();
-				cur.close();				
+				int result = cur.count();
+				cur.close();
 				return result;
-			} else{
+			} else {
 				cur.close();
 				return 0;
-			}				
+			}
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}

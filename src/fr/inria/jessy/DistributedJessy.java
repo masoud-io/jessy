@@ -22,7 +22,7 @@ public class DistributedJessy extends Jessy{
 	@Override
 	protected <E extends JessyEntity, SK> E performRead(Class<E> entityClass,
 			String keyName, SK keyValue, CompactVector<String> readSet) {
-		if (Partitioner.getInstance().isLocal(entityClass.toString()+keyValue)){
+		if (Partitioner.getInstance().isLocal(entityClass.toString()+keyValue.toString())){
 			return getDataStore().get(entityClass, keyName, keyValue, readSet);
 		}
 		else{

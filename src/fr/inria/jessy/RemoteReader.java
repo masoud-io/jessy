@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -17,10 +18,9 @@ import net.sourceforge.fractal.rmcast.RMCastStream;
 import net.sourceforge.fractal.rmcast.WanMessage;
 import utils.ExecutorPool;
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.vector.CompactVector;
-import fr.inria.jessy.vector.Vector;
 
 /**
  * 
@@ -29,13 +29,11 @@ import fr.inria.jessy.vector.Vector;
  * and returns a Future encapsulating a JessyEntity.
  * It maekes use of the Fractal group ALLNODES to exchange replies , and create a ReliableMulticastStream named RemoteReaderStream.
  * 
- * FIXME: need a way to serializable JessyEntities.
- * 
  * TODO: put the ExecutorPool inside Jessy (?)
  * TODO: suppress or garbage-collect cancelled requests.
  * 
  * @author Pierre Sutra
- *
+ * @author Masoud Saeida Ardekani
  */
 
 public class RemoteReader implements Learner{
@@ -47,7 +45,7 @@ public class RemoteReader implements Learner{
 	
 	private ExecutorPool pool;
 	private RMCastStream stream;
-	private Map<TransactionHandler,Future<JessyEntity>> replies;
+	private Map<UUID,Future<? extends JessyEntity>> replies;
 	
 	public static RemoteReader getInstance(){
 		return instance;
@@ -59,13 +57,13 @@ public class RemoteReader implements Learner{
 		stream.registerLearner("RemoteReadRequestMessage", this);
 		stream.registerLearner("RemoteReadReplyMessage", this);
 		pool = new ExecutorPool(100);
-		replies = new HashMap<TransactionHandler,Future<JessyEntity>>();
+		replies = new HashMap<UUID, Future<? extends JessyEntity>>();
 	}
 	
-	public Future<JessyEntity> remoteRead(TransactionHandler h, CompactVector<String> v, String k){
-		assert !Partitioner.getInstance().isLocal(k);
-		Future<JessyEntity> reply = pool.submit(new ReadRequestTask(new ReadRequest(h,v,k)));
-		replies.put(h, reply);
+	public <E extends JessyEntity, SK> Future<E> remoteRead(ReadRequest<E, SK> readRequest){
+		assert !Partitioner.getInstance().isLocal(readRequest.getPartitioningKey());
+		Future<E> reply = pool.submit(new RemoteReadRequestTask(readRequest));
+		replies.put(readRequest.getReadRequestId(), reply);
 		return reply;
 	}
 	
@@ -76,44 +74,23 @@ public class RemoteReader implements Learner{
 		if(v instanceof RemoteReadRequestMessage){
 			pool.submit(new RemoteReadReplyTask((RemoteReadRequestMessage)v));
 		}else{ // RemoteReadReplyMessage
-			RemoteReadReply reply = ((RemoteReadReplyMessage)v).reply;
-			replies.get(reply.handler).notify();
+			ReadReply reply = ((RemoteReadReplyMessage)v).reply;
+			replies.get(reply.getReadRequestId()).notify();
 		}
 			
 	}
 	
-	//
-	// INNER CLASSES
-	//
 	
-	class RemoteReadRequest implements Serializable{
-		
-dd
-
-	}
-	
-	class RemoteReadReply implements Serializable {
-
-		private static final long serialVersionUID = ConstantPool.JESSY_MID;
-		TransactionHandler handler;
-		JessyEntity entity;
-		
-		RemoteReadReply(JessyEntity e,TransactionHandler h){
-			entity=e;
-			handler=h;
-		}
-		
-	}
 	
 	public class RemoteReadReplyMessage extends UMessage {
 
 		static final long serialVersionUID = ConstantPool.JESSY_MID;
-		RemoteReadReply reply;
+		ReadReply reply;
 		
 		// For Fractal
 		public RemoteReadReplyMessage() {}
 		
-		RemoteReadReplyMessage(RemoteReadReply r) {
+		RemoteReadReplyMessage(ReadReply r) {
 			super(r,Membership.getInstance().myId());
 		}
 
@@ -134,20 +111,20 @@ dd
 	}
 
 	
-	class RemoteReadRequestTask implements Callable<JessyEntity>{
+	class  RemoteReadRequestTask<E extends JessyEntity, SK> implements Callable<E>{
 		
-		private RemoteReadRequest request;
+		private ReadRequest<E,SK> request;
 		
-		private RemoteReadRequestTask(RemoteReadRequest r){
-			request=r;
+		private RemoteReadRequestTask(ReadRequest<E,SK> readRequest){
+			this.request=readRequest;
 		}
 		
-		public JessyEntity call() throws Exception {
+		public E call() throws Exception {
 			Set<String> dest = new HashSet<String>(1);
-			dest.add(Partitioner.getInstance().resolve(request.key).name());
-			stream.reliableMulticast(new ReadRequestMessage(request,dest));
-			replies.get(request.handler).wait();
-			return replies.get(request.handler).get();
+			dest.add(Partitioner.getInstance().resolve(request.getPartitioningKey()).name());
+			stream.reliableMulticast(new RemoteReadRequestMessage(request,dest));
+			replies.get(request.getReadRequestId()).wait();
+			return (E)replies.get(request.getReadRequestId()).get();
 		}
 		
 	}
@@ -160,13 +137,12 @@ dd
 			message = m;
 		}
 
-		public Object call() throws Exception {
-			ReadRequest rr = message.request;
-			DistributedJessy.getInstance().getDataStore().get(rr.getEntityClass(),
-						rr.getSecondaryKeyName(), rr.getKeyvalue());
-			// FIXME the JessyEntity returned should not be null !
-			RemoteReadReply r = new RemoteReadReply(null,message.request.handler);
-			Membership.getInstance().getOrCreateTCPGroup("ALLNODES").unicastSW(message.source,new RemoteReadReplyMessage(r));
+		public ReadReply call() throws Exception {
+			ReadRequest readRequest= message.request;
+			
+			ReadReply readReply =DistributedJessy.getInstance().getDataStore().get(readRequest);
+					
+			Membership.getInstance().getOrCreateTCPGroup("ALLNODES").unicastSW(message.source,new RemoteReadReplyMessage(readReply));
 			return null;
 		}
 		
