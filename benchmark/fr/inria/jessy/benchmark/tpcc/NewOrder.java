@@ -30,19 +30,13 @@ public class NewOrder extends Transaction {
 			String district_id;
 			String customer_id;
 			NURand nu;
-			
-			String O_ID;
-			String O_D_ID;
-			String O_W_ID;
-			String O_C_ID;
+		
 			Date O_ENTRY_D = new Date();
-			String O_CARRIER_ID;
 			int O_OL_CNT = 123; /*TODO*/
-			int O_ALL_LOCAL;
 			int OL_QUANTITY;
 
 
-			int x;
+			int x;/*we have only 1 warehouse, so x won't be used to make a difference between home and remote warehouse */
 			
 			int ol_cnt = rand.nextInt(15-5)+5; 			
 			
@@ -90,49 +84,50 @@ public class NewOrder extends Transaction {
 				OL_I_ID = nu.calculate();
 				it = read(Item.class, "I_"+OL_I_ID);
 				st = read(Stock.class, "S_W_"+wh.getW_ID()+"_S_I_"+OL_I_ID);
-				OL_QUANTITY = rand.nextInt(10-1)+1;
-				if( i == (ol_cnt-1) && rbk == 1){
-					/*roll back*/
-					
-					
+				OL_QUANTITY = rand.nextInt(10-1)+1;	
+				if(st.getS_QUANTITY() >= OL_QUANTITY+10){
+					st.setS_QUANTITY(st.getS_QUANTITY() - OL_QUANTITY);
 				}
-				else{	
-					if(st.getS_QUANTITY() >= OL_QUANTITY+10){
-						st.setS_QUANTITY(st.getS_QUANTITY() - OL_QUANTITY);
-					}
-					else{
-						st.setS_QUANTITY(st.getS_QUANTITY() - OL_QUANTITY + 91);
-					}
-					
-					st.setS_YTD(st.getS_YTD()+OL_QUANTITY);
-					st.setS_ORDER_CNT(st.getS_ORDER_CNT()+1);
-					/*TODO
-					 * OL_N UMBER is set to a unique value within all the ORDER-LINE rows that have the same OL_O_ID value
+				else{
+					st.setS_QUANTITY(st.getS_QUANTITY() - OL_QUANTITY + 91);
+				}
+				
+				st.setS_YTD(st.getS_YTD()+OL_QUANTITY);
+				st.setS_ORDER_CNT(st.getS_ORDER_CNT()+1);
+				/*
+				 * OL_N UMBER is set to a unique value within all the ORDER-LINE rows that have the same OL_O_ID value
+				 * here my solution is put "i" in this field, because i is from 0-14, and it's unique
+				 */
+				ol= new Order_line("OL_W_"+wh.getW_ID()+"_OL_D_"+dis.getD_ID()+"_OL_O_"+o.getO_ID()+"_OL_"+ol_cnt);
+				ol.setOL_AMOUNT(OL_QUANTITY*it.getI_PRICE());
+				Pattern p = Pattern.compile("*ORIGINAL*");
+				Matcher m1 = p.matcher(it.getI_DATA());
+				Matcher m2 = p.matcher(st.getS_DATA());
+				if(m1.find() && m2.find()) {
+					/*the brand-generic field for that item is set to "B"*/
+
+				}
+				else{
+					/*otherwise, the brand-generic field is set to "G"*/
+				}
+				
+				
+				/*TODO
+				 * verify which district should put in here
+				 */
+				ol.setOL_DIST_INFO(st.getS_DIST_01());
+				ol.setOL_DELIVERY_D(null);
+				ol.setOL_I_ID(it.getI_ID());
+				ol.setOL_QUANTITY(OL_QUANTITY);
+				ol.setOL_W_ID(wh.getW_ID());
+				ol.setOL_D_ID(dis.getD_ID());
+				create(ol);
+				if( i == (ol_cnt-1) && rbk == 1){
+					/*roll back
+					 * do we have a roll back action with jessy?
 					 */
-					ol= new Order_line("OL_W_"+wh.getW_ID()+"_OL_D_"+dis.getD_ID()+"_OL_O_"+o.getO_ID()+"_OL_"+number);
-					ol.setOL_AMOUNT(OL_QUANTITY*it.getI_PRICE());
-					Pattern p = Pattern.compile("*ORIGINAL*");
-					Matcher m1 = p.matcher(it.getI_DATA());
-					Matcher m2 = p.matcher(st.getS_DATA());
-					if(m1.find() && m2.find()) {
-						/*the brand-generic field for that item is set to "B"*/
-	
-					}
-					else{
-						/*otherwise, the brand-generic field is set to "G"*/
-					}
 					
 					
-					/*TODO
-					 * verify which district should put in here
-					 */
-					ol.setOL_DIST_INFO(st.getS_DIST_01());
-					ol.setOL_DELIVERY_D(null);
-					ol.setOL_I_ID(it.getI_ID());
-					ol.setOL_QUANTITY(OL_QUANTITY);
-					ol.setOL_W_ID(wh.getW_ID());
-					ol.setOL_D_ID(dis.getD_ID());
-					create(ol);
 				}
 			}
 			
