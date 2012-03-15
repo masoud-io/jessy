@@ -15,8 +15,10 @@ public class InsertData extends Transaction {
 	@Override
 	public ExecutionHistory execute() {
 		try {
-			int i, j, k;
+			int i, j, k, l;
 			Random rand = new Random(System.currentTimeMillis());			
+			String[] lastnames = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE", "ANTI", "CALLY", "ATION", "EING"};
+			String lastname;
 			Warehouse wh;			
 			District dis;			
 			Customer cus;			
@@ -26,21 +28,36 @@ public class InsertData extends Transaction {
 			for(i=0; i<1; i++){			
 				wh = new Warehouse("W_"+i);
 				wh.setW_ID(Integer.toString(i));
-				wh.setW_NAME("Warehouse"+i);
-				wh.setW_TAX(rand.nextFloat());
-				wh.setW_YTD(rand.nextFloat());
+				wh.setW_NAME(NString.generate(6, 10));
+				wh.setW_STREET_1(NString.generate(10, 20));
+				wh.setW_STREET_2(NString.generate(10, 20));
+				wh.setW_CITY(NString.generate(10, 20));
+				wh.setW_STATE(NString.generateFix(2));
+				wh.setW_ZIP(Integer.toString(rand.nextInt(9999 - 1) + 1)+"11111");
+				wh.setW_TAX(rand.nextFloat()*0.200);
+				wh.setW_YTD(300000.00);
 
 				create(wh);
+				/*each warehouse hase 100,000 rows in the STOCK table*/
+				for(j=0; j<100000; j++){
+					//TODO
+				}
+				
 				
 				/*each warehouse has 10 district*/
 				for(j=0; i<10; i++){
 					dis = new District("D_W_"+i+"_D_"+j);
 					dis.setD_ID(Integer.toString(j));
 					dis.setD_W_ID(wh.getW_ID());
-					dis.setD_NAME("District"+j);
-					dis.setD_TAX(rand.nextFloat());
-					dis.setD_YTD(rand.nextFloat());
-					dis.setD_NEXT_O(1);
+					dis.setD_NAME(NString.generate(6, 10));
+					dis.setD_STREET_1(NString.generate(10, 20));
+					dis.setD_STREET_2(NString.generate(10, 20));
+					dis.setD_CITY(NString.generate(10, 20));
+					dis.setD_STATE(NString.generateFix(2));
+					dis.setD_ZIP(Integer.toString(rand.nextInt(10000))+"11111"); /*[0....9999]+111111*/
+					dis.setD_TAX(rand.nextFloat()*0.2000);
+					dis.setD_YTD(300000.00);
+					dis.setD_NEXT_O(3001);
 
 					create(dis);
 					
@@ -50,7 +67,33 @@ public class InsertData extends Transaction {
 						cus.setC_ID(Integer.toString(k));
 						cus.setC_D_ID(dis.getD_ID());
 						cus.setC_W_ID(wh.getW_ID());
-
+						lastname = "";
+						for(l=0; l<3; l++){
+							lastname = lastname+lastnames[rand.nextInt(10)]; /* 0..9 */
+						}
+						cus.setC_LAST(lastname);
+						cus.setC_MIDDLE("OE");
+						cus.setC_FIRST(NString.generate(8, 16));
+						cus.setC_STREET_1(NString.generate(10, 20));
+						cus.setC_STREET_2(NString.generate(10, 20));
+						cus.setC_CITY(NString.generate(10, 20));
+						cus.setC_STATE(NString.generateFix(2));
+						cus.setC_ZIP(Integer.toString(rand.nextInt(10000))+"11111"); /*[0....9999]+111111*/
+						cus.setC_PHONE(NString.generateFix(16));
+						cus.setC_SINCE(new Date());
+						if(rand.nextInt(10) == 0){
+							/* 10% chance */
+							cus.setC_Credit("BC");
+						}
+						else cus.setC_Credit("GC");
+						cus.setC_CREDIT_LIM(50000.00);
+						cus.setC_DISCOUNT(rand.nextFloat()*0.5000);
+						cus.setC_BALANCE(-10.00);
+						cus.setC_YTD_PAYMENT(10.00);
+						cus.setC_PAYMENT_CNT(1);
+						cus.setC_DELIVERY_CNT(0);
+						cus.setC_DATA(NString.generate(300, 500));
+						
 						create(cus);
 						
 						

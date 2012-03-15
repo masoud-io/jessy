@@ -61,10 +61,10 @@ public class TpccTestInsertData {
 				result.getTransactionState());
 
 		/* test inserted what we expected */
-		ExecutionHistory result1 = vid.execute();
-		assertEquals("Result1", TransactionState.COMMITTED,
-				result1.getTransactionState());
-
+//		ExecutionHistory result1 = vid.execute();
+//		assertEquals("Result1", TransactionState.COMMITTED,
+//				result1.getTransactionState());
+			
 
 	}
 

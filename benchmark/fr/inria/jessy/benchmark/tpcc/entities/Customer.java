@@ -48,10 +48,10 @@ public class Customer extends JessyEntity {
 	private String C_PHONE;
 	private Date C_SINCE;
 	private String C_Credit;
-	private int C_CREDIT_LIM;
-	private int C_DISCOUNT;
-	private int C_BALANCE;
-	private int C_YTD_PAYMENT;
+	private double C_CREDIT_LIM;
+	private double C_DISCOUNT;
+	private double C_BALANCE;
+	private double C_YTD_PAYMENT;
 	private int C_PAYMENT_CNT;
 	private int C_DELIVERY_CNT;
 	private String C_DATA;
@@ -116,19 +116,19 @@ public class Customer extends JessyEntity {
 		return C_Credit;
 	}
 
-	public int getC_CREDIT_LIM() {
+	public double getC_CREDIT_LIM() {
 		return C_CREDIT_LIM;
 	}
 
-	public int getC_DISCOUNT() {
+	public double getC_DISCOUNT() {
 		return C_DISCOUNT;
 	}
 
-	public int getC_BALANCE() {
+	public double getC_BALANCE() {
 		return C_BALANCE;
 	}
 
-	public int getC_YTD_PAYMENT() {
+	public double getC_YTD_PAYMENT() {
 		return C_YTD_PAYMENT;
 	}
 	
@@ -177,7 +177,7 @@ public class Customer extends JessyEntity {
 		this.C_STREET_1 = C_STREET_1;
 	}
 
-	public void setData(String C_STREET_2) {
+	public void setC_STREET_2(String C_STREET_2) {
 		this.C_STREET_2 = C_STREET_2;
 	}
 
@@ -205,20 +205,20 @@ public class Customer extends JessyEntity {
 		this.C_Credit = C_Credit;
 	}
 
-	public void setC_CREDIT_LIM(int C_CREDIT_LIM) {
-		this.C_CREDIT_LIM = C_CREDIT_LIM;
+	public void setC_CREDIT_LIM(double d) {
+		this.C_CREDIT_LIM = d;
 	}
 
-	public void setC_DISCOUNT(int C_DISCOUNT) {
-		this.C_DISCOUNT = C_DISCOUNT;
+	public void setC_DISCOUNT(double d) {
+		this.C_DISCOUNT = d;
 	}
 
-	public void setC_BALANCE(int C_BALANCE) {
-		this.C_BALANCE = C_BALANCE;
+	public void setC_BALANCE(double d) {
+		this.C_BALANCE = d;
 	}
 
-	public void setC_YTD_PAYMENT(int C_YTD_PAYMENT) {
-		this.C_YTD_PAYMENT = C_YTD_PAYMENT;
+	public void setC_YTD_PAYMENT(double d) {
+		this.C_YTD_PAYMENT = d;
 	}
 
 	public void setC_PAYMENT_CNT(int C_PAYMENT_CNT) {

@@ -1,6 +1,6 @@
 package fr.inria.jessy.benchmark.tpcc;
 
-import static org.junit.Assert.*;
+
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.benchmark.tpcc.entities.*;
 import fr.inria.jessy.transaction.*;
@@ -25,10 +25,10 @@ public class  TpccVerifyInsertedData extends Transaction {
 				c= read(Customer.class, "C_W_1_C_D_1_C_1");
 				i= read(Item.class, "I_1");
 					
-				assertEquals("Warehouse id", "W_1", w.getW_ID());
-				assertEquals("District id", "D_1", d.getD_ID());
-				assertEquals("customer id", "C_1", c.getC_ID());
-				assertEquals("item id", "I_1", i.getI_ID());
+				/*TODO
+				 * add the if fail, return abortTransaction();
+				 */
+				
 			return commitTransaction();			
 		} catch (Exception ex) {
 			ex.printStackTrace();
