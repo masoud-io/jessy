@@ -19,9 +19,9 @@ public class NewOrder extends Transaction {
 		try {
 			int i, j, k;
 			Random rand = new Random(System.currentTimeMillis());			
-			Warehouse wh = new Warehouse();			
-			District dis = new District();			
-			Customer cus = new Customer();	
+			Warehouse wh;			
+			District dis;			
+			Customer cus;	
 			New_order no;
 			Order o;
 			Order_line ol;
