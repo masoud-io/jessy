@@ -1,6 +1,10 @@
 package fr.inria.jessy;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.CompactVector;
 
@@ -21,16 +25,17 @@ public class DistributedJessy extends Jessy{
 
 	@Override
 	protected <E extends JessyEntity, SK> E performRead(Class<E> entityClass,
-			String keyName, SK keyValue, CompactVector<String> readSet) {
-		if (Partitioner.getInstance().isLocal(entityClass.toString()+keyValue.toString())){
-			return getDataStore().get(entityClass, keyName, keyValue, readSet);
+			String keyName, SK keyValue, CompactVector<String> readSet) throws InterruptedException, ExecutionException {
+		ReadRequest<E, SK> readRequest=new ReadRequest<E, SK>(entityClass,keyName,keyValue,readSet);
+		
+		if (Partitioner.getInstance().isLocal(readRequest.getPartitioningKey())){
+			return getDataStore().get(readRequest).getEntity();
 		}
 		else{
-			RemoteReader.getInstance().remoteRead(h, v, k)ead(h, v, k)
-		}
+			Future<E> future=RemoteReader.getInstance().remoteRead(readRequest);
+			return future.get();
+		}		
 		
-		
-		return null;
 	}
 
 	@Override

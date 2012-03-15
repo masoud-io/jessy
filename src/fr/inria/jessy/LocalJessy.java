@@ -27,7 +27,6 @@ public class LocalJessy extends Jessy {
 			String keyName, SK keyValue, CompactVector<String> readSet) {
 		ReadRequest<E, SK> readRequest=new ReadRequest<E, SK>(entityClass, keyName, keyValue, readSet);		
 		return getDataStore().get(readRequest).getEntity();
-//		return getDataStore().get(entityClass, keyName, keyValue, readSet);
 	}
 
 	@Override

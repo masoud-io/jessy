@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
 
 import com.sleepycat.persist.model.SecondaryKey;
 
@@ -273,7 +274,7 @@ public abstract class Jessy {
 	 */
 	protected abstract <E extends JessyEntity, SK> E performRead(
 			Class<E> entityClass, String keyName, SK keyValue,
-			CompactVector<String> readSet);
+			CompactVector<String> readSet) throws InterruptedException, ExecutionException;
 
 	/**
 	 * Stores the entity locally. The locally stored entities will be stored in
