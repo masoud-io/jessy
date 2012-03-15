@@ -1,13 +1,14 @@
 package fr.inria.jessy;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
@@ -17,9 +18,11 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.CompactVector;
-import fr.inria.jessy.vector.Vector;
 
 /**
+ * Jessy is the abstract base class for local and distributed Jessy
+ * implementation.
+ * 
  * @author Masoud Saeida Ardekani
  */
 public abstract class Jessy {
@@ -92,40 +95,56 @@ public abstract class Jessy {
 	}
 
 	/**
-	 * All entities that will be managed by Jessy middle ware should be
-	 * introduced to it beforehand. Currently, it only supports to add one
-	 * primary key and one secondary key for each entity.
+	 * Setup a primary index and secondary index in the data store for
+	 * performing read and write operations on entities with type E.
+	 * <p>
+	 * This method only creates one secondary index for the default secondary
+	 * key. In order to performs reads on different secondary keys (fields), and
+	 * not on the default secondaryKey, first, an index for each of them should
+	 * be created by calling {@link #addSecondaryIndex(Class, ArrayList)}
 	 * 
 	 * @param <E>
-	 *            Type of the entity that will be store/retrieve
-	 * @param <SK>
-	 *            Type of the secondary key. This can usually be String
+	 *            The Type of the entity that will be store/retrieve
 	 * @param entityClass
-	 *            Class of the entity that will be store/retrieve
-	 * @param secondaryKeyClass
-	 *            Class of the secondary key. This can usually be String
-	 * @param secondaryKeyName
-	 *            Name of the field that read request will be issued on.
+	 *            The Class of the entity that will be store/retrieve
 	 * @throws Exception
 	 */
-	// TODO write a function for adding extra secondary keys!
-	private <E extends JessyEntity, SK> void addEntity(Class<E> entityClass,
-			Class<SK> secondaryKeyClass, String secondaryKeyName)
+	public <E extends JessyEntity> void addEntity(Class<E> entityClass)
 			throws Exception {
 		dataStore.addPrimaryIndex(entityClass);
-		dataStore.addSecondaryIndex(entityClass, secondaryKeyClass,
-				secondaryKeyName);
-
+		dataStore.addSecondaryIndex(entityClass, String.class, "secondaryKey");
 		entityClasses.add(entityClass);
-
-	}
-
-	public <E extends JessyEntity, SK> void addEntity(Class<E> entityClass)
-			throws Exception {
-		addEntity(entityClass, String.class, "secondaryKey");
 	}
 
 	/**
+	 * Setup an additional secondary index in the data store for performing read
+	 * operations on entities with type <code>E</code>, and on the field of type
+	 * <code>SK</code>, named
+	 * <code>keyName<code> and annotated with {@link SecondaryKey}
+	 * 
+	 * @param <E>
+	 *            The Type of the entity that will be retrieve
+	 * @param <SK>
+	 *            The Type of the additional secondary key.
+	 * @param entityClass
+	 *            The Class of the entity that will be retrieve
+	 * @param keyClass
+	 *            The class of the additional secondary key
+	 * @param keyName
+	 *            The name of the additional secondary Key
+	 * @throws Exception
+	 */
+	public <E extends JessyEntity, SK> void addSecondaryIndex(
+			Class<E> entityClass, Class<SK> keyClass, String keyName)
+			throws Exception {
+
+		dataStore.addSecondaryIndex(entityClass, keyClass, keyName);
+	}
+
+	/**
+	 * This method should be called for reading an entity with a query on a
+	 * default secondary key.
+	 * <p>
 	 * Executes a read operation on Jessy. It first checks to see if the
 	 * transaction has written a value for the same entity or not. If it has
 	 * written a new value previously, it returns that value, otherwise, it
@@ -139,7 +158,7 @@ public abstract class Jessy {
 	 *            Class of the entity to read the value from.
 	 * @param keyValue
 	 *            The value of the secondary key
-	 * @return An entity with the secondary key value equals keyValue
+	 * @return The entity with the secondary key value equals keyValue
 	 */
 	public <E extends JessyEntity> E read(
 			TransactionHandler transactionHandler, Class<E> entityClass,
@@ -167,6 +186,63 @@ public abstract class Jessy {
 				entity = performRead(entityClass, "secondaryKey", keyValue,
 						executionHistory.getReadSet().getCompactVector());
 		}
+
+		if (entity != null) {
+			executionHistory.addReadEntity(entity);
+			return entity;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * TODO returned an already read entity from the local cache. This method
+	 * 
+	 * should be called for reading an entity with a query on keyName that is
+	 * not a default secondary key.
+	 * <p>
+	 * Executes a read operation on Jessy. It calls the
+	 * {@link Jessy#performRead(Class, String, Object, List)} method to read the
+	 * data.
+	 * <p>
+	 * This read is performed on {@link JessyEntity#getSecondaryKey()}
+	 * 
+	 * @param <E>
+	 *            The Type of the entity to read the value from.
+	 * @param <SK>
+	 *            The Type of the secondary key to read the value from.
+	 * @param entityClass
+	 *            The Class of the entity to read the value from.
+	 * @param keyName
+	 *            The name of the secondary key.
+	 * @param keyValue
+	 *            The value of the secondary key
+	 * @return The entity with the keyName field value equals keyValue
+	 */
+	public <E extends JessyEntity, SK> E read(
+			TransactionHandler transactionHandler, Class<E> entityClass,
+			String keyName, SK keyValue) throws Exception {
+
+		ExecutionHistory executionHistory = handler2executionHistory
+				.get(transactionHandler);
+
+		if (executionHistory == null) {
+			throw new NullPointerException("Transaction has not been started");
+		}
+
+		E entity;
+
+		/*
+		 * If keyName is null, then it is a read operation on the secondaryKey.
+		 * Otherwise, it is like a where clause. The query should be performed
+		 * on another field of the entity.
+		 */
+		if (keyName == null)
+			entity = performRead(entityClass, "secondaryKey", keyValue,
+					executionHistory.getReadSet().getCompactVector());
+		else
+			entity = performRead(entityClass, keyName, keyValue,
+					executionHistory.getReadSet().getCompactVector());
 
 		if (entity != null) {
 			executionHistory.addReadEntity(entity);
@@ -238,8 +314,9 @@ public abstract class Jessy {
 	/**
 	 * Add the entity into the createSet.
 	 * <p>
-	 * TODO It should be checked whether this entity has been put or not.
-	 * If the above rule is ensured by the client, then create is much faster. (only one write)
+	 * TODO It should be checked whether this entity has been put or not. If the
+	 * above rule is ensured by the client, then create is much faster. (only
+	 * one write)
 	 */
 	public <E extends JessyEntity> void create(
 			TransactionHandler transactionHandler, E entity)
@@ -316,10 +393,14 @@ public abstract class Jessy {
 	 * 
 	 * @param transactionHandler
 	 */
-	public void abortTransaction(TransactionHandler transactionHandler) {
-		handler2executionHistory.get(transactionHandler).changeState(
-				TransactionState.ABORTED_BY_CLIENT);
+	public ExecutionHistory abortTransaction(
+			TransactionHandler transactionHandler) {
+		ExecutionHistory executionHistory = handler2executionHistory
+				.get(transactionHandler);
+		executionHistory.changeState(TransactionState.ABORTED_BY_CLIENT);
 		abortedTransactions.add(transactionHandler);
+
+		return executionHistory;
 	}
 
 	/**
@@ -347,7 +428,7 @@ public abstract class Jessy {
 
 		}
 	}
-	
+
 	/**
 	 * Apply changes of a createSet of a committed transaction to the datastore.
 	 * 
@@ -379,9 +460,9 @@ public abstract class Jessy {
 	 * performed on {@link JessyEntity#getSecondaryKey()}
 	 * 
 	 * @param <E>
-	 *            Type of the entity to read the value from.
+	 *            The Type of the entity to read the value from.
 	 * @param entityClass
-	 *            Class of the entity to read the value from.
+	 *            The Class of the entity to read the value from.
 	 * @param keyValue
 	 * @return An entity with the secondary key value equals keyValue
 	 */

@@ -5,12 +5,12 @@ import java.util.concurrent.Callable;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.JessyEntity;
 
-public abstract class Transaction implements Callable<ExecutionHistory>{
+public abstract class Transaction implements Callable<ExecutionHistory> {
 
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
 
-	public Transaction(Jessy jessy) throws Exception{
+	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;
 		this.transactionHandler = jessy.startTransaction();
 	}
@@ -20,6 +20,11 @@ public abstract class Transaction implements Callable<ExecutionHistory>{
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
 			throws Exception {
 		return jessy.read(transactionHandler, entityClass, keyValue);
+	}
+
+	public <E extends JessyEntity, SK> E read(Class<E> entityClass, String keyName, SK keyValue)
+			throws Exception {
+		return jessy.read(transactionHandler, entityClass, keyName, keyValue);
 	}
 
 	public <E extends JessyEntity> void write(E entity)
@@ -35,11 +40,11 @@ public abstract class Transaction implements Callable<ExecutionHistory>{
 		return jessy.commitTransaction(transactionHandler);
 	}
 
-	public void abortTransaction(){
+	public void abortTransaction() {
 		jessy.abortTransaction(transactionHandler);
 	}
-	
-	public ExecutionHistory call(){
+
+	public ExecutionHistory call() {
 		return execute();
 	}
 
