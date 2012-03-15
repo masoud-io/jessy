@@ -44,7 +44,7 @@ public class NewOrder extends Transaction {
 			/* The district number (D_ID) is randomly selected within [1 .. 10] from the home warehouse (D_W_ID =
 			W_ID).*/
 			district_id = Integer.toString(rand.nextInt(10 - 1) + 1);
-			dis = read(District.class, "D_W_"+wh.getW_ID()+"D_"+district_id);
+			dis = read(District.class, "D_W_"+wh.getW_ID()+"_D_"+district_id);
 			/*
 			The non-uniform random customer number (C_ID) is selected using the NURand (1023,1,3000) function from
 			the selected district number (C_D_ID = D_ID) and the home warehouse number (C_W_ID = W_ID).
