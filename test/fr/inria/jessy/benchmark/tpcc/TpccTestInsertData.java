@@ -42,6 +42,11 @@ public class TpccTestInsertData {
 		jessy.addEntity(District.class);
 		jessy.addEntity(Customer.class);
 		jessy.addEntity(Item.class);
+		jessy.addEntity(Stock.class);
+		jessy.addEntity(History.class);
+		jessy.addEntity(Order.class);
+		jessy.addEntity(New_order.class);
+		jessy.addEntity(Order_line.class);
 		id = new InsertData(jessy);
 		vid = new TpccVerifyInsertedData(jessy);
 
