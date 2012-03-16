@@ -42,7 +42,7 @@ public class Order_line extends JessyEntity {
 	private String OL_SUPPLY_W_ID;
 	private Date OL_DELIVERY_D;
 	private int OL_QUANTITY;
-	private int OL_AMOUNT;
+	private double OL_AMOUNT;
 	private String OL_DIST_INFO;
 
 	/**
@@ -80,7 +80,7 @@ public class Order_line extends JessyEntity {
 		return OL_QUANTITY;
 	}
 	
-	public int getOL_AMOUNT() {
+	public double getOL_AMOUNT() {
 		return OL_AMOUNT;
 	}
 	
@@ -124,8 +124,8 @@ public class Order_line extends JessyEntity {
 		this.OL_QUANTITY = OL_QUANTITY;
 	}
 	
-	public void setOL_AMOUNT(int OL_AMOUNT) {
-		this.OL_AMOUNT = OL_AMOUNT;
+	public void setOL_AMOUNT(double d) {
+		this.OL_AMOUNT = d;
 	}
 	
 	public void setOL_DIST_INFO(String OL_DIST_INFO) {

@@ -2,6 +2,10 @@ package fr.inria.jessy.benchmark.tpcc;
 
 import java.util.Random;
 
+/**
+ * @author Wang Haiyun & ZHAO Guang
+ * 
+ */
 public class NURand {
 	public NURand(){
 		

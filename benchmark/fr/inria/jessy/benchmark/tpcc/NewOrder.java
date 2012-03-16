@@ -8,6 +8,10 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Wang Haiyun & ZHAO Guang
+ * 
+ */
 public class NewOrder extends Transaction {
 	/* this class is written according to tpcc section 2.4.2*/
 	public NewOrder(Jessy jessy) throws Exception{
@@ -58,7 +62,7 @@ public class NewOrder extends Transaction {
 			no.setNO_W_ID(wh.getW_ID());
 			no.setNO_D_ID(dis.getD_ID());
 			no.setNO_O_ID(Integer.toString(dis.getD_NEXT_O()));
-			create(no);
+			write(no);
 
 			/*setting up an entity in Order*/
 			o = new Order("O_W_"+wh.getW_ID()+"_O_D_"+dis.getD_ID()+"_O_"+dis.getD_NEXT_O());
@@ -73,7 +77,7 @@ public class NewOrder extends Transaction {
 			o.setO_ENTRY_D(new Date());
 			o.setO_ALL_LOCAL(1);
 			o.setO_OL_CNT(O_OL_CNT);
-			create(o);
+			write(o);
 			
 			dis.setD_NEXT_O(dis.getD_NEXT_O()+1);
 			write(dis);
@@ -133,7 +137,7 @@ public class NewOrder extends Transaction {
 				ol.setOL_QUANTITY(OL_QUANTITY);
 				ol.setOL_W_ID(wh.getW_ID());
 				ol.setOL_D_ID(dis.getD_ID());
-				create(ol);
+				write(ol);
 				
 				/*if this item meet the roll back condition, we perform the roll back */
 				if( i == (ol_cnt-1) && rbk == 1){
@@ -141,7 +145,6 @@ public class NewOrder extends Transaction {
 					 * roll back
 					 * do we have a roll back action with jessy?
 					 */
-					
 					
 				}
 			}

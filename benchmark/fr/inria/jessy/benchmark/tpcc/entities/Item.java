@@ -36,7 +36,7 @@ public class Item extends JessyEntity {
 	private String I_ID;
 	private String I_IM_ID;
 	private String I_NAME;
-	private int I_PRICE;
+	private double I_PRICE;
 	private String I_DATA;
 	
 	/**
@@ -54,7 +54,7 @@ public class Item extends JessyEntity {
 		return I_NAME;
 	}
 	
-	public int getI_PRICE() {
+	public double getI_PRICE() {
 		return I_PRICE;
 	}
 	
@@ -78,8 +78,8 @@ public class Item extends JessyEntity {
 		this.I_NAME = I_NAME;
 	}
 	
-	public void setI_PRICE(int I_PRICE) {
-		this.I_PRICE = I_PRICE;
+	public void setI_PRICE(double d) {
+		this.I_PRICE = d;
 	}
 	
 	public void setI_DATA(String I_DATA) {
