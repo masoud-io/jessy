@@ -39,9 +39,9 @@ import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
-
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.util.Bytes;
+
 
 /**
  * HBase client for YCSB framework
@@ -50,7 +50,7 @@ public class HBaseClient extends com.yahoo.ycsb.DB
 {
     // BFC: Change to fix broken build (with HBase 0.20.6)
     //private static final Configuration config = HBaseConfiguration.create();
-    private static final Configuration  config = HBaseConfiguration.create();
+    private static final  Configuration config =HBaseConfiguration.create();
 
     public boolean _debug=false;
 
@@ -74,9 +74,11 @@ public class HBaseClient extends com.yahoo.ycsb.DB
     public HBaseClient () throws DBException {
     	super();
     	init();
+    	
     }
 	public void init() throws DBException
 	{
+		
 		getProperties().setProperty("columnfamily", "value");
 		if ( (getProperties().getProperty("debug")!=null) &&
 				(getProperties().getProperty("debug").compareTo("true")==0) )

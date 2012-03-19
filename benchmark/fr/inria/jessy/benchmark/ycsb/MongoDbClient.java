@@ -15,8 +15,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBAddress;
@@ -41,7 +41,7 @@ import com.yahoo.ycsb.DBException;
 */
 public class MongoDbClient extends DB {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoDbClient.class);
+   // private static final Logger logger = LoggerFactory.getLogger(MongoDbClient.class);
 
     private Mongo mongo;
     private WriteConcern writeConcern;
@@ -54,8 +54,11 @@ public class MongoDbClient extends DB {
     public void init() throws DBException {
         // initialize MongoDb driver
         Properties props = getProperties();
-        String url = props.getProperty("mongodb.url");
-        database = props.getProperty("mongodb.database");
+       // String url = props.getProperty("mongodb.url");
+        String url = "mongodb://127.0.0.1";
+       // database = props.getProperty("mongodb.database");
+       database = "ycsb";
+       
         String writeConcernType = props.getProperty("mongodb.writeConcern");
 
         if ("none".equals(writeConcernType)) {
@@ -76,10 +79,12 @@ public class MongoDbClient extends DB {
             }
 
             mongo = new Mongo(new DBAddress(url));
+            
         } catch (Exception e1) {
-            logger.error(
-                    "Could not initialize MongoDB connection pool for Loader: "
-                            + e1, e1);
+        	e1.printStackTrace();
+  //          logger.error(
+  //                  "Could not initialize MongoDB connection pool for Loader: "
+  //                          + e1, e1);
             return;
         }
 
@@ -110,7 +115,8 @@ public class MongoDbClient extends DB {
 
             return (Long) errors.get("n") == 1 ? 0 : 1;
         } catch (Exception e) {
-            logger.error(e + "", e);
+        	e.printStackTrace();
+        //    logger.error(e + "", e);
             return 1;
         }
 	finally
@@ -133,6 +139,7 @@ public class MongoDbClient extends DB {
 * @return Zero on success, a non-zero error code on error. See this class's description for a discussion of error codes.
 */
     public int insert(String table, String key, HashMap<String, String> values) {
+
         com.mongodb.DB db = null;
         try {
             db = mongo.getDB(database);
@@ -150,11 +157,13 @@ public class MongoDbClient extends DB {
             // determine if record was inserted, does not seem to return
             // n=<records affected> for insert
             DBObject errors = db.getLastError();
-
-            return (Boolean) errors.get("ok") && errors.get("err") == null ? 0
-                    : 1;
+           
+            boolean b = errors.get("ok")!=null && errors.get("err") == null;
+            return b ? 0 : 1;
+                  
         } catch (Exception e) {
-            logger.error(e + "", e);
+ //           logger.error(e + "", e);
+        	e.printStackTrace();
             return 1;
         } finally {
 	   if (db!=null)
@@ -205,7 +214,8 @@ public class MongoDbClient extends DB {
             }
             return queryResult != null ? 0 : 1;
         } catch (Exception e) {
-            logger.error(e + "", e);
+  //          logger.error(e + "", e);
+        	e.printStackTrace();
             return 1;
         } finally {
 	   if (db!=null)
@@ -257,7 +267,7 @@ public class MongoDbClient extends DB {
 
             return (Integer) errors.get("n") == 1 ? 0 : 1;
         } catch (Exception e) {
-            logger.error(e + "", e);
+  //          logger.error(e + "", e);
             return 1;
         } finally {
 	   if (db!=null)
@@ -298,7 +308,9 @@ public class MongoDbClient extends DB {
 
             return 0;
         } catch (Exception e) {
-            logger.error(e + "", e);
+        	e.printStackTrace();
+        	
+ //           logger.error(e + "", e);
             return 1;
         }
 	finally
