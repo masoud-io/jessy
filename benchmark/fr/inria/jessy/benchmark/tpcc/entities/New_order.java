@@ -31,7 +31,7 @@ public class New_order extends JessyEntity {
 		super("","");
 	}
 
-	private String NO_O_ID;
+	private int NO_O_ID;
 	private String NO_D_ID;
 	private String NO_W_ID;
 
@@ -40,7 +40,7 @@ public class New_order extends JessyEntity {
 	 */
 
 
-	public String getNO_O_ID() {
+	public int getNO_O_ID() {
 		return NO_O_ID;
 	}
 	
@@ -55,7 +55,7 @@ public class New_order extends JessyEntity {
 	 * @param data
 	 *            the data to set
 	 */
-	public void setNO_O_ID(String NO_O_ID) {
+	public void setNO_O_ID(int NO_O_ID) {
 		this.NO_O_ID = NO_O_ID;
 	}
 

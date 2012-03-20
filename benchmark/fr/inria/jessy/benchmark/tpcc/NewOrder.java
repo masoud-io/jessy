@@ -61,7 +61,7 @@ public class NewOrder extends Transaction {
 			no = new New_order("NO_W_"+wh.getW_ID()+"_NO_D_"+dis.getD_ID()+"_NO_O_"+dis.getD_NEXT_O());
 			no.setNO_W_ID(wh.getW_ID());
 			no.setNO_D_ID(dis.getD_ID());
-			no.setNO_O_ID(Integer.toString(dis.getD_NEXT_O()));
+			no.setNO_O_ID(dis.getD_NEXT_O());
 			write(no);
 
 			/*setting up an entity in Order*/
@@ -69,7 +69,7 @@ public class NewOrder extends Transaction {
 			o.setO_C_ID(cus.getC_ID());
 			o.setO_D_ID(dis.getD_ID());
 			o.setO_W_ID(wh.getW_ID());
-			o.setO_ID(Integer.toString(dis.getD_NEXT_O()));
+			o.setO_ID(dis.getD_NEXT_O());
 			o.setO_CARRIER_ID(null);
 			/*TODO
 			 * How can we get current sys time?

@@ -43,7 +43,7 @@ public class History extends JessyEntity {
 	private String H_D_ID;
 	private String H_W_ID;
 	private Date H_DATE;
-	private int H_AMOUNT;
+	private double H_AMOUNT;
 	private String H_DATA;
 	/**
 	 * @return the data
@@ -70,7 +70,7 @@ public class History extends JessyEntity {
 		return H_DATE;
 	}
 
-	public int getH_AMOUNT() {
+	public double getH_AMOUNT() {
 		return H_AMOUNT;
 	}
 	
@@ -106,7 +106,7 @@ public class History extends JessyEntity {
 		this.H_DATE = H_DATE;
 	}
 	
-	public void setH_AMOUNT(int H_AMOUNT) {
+	public void setH_AMOUNT(double H_AMOUNT) {
 		this.H_AMOUNT = H_AMOUNT;
 	}
 	

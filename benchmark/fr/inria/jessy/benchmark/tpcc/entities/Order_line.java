@@ -34,7 +34,7 @@ public class Order_line extends JessyEntity {
 		super("","");
 	}
 
-	private String OL_O_ID;
+	private int OL_O_ID;
 	private String OL_D_ID;
 	private String OL_W_ID;
 	private String OL_NUMBER;
@@ -48,7 +48,7 @@ public class Order_line extends JessyEntity {
 	/**
 	 * @return the data
 	 */
-	public String getOL_O_ID() {
+	public int getOL_O_ID() {
 		return OL_O_ID;
 	}
 	
@@ -92,7 +92,7 @@ public class Order_line extends JessyEntity {
 	 * @param data
 	 *            the data to set
 	 */
-	public void setOL_O_ID(String OL_O_ID) {
+	public void setOL_O_ID(int OL_O_ID) {
 		this.OL_O_ID = OL_O_ID;
 	}
 	

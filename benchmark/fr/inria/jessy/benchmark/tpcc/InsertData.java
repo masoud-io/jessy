@@ -171,7 +171,7 @@ public class InsertData extends Transaction {
 						no = new New_order("NO_W_"+wh.getW_ID()+"_NO_D_"+dis.getD_ID()+"_NO_O_"+2101+k);
 						no.setNO_W_ID(wh.getW_ID());
 						no.setNO_D_ID(dis.getD_ID());
-						no.setNO_O_ID(Integer.toString(2101+k));
+						no.setNO_O_ID(2101+k);
 						create(no);
 					}
 				}
