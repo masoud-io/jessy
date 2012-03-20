@@ -22,6 +22,13 @@ public class InsertData extends Transaction {
 			int i, j, k, l;
 			Random rand = new Random(System.currentTimeMillis());			
 			String[] lastnames = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE", "ANTI", "CALLY", "ATION", "EING"};
+			int[] randCustomerId = new int[3000];
+			for(i=0; i<3000; i++){
+				randCustomerId[i] = i;
+			}
+			for(i=0; i<3000; i++){// random permutation, used in create Order
+				randCustomerId[i] = randCustomerId[rand.nextInt(3000)];
+			}
 			String lastname;
 			Warehouse wh;	
 			Stock st;
@@ -32,6 +39,7 @@ public class InsertData extends Transaction {
 			Order or;
 			Order_line ol;
 			New_order no;
+			NURand nu;
 			
 			/*for i  warehouses*/
 			for(i=0; i<1; i++){			
@@ -97,11 +105,17 @@ public class InsertData extends Transaction {
 						cus.setC_ID(Integer.toString(k));
 						cus.setC_D_ID(dis.getD_ID());
 						cus.setC_W_ID(wh.getW_ID());
-						lastname = "";
-						for(l=0; l<3; l++){
-							lastname = lastname+lastnames[rand.nextInt(10)]; /* 0..9 */
+						if(k<1000){//first 1000 customers
+							lastname = "";
+							for(l=0; l<3; l++){
+								lastname = lastname+lastnames[rand.nextInt(10)]; /* 0..9 */
+							}
+							cus.setC_LAST(lastname);
 						}
-						cus.setC_LAST(lastname);
+						else{
+							nu = new NURand(255, 0, 999);
+							cus.setC_LAST(Integer.toString(nu.calculate()));
+						}
 						cus.setC_MIDDLE("OE");
 						cus.setC_FIRST(NString.generate(8, 16));
 						cus.setC_STREET_1(NString.generate(10, 20));
@@ -127,15 +141,21 @@ public class InsertData extends Transaction {
 						create(cus);
 						
 						//each customer has 1 history
-						//TODO
+						hi = new History("H_C_W_"+wh.getW_ID()+"_H_C_D_"+dis.getD_ID()+"_H_C_"+cus.getC_ID());
+						hi.setH_C_W_ID(wh.getW_ID());
+						hi.setH_C_D_ID(dis.getD_ID());
+						hi.setH_C_ID(cus.getC_ID());
+						hi.setH_DATE(new Date());
+						hi.setH_AMOUNT(10.00);
+						hi.setH_DATA(NString.generate(12, 24));
+						create(hi);
 															
 					}
 					
 					/*each district has 3000 order*/
 					for(k=0; k< 3000; k++){
 						or = new Order("O_W_"+wh.getW_ID()+"_O_D_"+dis.getD_ID()+"_O_"+k);
-						//TODO
-						//or.setO_C_ID(O_C_ID)
+						or.setO_C_ID(Integer.toString(randCustomerId[k]));
 						or.setO_W_ID(wh.getW_ID());
 						or.setO_D_ID(dis.getD_ID());
 						or.setO_ENTRY_D(new Date());
