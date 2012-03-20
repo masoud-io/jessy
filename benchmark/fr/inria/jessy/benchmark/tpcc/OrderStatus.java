@@ -15,7 +15,7 @@ public class OrderStatus extends Transaction {
 	private String C_D_ID; 
 	private String C_ID;
 	private String C_LAST;
-	private String O_ID;
+	private String O_ID; 
 
 	public OrderStatus(Jessy jessy) throws Exception {
 		super(jessy);
