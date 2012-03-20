@@ -22,11 +22,11 @@ public class InsertData extends Transaction {
 			int i, j, k, l;
 			Random rand = new Random(System.currentTimeMillis());			
 			String[] lastnames = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE", "ANTI", "CALLY", "ATION", "EING"};
-			int[] randCustomerId = new int[3000];
+			int[] randCustomerId = new int[3000]; // random permutation, used while creating Order table
 			for(i=0; i<3000; i++){
 				randCustomerId[i] = i;
 			}
-			for(i=0; i<3000; i++){// random permutation, used in create Order
+			for(i=0; i<3000; i++){
 				randCustomerId[i] = randCustomerId[rand.nextInt(3000)];
 			}
 			String lastname;
@@ -175,13 +175,15 @@ public class InsertData extends Transaction {
 							ol.setOL_NUMBER(Integer.toString(l));
 							ol.setOL_I_ID(Integer.toString(rand.nextInt(100000)+1)); //[1..100000]
 							ol.setOL_SUPPLY_W_ID(wh.getW_ID());
-							if(l < 2101)
+							if(l < 2101){
 								ol.setOL_DELIVERY_D(or.getO_ENTRY_D());
-							else ol.setOL_DELIVERY_D(null);
-							ol.setOL_QUANTITY(5);
-							if(l < 2101)
 								ol.setOL_AMOUNT(0.00);
-							else ol.setOL_AMOUNT(rand.nextFloat()*9999.99); //[0.01 .. 9999.99]
+							}
+							else{
+								ol.setOL_DELIVERY_D(null);
+								ol.setOL_AMOUNT(rand.nextFloat()*9999.99); //[0.01 .. 9999.99]
+							}
+							ol.setOL_QUANTITY(5);
 							ol.setOL_DIST_INFO(NString.generateFix(24));
 							create(ol);
 						}
