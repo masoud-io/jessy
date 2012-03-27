@@ -1,7 +1,6 @@
 package fr.inria.jessy.store;
 
 import java.io.File;
-import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -15,7 +14,7 @@ import fr.inria.jessy.entity.SampleEntityClass;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class DataStoreTest extends TestCase{
+public class DataStoreTest extends TestCase {
 
 	DataStore dsPut;
 
@@ -52,7 +51,7 @@ public class DataStoreTest extends TestCase{
 
 		SampleEntityClass ec;
 		for (int i = 0; i < 10000; i++) {
-			ec = new SampleEntityClass("" + i, "ver1");
+			ec = new SampleEntityClass("" + i, "ver1_of" + i);
 			dsGet.put(ec);
 		}
 
@@ -90,10 +89,11 @@ public class DataStoreTest extends TestCase{
 	public void testGet() {
 		// TODO incorporate vectors in the test
 
-		SampleEntityClass result = dsGet2.get(SampleEntityClass.class,
-				"secondaryKey", "1");
+		ReadRequest<SampleEntityClass, String> readRequest = new ReadRequest<SampleEntityClass, String>(
+				SampleEntityClass.class, "secondaryKey", "1", null);
+		ReadReply<SampleEntityClass> reply= dsGet2.get(readRequest);
 
-		assertEquals("Result", "1", result.getSecondaryKey());
+		assertEquals("Result",  "ver1_of1", reply.getEntity().getData());
 	}
 
 	/**
@@ -102,57 +102,21 @@ public class DataStoreTest extends TestCase{
 	 */
 	@Test
 	public void testDelete() {
-		SampleEntityClass getResult = dsGet.get(SampleEntityClass.class,
-				"secondaryKey", "0");
-		assertEquals("Result", "0", getResult.getSecondaryKey());
+		ReadRequest<SampleEntityClass, String> readRequest = new ReadRequest<SampleEntityClass, String>(
+				SampleEntityClass.class, "secondaryKey", "0", null);
+		ReadReply reply = dsGet.get(readRequest);
+		assertEquals("Result", "0", reply.getEntity().getSecondaryKey());
 
 		boolean deleteResult = dsGet.delete(SampleEntityClass.class,
 				"secondaryKey", "" + 0);
 
 		assertFalse(!deleteResult);
 
-		getResult = dsGet.get(SampleEntityClass.class, "secondaryKey", "0");
-		assertNull(getResult);
+		ReadReply reply2;
+		reply2 = dsGet.get(readRequest);
+		assertNull(reply2.getEntity());
 
 	}
 
-	/**
-	 * Test method for
-	 * {@link fr.inria.jessy.store.DataStore#put(fr.inria.jessy.store.JessyEntity)}
-	 * .
-	 * 
-	 */
-	@Test(timeout = 1000)
-	public void testPutPerformance() {
-		SampleEntityClass ec;
-		for (int i = 0; i < 50000; i++) {
-			ec = new SampleEntityClass("" + i, "ver1");
-			dsPut.put(ec);
-		}
-
-		assertTrue(true);
-
-	}
-
-	/**
-	 * Test method for
-	 * {@link fr.inria.jessy.store.DataStore#put(fr.inria.jessy.store.JessyEntity)}
-	 * .
-	 */
-	@Test(timeout = 1000)
-	public void testGetPerformance() {
-		Random rnd = new Random(System.currentTimeMillis());
-		int id;
-
-		SampleEntityClass result;
-		for (int i = 0; i < 10000; i++) {
-			id = rnd.nextInt(10000);
-			result = dsGet2.get(SampleEntityClass.class, "secondaryKey", ""
-					+ id);
-		}
-
-		assertTrue(true);
-
-	}
 
 }
