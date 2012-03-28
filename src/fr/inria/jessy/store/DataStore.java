@@ -1,18 +1,22 @@
 package fr.inria.jessy.store;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.persist.EntityCursor;
+import com.sleepycat.persist.EntityJoin;
 import com.sleepycat.persist.EntityStore;
+import com.sleepycat.persist.ForwardCursor;
 import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
+import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
@@ -226,18 +230,23 @@ public class DataStore {
 	 * Get an entity object previously put inside data store. This entity object
 	 * should be {@link Vector#isCompatible(CompactVector)} with the readSet
 	 * vector.
+	 * <p>
+	 * Note: This method only returns one entity. Thus, it only works for a
+	 * secondaryKey that is considered unique key in the application. Of course,
+	 * they are not unique key inside BerkeleyDB because of storing different
+	 * versions with different {@link Vector}.
 	 * 
 	 * @param <E>
 	 *            the type that extends JessyEntity
 	 * @param <SK>
 	 *            the type of the secondary key field (annotated with
-	 * @SecondaryIndex)
+	 * @SecondaryKey)
 	 * @param <V>
 	 * @param entityClass
 	 *            the class that extends JessyEntity
 	 * @param secondaryKeyName
 	 *            Name of the secondary key field (annotated with
-	 * @SecondaryIndex)
+	 * @SecondaryKey)
 	 * @param keyValue
 	 *            the value of the secondary key.
 	 * @param readSet
@@ -277,6 +286,70 @@ public class DataStore {
 	}
 
 	/**
+	 * Performs a query on several secondary keys, and returns the result set as
+	 * a collection. All entities inside the collection should be
+	 * {@link Vector#isCompatible(CompactVector)} with the readSet vector.
+	 * 
+	 * @param <E>
+	 *            the type that extends JessyEntity
+	 * @param <SK>
+	 *            the type of the secondary key field (annotated with
+	 * @SecondaryKey)
+	 * @param entityClass
+	 *            the class that extends JessyEntity
+	 * @param keyNameToValues
+	 *            Map the name of the secondary key field (annotated with
+	 * @SecondaryKey) to the desired value for the query.
+	 * @param readSet
+	 *            a compact vector that compactly contains versions of all
+	 *            previously read entities.
+	 * @return A collection of entities that the values of their keys are equal
+	 *         to {@code keyNameToValues}
+	 * @throws NullPointerException
+	 */
+	@SuppressWarnings("unchecked")
+	private <E extends JessyEntity, SK> Collection<E> get(Class<E> entityClass,
+			Map<String, SK> keyNameToValues, CompactVector<String> readSet)
+			throws NullPointerException {
+		try {
+
+			String key;
+			SecondaryIndex<SK, Long, E> sindex;
+			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
+					.get(entityClass.getClass().getName());
+			EntityJoin<Long, E> entityJoin = new EntityJoin<Long, E>(pindex);
+
+			Iterator<String> keys = keyNameToValues.keySet().iterator();
+			while (keys.hasNext()) {
+				key = keys.next();
+				sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
+						.get(entityClass.getName() + key);
+				entityJoin.addCondition(sindex, keyNameToValues.get(key));
+			}
+
+			Map<String, E> results = new HashMap<String, E>();
+			ForwardCursor<E> cur = entityJoin.entities();
+
+			try {
+				for (E entity : cur) {
+					// FIXME Should the readSet be updated updated upon each
+					// read?!
+					if (entity.getLocalVector().isCompatible(readSet)) {
+						// Always writes the most recent committed version
+						results.put(entity.getKey(), entity);
+					}
+				}
+			} finally {
+				cur.close();
+			}
+
+			return results.values();
+		} catch (NullPointerException ex) {
+			throw new NullPointerException("SecondaryIndex cannot be found");
+		}
+	}
+
+	/**
 	 * Get the value of an entity object previously put.
 	 * 
 	 * @param <E>
@@ -287,14 +360,32 @@ public class DataStore {
 	 * @return
 	 * @throws NullPointerException
 	 */
-	public <E extends JessyEntity, SK> ReadReply<E> get(ReadRequest<E, SK> readRequest)
-			throws NullPointerException {
-		E entity= get(readRequest.getEntityClass(), readRequest.getKeyName(),
-				readRequest.getKeyvalue(),readRequest.getReadSet());
-		
+	public <E extends JessyEntity, SK> ReadReply<E> get(
+			ReadRequest<E, SK> readRequest) throws NullPointerException {
+		E entity = get(readRequest.getEntityClass(), readRequest.getKeyName(),
+				readRequest.getKeyvalue(), readRequest.getReadSet());
+
 		return new ReadReply<E>(entity, readRequest.getReadRequestId());
 	}
+	
+	/**
+	 * Get the value of an entity object previously put.
+	 * 
+	 * @param <E>
+	 *            the type that extends JessyEntity
+	 * @param <SK>
+	 *            the type of the secondary key field (annotated with
+	 * @param readRequest
+	 * @return
+	 * @throws NullPointerException
+	 */
+	public <E extends JessyEntity, SK> ReadReply<E> get(
+			ReadRequest<E, SK> readRequest) throws NullPointerException {
+		E entity = get(readRequest.getEntityClass(), readRequest.getKeyName(),
+				readRequest.getKeyvalue(), readRequest.getReadSet());
 
+		return new ReadReply<E>(entity, readRequest.getReadRequestId());
+	}
 
 	/**
 	 * Delete an entity with the provided secondary key from the berkeyley DB.
