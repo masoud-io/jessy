@@ -2,6 +2,7 @@ package fr.inria.jessy;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +16,7 @@ import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 import fr.inria.jessy.transaction.TransactionHandler;
@@ -197,10 +199,11 @@ public abstract class Jessy {
 	}
 
 	/**
-	 * TODO returned an already read entity from the local cache. This method
+	 * TODO returned an already read entity from the local cache.
 	 * 
-	 * should be called for reading an entity with a query on keyName that is
-	 * not a default secondary key.
+	 * This method should be called for reading an entity with a query on
+	 * keyName that is not a default secondary key. It returns only one entity,
+	 * thus the key should be unique key.
 	 * <p>
 	 * Executes a read operation on Jessy. It calls the
 	 * {@link Jessy#performRead(Class, String, Object, List)} method to read the
@@ -254,6 +257,52 @@ public abstract class Jessy {
 	}
 
 	/**
+	 * 
+	 * Executes a read operation ONLY on Jessy. It calls the
+	 * {@link Jessy#performRead(Class, String, Object, List)} method to read the
+	 * data.
+	 * <p>
+	 * This read is performed on all keys provided {@code keys} This method
+	 * never checks local cache!!!!
+	 * <p>
+	 * If the cardinality is not known in advance, always use this method since
+	 * it returns all consistent entities corresponding to the keys.
+	 * 
+	 * @param <E>
+	 *            The Type of the entity to read the value from.
+	 * @param <SK>
+	 *            The Type of the secondary key to read the value from.
+	 * @param entityClass
+	 *            The Class of the entity to read the value from.
+	 * @param keyName
+	 *            The name of the secondary key.
+	 * @param keyValue
+	 *            The value of the secondary key
+	 * @return The entity with the keyName field value equals keyValue
+	 */
+	public <E extends JessyEntity, SK> Collection<E> read(
+			TransactionHandler transactionHandler, Class<E> entityClass,
+			List<ReadRequestKey<?>> keys) throws Exception {
+
+		ExecutionHistory executionHistory = handler2executionHistory
+				.get(transactionHandler);
+
+		if (executionHistory == null) {
+			throw new NullPointerException("Transaction has not been started");
+		}
+
+		Collection<E> entities = performRead(entityClass, keys,
+				executionHistory.getReadSet().getCompactVector());
+
+		if (entities != null) {
+			executionHistory.addReadEntity(entities);
+			return entities;
+		} else {
+			return null;
+		}
+	}
+
+	/**
 	 * Performs a local or remote read operation depending on the specific
 	 * implementation of Jessy.
 	 * 
@@ -274,7 +323,32 @@ public abstract class Jessy {
 	 */
 	protected abstract <E extends JessyEntity, SK> E performRead(
 			Class<E> entityClass, String keyName, SK keyValue,
-			CompactVector<String> readSet) throws InterruptedException, ExecutionException;
+			CompactVector<String> readSet) throws InterruptedException,
+			ExecutionException;
+
+	/**
+	 * Performs a local or remote read operation depending on the specific
+	 * implementation of Jessy on all provided keys.
+	 * 
+	 * @param <E>
+	 *            Type of the entity to read the value from.
+	 * @param <SK>
+	 *            Type of the secondary key to read the value from.
+	 * @param entityClass
+	 *            Class of the entity to read the value from.
+	 * @param keyName
+	 *            The name of the secondary key
+	 * @param keyValue
+	 *            The value of the secondary key
+	 * @param readList
+	 *            List of vectors of already executed read operations.
+	 * @return An entity with the secondary key equals keyName and its value
+	 *         equals keyValue
+	 */
+	protected abstract <E extends JessyEntity> Collection<E> performRead(
+			Class<E> entityClass, List<ReadRequestKey<?>> keys,
+			CompactVector<String> readSet) throws InterruptedException,
+			ExecutionException;
 
 	/**
 	 * Stores the entity locally. The locally stored entities will be stored in

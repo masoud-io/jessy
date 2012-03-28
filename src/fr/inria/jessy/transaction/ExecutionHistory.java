@@ -1,8 +1,10 @@
 package fr.inria.jessy.transaction;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 
@@ -114,6 +116,10 @@ public class ExecutionHistory {
 
 	public <E extends JessyEntity> void addReadEntity(E entity) {
 		readSet.addEntity(entity);
+	}
+
+	public <E extends JessyEntity> void addReadEntity(Collection<E> entities) {
+		readSet.addEntity(entities);
 	}
 
 	public <E extends JessyEntity> void addWriteEntity(E entity) {

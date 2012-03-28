@@ -60,7 +60,7 @@ public class RemoteReader implements Learner{
 		replies = new HashMap<UUID, Future<? extends JessyEntity>>();
 	}
 	
-	public <E extends JessyEntity, SK> Future<E> remoteRead(ReadRequest<E, SK> readRequest){
+	public <E extends JessyEntity> Future<E> remoteRead(ReadRequest<E> readRequest){
 		assert !Partitioner.getInstance().isLocal(readRequest.getPartitioningKey());
 		Future<E> reply = pool.submit(new RemoteReadRequestTask(readRequest));
 		replies.put(readRequest.getReadRequestId(), reply);
@@ -111,11 +111,11 @@ public class RemoteReader implements Learner{
 	}
 
 	
-	class  RemoteReadRequestTask<E extends JessyEntity, SK> implements Callable<E>{
+	class  RemoteReadRequestTask<E extends JessyEntity> implements Callable<E>{
 		
-		private ReadRequest<E,SK> request;
+		private ReadRequest<E> request;
 		
-		private RemoteReadRequestTask(ReadRequest<E,SK> readRequest){
+		private RemoteReadRequestTask(ReadRequest<E> readRequest){
 			this.request=readRequest;
 		}
 		

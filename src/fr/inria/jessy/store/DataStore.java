@@ -1,10 +1,16 @@
 package fr.inria.jessy.store;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import javax.lang.model.type.TypeVariable;
+
+import org.junit.Test;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
@@ -309,22 +315,19 @@ public class DataStore {
 	 */
 	@SuppressWarnings("unchecked")
 	private <E extends JessyEntity, SK> Collection<E> get(Class<E> entityClass,
-			Map<String, SK> keyNameToValues, CompactVector<String> readSet)
+			List<ReadRequestKey<?>> keys, CompactVector<String> readSet)
 			throws NullPointerException {
 		try {
 
-			String key;
-			SecondaryIndex<SK, Long, E> sindex;
+			SecondaryIndex sindex;
 			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
 					.get(entityClass.getClass().getName());
 			EntityJoin<Long, E> entityJoin = new EntityJoin<Long, E>(pindex);
 
-			Iterator<String> keys = keyNameToValues.keySet().iterator();
-			while (keys.hasNext()) {
-				key = keys.next();
-				sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
-						.get(entityClass.getName() + key);
-				entityJoin.addCondition(sindex, keyNameToValues.get(key));
+			for (ReadRequestKey key : keys) {
+				sindex = secondaryIndexes.get(entityClass.getName()
+						+ key.getKeyName());
+				entityJoin.addCondition(sindex, key.getKeyValue());
 			}
 
 			Map<String, E> results = new HashMap<String, E>();
@@ -361,30 +364,23 @@ public class DataStore {
 	 * @throws NullPointerException
 	 */
 	public <E extends JessyEntity, SK> ReadReply<E> get(
-			ReadRequest<E, SK> readRequest) throws NullPointerException {
-		E entity = get(readRequest.getEntityClass(), readRequest.getKeyName(),
-				readRequest.getKeyvalue(), readRequest.getReadSet());
+			ReadRequest<E> readRequest) throws NullPointerException {
 
-		return new ReadReply<E>(entity, readRequest.getReadRequestId());
-	}
-	
-	/**
-	 * Get the value of an entity object previously put.
-	 * 
-	 * @param <E>
-	 *            the type that extends JessyEntity
-	 * @param <SK>
-	 *            the type of the secondary key field (annotated with
-	 * @param readRequest
-	 * @return
-	 * @throws NullPointerException
-	 */
-	public <E extends JessyEntity, SK> ReadReply<E> get(
-			ReadRequest<E, SK> readRequest) throws NullPointerException {
-		E entity = get(readRequest.getEntityClass(), readRequest.getKeyName(),
-				readRequest.getKeyvalue(), readRequest.getReadSet());
+		if (readRequest.getKeys().size() == 1) {
+			ReadRequestKey readRequestKey = readRequest.getKeys().get(0);
+			E entity = get(readRequest.getEntityClass(),
+					readRequestKey.getKeyName(), readRequestKey.getKeyValue(),
+					readRequest.getReadSet());
 
-		return new ReadReply<E>(entity, readRequest.getReadRequestId());
+			return new ReadReply<E>(entity, readRequest.getReadRequestId());
+
+		} else {
+			Collection<E> result = get(readRequest.getEntityClass(),
+					readRequest.getKeys(), readRequest.getReadSet());
+
+			return new ReadReply<E>(result, readRequest.getReadRequestId());
+		}
+
 	}
 
 	/**

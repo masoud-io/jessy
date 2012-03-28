@@ -1,6 +1,8 @@
 package fr.inria.jessy.store;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 
 import fr.inria.jessy.ConstantPool;
@@ -9,10 +11,16 @@ public class ReadReply<E extends JessyEntity> implements Serializable {
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	UUID readRequestId;
-	E entity;
+	Collection<E> entities;
 
 	public ReadReply(E entity, UUID correspondingReadRequestId) {
-		this.entity = entity;
+		entities = new ArrayList<E>();
+		this.entities.add(entity);
+		this.readRequestId = correspondingReadRequestId;
+	}
+
+	public ReadReply(Collection<E> entities, UUID correspondingReadRequestId) {
+		this.entities = entities;
 		this.readRequestId = correspondingReadRequestId;
 	}
 
@@ -20,9 +28,8 @@ public class ReadReply<E extends JessyEntity> implements Serializable {
 		return readRequestId;
 	}
 
-	public E getEntity() {
-		return entity;
+	public Collection<E> getEntity() {
+		return entities;
 	}
-	
-	
+
 }

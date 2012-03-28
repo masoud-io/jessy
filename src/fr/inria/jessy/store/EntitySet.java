@@ -65,11 +65,24 @@ public class EntitySet {
 		entities.put(entity.getClass().toString(), temp);
 	}
 
+	@SuppressWarnings("unchecked")
+	public <E extends JessyEntity> void addEntity(Collection<E> entityCol) {
+		for (E entity : entityCol) {
+			compactVector.update(entity.getLocalVector());
+
+			ConcurrentMap<String, E> temp = (ConcurrentMap<String, E>) entities
+					.get(entity.getClass().toString());
+			temp.put(entity.getSecondaryKey(), entity);
+
+			entities.put(entity.getClass().toString(), temp);
+		}
+	}
+
 	public void addEntity(EntitySet entitySet) {
 		Iterator<? extends JessyEntity> itr = entitySet.getEntities()
 				.iterator();
 		while (itr.hasNext()) {
-			JessyEntity jessyEntity=itr.next();
+			JessyEntity jessyEntity = itr.next();
 			addEntity(jessyEntity);
 			compactVector.update(jessyEntity.getLocalVector());
 		}
