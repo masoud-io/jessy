@@ -89,11 +89,11 @@ public class DataStoreTest extends TestCase {
 	public void testGet() {
 		// TODO incorporate vectors in the test
 
-		ReadRequest<SampleEntityClass, String> readRequest = new ReadRequest<SampleEntityClass, String>(
+		ReadRequest<SampleEntityClass> readRequest = new ReadRequest<SampleEntityClass>(
 				SampleEntityClass.class, "secondaryKey", "1", null);
-		ReadReply<SampleEntityClass> reply= dsGet2.get(readRequest);
+		ReadReply<SampleEntityClass> reply = dsGet2.get(readRequest);
 
-		assertEquals("Result",  "ver1_of1", reply.getEntity().getData());
+		assertEquals("Result", "ver1_of1", reply.getEntity().iterator().next().getData());
 	}
 
 	/**
@@ -102,21 +102,20 @@ public class DataStoreTest extends TestCase {
 	 */
 	@Test
 	public void testDelete() {
-		ReadRequest<SampleEntityClass, String> readRequest = new ReadRequest<SampleEntityClass, String>(
+		ReadRequest<SampleEntityClass> readRequest = new ReadRequest<SampleEntityClass>(
 				SampleEntityClass.class, "secondaryKey", "0", null);
-		ReadReply reply = dsGet.get(readRequest);
-		assertEquals("Result", "0", reply.getEntity().getSecondaryKey());
+		ReadReply<SampleEntityClass> reply = dsGet.get(readRequest);
+		assertEquals("Result", "0", reply.getEntity().iterator().next().getSecondaryKey());
 
 		boolean deleteResult = dsGet.delete(SampleEntityClass.class,
 				"secondaryKey", "" + 0);
 
 		assertFalse(!deleteResult);
 
-		ReadReply reply2;
+		ReadReply<SampleEntityClass> reply2;
 		reply2 = dsGet.get(readRequest);
-		assertNull(reply2.getEntity());
+		assertTrue(reply.getEntity().iterator().hasNext());
 
 	}
-
 
 }
