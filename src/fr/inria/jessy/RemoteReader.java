@@ -41,11 +41,12 @@ public class RemoteReader implements Learner{
 	private static RemoteReader instance;
 	static{
 		instance = new RemoteReader();
-	}
+	} 
 	
-	private ExecutorPool pool;
+	private ExecutorPool pool=ExecutorPool.getInstance();
+	
 	private RMCastStream stream;
-	private Map<UUID,Future<? extends JessyEntity>> replies;
+	private Map<UUID,Future<ReadReply<? extends JessyEntity>>> replies;
 	
 	public static RemoteReader getInstance(){
 		return instance;
@@ -56,13 +57,12 @@ public class RemoteReader implements Learner{
 		stream = FractalManager.getInstance().getOrCreateRMCastStream("RemoteReaderStream",Membership.getInstance().myGroup().name());
 		stream.registerLearner("RemoteReadRequestMessage", this);
 		stream.registerLearner("RemoteReadReplyMessage", this);
-		pool = new ExecutorPool(100);
-		replies = new HashMap<UUID, Future<? extends JessyEntity>>();
+		replies = new HashMap<UUID, Future<ReadReply<? extends JessyEntity>>>();
 	}
 	
-	public <E extends JessyEntity> Future<E> remoteRead(ReadRequest<E> readRequest){
+	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead(ReadRequest<E> readRequest){
 		assert !Partitioner.getInstance().isLocal(readRequest.getPartitioningKey());
-		Future<E> reply = pool.submit(new RemoteReadRequestTask(readRequest));
+		Future reply = pool.submit(new RemoteReadRequestTask(readRequest));
 		replies.put(readRequest.getReadRequestId(), reply);
 		return reply;
 	}
@@ -111,7 +111,7 @@ public class RemoteReader implements Learner{
 	}
 
 	
-	class  RemoteReadRequestTask<E extends JessyEntity> implements Callable<E>{
+	class  RemoteReadRequestTask<E extends JessyEntity> implements Callable<ReadReply<E>>{
 		
 		private ReadRequest<E> request;
 		
@@ -119,12 +119,12 @@ public class RemoteReader implements Learner{
 			this.request=readRequest;
 		}
 		
-		public E call() throws Exception {
+		public ReadReply<E> call() throws Exception {
 			Set<String> dest = new HashSet<String>(1);
 			dest.add(Partitioner.getInstance().resolve(request.getPartitioningKey()).name());
 			stream.reliableMulticast(new RemoteReadRequestMessage(request,dest));
 			replies.get(request.getReadRequestId()).wait();
-			return (E)replies.get(request.getReadRequestId()).get();
+			return (ReadReply<E>) replies.get(request.getReadRequestId());
 		}
 		
 	}

@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 
+import utils.ExecutorPool;
+
 import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.consistency.Consistency;
@@ -45,6 +47,7 @@ public abstract class Jessy {
 		UNDEFINED,
 	};
 
+	
 	private DataStore dataStore;
 	Consistency consistency;
 
@@ -82,6 +85,7 @@ public abstract class Jessy {
 		abortedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
 
 		lastCommittedEntities = new ConcurrentHashMap<String, JessyEntity>();
+		
 	}
 
 	protected DataStore getDataStore() {
@@ -581,4 +585,5 @@ public abstract class Jessy {
 		handler2executionHistory.remove(transactionHandler);
 	}
 
+	
 }

@@ -1,15 +1,19 @@
 package fr.inria.jessy.transaction;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 
-public class ExecutionHistory {
+public class ExecutionHistory implements Serializable{
 
+	private static final long serialVersionUID = ConstantPool.JESSY_MID;
+	
 	public enum TransactionType {
 		/**
 		 * the execution history is for a read only transaction
