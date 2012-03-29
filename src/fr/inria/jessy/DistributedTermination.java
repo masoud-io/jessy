@@ -18,8 +18,11 @@ import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 import utils.ExecutorPool;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
 
+//TODO COMMENT ME
+//TODO GARBAGE COLLECT ME
 public class DistributedTermination implements Learner, Runnable {
 
 	private static DistributedTermination instance;
@@ -33,10 +36,21 @@ public class DistributedTermination implements Learner, Runnable {
 		return instance;
 	}
 
+	public enum TerminationResult {
+		/**
+		 * the transaction is committed
+		 */
+		COMMITTED,
+		/**
+		 * the transaction is aborted.
+		 */
+		ABORTED
+	};
+
 	private ExecutorPool pool = ExecutorPool.getInstance();
 	private WanAMCastStream amStream;
-	private ConcurrentMap<TransactionHandler, Future<Boolean>> futures;
-	private ConcurrentMap<TransactionHandler, Boolean> terminationResults;
+	private ConcurrentMap<TransactionHandler, Future<TerminationResult>> futures;
+	private ConcurrentMap<TransactionHandler, TerminationResult> terminationResults;
 	private LinkedBlockingQueue<TerminateTransactionMessage> TerminateTransactionMessages;
 
 	private DistributedTermination() {
@@ -46,13 +60,14 @@ public class DistributedTermination implements Learner, Runnable {
 				Membership.getInstance().myGroup().name());
 		amStream.registerLearner("TerminateTransactionMessage", this);
 
-		futures = new ConcurrentHashMap<TransactionHandler, Future<Boolean>>();
-		terminationResults = new ConcurrentHashMap<TransactionHandler, Boolean>();
+		futures = new ConcurrentHashMap<TransactionHandler, Future<TerminationResult>>();
+		terminationResults = new ConcurrentHashMap<TransactionHandler, TerminationResult>();
 		TerminateTransactionMessages = new LinkedBlockingQueue<TerminateTransactionMessage>();
 	}
 
-	public Future<Boolean> terminateTransaction(ExecutionHistory ex) {
-		Future<Boolean> reply = pool.submit(new TerminateTransactionTask(ex));
+	public Future<TerminationResult> terminateTransaction(ExecutionHistory ex) {
+		Future<TerminationResult> reply = pool
+				.submit(new TerminateTransactionTask(ex));
 		futures.put(ex.getTransactionHandler(), reply);
 		return reply;
 	}
@@ -78,14 +93,48 @@ public class DistributedTermination implements Learner, Runnable {
 			outcome = ConsistencyFactory.getConsistency()
 					.certify(jessy.getLastCommittedEntities(),
 							msg.getExecutionHistory());
-			
-			/* if it holds all keys, and certify outcome is true, returns the outcome result back to the DistributedJess
-			 * Otherwise, 
+
+			// TODO SEND OUTCOME TO WRITE SETS****
+
+			/*
+			 * If it is a read-only transaction, it has nothing else to do. It
+			 * can commit.
 			 */
-			if (msg.dest.size()==1 && msg.dest.contains(o))
+			if (msg.getExecutionHistory().getTransactionType() == TransactionType.READONLY_TRANSACTION) {
+				/*
+				 * If future is not null, then the transaction is managed by
+				 * localJessy, and it should be notified along with the result
+				 * of the termination.
+				 */
+				notifyFuture(TerminationResult.COMMITTED, msg
+						.getExecutionHistory().getTransactionHandler());
+				continue;
+			}
+
+			/*
+			 * if it holds all keys, it can decide <i>locally</i>. Otherwise, it
+			 * should wait to receive votes;
+			 */
+			if (msg.dest.size() == 1
+					&& msg.dest.contains(Membership.getInstance().myGroup()
+							.name())) {
+				notifyFuture(TerminationResult.COMMITTED, msg
+						.getExecutionHistory().getTransactionHandler());
+			} else {
+
+			}
 
 		}
 
+	}
+
+	private void notifyFuture(TerminationResult terminationResult,
+			TransactionHandler transactionHandler) {
+		Future<TerminationResult> future = futures.get(transactionHandler);
+		if (future != null) {
+			terminationResults.put(transactionHandler, terminationResult);
+			future.notify();
+		}
 	}
 
 	public class TerminateTransactionMessage extends WanMessage {
@@ -107,7 +156,7 @@ public class DistributedTermination implements Learner, Runnable {
 
 	}
 
-	class TerminateTransactionTask implements Callable<Boolean> {
+	class TerminateTransactionTask implements Callable<TerminationResult> {
 
 		private ExecutionHistory executionHistory;
 
@@ -119,10 +168,18 @@ public class DistributedTermination implements Learner, Runnable {
 			this.executionHistory = eh;
 		}
 
-		public Boolean call() throws Exception {
+		public TerminationResult call() throws Exception {
 			HashSet<String> destGroups = new HashSet<String>();
 			Set<String> concernedKeys = ConsistencyFactory
 					.getConcerningKeys(executionHistory);
+
+			/*
+			 * If there is no concerningkey, it means that the transaction can
+			 * commit right away. e.g. read-only transaction with NMSI
+			 * consistency.
+			 */
+			if (concernedKeys.size() == 0)
+				return TerminationResult.COMMITTED;
 
 			destGroups.addAll(Partitioner.getInstance().resolveToGroupNames(
 					concernedKeys));

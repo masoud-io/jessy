@@ -52,7 +52,7 @@ public abstract class Jessy {
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	private List<Class<? extends JessyEntity>> entityClasses;
 
-	private CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
+	protected CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
 	private CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
 
 	/**
@@ -438,31 +438,9 @@ public abstract class Jessy {
 	 * 
 	 * @return
 	 */
-	public ExecutionHistory commitTransaction(
-			TransactionHandler transactionHandler) {
-		ExecutionHistory result = handler2executionHistory
-				.get(transactionHandler);
+	public abstract ExecutionHistory commitTransaction(
+			TransactionHandler transactionHandler) ;
 
-		result.changeState(TransactionState.COMMITTING);
-
-		if (performTermination(transactionHandler)) {
-			// certification test has returned true. we can commit.
-			commitedTransactions.add(transactionHandler);
-			applyWriteSet(transactionHandler);
-			applyCreateSet(transactionHandler);
-			result.changeState(TransactionState.COMMITTED);
-
-		} else {
-			result.changeState(TransactionState.ABORTED_BY_CERTIFICATION);
-
-		}
-
-		garbageCollectTransaction(transactionHandler);
-		return result;
-	}
-
-	public abstract boolean performTermination(
-			TransactionHandler transactionHandler);
 
 	/**
 	 * Put the transaction in the aborted list, and does nothing else. TODO
@@ -486,7 +464,7 @@ public abstract class Jessy {
 	 * @param transactionHandler
 	 *            handler of a committed transaction.
 	 */
-	private void applyWriteSet(TransactionHandler transactionHandler) {
+	protected void applyWriteSet(TransactionHandler transactionHandler) {
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);
 
@@ -512,7 +490,7 @@ public abstract class Jessy {
 	 * @param transactionHandler
 	 *            handler of a committed transaction.
 	 */
-	private void applyCreateSet(TransactionHandler transactionHandler) {
+	protected void applyCreateSet(TransactionHandler transactionHandler) {
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);
 
@@ -579,7 +557,7 @@ public abstract class Jessy {
 				"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
 	}
 
-	private void garbageCollectTransaction(TransactionHandler transactionHandler) {
+	protected void garbageCollectTransaction(TransactionHandler transactionHandler) {
 		handler2executionHistory.remove(transactionHandler);
 	}
 

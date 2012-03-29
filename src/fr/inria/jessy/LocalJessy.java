@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutionException;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
+import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.CompactVector;
 
@@ -52,12 +54,31 @@ public class LocalJessy extends Jessy {
 
 	}
 
+ 
 	@Override
-	public synchronized boolean performTermination(
+	public ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
+		ExecutionHistory result = handler2executionHistory
+				.get(transactionHandler);
 
-		return consistency.certify(lastCommittedEntities,
-				handler2executionHistory.get(transactionHandler));
+		result.changeState(TransactionState.COMMITTING);
+
+		if (consistency.certify(lastCommittedEntities,
+				handler2executionHistory.get(transactionHandler))) {
+			// certification test has returned true. we can commit.
+			commitedTransactions.add(transactionHandler);
+			applyWriteSet(transactionHandler);
+			applyCreateSet(transactionHandler);
+			result.changeState(TransactionState.COMMITTED);
+
+		} else {
+			result.changeState(TransactionState.ABORTED_BY_CERTIFICATION);
+
+		}
+
+		garbageCollectTransaction(transactionHandler);
+		return result;
+
 	}
 
 }

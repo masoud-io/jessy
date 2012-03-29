@@ -9,6 +9,7 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
+import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.vector.CompactVector;
 
@@ -76,13 +77,15 @@ public class DistributedJessy extends Jessy {
 			return null;
 	}
 
-	@Override
+
 	// FIXME Should this method be synchronized? I think it should only be
 	// syncrhonized during certification. Thus, it is safe before certification
 	// test.
-	public boolean performTermination(TransactionHandler transactionHandler) {
-
-		return false;
+	@Override
+	public ExecutionHistory commitTransaction(
+			TransactionHandler transactionHandler) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 

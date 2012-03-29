@@ -23,9 +23,8 @@ public class ConsistencyFactory {
 		Set<String> keys=new HashSet<String>();
 		if (ConsistencyType.equals("nmsi")) {
 			keys.addAll(executionHistory.getWriteSet().getKeys());
-			return keys;
 		}
-		return null;
+		return keys;
 	}
 	
 
