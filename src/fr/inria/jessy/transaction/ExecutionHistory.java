@@ -12,6 +12,8 @@ import fr.inria.jessy.store.JessyEntity;
 
 public class ExecutionHistory implements Serializable{
 
+	private TransactionHandler transactionHandler;
+	
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 	
 	public enum TransactionType {
@@ -69,7 +71,7 @@ public class ExecutionHistory implements Serializable{
 	private EntitySet writeSet;
 	private EntitySet readSet;
 
-	public ExecutionHistory(List<Class<? extends JessyEntity>> entityClasses) {
+	public ExecutionHistory(List<Class<? extends JessyEntity>> entityClasses, TransactionHandler transactionHandler) {
 		readSet = new EntitySet();
 
 		writeSet = new EntitySet();
@@ -81,6 +83,8 @@ public class ExecutionHistory implements Serializable{
 		for (Class<? extends JessyEntity> entityClass : entityClasses) {
 			addEntityClass(entityClass);
 		}
+		
+		this.transactionHandler=transactionHandler;
 
 	}
 
@@ -160,4 +164,10 @@ public class ExecutionHistory implements Serializable{
 		result = result + writeSet.toString() + "\n";
 		return result;
 	}
+
+	public TransactionHandler getTransactionHandler() {
+		return transactionHandler;
+	}
+	
+	
 }

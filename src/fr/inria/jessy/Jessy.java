@@ -10,8 +10,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 
-import utils.ExecutorPool;
-
 import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.consistency.Consistency;
@@ -425,7 +423,7 @@ public abstract class Jessy {
 		if (transactionalAccess == ExecutionMode.TRANSACTIONAL) {
 			TransactionHandler transactionHandler = new TransactionHandler();
 			ExecutionHistory executionHistory = new ExecutionHistory(
-					entityClasses);
+					entityClasses, transactionHandler);
 			executionHistory.changeState(TransactionState.EXECUTING);
 			handler2executionHistory.put(transactionHandler, executionHistory);
 			return transactionHandler;
@@ -447,7 +445,7 @@ public abstract class Jessy {
 
 		result.changeState(TransactionState.COMMITTING);
 
-		if (terminateTransaction(transactionHandler)) {
+		if (performTermination(transactionHandler)) {
 			// certification test has returned true. we can commit.
 			commitedTransactions.add(transactionHandler);
 			applyWriteSet(transactionHandler);
@@ -463,7 +461,7 @@ public abstract class Jessy {
 		return result;
 	}
 
-	public abstract boolean terminateTransaction(
+	public abstract boolean performTermination(
 			TransactionHandler transactionHandler);
 
 	/**

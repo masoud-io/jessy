@@ -53,7 +53,7 @@ public class LocalJessy extends Jessy {
 	}
 
 	@Override
-	public synchronized boolean terminateTransaction(
+	public synchronized boolean performTermination(
 			TransactionHandler transactionHandler) {
 
 		return consistency.certify(lastCommittedEntities,

@@ -5,16 +5,17 @@ package fr.inria.jessy.store;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.vector.CompactVector;
-import fr.inria.jessy.vector.Vector;
 
 /**
  * @author Masoud Saeida Ardekani This class maintains a list of entities read
@@ -137,5 +138,15 @@ public class EntitySet {
 
 	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> getEntitiesMap() {
 		return entities;
+	}
+	
+	//FIXME Performance Bottleneck. There are so many loops here.
+	public Set<String> getKeys(){
+		Set<String> keys=new HashSet<String>();
+		List<? extends JessyEntity> entityList=getEntities();
+		for(JessyEntity e:entityList){
+			keys.add(e.getKey());
+		}
+		return keys;
 	}
 }
