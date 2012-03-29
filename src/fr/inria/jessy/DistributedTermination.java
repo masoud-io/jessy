@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,14 +20,16 @@ import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 
-public class DistributedTermination implements Learner,Runnable {
+public class DistributedTermination implements Learner, Runnable {
 
 	private static DistributedTermination instance;
-	static {
-		instance = new DistributedTermination();
-	}
+	private static Jessy jessy;
 
-	public static DistributedTermination getInstance() {
+	public static DistributedTermination getInstance(Jessy j) {
+		if (instance == null) {
+			jessy = j;
+			instance = new DistributedTermination();
+		}
 		return instance;
 	}
 
@@ -67,12 +68,26 @@ public class DistributedTermination implements Learner,Runnable {
 
 	@Override
 	public void run() {
-		while(true){
-			TerminateTransactionMessage msg=TerminateTransactionMessages.
+		TerminateTransactionMessage msg;
+		Boolean outcome;
+		while (true) {
+			msg = TerminateTransactionMessages.poll();
+			if (msg == null)
+				continue;
+
+			outcome = ConsistencyFactory.getConsistency()
+					.certify(jessy.getLastCommittedEntities(),
+							msg.getExecutionHistory());
+			
+			/* if it holds all keys, and certify outcome is true, returns the outcome result back to the DistributedJess
+			 * Otherwise, 
+			 */
+			if (msg.dest.size()==1 && msg.dest.contains(o))
+
 		}
-		
+
 	}
-	
+
 	public class TerminateTransactionMessage extends WanMessage {
 		private static final long serialVersionUID = ConstantPool.JESSY_MID;
 		ExecutionHistory executionHistory;
@@ -85,6 +100,11 @@ public class DistributedTermination implements Learner,Runnable {
 			super(eh, dest, Membership.getInstance().myGroup().name(),
 					Membership.getInstance().myId());
 		}
+
+		public ExecutionHistory getExecutionHistory() {
+			return executionHistory;
+		}
+
 	}
 
 	class TerminateTransactionTask implements Callable<Boolean> {

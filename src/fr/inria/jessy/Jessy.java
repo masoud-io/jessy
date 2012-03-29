@@ -583,5 +583,10 @@ public abstract class Jessy {
 		handler2executionHistory.remove(transactionHandler);
 	}
 
+	public ConcurrentMap<String, JessyEntity> getLastCommittedEntities() {
+		return lastCommittedEntities;
+	}
+
+	
 	
 }
