@@ -82,7 +82,7 @@ public class RemoteReader implements Learner {
 		if (v instanceof RemoteReadRequestMessage) {
 			pool.submit(new RemoteReadReplyTask((RemoteReadRequestMessage) v));
 		} else { // RemoteReadReplyMessage
-			ReadReply reply = ((RemoteReadReplyMessage) v).reply;
+			ReadReply reply = ((RemoteReadReplyMessage) v).getReadReply();
 			replies.put(reply.getReadRequestId(), reply);
 			futures.get(reply.getReadRequestId()).notify();
 		}
@@ -92,7 +92,6 @@ public class RemoteReader implements Learner {
 	public class RemoteReadReplyMessage extends UMessage {
 
 		static final long serialVersionUID = ConstantPool.JESSY_MID;
-		ReadReply reply;
 
 		// For Fractal
 		public RemoteReadReplyMessage() {
@@ -101,13 +100,16 @@ public class RemoteReader implements Learner {
 		RemoteReadReplyMessage(ReadReply r) {
 			super(r, Membership.getInstance().myId());
 		}
+		
+		public ReadReply getReadReply(){
+			return (ReadReply) serializable;
+		}
 
 	}
 
 	public class RemoteReadRequestMessage extends WanMessage {
 
 		private static final long serialVersionUID = ConstantPool.JESSY_MID;
-		ReadRequest request;
 
 		// For Fractal
 		public RemoteReadRequestMessage() {
@@ -116,6 +118,10 @@ public class RemoteReader implements Learner {
 		RemoteReadRequestMessage(ReadRequest r, Set<String> dest) {
 			super(r, dest, Membership.getInstance().myGroup().name(),
 					Membership.getInstance().myId());
+		}
+		
+		public ReadRequest getReadRequest(){
+			return (ReadRequest)serializable;
 		}
 
 	}
@@ -132,7 +138,7 @@ public class RemoteReader implements Learner {
 		public ReadReply<E> call() throws Exception {
 			Set<String> dest = new HashSet<String>(1);
 			dest.add(Partitioner.getInstance()
-					.resolve(request.getPartitioningKey()).name());
+					.resolve(request.getPartitioningKey()));
 			stream.reliableMulticast(new RemoteReadRequestMessage(request, dest));
 			futures.get(request.getReadRequestId()).wait();
 			return (ReadReply<E>) replies.get(request.getReadRequestId());
@@ -149,7 +155,7 @@ public class RemoteReader implements Learner {
 		}
 
 		public ReadReply call() throws Exception {
-			ReadRequest readRequest = message.request;
+			ReadRequest readRequest = message.getReadRequest();
 
 			ReadReply readReply = DistributedJessy.getInstance().getDataStore()
 					.get(readRequest);

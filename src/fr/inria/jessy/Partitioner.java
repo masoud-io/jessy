@@ -109,7 +109,7 @@ public class Partitioner {
 			throw new RuntimeException("NIY");
 		}
 
-	};
+	}
 
 	/**
 	 * This methods returns the group of a key.
@@ -118,9 +118,8 @@ public class Partitioner {
 	 *            a key
 	 * @return replica group of <i>k</i>.
 	 */
-	public Group resolve(String k) {
-		return rk2g.get(closestRootkeyOf(k));
-		
+	public String resolve(String k) {
+		return rk2g.get(closestRootkeyOf(k)).name();
 	}
 
 	public Set<String> resolveToGroupNames(Set<String> keys) {

@@ -2,6 +2,7 @@ package fr.inria.jessy;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +14,7 @@ import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Membership;
+import net.sourceforge.fractal.rmcast.RMCastStream;
 import net.sourceforge.fractal.rmcast.WanMessage;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 import utils.ExecutorPool;
@@ -44,25 +46,49 @@ public class DistributedTermination implements Learner, Runnable {
 		/**
 		 * the transaction is aborted.
 		 */
-		ABORTED
+		ABORTED,
+		/**
+		 * the transaction outcome is not clear yet!
+		 */
+		UNKNOWN
 	};
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 	private WanAMCastStream amStream;
+	private RMCastStream rmStream;
+
 	private ConcurrentMap<TransactionHandler, Future<TerminationResult>> futures;
 	private ConcurrentMap<TransactionHandler, TerminationResult> terminationResults;
+	private ConcurrentMap<TransactionHandler, VotingQuorum> votingQuorums;
+
+	/*
+	 * These votes are those that have been delivered, but the actual
+	 * transaction has not arrived yet. Thus the entry in the voting quorums has
+	 * not yet initialized
+	 */
+	private ConcurrentMap<TransactionHandler, List<Vote>> pendingVotes;
+
+	// TODO this might be costy. Can't we just simply use an arraylist?
 	private LinkedBlockingQueue<TerminateTransactionMessage> TerminateTransactionMessages;
+
+	private String myGroup = Membership.getInstance().myGroup().name();
 
 	private DistributedTermination() {
 		Membership.getInstance().getOrCreateTCPGroup("ALLNODES");
+
 		amStream = FractalManager.getInstance().getOrCreateWanAMCastStream(
 				"DistributedTerminationStream",
 				Membership.getInstance().myGroup().name());
 		amStream.registerLearner("TerminateTransactionMessage", this);
 
+		rmStream = FractalManager.getInstance().getOrCreateRMCastStream(
+				"VoteMessage", Membership.getInstance().myGroup().name());
+		rmStream.registerLearner("TerminateTransactionMessage", this);
+
 		futures = new ConcurrentHashMap<TransactionHandler, Future<TerminationResult>>();
 		terminationResults = new ConcurrentHashMap<TransactionHandler, TerminationResult>();
 		TerminateTransactionMessages = new LinkedBlockingQueue<TerminateTransactionMessage>();
+		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 	}
 
 	public Future<TerminationResult> terminateTransaction(ExecutionHistory ex) {
@@ -77,6 +103,9 @@ public class DistributedTermination implements Learner, Runnable {
 	public void learn(Stream s, Serializable v) {
 		if (v instanceof TerminateTransactionMessage) {
 			TerminateTransactionMessages.add((TerminateTransactionMessage) v);
+
+		} else {
+			addVote((Vote) v);
 		}
 
 	}
@@ -94,7 +123,21 @@ public class DistributedTermination implements Learner, Runnable {
 					.certify(jessy.getLastCommittedEntities(),
 							msg.getExecutionHistory());
 
-			// TODO SEND OUTCOME TO WRITE SETS****
+			/*
+			 * Send the outcome to the write-sets
+			 * 
+			 * TODO It can be executed in a seperate thread!!! What about
+			 * safety?
+			 */
+			{
+				Set<String> dest = Partitioner.getInstance()
+						.resolveToGroupNames(
+								msg.getExecutionHistory().getWriteSet()
+										.getKeys());
+				rmStream.reliableMulticast(new VoteMessage(new Vote(msg
+						.getExecutionHistory().getTransactionHandler(),
+						outcome, myGroup, msg.dest), dest));
+			}
 
 			/*
 			 * If it is a read-only transaction, it has nothing else to do. It
@@ -121,11 +164,26 @@ public class DistributedTermination implements Learner, Runnable {
 				notifyFuture(TerminationResult.COMMITTED, msg
 						.getExecutionHistory().getTransactionHandler());
 			} else {
-
+				TerminationResult result = votingQuorums.get(
+						msg.getExecutionHistory().getTransactionHandler())
+						.getTerminationResult();
+				notifyFuture(result, msg.getExecutionHistory()
+						.getTransactionHandler());
 			}
 
 		}
 
+	}
+
+	private void addVote(Vote vote) {
+		if (votingQuorums.containsKey(vote.getTransactionHandler())) {
+			votingQuorums.get(vote.getTransactionHandler()).addVote(vote);
+		} else {
+			VotingQuorum vq = new VotingQuorum(vote.getTransactionHandler(),
+					vote.getAllVoterGroups());
+			vq.addVote(vote);
+			votingQuorums.put(vote.getTransactionHandler(), vq);
+		}
 	}
 
 	private void notifyFuture(TerminationResult terminationResult,
@@ -137,6 +195,24 @@ public class DistributedTermination implements Learner, Runnable {
 		}
 	}
 
+	public class VoteMessage extends WanMessage {
+		private static final long serialVersionUID = ConstantPool.JESSY_MID;
+
+		// For Fractal
+		public VoteMessage() {
+		}
+
+		VoteMessage(Vote vote, Set<String> dest) {
+			super(vote, dest, Membership.getInstance().myGroup().name(),
+					Membership.getInstance().myId());
+		}
+
+		public Vote getVote() {
+			return (Vote) serializable;
+		}
+
+	}
+
 	public class TerminateTransactionMessage extends WanMessage {
 		private static final long serialVersionUID = ConstantPool.JESSY_MID;
 		ExecutionHistory executionHistory;
@@ -146,8 +222,7 @@ public class DistributedTermination implements Learner, Runnable {
 		}
 
 		TerminateTransactionMessage(ExecutionHistory eh, Set<String> dest) {
-			super(eh, dest, Membership.getInstance().myGroup().name(),
-					Membership.getInstance().myId());
+			super(eh, dest, myGroup, Membership.getInstance().myId());
 		}
 
 		public ExecutionHistory getExecutionHistory() {
