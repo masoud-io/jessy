@@ -1,8 +1,9 @@
-package fr.inria.jessy;
+package fr.inria.jessy.termination;
 
 import java.io.Serializable;
 import java.util.Collection;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.TransactionHandler;
 
 public class Vote implements Serializable {

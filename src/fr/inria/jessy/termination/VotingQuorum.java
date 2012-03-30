@@ -1,9 +1,9 @@
-package fr.inria.jessy;
+package fr.inria.jessy.termination;
 
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import fr.inria.jessy.DistributedTermination.TerminationResult;
+import fr.inria.jessy.termination.DistributedTermination.TerminationResult;
 import fr.inria.jessy.transaction.TransactionHandler;
 
 //TODO COMMENT ME

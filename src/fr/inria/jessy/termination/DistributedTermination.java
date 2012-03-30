@@ -1,4 +1,4 @@
-package fr.inria.jessy;
+package fr.inria.jessy.termination;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -18,6 +18,9 @@ import net.sourceforge.fractal.rmcast.RMCastStream;
 import net.sourceforge.fractal.rmcast.WanMessage;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 import utils.ExecutorPool;
+import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.Jessy;
+import fr.inria.jessy.Partitioner;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
