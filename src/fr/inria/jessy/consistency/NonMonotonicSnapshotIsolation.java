@@ -2,22 +2,16 @@ package fr.inria.jessy.consistency;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
-import fr.inria.jessy.vector.ValueVector.ComparisonResult;
-import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
-
-import org.apache.log4j.PropertyConfigurator;
-
-import sun.text.CompactByteArray;
 
 /**
  * This class implements Non-Monotonic Snapshot Isolation consistency criterion.
@@ -103,7 +97,7 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 
 				if (!lastComittedEntity.getLocalVector().isCompatible(
 						tmp.getLocalVector())) {
-					
+
 					logger.debug("UPDATE_TRANSACTION Aborted \n");
 					return false;
 				}
@@ -119,5 +113,19 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 		logger.debug("UPDATE_TRANSACTION Committed \n");
 
 		return true;
+	}
+
+	@Override
+	public boolean hasConflict(ExecutionHistory history1,
+			ExecutionHistory history2) {
+
+		Set<String> history2Keys=history2.getWriteSet().getKeys();
+		
+		for (String key : history1.getWriteSet().getKeys()) {
+			if (history2Keys.contains(key)){
+				return true;
+			}
+		}
+		return false;
 	}
 }

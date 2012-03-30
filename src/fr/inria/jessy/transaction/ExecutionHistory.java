@@ -10,12 +10,21 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 
-public class ExecutionHistory implements Serializable{
+//TODO COMMENT ME
+public class ExecutionHistory implements Serializable {
 
 	private TransactionHandler transactionHandler;
-	
+
+	/**
+	 * if true, the proxy will perform a certification, thus does not need to
+	 * receive the result from other processes. Otherwise, the proxy will only
+	 * atomic multicast the transaction for certification, thus it needs to
+	 * receive back the certification outcome .
+	 */
+	private boolean certifyAtProxy;
+
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
-	
+
 	public enum TransactionType {
 		/**
 		 * the execution history is for a read only transaction
@@ -71,7 +80,8 @@ public class ExecutionHistory implements Serializable{
 	private EntitySet writeSet;
 	private EntitySet readSet;
 
-	public ExecutionHistory(List<Class<? extends JessyEntity>> entityClasses, TransactionHandler transactionHandler) {
+	public ExecutionHistory(List<Class<? extends JessyEntity>> entityClasses,
+			TransactionHandler transactionHandler) {
 		readSet = new EntitySet();
 
 		writeSet = new EntitySet();
@@ -83,8 +93,8 @@ public class ExecutionHistory implements Serializable{
 		for (Class<? extends JessyEntity> entityClass : entityClasses) {
 			addEntityClass(entityClass);
 		}
-		
-		this.transactionHandler=transactionHandler;
+
+		this.transactionHandler = transactionHandler;
 
 	}
 
@@ -168,6 +178,14 @@ public class ExecutionHistory implements Serializable{
 	public TransactionHandler getTransactionHandler() {
 		return transactionHandler;
 	}
-	
+
+	public boolean isCertifyAtProxy() {
+		return certifyAtProxy;
+	}
+
+	public void setCertifyAtProxy(boolean certifyAtProxy) {
+		this.certifyAtProxy = certifyAtProxy;
+	}
+
 	
 }

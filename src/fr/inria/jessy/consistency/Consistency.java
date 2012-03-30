@@ -9,5 +9,7 @@ public interface Consistency {
 	public boolean certify(
 			ConcurrentMap<String, JessyEntity> lastCommittedEntities,
 			ExecutionHistory executionHistory);
+	
+	public boolean hasConflict(ExecutionHistory history1, ExecutionHistory history2);
 
 }

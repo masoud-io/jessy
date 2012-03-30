@@ -61,15 +61,8 @@ public class DistributedTermination implements Learner, Runnable {
 	private ConcurrentMap<TransactionHandler, TerminationResult> terminationResults;
 	private ConcurrentMap<TransactionHandler, VotingQuorum> votingQuorums;
 
-	/*
-	 * These votes are those that have been delivered, but the actual
-	 * transaction has not arrived yet. Thus the entry in the voting quorums has
-	 * not yet initialized
-	 */
-	private ConcurrentMap<TransactionHandler, List<Vote>> pendingVotes;
-
 	// TODO this might be costy. Can't we just simply use an arraylist?
-	private LinkedBlockingQueue<TerminateTransactionMessage> TerminateTransactionMessages;
+	private LinkedBlockingQueue<TerminateTransactionMessage> terminateTransactionMessages;
 
 	private String myGroup = Membership.getInstance().myGroup().name();
 
@@ -87,7 +80,7 @@ public class DistributedTermination implements Learner, Runnable {
 
 		futures = new ConcurrentHashMap<TransactionHandler, Future<TerminationResult>>();
 		terminationResults = new ConcurrentHashMap<TransactionHandler, TerminationResult>();
-		TerminateTransactionMessages = new LinkedBlockingQueue<TerminateTransactionMessage>();
+		terminateTransactionMessages = new LinkedBlockingQueue<TerminateTransactionMessage>();
 		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 	}
 
@@ -98,11 +91,10 @@ public class DistributedTermination implements Learner, Runnable {
 		return reply;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Deprecated
 	public void learn(Stream s, Serializable v) {
 		if (v instanceof TerminateTransactionMessage) {
-			TerminateTransactionMessages.add((TerminateTransactionMessage) v);
+			terminateTransactionMessages.add((TerminateTransactionMessage) v);
 
 		} else {
 			addVote((Vote) v);
@@ -115,7 +107,8 @@ public class DistributedTermination implements Learner, Runnable {
 		TerminateTransactionMessage msg;
 		Boolean outcome;
 		while (true) {
-			msg = TerminateTransactionMessages.poll();
+
+			msg = terminateTransactionMessages.poll();
 			if (msg == null)
 				continue;
 
@@ -139,20 +132,21 @@ public class DistributedTermination implements Learner, Runnable {
 						outcome, myGroup, msg.dest), dest));
 			}
 
-			/*
-			 * If it is a read-only transaction, it has nothing else to do. It
-			 * can commit.
-			 */
-			if (msg.getExecutionHistory().getTransactionType() == TransactionType.READONLY_TRANSACTION) {
-				/*
-				 * If future is not null, then the transaction is managed by
-				 * localJessy, and it should be notified along with the result
-				 * of the termination.
-				 */
-				notifyFuture(TerminationResult.COMMITTED, msg
-						.getExecutionHistory().getTransactionHandler());
-				continue;
-			}
+			// /*
+			// * If it is a read-only transaction, it has nothing else to do. It
+			// * can commit.
+			// */
+			// if (msg.getExecutionHistory().getTransactionType() ==
+			// TransactionType.READONLY_TRANSACTION) {
+			// /*
+			// * If future is not null, then the transaction is managed by
+			// * localJessy, and it should be notified along with the result
+			// * of the termination.
+			// */
+			// notifyFuture(TerminationResult.COMMITTED, msg
+			// .getExecutionHistory().getTransactionHandler());
+			// continue;
+			// }
 
 			/*
 			 * if it holds all keys, it can decide <i>locally</i>. Otherwise, it
@@ -162,13 +156,15 @@ public class DistributedTermination implements Learner, Runnable {
 					&& msg.dest.contains(Membership.getInstance().myGroup()
 							.name())) {
 				notifyFuture(TerminationResult.COMMITTED, msg
-						.getExecutionHistory().getTransactionHandler());
+						.getExecutionHistory().getTransactionHandler(), msg
+						.getExecutionHistory().isCertifyAtProxy());
 			} else {
 				TerminationResult result = votingQuorums.get(
 						msg.getExecutionHistory().getTransactionHandler())
 						.getTerminationResult();
 				notifyFuture(result, msg.getExecutionHistory()
-						.getTransactionHandler());
+						.getTransactionHandler(), msg.getExecutionHistory()
+						.isCertifyAtProxy());
 			}
 
 		}
@@ -187,12 +183,19 @@ public class DistributedTermination implements Learner, Runnable {
 	}
 
 	private void notifyFuture(TerminationResult terminationResult,
-			TransactionHandler transactionHandler) {
+			TransactionHandler transactionHandler, boolean certifyAtProxy) {
 		Future<TerminationResult> future = futures.get(transactionHandler);
 		if (future != null) {
 			terminationResults.put(transactionHandler, terminationResult);
 			future.notify();
+		} else if (!certifyAtProxy) {
+			// TODO SEND the result back to the proxy, otherwise, it will
+			// receive it itself.
 		}
+		
+		/*
+		 * TODO Garbage collect here!
+		 */
 	}
 
 	public class VoteMessage extends WanMessage {
@@ -258,13 +261,23 @@ public class DistributedTermination implements Learner, Runnable {
 
 			destGroups.addAll(Partitioner.getInstance().resolveToGroupNames(
 					concernedKeys));
+
+			/*
+			 * if this process will receive this transaction through atomic
+			 * multicast, certifyAtProxy is set to true, otherwise, it is set to
+			 * false.
+			 */
+			if (destGroups.contains(myGroup))
+				executionHistory.setCertifyAtProxy(true);
+			else
+				executionHistory.setCertifyAtProxy(false);
+
 			amStream.atomicMulticast(new TerminateTransactionMessage(
 					executionHistory, destGroups), destGroups);
 			futures.get(executionHistory.getTransactionHandler()).wait();
 			return terminationResults.get(executionHistory
 					.getTransactionHandler());
 		}
-
 	}
 
 }
