@@ -15,11 +15,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.LocalJessy;
-import fr.inria.jessy.consistency.nmsi.transaction.SampleEntityInitTransaction;
-import fr.inria.jessy.consistency.nmsi.transaction.SampleTransactionSingleObj1;
-import fr.inria.jessy.consistency.nmsi.transaction.SampleTransactionSingleObj2;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
+import fr.inria.jessy.local.nmsi.transaction.SampleEntityInitTransaction;
+import fr.inria.jessy.local.nmsi.transaction.SampleTransactionSingleObj1;
+import fr.inria.jessy.local.nmsi.transaction.SampleTransactionSingleObj2;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
 
