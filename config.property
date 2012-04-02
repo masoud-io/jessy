@@ -1,2 +1,3 @@
 vector_type = dependencevector
 consistency_type = nmsi
+fractal_file=myfractal.xml

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import net.sourceforge.fractal.FractalManager;
+
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
@@ -19,12 +21,14 @@ public class DistributedJessy extends Jessy {
 
 	private static DistributedJessy distributedJessy = null;
 	private static DistributedTermination distributedTermination = null;
+		
 
 	static {
 		try {
 			distributedJessy = new DistributedJessy();
 			distributedTermination = new DistributedTermination(
 					distributedJessy);
+			FractalManager.init("myfractal.xml");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -32,9 +36,11 @@ public class DistributedJessy extends Jessy {
 
 	private DistributedJessy() throws Exception {
 		super();
+		
 	}
 
 	public static synchronized DistributedJessy getInstance() throws Exception {
+		
 		return distributedJessy;
 	}
 
