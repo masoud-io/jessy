@@ -32,16 +32,7 @@ import fr.inria.jessy.transaction.termination.message.VoteMessage;
 //TODO JESSY define pattern is crappy!
 public class DistributedTermination implements Learner, Runnable {
 
-	private static DistributedTermination instance;
-	private static Jessy jessy;
-
-	public static DistributedTermination getInstance(Jessy j) {
-		if (instance == null) {
-			jessy = j;
-			instance = new DistributedTermination();
-		}
-		return instance;
-	}
+	private Jessy jessy;
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 	private WanAMCastStream amStream;
@@ -57,7 +48,9 @@ public class DistributedTermination implements Learner, Runnable {
 
 	private String myGroup = Membership.getInstance().myGroup().name();
 
-	private DistributedTermination() {
+	public DistributedTermination(Jessy jessy) {
+		this.jessy=jessy;
+		
 		Membership.getInstance().getOrCreateTCPGroup("ALLNODES");
 
 		amStream = FractalManager.getInstance().getOrCreateWanAMCastStream(
@@ -185,10 +178,6 @@ public class DistributedTermination implements Learner, Runnable {
 		}
 	}
 
-
-
-
-
 	private class AtomicMulticastTask implements Callable<TerminationResult> {
 
 		private ExecutionHistory executionHistory;
@@ -235,7 +224,7 @@ public class DistributedTermination implements Learner, Runnable {
 		}
 	}
 
-	class CertifyAndVoteTask implements Callable<Boolean> {
+	private class CertifyAndVoteTask implements Callable<Boolean> {
 
 		private TerminateTransactionRequestMessage msg;
 

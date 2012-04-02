@@ -11,21 +11,30 @@ import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
+import fr.inria.jessy.transaction.termination.DistributedTermination;
+import fr.inria.jessy.transaction.termination.TerminationResult;
 import fr.inria.jessy.vector.CompactVector;
 
 public class DistributedJessy extends Jessy {
 
 	private static DistributedJessy distributedJessy = null;
+	private static DistributedTermination distributedTermination = null;
+
+	static {
+		try {
+			distributedJessy = new DistributedJessy();
+			distributedTermination = new DistributedTermination(
+					distributedJessy);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 
 	private DistributedJessy() throws Exception {
 		super();
-
 	}
 
 	public static synchronized DistributedJessy getInstance() throws Exception {
-		if (distributedJessy == null) {
-			distributedJessy = new DistributedJessy();
-		}
 		return distributedJessy;
 	}
 
@@ -77,18 +86,25 @@ public class DistributedJessy extends Jessy {
 			return null;
 	}
 
-
 	// FIXME Should this method be synchronized? I think it should only be
 	// syncrhonized during certification. Thus, it is safe before certification
 	// test.
 	@Override
 	public ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
+		ExecutionHistory executionHistory = getExecutionHistory(transactionHandler);
+		Future<TerminationResult> terminationResultFuture = distributedTermination
+				.terminateTransaction(executionHistory);
 
-	
+		TerminationResult terminationResult = null;
+		try {
+			terminationResult = terminationResultFuture.get();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		assert (terminationResult != null);
+		executionHistory.changeState(terminationResult.getTransactionState());
+		return executionHistory;
+	}
 
 }
