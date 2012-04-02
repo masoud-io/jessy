@@ -15,14 +15,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.LocalJessy;
+import fr.inria.jessy.consistency.nmsi.transaction.SampleEntityInitTransaction;
+import fr.inria.jessy.consistency.nmsi.transaction.SampleTransactionMultiObj1;
+import fr.inria.jessy.consistency.nmsi.transaction.SampleTransactionMultiObj2;
+import fr.inria.jessy.consistency.nmsi.transaction.SampleTransactionMultiObj3;
+import fr.inria.jessy.consistency.nmsi.transaction.SampleTransactionMultiObj4;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.SampleEntityInitTransaction;
-import fr.inria.jessy.transaction.SampleTransactionMultiObj1;
-import fr.inria.jessy.transaction.SampleTransactionMultiObj2;
-import fr.inria.jessy.transaction.SampleTransactionMultiObj3;
-import fr.inria.jessy.transaction.SampleTransactionMultiObj4;
 import fr.inria.jessy.transaction.TransactionState;
 
 /**
