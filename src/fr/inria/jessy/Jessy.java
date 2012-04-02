@@ -18,8 +18,8 @@ import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 import fr.inria.jessy.transaction.TransactionHandler;
+import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.vector.CompactVector;
 
 /**

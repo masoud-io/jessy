@@ -40,33 +40,6 @@ public class ExecutionHistory implements Serializable {
 		INIT_TRANSACTION
 	};
 
-	public enum TransactionState {
-		/**
-		 * the transaction has not strated yet.
-		 */
-		NOT_STARTED,
-		/**
-		 * the transaction has been started and is executing
-		 */
-		EXECUTING,
-		/**
-		 * the transaction has been executed and is committing
-		 */
-		COMMITTING,
-		/**
-		 * the transaction has been committed
-		 */
-		COMMITTED,
-		/**
-		 * the transaction has been aborted because of the certification test
-		 */
-		ABORTED_BY_CERTIFICATION,
-		/**
-		 * the transaction has been aborted by the client.
-		 */
-		ABORTED_BY_CLIENT,
-	};
-
 	private TransactionState transactionState = TransactionState.NOT_STARTED;
 
 	private ConcurrentMap<TransactionState, Long> transactionState2StartingTime;
@@ -88,7 +61,7 @@ public class ExecutionHistory implements Serializable {
 
 		createSet = new EntitySet();
 
-		transactionState2StartingTime = new ConcurrentHashMap<ExecutionHistory.TransactionState, Long>();
+		transactionState2StartingTime = new ConcurrentHashMap<TransactionState, Long>();
 
 		for (Class<? extends JessyEntity> entityClass : entityClasses) {
 			addEntityClass(entityClass);

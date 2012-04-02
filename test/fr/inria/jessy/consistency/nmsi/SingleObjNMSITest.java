@@ -18,10 +18,10 @@ import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.ExecutionHistory.TransactionState;
 import fr.inria.jessy.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.transaction.SampleTransactionSingleObj1;
 import fr.inria.jessy.transaction.SampleTransactionSingleObj2;
+import fr.inria.jessy.transaction.TransactionState;
 
 /**
  * @author msaeida
