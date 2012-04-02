@@ -18,6 +18,8 @@ import fr.inria.jessy.vector.Vector;
 @Entity
 public class Sample2EntityClass extends JessyEntity{
 	
+	public static String pattern="#";
+	
 	public Sample2EntityClass(){
 		super( "", "");
 	}

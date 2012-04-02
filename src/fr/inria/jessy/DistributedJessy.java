@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import net.sourceforge.fractal.FractalManager;
+import net.sourceforge.fractal.membership.Membership;
 
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
@@ -25,10 +26,12 @@ public class DistributedJessy extends Jessy {
 
 	static {
 		try {
+			FractalManager.init("myfractal.xml");
 			distributedJessy = new DistributedJessy();
+			System.out.println(Membership.getInstance().groupOf(0));
 			distributedTermination = new DistributedTermination(
 					distributedJessy);
-			FractalManager.init("myfractal.xml");
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

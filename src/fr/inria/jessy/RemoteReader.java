@@ -57,7 +57,7 @@ public class RemoteReader implements Learner {
 	}
 
 	private RemoteReader() {
-		Membership.getInstance().getOrCreateTCPGroup("ALLNODES");
+		Membership.getInstance().getOrCreateTCPGroup("ALLNODES", 5000);
 		stream = FractalManager.getInstance()
 				.getOrCreateRMCastStream("RemoteReaderStream",
 						Membership.getInstance().myGroup().name());
@@ -100,8 +100,8 @@ public class RemoteReader implements Learner {
 		RemoteReadReplyMessage(ReadReply r) {
 			super(r, Membership.getInstance().myId());
 		}
-		
-		public ReadReply getReadReply(){
+
+		public ReadReply getReadReply() {
 			return (ReadReply) serializable;
 		}
 
@@ -119,9 +119,9 @@ public class RemoteReader implements Learner {
 			super(r, dest, Membership.getInstance().myGroup().name(),
 					Membership.getInstance().myId());
 		}
-		
-		public ReadRequest getReadRequest(){
-			return (ReadRequest)serializable;
+
+		public ReadRequest getReadRequest() {
+			return (ReadRequest) serializable;
 		}
 
 	}
@@ -137,8 +137,8 @@ public class RemoteReader implements Learner {
 
 		public ReadReply<E> call() throws Exception {
 			Set<String> dest = new HashSet<String>(1);
-			dest.add(Partitioner.getInstance()
-					.resolve(request.getPartitioningKey()));
+			dest.add(Partitioner.getInstance().resolve(
+					request.getPartitioningKey()));
 			stream.reliableMulticast(new RemoteReadRequestMessage(request, dest));
 			futures.get(request.getReadRequestId()).wait();
 			return (ReadReply<E>) replies.get(request.getReadRequestId());
@@ -162,7 +162,7 @@ public class RemoteReader implements Learner {
 
 			Membership
 					.getInstance()
-					.getOrCreateTCPGroup("ALLNODES")
+					.getOrCreateTCPGroup("ALLNODES", 5000)
 					.unicastSW(message.source,
 							new RemoteReadReplyMessage(readReply));
 			return null;

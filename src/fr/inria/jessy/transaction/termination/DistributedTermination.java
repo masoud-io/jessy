@@ -57,7 +57,7 @@ public class DistributedTermination implements Learner, Runnable {
 	public DistributedTermination(Jessy jessy) {
 		this.jessy = jessy;
 
-		Membership.getInstance().getOrCreateTCPGroup("ALLNODES");
+		Membership.getInstance().getOrCreateTCPGroup("ALLNODES",5000);
 
 		amStream = FractalManager.getInstance().getOrCreateWanAMCastStream(
 				"DistributedTerminationStream",

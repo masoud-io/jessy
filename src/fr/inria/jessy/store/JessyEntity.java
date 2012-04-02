@@ -24,6 +24,7 @@ import fr.inria.jessy.vector.VectorFactory;
 @Persistent
 public abstract class JessyEntity implements Serializable{
 	
+	
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 
