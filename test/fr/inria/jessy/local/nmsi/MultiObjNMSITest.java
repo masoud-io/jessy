@@ -1,7 +1,7 @@
 /**
  * 
  */
-package fr.inria.jessy.consistency.nmsi;
+package fr.inria.jessy.local.nmsi;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
