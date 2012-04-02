@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.transaction.termination.TerminationResult;
 
 //TODO COMMENT ME
 public class ExecutionHistory implements Serializable {
@@ -16,12 +17,12 @@ public class ExecutionHistory implements Serializable {
 	private TransactionHandler transactionHandler;
 
 	/**
-	 * if true, the proxy will perform a certification, thus does not need to
+	 * if true, the coordinator will perform a certification, thus does not need to
 	 * receive the result from other processes. Otherwise, the proxy will only
 	 * atomic multicast the transaction for certification, thus it needs to
-	 * receive back the certification outcome .
+	 * receive back the {@link TerminationResult}.
 	 */
-	private boolean certifyAtProxy;
+	private boolean certifyAtCoordinator;
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
@@ -152,12 +153,12 @@ public class ExecutionHistory implements Serializable {
 		return transactionHandler;
 	}
 
-	public boolean isCertifyAtProxy() {
-		return certifyAtProxy;
+	public boolean isCertifyAtCoordinator() {
+		return certifyAtCoordinator;
 	}
 
-	public void setCertifyAtProxy(boolean certifyAtProxy) {
-		this.certifyAtProxy = certifyAtProxy;
+	public void setCertifyAtCoordinator(boolean certifyAtCoordinator) {
+		this.certifyAtCoordinator = certifyAtCoordinator;
 	}
 
 	

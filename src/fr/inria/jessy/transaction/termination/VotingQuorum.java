@@ -4,12 +4,12 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.termination.DistributedTermination.TerminationResult;
+import fr.inria.jessy.transaction.TransactionState;
 
 //TODO COMMENT ME
 public class VotingQuorum {
 
-	TerminationResult result = TerminationResult.UNKNOWN;
+	TransactionState result = TransactionState.COMMITTING;
 
 	TransactionHandler transactionHandler;
 	CopyOnWriteArraySet<String> receivedVotes;
@@ -23,20 +23,20 @@ public class VotingQuorum {
 
 	public synchronized void addVote(Vote vote) {
 		if (vote.isCertified() == false) {
-			result = TerminationResult.ABORTED;
+			result = TransactionState.ABORTED_BY_VOTING;
 			notify();
 		} else {
 			receivedVotes.remove(vote.getGroupName());
 			if (receivedVotes.size() == 0) {
-				result = TerminationResult.COMMITTED;
+				result = TransactionState.COMMITTED;
 				notify();
 			}
 		}
 	}
 
-	public TerminationResult getTerminationResult() {
+	public TransactionState getTerminationResult() {
 		try {
-			if (result == TerminationResult.UNKNOWN)
+			if (result == TransactionState.COMMITTING)
 				wait();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block

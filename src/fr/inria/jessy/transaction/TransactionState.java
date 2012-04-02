@@ -1,5 +1,7 @@
 package fr.inria.jessy.transaction;
 
+import fr.inria.jessy.consistency.Consistency;
+
 public enum TransactionState {
 	/**
 	 * the transaction has not strated yet.
@@ -18,9 +20,13 @@ public enum TransactionState {
 	 */
 	COMMITTED,
 	/**
-	 * the transaction has been aborted because of the certification test
+	 * the transaction has been aborted because of the certification test {@link Consistency#certify(java.util.concurrent.ConcurrentMap, ExecutionHistory)}
 	 */
 	ABORTED_BY_CERTIFICATION,
+	/**
+	 * the transaction has been aborted because of the abort vote from a remote site.
+	 */
+	ABORTED_BY_VOTING,
 	/**
 	 * the transaction has been aborted by the client.
 	 */
