@@ -13,11 +13,11 @@ import fr.inria.jessy.transaction.*;
  * @author WANG Haiyun & ZHAO Guang
  * 
  */
-public class TpccTestInsertData {
+public class TpccTestNewOrder {
 
 	LocalJessy jessy;
 	InsertData id;
-	TpccVerifyInsertedData vid;
+	NewOrder no; 
 	Warehouse wh;
 	District di;
 	Item it;
@@ -47,7 +47,8 @@ public class TpccTestInsertData {
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
 		id = new InsertData(jessy);
-
+		no = new NewOrder(jessy);
+		id.execute();
 	}
 
 	/**
@@ -58,7 +59,7 @@ public class TpccTestInsertData {
 	@Test
 	public void testInsertData() throws Exception {
 
-		ExecutionHistory result = id.execute();
+		ExecutionHistory result = no.execute();
 		/* test execution */
 		assertEquals("Result", TransactionState.COMMITTED,
 				result.getTransactionState());

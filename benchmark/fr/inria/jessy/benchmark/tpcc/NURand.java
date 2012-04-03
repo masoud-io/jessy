@@ -21,9 +21,9 @@ public class NURand {
 	private int A;
 	private int x;
 	private int y;
-	private int C;
+	private int c;
 
-	
+	private Random rand_c = new Random(System.currentTimeMillis());
 	private Random rand = new Random(System.currentTimeMillis());
 
 	/* tpcc section 2.1.6 NURand(A,x,y) =  (((random(0,A)|random(x,y))+C)%(y-x+1))+x */
@@ -37,12 +37,8 @@ public class NURand {
 		
 		/* or*/
 		or = exp1 | exp2;
-		
-		//TODO 
-		//how can I generate C according to the tpcc?  section 2.1.6
-		//the C is random generated(0..A) per field (C_LAST, C_ID, and OL_I_ID)
-
-		return ((or+C)%(y-x+1)) + x; 
+		c = rand_c.nextInt(A - 1) + 1; //[0..A] 
+		return ((or+c)%(y-x+1)) + x; 
 	}
 	public int getA() {
 		return A;

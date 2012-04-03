@@ -35,7 +35,7 @@ public class NewOrder extends Transaction {
 			String customer_id;
 			NURand nu;
 
-			int O_OL_CNT = 123; /*TODO   section 2.4.1.3*/
+			int O_OL_CNT = rand.nextInt(15-5)+5;
 			int OL_QUANTITY;
 
 
@@ -113,20 +113,21 @@ public class NewOrder extends Transaction {
 				 */
 				ol= new Order_line("OL_W_"+wh.getW_ID()+"_OL_D_"+dis.getD_ID()+"_OL_O_"+o.getO_ID()+"_OL_"+i);
 				ol.setOL_AMOUNT(OL_QUANTITY*it.getI_PRICE());
-				Pattern p = Pattern.compile("*ORIGINAL*");
-				Matcher m1 = p.matcher(it.getI_DATA());
-				Matcher m2 = p.matcher(st.getS_DATA());
-				if(m1.find() && m2.find()) {
-					/*TODO
-					 * the brand-generic field for that item is set to "B"
-					 * I didn't find this field in any class
-					 * */
-
-				}
-				else{
-					/*otherwise, the brand-generic field is set to "G"*/
-				}
-				
+				//ignored
+//				Pattern p = Pattern.compile("*ORIGINAL*");
+//				Matcher m1 = p.matcher(it.getI_DATA());
+//				Matcher m2 = p.matcher(st.getS_DATA());
+//				if(m1.find() && m2.find()) {
+//					/*TODO
+//					 * the brand-generic field for that item is set to "B"
+//					 * I didn't find this field in any class
+//					 * */
+//
+//				}
+//				else{
+//					/*otherwise, the brand-generic field is set to "G"*/
+//				}
+//			
 				
 
 				String[] dis_info = {st.getS_DIST_01(), st.getS_DIST_02(), st.getS_DIST_03(), st.getS_DIST_04(), st.getS_DIST_05(),
@@ -141,10 +142,7 @@ public class NewOrder extends Transaction {
 				
 				/*if this item meet the roll back condition, we perform the roll back */
 				if( i == (ol_cnt-1) && rbk == 1){
-					/*TODO
-					 * roll back
-					 * do we have a roll back action with jessy?
-					 */
+//					return abortTransaction();
 					
 				}
 			}
