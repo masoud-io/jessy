@@ -28,10 +28,7 @@ public class DistributedJessy extends Jessy {
 		try {
 			FractalManager.init("myfractal.xml");
 			distributedJessy = new DistributedJessy();
-			System.out.println(Membership.getInstance().groupOf(0));
-			distributedTermination = new DistributedTermination(
-					distributedJessy);
-
+			distributedTermination = new DistributedTermination(distributedJessy);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -43,7 +40,6 @@ public class DistributedJessy extends Jessy {
 	}
 
 	public static synchronized DistributedJessy getInstance() throws Exception {
-		
 		return distributedJessy;
 	}
 
@@ -56,9 +52,7 @@ public class DistributedJessy extends Jessy {
 
 		ReadReply<E> readReply;
 		if (Partitioner.getInstance().isLocal(readRequest.getPartitioningKey())) {
-
 			readReply = getDataStore().get(readRequest);
-
 		} else {
 			Future<ReadReply<E>> future = RemoteReader.getInstance()
 					.remoteRead(readRequest);

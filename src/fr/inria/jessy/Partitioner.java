@@ -65,7 +65,8 @@ public class Partitioner {
 	private Partitioner() {
 		g2rk = new HashMap<Group, Set<String>>();
 		for (Group g : Membership.getInstance().allGroups()) {
-			g2rk.put(g, new HashSet<String>());
+			if(!g.name().equals("ALLNODES")) // FIXME
+				g2rk.put(g, new HashSet<String>());
 		}
 		rk2g = new HashMap<String, Group>();
 	}
@@ -102,11 +103,11 @@ public class Partitioner {
 			Group g;
 			Double range;
 			int pos,
-				ngroups=Membership.getInstance().allGroups().size(),	
+				ngroups=g2rk.size(),	
 				nsharps=StringUtils.countMatches(ks, "#");
 			for (int i = 0; i < ngroups; i++) {
 			
-				g = (Group) Membership.getInstance().allGroups().toArray()[i];
+				g = (Group) g2rk.keySet().toArray()[i];
 				double a = (double)i/(double)ngroups;
 				double b = Math.pow(10,nsharps);
 				range = new Double(Math.floor(a*b));

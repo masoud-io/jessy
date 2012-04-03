@@ -30,6 +30,8 @@ public class PartitionerTest {
 		Partitioner partitioner = Partitioner.getInstance();
 		partitioner.assign("abc##",UNIFORM);
 		assert partitioner.resolve("abc90").name().equals("3");
+		partitioner.assign("#",UNIFORM);
+		assert partitioner.resolve("0").name().equals("0");
 	}
 	
 	

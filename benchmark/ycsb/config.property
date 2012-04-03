@@ -1,0 +1,4 @@
+workload=com.yahoo.ycsb.workloads.CoreWorkload
+recordcount=1000
+threadcount=10
+target=100
