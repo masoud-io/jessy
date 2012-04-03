@@ -1,5 +1,6 @@
 package fr.inria.jessy;
 
+import java.math.BigInteger;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +75,10 @@ public class Partitioner {
 	 * and the distribution <i>dist</i> such that each group maintains the same
 	 * amount of keys to be requested according to the probalistic distribution.
 	 * 
+	 * A keyspace definition should match the following regex: (([:xdigit:]*)#+)* .
+	 * The # character are interpreted as integer from 0 to 9.
+	 * For instance, abc## is set abc00, abc01 ... abc99.
+	 * 
 	 * @param rk
 	 *            a keyspace definition
 	 * @param a
@@ -83,27 +88,44 @@ public class Partitioner {
 	public void assign(String ks, Distribution dist)
 			throws InvalidParameterException {
 
-		Pattern p = Pattern.compile("([:xdigit:]*#)*");
-		Matcher m = p.matcher(ks);
-		if (!m.find())
-			throw new InvalidParameterException("Incorrect keyspace definition");
-
 		if (dist == Distribution.UNIFORM) {
-			String[] ms = ks.split("#");
+		
+			// Check correctness of the input keyspace 
+			Pattern ps = Pattern.compile("(([:xdigit:])*#+)+");
+			Matcher m = ps.matcher(ks);
+			if (!m.find())
+				throw new InvalidParameterException("Incorrect keyspace definition");
+			
+			// Generate rootkeys
 			String rootkey;
-			for (int i = 0; i < Membership.getInstance().allGroups().size(); i++) {
+			String rs;
+			Group g;
+			Double range;
+			int pos,
+				ngroups=Membership.getInstance().allGroups().size(),	
+				nsharps=StringUtils.countMatches(ks, "#");
+			for (int i = 0; i < ngroups; i++) {
+			
+				g = (Group) Membership.getInstance().allGroups().toArray()[i];
+				double a = (double)i/(double)ngroups;
+				double b = Math.pow(10,nsharps);
+				range = new Double(Math.floor(a*b));
+				rs = String.format("%0"+nsharps+"d", range.longValue());
 				rootkey = new String();
-				for (char c : Integer.toString(
-						i
-								* (10 ^ (ms.length)
-										/ Membership.getInstance().allGroups()
-												.size())).toCharArray()) {
-					rootkey += ms[i] + c;
+				pos=0;
+				
+				for(int j=0; j<ks.length(); j++){
+					if( ks.charAt(j) == '#' ){
+						rootkey+=rs.charAt(pos);
+						pos++;
+					}else{
+						rootkey+=ks.charAt(j);
+					}
 				}
-				g2rk.get(Membership.getInstance().allGroups().toArray()[i])
-						.add(rootkey);
-				rk2g.put(rootkey, (Group) Membership.getInstance().allGroups()
-						.toArray()[i]);
+				
+				assert g2rk.containsKey(g);
+				g2rk.get(g).add(rootkey);
+				rk2g.put(rootkey,g);
 			}
 		} else {
 			throw new RuntimeException("NIY");
@@ -114,12 +136,12 @@ public class Partitioner {
 	/**
 	 * This methods returns the group of a key.
 	 * 
-	 * @param k
-	 *            a key
-	 * @return replica group of <i>k</i>.
+	 * @param k a key
+	 * @return the replica group of <i>k</i>.
 	 */
-	public String resolve(String k) {
-		return rk2g.get(closestRootkeyOf(k)).name();
+	public Group resolve(String k) {
+		// TODO check correctness of the key.
+		return rk2g.get(closestRootkeyOf(k));
 	}
 
 	public Set<String> resolveToGroupNames(Set<String> keys) {
@@ -139,27 +161,28 @@ public class Partitioner {
 	//
 
 	/**
-	 * @param k
-	 *            a key ^return the closest rootkey.
+	 * @param k a key 
+	 * @return the closest rootkey.
 	 */
 	private String closestRootkeyOf(String k) {
-		String closest = "";
+		String closest=null;
+		BigInteger dr,dc=null;
 		for (String r : rk2g.keySet()) {
-			if (distance(r, closest) < distance(r, k))
-				closest = r;
+			dr = distance(r,k);
+			if(dc==null
+			   ||
+			   dr.compareTo(dc)<0){
+				closest=r;
+				dc=dr;
+			}
 		}
 		return closest;
 	}
 
-	/**
-	 * @param k1
-	 *            a key
-	 * @param k2
-	 *            a key
-	 * @return the Levenshtein distance between <i>k1</i> and <i>k2</i>.
-	 */
-	private int distance(String k1, String k2) {
-		return StringUtils.getLevenshteinDistance(k1, k2);
+	private BigInteger distance(String k1, String k2) {
+		BigInteger v1 = new BigInteger(k1.getBytes());
+		BigInteger v2 = new BigInteger(k2.getBytes());
+		return v1.subtract(v2).abs();		
 	}
-
+	
 }

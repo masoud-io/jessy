@@ -138,7 +138,7 @@ public class RemoteReader implements Learner {
 		public ReadReply<E> call() throws Exception {
 			Set<String> dest = new HashSet<String>(1);
 			dest.add(Partitioner.getInstance().resolve(
-					request.getPartitioningKey()));
+					request.getPartitioningKey()).name());
 			stream.reliableMulticast(new RemoteReadRequestMessage(request, dest));
 			futures.get(request.getReadRequestId()).wait();
 			return (ReadReply<E>) replies.get(request.getReadRequestId());
