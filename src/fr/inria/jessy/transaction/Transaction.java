@@ -49,8 +49,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		return jessy.commitTransaction(transactionHandler);
 	}
 
-	public void abortTransaction() {
-		jessy.abortTransaction(transactionHandler);
+	public ExecutionHistory abortTransaction() {
+		return jessy.abortTransaction(transactionHandler);
 	}
 
 	public ExecutionHistory call() {
