@@ -53,6 +53,7 @@ public class Partitioner {
 		UNIFORM, NORMAL, ZIPF
 	};
 
+	private HashSet<String> keyspaces; // TODO check intersection
 	private Map<Group, Set<String>> g2rk; // groups to rootkeys
 	private Map<String, Group> rk2g; // rootkeys to groups
 
@@ -76,34 +77,57 @@ public class Partitioner {
 	 * and the distribution <i>dist</i> such that each group maintains the same
 	 * amount of keys to be requested according to the probalistic distribution.
 	 * 
-	 * A keyspace definition should match the following regex: (([:xdigit:]*)#+)* .
-	 * The # character are interpreted as integer from 0 to 9.
-	 * For instance, abc## is set abc00, abc01 ... abc99.
+	 * The keyspace definition is a string whose length equals 32 characters, 
+	 * and that matches the following regex: (([^\#]*)\#+)*.
 	 * 
-	 * @param rk
+	 * It specifies the set of keys in the keyspace.
+	 * The keyspace is exactly the set of strings that 
+	 * matches the regex obtained by transforming in the keyspace definition 
+	 * every character c except '#' as \c, and every character '#' is .
+	 * the class [0-9]
+	 * 
+	 * For instance, the keyspace: bonjour#iciTerre!
+	 * is the set of strings matching the regex: bonjour[0-9]iciTerre\! .
+	 *   
+	 * @param ks
 	 *            a keyspace definition
+	 *            If ks is not of size 32, a left padding with '\0' occurs.
+	 *            If ks is empty, then the keyspace equals '#################'. 
 	 * @param a
 	 *            distribution
 	 */
-	// TODO: do not take all ports!
 	public void assign(String ks, Distribution dist)
 			throws InvalidParameterException {
-
-		if (dist == Distribution.UNIFORM) {
 		
-			// Check correctness of the input keyspace 
-			Pattern ps = Pattern.compile("(([:xdigit:])*#+)+");
-			Matcher m = ps.matcher(ks);
-			if (!m.find())
-				throw new InvalidParameterException("Incorrect keyspace definition");
-			
+		// Check length
+		if(ks.length()>32) 
+			throw new InvalidParameterException("Incorrect keyspace definition");
+		
+		// Check correctness of the input keyspace 
+		Pattern ps = Pattern.compile("(([^#])*#+)+");
+		Matcher m = ps.matcher(ks);
+		if (!m.find())
+			throw new InvalidParameterException("Incorrect keyspace definition");
+				
+		// Left-padding if necessary:
+		StringUtils.leftPad(ks,32,"\0");
+		
+		// Check that keyspace is either 
+		// (i) disjoint, or (ii) a proper partitioning of 
+		// already existing keyspaces.
+		// 
+		// TODO
+		keyspaces.add(ks);
+		
+		if (dist == Distribution.UNIFORM) {
+				
 			// Generate rootkeys
 			String rootkey;
 			String rs;
 			Group g;
 			Double range;
 			int pos,
-				ngroups=g2rk.size(),	
+				ngroups=g2rk.size(),
 				nsharps=StringUtils.countMatches(ks, "#");
 			for (int i = 0; i < ngroups; i++) {
 			
