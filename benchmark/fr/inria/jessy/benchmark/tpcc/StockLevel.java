@@ -7,6 +7,11 @@ import fr.inria.jessy.transaction.Transaction;
 
 import java.util.Random;
 
+/**
+ * @author WANG Haiyun & ZHAO Guang
+ * 
+ */
+
 public class StockLevel extends Transaction {
 	
 	private String W_ID;

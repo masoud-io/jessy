@@ -52,10 +52,35 @@ public class OrderStatus extends Transaction {
 				nur = new NURand(255,0,999);
         		C_LAST = Integer.toString(nur.calculate());
        		
-       /* !!! problem to retrieve, because we have no C_ID, just a subset of PK. so there is no PK helping do a read operation */
-        		customer = read(Customer.class, "C_W_"+C_W_ID + "_" + "C_D_"+C_D_ID);
+        		/* !!! problem to retrieve, the read operation with SK cannot return a list of results... */
+        		 /* retrieve with SK C_LAST */
+        		List<Customer> list = new ArrayList<Customer>();
+  //      		list = read(Customer.class, "C_LAST", C_LAST);
+        		
+        		/* Save the results with correct C_W_ID and C_D_ID */
+        		for(int a=0; a<list.size(); a++) {
+        			if(!list.get(a).getC_W_ID().equals(this.C_W_ID)||
+        					!list.get(a).getC_D_ID().equals(this.C_D_ID))
+        				list.remove(a);
+        		}
+                
+        		/* Sort the results by C_FIRST in ascending order */
+        		for(int a=0;a<list.size();a++) {
+                	
+                    int smallest=a;
+                    int b;
+                    for(b=a;b<list.size();b++) {
+                    	
+                        if(list.get(b).getC_FIRST().compareTo(list.get(smallest).getC_FIRST())<0) {
+                            smallest=b;
+                        }
+                    }
+                    swap(list,a,smallest);
+                           
+                }
+        		/* the row at position n/2 of the results set is selected */
+        		customer = list.get(list.size()/2);
 			}
-		
 			/* should we make a READ operation on District? but we need D_Next_O_ID to determine the number of orders. 
 			 * So there will be a involved selection operation on the District table not mentioned in the benchmark */
 			int tmp = 0;
@@ -81,5 +106,13 @@ public class OrderStatus extends Transaction {
     	
 		return null;
 	}
+    	
+    public void swap(List<Customer> list,int from,int to) {
+    		
+    	Customer tmp = list.get(from);
+    	list.set(from, list.get(to));
+    	list.set(to, tmp);
+    		
+    }
 
 }
