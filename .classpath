@@ -12,6 +12,6 @@
 	<classpathentry kind="lib" path="lib/jackson-mini-1.9.5.jar"/>
 	<classpathentry kind="lib" path="lib/mongo-2.7.3.jar"/>
 	<classpathentry kind="lib" path="lib/hbase-binding-0.1.4.jar"/>
-	<classpathentry kind="lib" path="lib/fractal.jar" sourcepath="lib/fractal.jar"/>
+	<classpathentry kind="lib" path="lib/voldemort-binding-0.1.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

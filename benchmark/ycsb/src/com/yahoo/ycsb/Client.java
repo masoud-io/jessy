@@ -390,6 +390,7 @@ public class Client
 			// if no destination file is provided the results will be written to stdout
 			OutputStream out;
 			String exportFile = props.getProperty("exportfile");
+			
 			if (exportFile == null)
 			{
 				out = System.out;
@@ -410,8 +411,9 @@ public class Client
 				e.printStackTrace();
 				exporter = new TextMeasurementsExporter(out);
 			}
-
+			//DataOutputStream dos = new DataOutputStream(new FileOutputStream("results"));
 			exporter.write("OVERALL", "RunTime(ms)", runtime);
+			
 			double throughput = 1000.0 * ((double) opcount) / ((double) runtime);
 			exporter.write("OVERALL", "Throughput(ops/sec)", throughput);
 
