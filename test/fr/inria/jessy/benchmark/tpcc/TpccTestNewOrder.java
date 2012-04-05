@@ -52,12 +52,12 @@ public class TpccTestNewOrder {
 	}
 
 	/**
-	 * Test method for {@link fr.inria.jessy.BenchmarkTpcc.InsertData}.
+	 * Test method for {@link fr.inria.jessy.BenchmarkTpcc.NewOrder}.
 	 * 
 	 * @throws Exception
 	 */
 	@Test
-	public void testInsertData() throws Exception {
+	public void testNewOrder() throws Exception {
 
 		ExecutionHistory result = no.execute();
 		/* test execution */
