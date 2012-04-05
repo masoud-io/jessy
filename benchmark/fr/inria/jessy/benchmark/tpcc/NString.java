@@ -22,7 +22,7 @@ public final class NString {
 	public static String generate(int x, int y){
 		int i,length;
 		String result="";
-		length = rand.nextInt(y - x) + x;
+		length = rand.nextInt(y - x + 1) + x;
 		for(i=0; i<length; i++){
 			result = result + set.charAt(rand.nextInt(61));
 		}
@@ -49,9 +49,9 @@ public final class NString {
 		String result = "";
 		y = y-8;
 		x = x-8;
-		length = rand.nextInt(y-x)+x;
+		length = rand.nextInt(y-x+1)+x;
 		pos = rand.nextInt(length); //where we put "original"
-		for(i=0; i<x; i++){
+		for(i=0; i<length; i++){
 			if(i == pos){
 				result = result + "ORIGINAL";
 			}
