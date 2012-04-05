@@ -22,7 +22,7 @@ public class InsertData extends Transaction {
 			int i, j, k, l;
 			Random rand = new Random(System.currentTimeMillis());			
 			String[] lastnames = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE", "ANTI", "CALLY", "ATION", "EING"};
-			int[] randCustomerId = new int[3000]; // random permutation, used while creating Order table
+			int[] randCustomerId = new int[3000]; // random permutation of 3k customer IDs, used while creating Order table
 			for(i=0; i<3000; i++){
 				randCustomerId[i] = i;
 			}
