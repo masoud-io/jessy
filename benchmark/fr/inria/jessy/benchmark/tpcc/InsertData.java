@@ -60,7 +60,7 @@ public class InsertData extends Transaction {
 				create(wh);
 				/*each warehouse has 100,000 rows in the STOCK table*/
 				for(j=1; j<=100000; j++){
-					st = new Stock("S_W_"+wh.getW_ID()+"S_I_"+j);
+					st = new Stock("S_W_"+wh.getW_ID()+"_S_I_"+j);
 					st.setS_I_ID(Integer.toString(j));
 					st.setS_W_ID(wh.getW_ID());
 					st.setS_QUANTITY(rand.nextInt(100-10+1)+10); //[10..100]
