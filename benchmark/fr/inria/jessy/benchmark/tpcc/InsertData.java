@@ -27,7 +27,10 @@ public class InsertData extends Transaction {
 				randCustomerId[i] = i;
 			}
 			for(i=0; i<3000; i++){
-				randCustomerId[i] = randCustomerId[rand.nextInt(3000)];
+				j = rand.nextInt(3000);
+				k = randCustomerId[i];
+				randCustomerId[i] = randCustomerId[j];
+				randCustomerId[j] = k;
 			}
 			String lastname;
 			Warehouse wh;	
@@ -42,7 +45,7 @@ public class InsertData extends Transaction {
 			NURand nu;
 			
 			/*for i  warehouses*/
-			for(i=0; i<1; i++){			
+			for(i=1; i<=1; i++){			
 				wh = new Warehouse("W_"+i);
 				wh.setW_ID(Integer.toString(i));
 				wh.setW_NAME(NString.generate(6, 10));
@@ -52,11 +55,11 @@ public class InsertData extends Transaction {
 				wh.setW_STATE(NString.generateFix(2));
 				wh.setW_ZIP(Integer.toString(rand.nextInt(9999 + 1))+"11111");
 				wh.setW_TAX(rand.nextFloat()*0.200);
-				wh.setW_YTD(300000.00);
+				wh.setW_YTD(300000*1.00);
 
 				create(wh);
 				/*each warehouse has 100,000 rows in the STOCK table*/
-				for(j=0; j<100000; j++){
+				for(j=1; j<=100000; j++){
 					st = new Stock("S_W_"+wh.getW_ID()+"S_I_"+j);
 					st.setS_I_ID(Integer.toString(j));
 					st.setS_W_ID(wh.getW_ID());
@@ -83,7 +86,7 @@ public class InsertData extends Transaction {
 				
 				
 				/*each warehouse has 10 district*/
-				for(j=0; j<10; j++){
+				for(j=1; j<=10; j++){
 					dis = new District("D_W_"+i+"_D_"+j);
 					dis.setD_ID(Integer.toString(j));
 					dis.setD_W_ID(wh.getW_ID());
@@ -100,12 +103,12 @@ public class InsertData extends Transaction {
 					create(dis);
 					
 					/*each district has 3k customer*/
-					for(k=0; k<3000; k++){
+					for(k=1; k<=3000; k++){
 						cus=new Customer("C_W_"+i+"_C_D_"+j+"_C_"+k);
 						cus.setC_ID(Integer.toString(k));
 						cus.setC_D_ID(dis.getD_ID());
 						cus.setC_W_ID(wh.getW_ID());
-						if(k<1000){//first 1000 customers
+						if(k<=1000){//first 1000 customers
 							lastname = "";
 							for(l=0; l<3; l++){
 								lastname = lastname+lastnames[rand.nextInt(10)]; /* 0..9 */
@@ -153,9 +156,9 @@ public class InsertData extends Transaction {
 					}
 					
 					/*each district has 3000 order*/
-					for(k=0; k< 3000; k++){
+					for(k=1; k<=3000; k++){
 						or = new Order("O_W_"+wh.getW_ID()+"_O_D_"+dis.getD_ID()+"_O_"+k);
-						or.setO_C_ID(Integer.toString(randCustomerId[k]));
+						or.setO_C_ID(Integer.toString(randCustomerId[k-1]));
 						or.setO_W_ID(wh.getW_ID());
 						or.setO_D_ID(dis.getD_ID());
 						or.setO_ENTRY_D(new Date());
@@ -167,7 +170,7 @@ public class InsertData extends Transaction {
 						create(or);
 						
 						/*each order has o_ol_cnt order_lines*/
-						for(l=0; l< or.getO_OL_CNT(); l++){
+						for(l=1; l <= or.getO_OL_CNT(); l++){
 							ol = new Order_line("OL_W_"+wh.getW_ID()+"_OL_D_"+dis.getD_ID()+"_OL_O_"+or.getO_ID()+"_OL_"+l);
 							ol.setOL_W_ID(wh.getW_ID());
 							ol.setOL_D_ID(dis.getD_ID());
@@ -189,8 +192,9 @@ public class InsertData extends Transaction {
 						}
 					}
 					/*each district has 900 new_order*/
-					for(k=0; k< 900; k++){
-						no = new New_order("NO_W_"+wh.getW_ID()+"_NO_D_"+dis.getD_ID()+"_NO_O_"+2101+k);
+					for(k=1; k<=900; k++){
+						l = 2100+k;
+						no = new New_order("NO_W_"+wh.getW_ID()+"_NO_D_"+dis.getD_ID()+"_NO_O_"+l);
 						no.setNO_W_ID(wh.getW_ID());
 						no.setNO_D_ID(dis.getD_ID());
 						no.setNO_O_ID(2101+k);
@@ -201,7 +205,7 @@ public class InsertData extends Transaction {
 			}
 			
 			/*for whole system, we have 100k different types of item*/
-			for(i=0; i<100000; i++){
+			for(i=1; i<=100000; i++){
 				it = new Item("I_"+i);
 				it.setI_ID(Integer.toString(i));
 				it.setI_IM_ID(Integer.toString(rand.nextInt(10000)+1)); //[1..10000]

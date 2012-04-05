@@ -16,7 +16,6 @@ import fr.inria.jessy.transaction.*;
 public class TpccTestNewOrder {
 
 	LocalJessy jessy;
-	InsertData id;
 	NewOrder no; 
 	Warehouse wh;
 	District di;
@@ -36,18 +35,6 @@ public class TpccTestNewOrder {
 	@Before
 	public void setUp() throws Exception {
 		jessy = LocalJessy.getInstance();
-
-		jessy.addEntity(Warehouse.class);
-		jessy.addEntity(District.class);
-		jessy.addEntity(Customer.class);
-		jessy.addEntity(Item.class);
-		jessy.addEntity(Stock.class);
-		jessy.addEntity(History.class);
-		jessy.addEntity(Order.class);
-		jessy.addEntity(New_order.class);
-		jessy.addEntity(Order_line.class);
-		id = new InsertData(jessy);
-		id.execute();
 		no = new NewOrder(jessy);
 	}
 
