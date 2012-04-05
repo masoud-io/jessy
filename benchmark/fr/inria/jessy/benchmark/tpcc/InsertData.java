@@ -83,7 +83,7 @@ public class InsertData extends Transaction {
 				
 				
 				/*each warehouse has 10 district*/
-				for(j=0; i<10; i++){
+				for(j=0; j<10; j++){
 					dis = new District("D_W_"+i+"_D_"+j);
 					dis.setD_ID(Integer.toString(j));
 					dis.setD_W_ID(wh.getW_ID());

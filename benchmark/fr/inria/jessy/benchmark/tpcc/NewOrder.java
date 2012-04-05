@@ -142,7 +142,7 @@ public class NewOrder extends Transaction {
 				
 				/*if this item meet the roll back condition, we perform the roll back */
 				if( i == (ol_cnt-1) && rbk == 1){
-//					return abortTransaction();
+					return abortTransaction();
 					
 				}
 			}

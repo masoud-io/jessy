@@ -47,8 +47,8 @@ public class TpccTestNewOrder {
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
 		id = new InsertData(jessy);
-		no = new NewOrder(jessy);
 		id.execute();
+		no = new NewOrder(jessy);
 	}
 
 	/**
