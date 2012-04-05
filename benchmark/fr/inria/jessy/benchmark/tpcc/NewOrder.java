@@ -35,19 +35,19 @@ public class NewOrder extends Transaction {
 			String customer_id;
 			NURand nu;
 
-			int O_OL_CNT = rand.nextInt(15-5)+5;
+			int O_OL_CNT = rand.nextInt(15-5+1)+5;
 			int OL_QUANTITY;
 
 
 			int x;/*we have only 1 warehouse, so x won't be used to make a difference between home and remote warehouse for the moment */
 			
 			/*generate how many items we have in this new order, [5..15]*/
-			int ol_cnt = rand.nextInt(15-5)+5; 			
+			int ol_cnt = rand.nextInt(15-5+1)+5; 			
 			
 			wh = read(Warehouse.class, "W_1");
-			/* The district number (D_ID) is randomly selected within [1 .. 10] from the home warehouse (D_W_ID =
+			/* The district number (D_ID) is randomly selected within [1 .. 10] ([0..9] here) from the home warehouse (D_W_ID =
 			W_ID).*/
-			district_id = Integer.toString(rand.nextInt(10 - 1) + 1);
+			district_id = Integer.toString(rand.nextInt(10));
 			dis = read(District.class, "D_W_"+wh.getW_ID()+"_D_"+district_id);
 			/*
 			The non-uniform random customer number (C_ID) is selected using the NURand (1023,1,3000) function from
@@ -89,13 +89,13 @@ public class NewOrder extends Transaction {
 				 * A fixed 1% of the NewOrder transactions are chosen at random to simulate user data 
 				 * entry errors and exercise the performance of rolling back update transactions.
 	 			 */
-				int rbk = rand.nextInt(100-1)+1;
+				int rbk = rand.nextInt(100);
 				nu = new NURand(8191, 1, 100000);
 				OL_I_ID = nu.calculate();
 				it = read(Item.class, "I_"+OL_I_ID);
 				st = read(Stock.class, "S_W_"+wh.getW_ID()+"_S_I_"+OL_I_ID);
 				/*generate quantity of this item, [1..10]*/
-				OL_QUANTITY = rand.nextInt(10-1)+1;	
+				OL_QUANTITY = rand.nextInt(10)+1;	
 				
 				/*Decrease the stock of this item*/
 				if(st.getS_QUANTITY() >= OL_QUANTITY+10){

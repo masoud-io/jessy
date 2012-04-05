@@ -50,7 +50,7 @@ public class InsertData extends Transaction {
 				wh.setW_STREET_2(NString.generate(10, 20));
 				wh.setW_CITY(NString.generate(10, 20));
 				wh.setW_STATE(NString.generateFix(2));
-				wh.setW_ZIP(Integer.toString(rand.nextInt(9999 - 1) + 1)+"11111");
+				wh.setW_ZIP(Integer.toString(rand.nextInt(9999 + 1))+"11111");
 				wh.setW_TAX(rand.nextFloat()*0.200);
 				wh.setW_YTD(300000.00);
 
@@ -60,7 +60,7 @@ public class InsertData extends Transaction {
 					st = new Stock("S_W_"+wh.getW_ID()+"S_I_"+j);
 					st.setS_I_ID(Integer.toString(j));
 					st.setS_W_ID(wh.getW_ID());
-					st.setS_QUANTITY(rand.nextInt(100-10)+10); //[10..100]
+					st.setS_QUANTITY(rand.nextInt(100-10+1)+10); //[10..100]
 					st.setS_DIST_01(NString.generateFix(24));
 					st.setS_DIST_02(NString.generateFix(24));
 					st.setS_DIST_03(NString.generateFix(24));
@@ -162,7 +162,7 @@ public class InsertData extends Transaction {
 						if(k<2101)
 							or.setO_CARRIER_ID(Integer.toString(rand.nextInt(10)+1));
 						else or.setO_CARRIER_ID(null);
-						or.setO_OL_CNT(rand.nextInt(15-5)+5); //[5 .. 15]
+						or.setO_OL_CNT(rand.nextInt(15-5+1)+5); //[5 .. 15]
 						or.setO_ALL_LOCAL(1);
 						create(or);
 						

@@ -33,14 +33,14 @@ public class NURand {
 	public int calculate(){
 		int exp1, exp2, or ;
 		/*random(0,A)*/
-		exp1 = rand.nextInt(A - 1) + 1;
+		exp1 = rand.nextInt(A + 1);
 		
 		/*random(x,y)*/
-		exp2 = rand.nextInt(y - x) + x;
+		exp2 = rand.nextInt(y - x + 1) + x;
 		
 		/* or*/
 		or = exp1 | exp2;
-		c = rand_c.nextInt(A - 1) + 1; //[0..A] 
+		c = rand_c.nextInt(A + 1); //[0..A] 
 		return ((or+c)%(y-x+1)) + x; 
 	}
 	public int getA() {
