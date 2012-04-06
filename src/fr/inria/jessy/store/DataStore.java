@@ -126,10 +126,13 @@ public class DataStore {
 		}
 	}
 
-	public void close() {
-		// TODO close stores!
+	public synchronized void close() {
 		if (env != null) {
 			try {
+				for(EntityStore e : entityStores.values()){
+					if(e!=null) e.close();
+				}
+				env.cleanLog();
 				env.close();
 			} catch (DatabaseException ex) {
 				ex.printStackTrace();
@@ -273,6 +276,7 @@ public class DataStore {
 			E entity = cur.last();
 
 			if (readSet == null) {
+				cur.close();
 				return entity;
 			}
 

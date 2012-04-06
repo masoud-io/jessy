@@ -31,7 +31,7 @@ import org.apache.commons.lang3.StringUtils;
  * 
  * The distribution can be of three types: uniform, normal or zipf. The rootkeys
  * are attributed using both the keyspace and the distribution such that two
- * rootkeys are close according to the distribution to the same set of keys. For
+ * rootkeys are close according to the distribution to the same number of keys. For
  * instance, if the keyspace is warhouse# ,the distribution is uniform, and
  * there are 3 groups g1, g2 and g3, the rootkeys of g1 and g2 and g3 are
  * respectively warhouse0, warhouse3 and warhouse6.

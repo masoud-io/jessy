@@ -1,16 +1,23 @@
 package fr.inria.jessy;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.Future;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
+import net.sourceforge.fractal.MessageOutputStream;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.UMessage;
 import net.sourceforge.fractal.membership.Membership;
@@ -49,30 +56,31 @@ public class RemoteReader implements Learner {
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
 	private RMCastStream stream;
-	private ConcurrentMap<UUID, Future<ReadReply<? extends JessyEntity>>> futures;
-	private ConcurrentMap<UUID, ReadReply<? extends JessyEntity>> replies;
+	private Map<UUID, ReadReply<? extends JessyEntity>> replies;
+	private Map<UUID, ReadRequest<? extends JessyEntity>> requests;
 
 	public static RemoteReader getInstance() {
 		return instance;
 	}
 
 	private RemoteReader() {
-		Membership.getInstance().getOrCreateTCPGroup("ALLNODES", 5000);
 		stream = FractalManager.getInstance()
 				.getOrCreateRMCastStream("RemoteReaderStream",
 						Membership.getInstance().myGroup().name());
 		stream.registerLearner("RemoteReadRequestMessage", this);
 		stream.registerLearner("RemoteReadReplyMessage", this);
-		futures = new ConcurrentHashMap<UUID, Future<ReadReply<? extends JessyEntity>>>();
+		stream.start();
 		replies = new ConcurrentHashMap<UUID, ReadReply<? extends JessyEntity>>();
+		requests = new ConcurrentHashMap<UUID, ReadRequest<? extends JessyEntity>>();
 	}
 
+	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
 			ReadRequest<E> readRequest) {
-		assert !Partitioner.getInstance().isLocal(
-				readRequest.getPartitioningKey());
+//		assert !Partitioner.getInstance().isLocal(
+//				readRequest.getPartitioningKey());
+		requests.put(readRequest.getReadRequestId(),readRequest);
 		Future reply = pool.submit(new RemoteReadRequestTask(readRequest));
-		futures.put(readRequest.getReadRequestId(), reply);
 		return reply;
 	}
 
@@ -84,44 +92,9 @@ public class RemoteReader implements Learner {
 		} else { // RemoteReadReplyMessage
 			ReadReply reply = ((RemoteReadReplyMessage) v).getReadReply();
 			replies.put(reply.getReadRequestId(), reply);
-			futures.get(reply.getReadRequestId()).notify();
-		}
-
-	}
-
-	public class RemoteReadReplyMessage extends UMessage {
-
-		static final long serialVersionUID = ConstantPool.JESSY_MID;
-
-		// For Fractal
-		public RemoteReadReplyMessage() {
-		}
-
-		RemoteReadReplyMessage(ReadReply r) {
-			super(r, Membership.getInstance().myId());
-		}
-
-		public ReadReply getReadReply() {
-			return (ReadReply) serializable;
-		}
-
-	}
-
-	public class RemoteReadRequestMessage extends WanMessage {
-
-		private static final long serialVersionUID = ConstantPool.JESSY_MID;
-
-		// For Fractal
-		public RemoteReadRequestMessage() {
-		}
-
-		RemoteReadRequestMessage(ReadRequest r, Set<String> dest) {
-			super(r, dest, Membership.getInstance().myGroup().name(),
-					Membership.getInstance().myId());
-		}
-
-		public ReadRequest getReadRequest() {
-			return (ReadRequest) serializable;
+			synchronized(requests.get(reply.getReadRequestId())){
+				requests.get(reply.getReadRequestId()).notify();
+			}
 		}
 
 	}
@@ -136,12 +109,16 @@ public class RemoteReader implements Learner {
 		}
 
 		public ReadReply<E> call() throws Exception {
+			// TODO clean 
 			Set<String> dest = new HashSet<String>(1);
 			dest.add(Partitioner.getInstance().resolve(
 					request.getPartitioningKey()).name());
-			stream.reliableMulticast(new RemoteReadRequestMessage(request, dest));
-			futures.get(request.getReadRequestId()).wait();
-			return (ReadReply<E>) replies.get(request.getReadRequestId());
+			stream.reliableMulticast(new RemoteReadRequestMessage(request, dest));  // FIXME unicast to the right guy ?
+			synchronized(requests.get(request.getReadRequestId())){
+				requests.get(request.getReadRequestId()).wait();
+			}
+			ReadReply<E> reply = (ReadReply<E>) replies.get(request.getReadRequestId());
+			return reply;
 		}
 
 	}
@@ -159,12 +136,10 @@ public class RemoteReader implements Learner {
 
 			ReadReply readReply = DistributedJessy.getInstance().getDataStore()
 					.get(readRequest);
-
-			Membership
-					.getInstance()
-					.getOrCreateTCPGroup("ALLNODES", 5000)
-					.unicastSW(message.source,
-							new RemoteReadReplyMessage(readReply));
+			
+			Set<String> d = new HashSet<String>();
+			d.add(message.gSource);
+			stream.reliableMulticast(new RemoteReadReplyMessage(readReply,d)); // FIXME unicast to the right guy
 			return null;
 		}
 

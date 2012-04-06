@@ -51,13 +51,13 @@ public class DistributedJessy extends Jessy {
 				keyValue, readSet);
 
 		ReadReply<E> readReply;
-		if (Partitioner.getInstance().isLocal(readRequest.getPartitioningKey())) {
-			readReply = getDataStore().get(readRequest);
-		} else {
+//		if (Partitioner.getInstance().isLocal(readRequest.getPartitioningKey())) {
+//			readReply = getDataStore().get(readRequest);
+//		} else {
 			Future<ReadReply<E>> future = RemoteReader.getInstance()
 					.remoteRead(readRequest);
 			readReply = future.get();
-		}
+//		}
 		if (readReply.getEntity().iterator().hasNext())
 			return readReply.getEntity().iterator().next();
 		else

@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.inria.jessy.ConstantPool;
+
 /**
  * @author Masoud Saeida Ardekani
  * 
@@ -17,7 +19,7 @@ import java.util.List;
 public class CompactVector<K> extends ValueVector<K, Integer> implements
 		Serializable {
 
-	private static final long serialVersionUID = -6497349291347950406L;
+	private static final long serialVersionUID = -ConstantPool.JESSY_MID;;
 
 	private List<K> keys;
 

@@ -27,10 +27,9 @@ public abstract class JessyEntity implements Serializable{
 	
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-
-	private Vector<String> localVector;
-
-	private boolean removoed = false;
+	// FIXME transient ?
+	transient private Vector<String> localVector;  
+	transient private boolean removoed = false;
 
 	public boolean isRemovoed() {
 		return removoed;

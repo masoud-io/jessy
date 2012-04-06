@@ -565,6 +565,8 @@ public abstract class Jessy {
 		return lastCommittedEntities;
 	}
 
-	
+	public void close(){
+		dataStore.close();
+	}
 	
 }
