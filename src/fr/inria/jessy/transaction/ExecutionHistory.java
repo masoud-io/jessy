@@ -32,6 +32,10 @@ public class ExecutionHistory implements Serializable {
 		 */
 		READONLY_TRANSACTION,
 		/**
+		 * the execution history is for a blind write transaction
+		 */
+		BLIND_WRITE,
+		/**
 		 * the execution history is for an update transaction
 		 */
 		UPDATE_TRANSACTION,
@@ -125,10 +129,12 @@ public class ExecutionHistory implements Serializable {
 	public TransactionType getTransactionType() {
 		if (createSet.size() > 0 && writeSet.size() == 0 && readSet.size() == 0)
 			return TransactionType.INIT_TRANSACTION;
-		else if (writeSet.size() > 0)
-			return TransactionType.UPDATE_TRANSACTION;
-		else
+		else if (readSet.size() == 0)
+			return TransactionType.BLIND_WRITE;
+		else if (writeSet.size() == 0)
 			return TransactionType.READONLY_TRANSACTION;
+		else
+			return TransactionType.UPDATE_TRANSACTION;
 	}
 
 	public TransactionState getTransactionState() {

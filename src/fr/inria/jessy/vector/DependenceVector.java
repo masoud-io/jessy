@@ -1,9 +1,12 @@
 package fr.inria.jessy.vector;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 import com.sleepycat.persist.model.Persistent;
+
+import fr.inria.jessy.ConstantPool;
 
 /**
  * @author Masoud Saeida Ardekani This class implements dependence vector for
@@ -12,8 +15,10 @@ import com.sleepycat.persist.model.Persistent;
  */
 
 @Persistent
-public class DependenceVector<K> extends Vector<K> {
+public class DependenceVector<K> extends Vector<K> implements Serializable{
 
+	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
+	
 	public DependenceVector() {
 		super();
 	}

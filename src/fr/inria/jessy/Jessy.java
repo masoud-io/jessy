@@ -46,11 +46,11 @@ public abstract class Jessy {
 	};
 
 	
-	private DataStore dataStore;
+	protected DataStore dataStore;
 	Consistency consistency;
 
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
-	private List<Class<? extends JessyEntity>> entityClasses;
+	protected List<Class<? extends JessyEntity>> entityClasses;
 
 	protected CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
 	private CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
@@ -549,13 +549,16 @@ public abstract class Jessy {
 			transactionalAccess = ExecutionMode.NON_TRANSACTIONAL;
 
 		if (transactionalAccess == ExecutionMode.NON_TRANSACTIONAL) {
-			dataStore.put(entity);
+			performNonTransactionalWrite(entity);
 			return;
 		}
 
 		throw new Exception(
 				"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
 	}
+	
+	protected abstract <E extends JessyEntity> void performNonTransactionalWrite(E entity)
+			throws InterruptedException, ExecutionException;
 
 	protected void garbageCollectTransaction(TransactionHandler transactionHandler) {
 		handler2executionHistory.remove(transactionHandler);

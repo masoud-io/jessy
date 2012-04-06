@@ -179,9 +179,15 @@ public class Partitioner {
 	}
 
 	public boolean isLocal(String k) {
-		return Membership.getInstance().myGroups().contains(resolve(k));
+		return false;
+		// return Membership.getInstance().myGroups().contains(resolve(k));
 	}
 
+	@Deprecated
+	public boolean isTrueLocal(String k) {
+		return Membership.getInstance().myGroups().contains(resolve(k));
+	}
+	
 	//
 	// INNER METHODS
 	//

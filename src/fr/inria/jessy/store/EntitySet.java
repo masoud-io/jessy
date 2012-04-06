@@ -3,9 +3,9 @@
  */
 package fr.inria.jessy.store;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.vector.CompactVector;
 
@@ -23,7 +24,9 @@ import fr.inria.jessy.vector.CompactVector;
  *         {@link ExecutionHistory}
  * 
  */
-public class EntitySet {
+public class EntitySet implements Serializable{
+
+	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	/**
 	 * maps works as follows: ClassName > SecondaryKey > Entity

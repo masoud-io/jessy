@@ -64,8 +64,8 @@ public class RemoteReader implements Learner {
 	}
 
 	private RemoteReader() {
-		stream = FractalManager.getInstance()
-				.getOrCreateRMCastStream("RemoteReaderStream",
+		stream = FractalManager.getInstance().getOrCreateRMCastStream(
+						"Jessy",
 						Membership.getInstance().myGroup().name());
 		stream.registerLearner("RemoteReadRequestMessage", this);
 		stream.registerLearner("RemoteReadReplyMessage", this);

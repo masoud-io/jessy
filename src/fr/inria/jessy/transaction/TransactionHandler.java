@@ -1,16 +1,21 @@
 package fr.inria.jessy.transaction;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class TransactionHandler {
+import fr.inria.jessy.ConstantPool;
 
+public class TransactionHandler implements Serializable{
+
+	private static final long serialVersionUID = ConstantPool.JESSY_MID;
+	
 	private  UUID id;
 	
 	public TransactionHandler(){
 		this.id=UUID.randomUUID();
 	}
 
-	protected UUID getId() {
+	public UUID getId() {
 		return id;
 	}
 	

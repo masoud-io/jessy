@@ -17,6 +17,8 @@ import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.TerminationResult;
 import fr.inria.jessy.vector.CompactVector;
+import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.vector.VectorFactory;
 
 public class DistributedJessy extends Jessy {
 
@@ -51,13 +53,13 @@ public class DistributedJessy extends Jessy {
 				keyValue, readSet);
 
 		ReadReply<E> readReply;
-//		if (Partitioner.getInstance().isLocal(readRequest.getPartitioningKey())) {
-//			readReply = getDataStore().get(readRequest);
-//		} else {
+		if (Partitioner.getInstance().isLocal(readRequest.getPartitioningKey())) {
+			readReply = getDataStore().get(readRequest);
+		} else {
 			Future<ReadReply<E>> future = RemoteReader.getInstance()
 					.remoteRead(readRequest);
 			readReply = future.get();
-//		}
+		}
 		if (readReply.getEntity().iterator().hasNext())
 			return readReply.getEntity().iterator().next();
 		else
@@ -89,6 +91,27 @@ public class DistributedJessy extends Jessy {
 			return null;
 	}
 
+	@Override
+	public <E extends JessyEntity> void performNonTransactionalWrite(E entity) throws InterruptedException, ExecutionException {
+		entity.setLocalVector(VectorFactory.getVector(""));
+		if(Partitioner.getInstance().isLocal(entity.getSecondaryKey())){
+			performNonTransactionalLocalWrite(entity);
+		}else{
+			// 1 - Create a transaction.
+			TransactionHandler transactionHandler = new TransactionHandler();
+			ExecutionHistory executionHistory = new ExecutionHistory(entityClasses, transactionHandler);
+			executionHistory.addWriteEntity(entity);
+			// 2 - Submit it to the termination protocol.
+			Future<TerminationResult> result = distributedTermination.terminateTransaction(executionHistory);
+			result.get();
+		}
+	}
+	
+	public <E extends JessyEntity> void performNonTransactionalLocalWrite(E entity) throws InterruptedException, ExecutionException {
+		dataStore.put(entity);
+	}
+
+	
 	// FIXME Should this method be synchronized? I think it should only be
 	// syncrhonized during certification. Thus, it is safe before certification
 	// test.

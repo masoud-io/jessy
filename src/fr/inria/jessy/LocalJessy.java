@@ -80,5 +80,11 @@ public class LocalJessy extends Jessy {
 		return result;
 
 	}
+	
+	@Override
+	public <E extends JessyEntity> void performNonTransactionalWrite(E entity) {
+		dataStore.put(entity);
+
+	}
 
 }

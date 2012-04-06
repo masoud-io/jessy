@@ -162,6 +162,7 @@ public class JessyDBClient extends DB {
 			YCSBEntity en  = new YCSBEntity(YCSBEntity.class.toString(),table+":"+key,values);
 			jessy.write(en);
 		} catch (Exception e) {
+			e.printStackTrace();
 			/*exception fail : we have an exception when trying to run */
 			op.setState(OPState.EXCEPTIONFAILED);
 			try {

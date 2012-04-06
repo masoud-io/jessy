@@ -4,13 +4,18 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import com.google.common.collect.ConcurrentHashMultiset;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
@@ -19,9 +24,11 @@ import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.rmcast.RMCastStream;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 import utils.ExecutorPool;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.Partitioner;
 import fr.inria.jessy.consistency.ConsistencyFactory;
+import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
@@ -30,23 +37,26 @@ import fr.inria.jessy.transaction.termination.message.TerminateTransactionReplyM
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.message.VoteMessage;
 
+import static fr.inria.jessy.transaction.TransactionState.*;
+import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.*;
+
 //TODO COMMENT ME
 //TODO Clean these ConcurrentMaps
 public class DistributedTermination implements Learner, Runnable {
 
-	private Jessy jessy;
+	private DistributedJessy jessy;
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 	private WanAMCastStream amStream;
 	private RMCastStream rmStream;
 
-	private ConcurrentMap<TransactionHandler, Future<TerminationResult>> futures;
-	private ConcurrentMap<TransactionHandler, TerminationResult> terminationResults;
-	private ConcurrentMap<TransactionHandler, VotingQuorum> votingQuorums;
-	private ConcurrentMap<TransactionHandler, String> coordinatorGroups;
+	private Map<UUID, TransactionHandler> terminationRequests;
+	private Map<TransactionHandler, TerminationResult> terminationResults;
+	private Map<TransactionHandler, VotingQuorum> votingQuorums;
+	private Map<TransactionHandler, String> coordinatorGroups;
 
-	private BlockingQueue<TerminateTransactionRequestMessage> atomicDeliveredMessages;
-	private ConcurrentMap<TransactionHandler, TerminateTransactionRequestMessage> processingMessages;
+	private Queue<TerminateTransactionRequestMessage> atomicDeliveredMessages;
+	private Map<TransactionHandler, TerminateTransactionRequestMessage> processingMessages;
 
 	private List<TransactionHandler> terminated;
 
@@ -54,22 +64,25 @@ public class DistributedTermination implements Learner, Runnable {
 
 	Thread thread;
 
-	public DistributedTermination(Jessy jessy) {
+	public DistributedTermination(DistributedJessy jessy) {
+		
 		this.jessy = jessy;
 
-		Membership.getInstance().getOrCreateTCPGroup("ALLNODES",5000);
-
-		amStream = FractalManager.getInstance().getOrCreateWanAMCastStream(
-				"DistributedTerminationStream",
-				Membership.getInstance().myGroup().name());
-		amStream.registerLearner("TerminateTransactionRequestMessage", this);
-		amStream.registerLearner("TerminateTransactionReplyMessage", this);
-
 		rmStream = FractalManager.getInstance().getOrCreateRMCastStream(
-				"VoteMessage", Membership.getInstance().myGroup().name());
+						"Jessy",
+						Membership.getInstance().myGroup().name());
 		rmStream.registerLearner("VoteMessage", this);
+		rmStream.registerLearner("TerminateTransactionReplyMessage", this);
+		
+		amStream = FractalManager.getInstance().getOrCreateWanAMCastStream(
+						"Jessy",
+						Membership.getInstance().myGroup().name());
+		amStream.registerLearner("TerminateTransactionRequestMessage", this);
 
-		futures = new ConcurrentHashMap<TransactionHandler, Future<TerminationResult>>();
+		rmStream.start();
+		amStream.start();
+		
+		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
 		terminationResults = new ConcurrentHashMap<TransactionHandler, TerminationResult>();
 		atomicDeliveredMessages = new LinkedBlockingQueue<TerminateTransactionRequestMessage>();
 		processingMessages = new ConcurrentHashMap<TransactionHandler, TerminateTransactionRequestMessage>();
@@ -84,36 +97,41 @@ public class DistributedTermination implements Learner, Runnable {
 
 	public Future<TerminationResult> terminateTransaction(ExecutionHistory ex) {
 		ex.changeState(TransactionState.COMMITTING);
-		Future<TerminationResult> reply = pool.submit(new AtomicMulticastTask(
-				ex));
-		futures.put(ex.getTransactionHandler(), reply);
+		Future<TerminationResult> reply = pool.submit(new AtomicMulticastTask(ex));
+		terminationRequests.put(ex.getTransactionHandler().getId() , ex.getTransactionHandler());
 		return reply;
 	}
 
 	@Deprecated
 	public void learn(Stream s, Serializable v) {
+		
 		if (v instanceof TerminateTransactionRequestMessage) {
+		
 			TerminateTransactionRequestMessage requestMessage = (TerminateTransactionRequestMessage) v;
-
 			atomicDeliveredMessages.add(requestMessage);
 			coordinatorGroups.put(requestMessage.getExecutionHistory()
 					.getTransactionHandler(), requestMessage.gSource);
+
 		} else if (v instanceof TerminateTransactionReplyMessage) {
+
 			TerminateTransactionReplyMessage replyMessage = (TerminateTransactionReplyMessage) v;
 
-			if (terminated.contains(replyMessage.getTerminationResult()
-					.getTransactionHandler())
-					|| !futures.containsKey(replyMessage.getTerminationResult()
-							.getTransactionHandler()))
+			assert terminationRequests.containsKey(replyMessage.getTerminationResult().getTransactionHandler().getId())
+					|| terminated.contains(replyMessage.getTerminationResult().getTransactionHandler());
+			
+			if (terminated.contains(replyMessage.getTerminationResult().getTransactionHandler()))
 				return;
 
-			handleTerminationResult(replyMessage.getTerminationResult());
-		} else {
-			Vote vote = (Vote) v;
+			// We call with null, cause clearly we are not in the WReplicaSet.
+			handleTerminationResult(null,replyMessage.getTerminationResult());
+			
+		} else { // VoteMessage
+			
+			Vote vote = ((VoteMessage) v).getVote();
 			if (terminated.contains(vote.getTransactionHandler()))
 				return;
-
 			addVote(vote);
+			
 		}
 
 	}
@@ -188,25 +206,41 @@ public class DistributedTermination implements Learner, Runnable {
 	/**
 	 * If this method is called at the transaction's coordinator, we should
 	 * notify the pending future of the coordinator. Otherwise, the method is
-	 * called a remote replica. If the transaction is not going to be certified
+	 * called at a remote replica. If the transaction is not going to be certified
 	 * at the coordinator (coordinator does not replicate an object concerned by
 	 * the transaction), the {@code terminationCode} should be send to the
 	 * coordinator.
-	 * <p>
-	 * Instead of unicasting the result to only the coordinator, we atomic
-	 * multicast the result to the group where the coodinator belongs to.
 	 */
 	private synchronized void handleTerminationResult(
+			ExecutionHistory executionHistory,
 			TerminationResult terminationResult) {
 
-		Future<TerminationResult> future = futures.get(terminationResult
-				.getTransactionHandler());
-		HashSet<String> cordinatorGroup = new HashSet<String>();
-		cordinatorGroup.add(coordinatorGroups.get(terminationResult
-				.getTransactionHandler()));
+		TransactionHandler transactionHandler= terminationRequests.get(terminationResult.getTransactionHandler().getId());
 
-		assert (terminationResult.isSendBackToCoordinator() && cordinatorGroup
-				.contains(myGroup));
+		/*
+		 * Correctness test.
+		 */
+		HashSet<String> cordinatorGroup = new HashSet<String>();
+		cordinatorGroup.add(coordinatorGroups.get(terminationResult.getTransactionHandler()));
+		assert (terminationResult.isSendBackToCoordinator() || cordinatorGroup.contains(myGroup));
+		
+		/*
+		 * Apply the transaction if (i) it is committed and (ii) we hold a modified entity.
+		 */
+		if(terminationResult.getTransactionState() == COMMITTED){
+			boolean hasLocal=false;
+			for(JessyEntity e: executionHistory.getWriteSet().getEntities()){
+				if(Partitioner.getInstance().isTrueLocal(e.getSecondaryKey())){
+					try {
+						hasLocal=true;
+						jessy.performNonTransactionalLocalWrite(e);
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+			assert hasLocal;
+		}
 
 		/*
 		 * if the future is not null, it means that this process is the
@@ -216,18 +250,20 @@ public class DistributedTermination implements Learner, Runnable {
 		 * 
 		 * Otherwise, a non-cordinator has received the required votes, and has
 		 * decided the outcome of the transaction. So, if the coordinator will
-		 * not received the outcome, this process will atomic multicast the
+		 * not received the outcome, this process will reliable multicast the
 		 * result to the coordinator group.
 		 */
-		if (future != null) {
+		if (transactionHandler != null) {
 			terminationResults.put(terminationResult.getTransactionHandler(),
 					terminationResult);
-			future.notify();
+			synchronized(transactionHandler){
+				transactionHandler.notify();
+			}
 		} else if (terminationResult.isSendBackToCoordinator()
 				&& !cordinatorGroup.contains(myGroup)) {
 			TerminateTransactionReplyMessage replyMessage = new TerminateTransactionReplyMessage(
 					terminationResult, cordinatorGroup, myGroup);
-			amStream.atomicMulticast(replyMessage, cordinatorGroup);
+			rmStream.reliableMulticast(replyMessage);
 		}
 
 		garbageCollect(terminationResult.getTransactionHandler());
@@ -244,8 +280,8 @@ public class DistributedTermination implements Learner, Runnable {
 			TransactionHandler transactionHandler) {
 		terminated.add(transactionHandler);
 
-		if (futures.containsKey(transactionHandler)) {
-			futures.remove(transactionHandler);
+		if (terminationRequests.containsKey(transactionHandler.getId())) {
+			terminationRequests.remove(transactionHandler);
 			terminationResults.remove(transactionHandler);
 			votingQuorums.remove(transactionHandler);
 			coordinatorGroups.remove(transactionHandler);
@@ -270,7 +306,7 @@ public class DistributedTermination implements Learner, Runnable {
 					.getConcerningKeys(executionHistory);
 
 			/*
-			 * If there is no concerningkey, it means that the transaction can
+			 * If there is no concerning key, it means that the transaction can
 			 * commit right away. e.g. read-only transaction with NMSI
 			 * consistency.
 			 */
@@ -285,8 +321,8 @@ public class DistributedTermination implements Learner, Runnable {
 					concernedKeys));
 
 			/*
-			 * if this process will receive this transaction through atomic
-			 * multicast, certifyAtCoordinator is set to true, otherwise, it is
+			 * if this process will receive this transaction through atomic multicast
+			 * then certifyAtCoordinator is set to true, otherwise, it is
 			 * set to false.
 			 */
 			if (destGroups.contains(myGroup))
@@ -297,11 +333,14 @@ public class DistributedTermination implements Learner, Runnable {
 			/*
 			 * Atomic multicast the transaction.
 			 */
-			amStream.atomicMulticast(new TerminateTransactionRequestMessage(
-					executionHistory, destGroups, myGroup), destGroups);
-			futures.get(executionHistory.getTransactionHandler()).wait();
+			amStream.atomicMulticast(new TerminateTransactionRequestMessage(executionHistory, destGroups, myGroup));
+						
+			synchronized(executionHistory.getTransactionHandler()){
+				executionHistory.getTransactionHandler().wait();
+			}
+			
 			return terminationResults.get(executionHistory
-					.getTransactionHandler());
+					.getTransactionHandler());				
 		}
 	}
 
@@ -314,13 +353,17 @@ public class DistributedTermination implements Learner, Runnable {
 		}
 
 		public Boolean call() throws Exception {
+			
 			/*
 			 * First, it needs to run the certification test on the received
 			 * execution history.
+			 * A blind write always succeeds.
 			 */
-			boolean certified = ConsistencyFactory.getConsistency()
-					.certify(jessy.getLastCommittedEntities(),
-							msg.getExecutionHistory());
+			boolean certified = msg.getExecutionHistory().getTransactionType() == BLIND_WRITE
+								||
+								ConsistencyFactory.getConsistency()
+									.certify(jessy.getLastCommittedEntities(),
+											msg.getExecutionHistory());
 
 			/*
 			 * Compute a set of destinations for the votes, and sends out the
@@ -331,7 +374,7 @@ public class DistributedTermination implements Learner, Runnable {
 					msg.getExecutionHistory().getWriteSet().getKeys());
 			rmStream.reliableMulticast(new VoteMessage(new Vote(msg
 					.getExecutionHistory().getTransactionHandler(), certified,
-					myGroup, msg.dest), dest));
+					myGroup, msg.gDest), dest));
 
 			/*
 			 * If the transaction is read-only, and the processing thread is not
@@ -339,12 +382,12 @@ public class DistributedTermination implements Learner, Runnable {
 			 * without knowing the <i>outcome</i> .
 			 * 
 			 * Those processes that receive votes, will decide the outcome of
-			 * the transactionm and send the results to the coordinator.
+			 * the transaction and send the results to the coordinator.
 			 * 
 			 * <p> It just garbage collect, and returns true.
 			 */
-			if (msg.getExecutionHistory().getTransactionType() == TransactionType.READONLY_TRANSACTION
-					&& !msg.gSource.equals(myGroup)) {
+			if ( msg.getExecutionHistory().getTransactionType() == READONLY_TRANSACTION
+				 && !msg.gSource.equals(myGroup)) {
 				garbageCollect(msg.getExecutionHistory()
 						.getTransactionHandler());
 				return true;
@@ -356,8 +399,8 @@ public class DistributedTermination implements Learner, Runnable {
 			 * 
 			 * Otherwise, it should wait to get a voting quorums;
 			 */
-			if (msg.dest.size() == 1
-					&& msg.dest.contains(Membership.getInstance().myGroup()
+			if (msg.gDest.size() == 1
+					&& msg.gDest.contains(Membership.getInstance().myGroup()
 							.name())) {
 				msg.getExecutionHistory().changeState(
 						(certified) ? TransactionState.COMMITTED
@@ -373,11 +416,14 @@ public class DistributedTermination implements Learner, Runnable {
 			 * creates a termination result, and passes it to the {@code
 			 * handleTerminationResult}, and returns true.
 			 */
-			TerminationResult terminationResult = new TerminationResult(msg
-					.getExecutionHistory().getTransactionHandler(), msg
-					.getExecutionHistory().getTransactionState(), msg
-					.getExecutionHistory().isCertifyAtCoordinator());
-			handleTerminationResult(terminationResult);
+			TerminationResult terminationResult = new TerminationResult(
+					msg.getExecutionHistory().getTransactionHandler(),
+					msg.getExecutionHistory().getTransactionState(),
+					! msg.getExecutionHistory().isCertifyAtCoordinator()
+					&& msg.getExecutionHistory().getTransactionType() != BLIND_WRITE );
+			handleTerminationResult(
+					msg.getExecutionHistory(),
+					terminationResult);
 			return true;
 		}
 	}

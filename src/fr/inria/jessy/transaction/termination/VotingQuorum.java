@@ -24,12 +24,16 @@ public class VotingQuorum {
 	public synchronized void addVote(Vote vote) {
 		if (vote.isCertified() == false) {
 			result = TransactionState.ABORTED_BY_VOTING;
-			notify();
+			synchronized(this){
+				notify();
+			}
 		} else {
 			receivedVotes.remove(vote.getGroupName());
 			if (receivedVotes.size() == 0) {
 				result = TransactionState.COMMITTED;
-				notify();
+				synchronized(this){
+					notify();
+				}
 			}
 		}
 	}
@@ -37,7 +41,9 @@ public class VotingQuorum {
 	public TransactionState getTerminationResult() {
 		try {
 			if (result == TransactionState.COMMITTING)
-				wait();
+				synchronized(this){
+					wait();
+				}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

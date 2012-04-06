@@ -28,11 +28,11 @@ public abstract class JessyEntity implements Serializable{
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	// FIXME transient ?
-	transient private Vector<String> localVector;  
-	transient private boolean removoed = false;
+	private Vector<String> localVector;  
+	transient private boolean removed = false;
 
 	public boolean isRemovoed() {
-		return removoed;
+		return removed;
 	}
 
 	/**
@@ -41,7 +41,7 @@ public abstract class JessyEntity implements Serializable{
 	 * 
 	 */
 	public void removoe() {
-		this.removoed = true;
+		this.removed = true;
 	}
 
 	@SuppressWarnings("unused")

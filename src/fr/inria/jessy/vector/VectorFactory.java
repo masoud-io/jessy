@@ -13,7 +13,7 @@ public class VectorFactory {
 		}
 		return null;
 	}
-
+	
 	private static String readConfig() {
 		String vectorType = "";
 		try {
@@ -29,4 +29,5 @@ public class VectorFactory {
 		return vectorType;
 
 	}
+		
 }
