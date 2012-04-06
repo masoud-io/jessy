@@ -2,6 +2,7 @@ package fr.inria.jessy.benchmark.tpcc;
 
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.benchmark.tpcc.entities.*;
+import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
 
@@ -52,17 +53,22 @@ public class OrderStatus extends Transaction {
 				nur = new NURand(255,0,999);
         		C_LAST = Integer.toString(nur.calculate());
        		
-        		/* !!! problem to retrieve, the read operation with SK cannot return a list of results... */
-        		 /* retrieve with SK C_LAST */
-        		List<Customer> list = new ArrayList<Customer>();
-  //      		list = read(Customer.class, "C_LAST", C_LAST);
-        		
-        		/* Save the results with correct C_W_ID and C_D_ID */
-        		for(int a=0; a<list.size(); a++) {
-        			if(!list.get(a).getC_W_ID().equals(this.C_W_ID)||
-        					!list.get(a).getC_D_ID().equals(this.C_D_ID))
-        				list.remove(a);
-        		}
+        		/* retrieve with SK C_LAST */
+        		Collection<Customer> collection;
+        		ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>("C_W_ID", C_W_ID);
+        		ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>("C_D_ID", C_D_ID);
+        		ReadRequestKey<String> request_C_LAST = new ReadRequestKey<String>("C_LAST", C_LAST);
+     
+        		List<ReadRequestKey<?>> request = new ArrayList<ReadRequestKey<?>>();
+        		request.add(request_C_W_ID);
+        		request.add(request_C_D_ID);
+        		request.add(request_C_LAST);
+         		collection = read(Customer.class, request);
+         		
+         		List<Customer> list = new ArrayList<Customer>();
+         		
+         		/* Save the results in a List for sort */
+         		list.addAll(collection);
                 
         		/* Sort the results by C_FIRST in ascending order */
         		for(int a=0;a<list.size();a++) {
