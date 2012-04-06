@@ -70,6 +70,7 @@ public class Partitioner {
 				g2rk.put(g, new HashSet<String>());
 		}
 		rk2g = new HashMap<String, Group>();
+		keyspaces = new HashSet<String>();
 	}
 
 	/**
