@@ -19,7 +19,7 @@ import fr.inria.jessy.Partitioner;
 
 public class JessyDBClient extends DB {
 
-	private static boolean USE_DIST_JESSY=true;
+	private static boolean USE_DIST_JESSY=false;
 	
 	private Jessy jessy;
 	private OutputStreamWriter log ;
