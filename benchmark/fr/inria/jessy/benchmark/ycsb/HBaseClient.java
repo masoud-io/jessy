@@ -85,12 +85,14 @@ public class HBaseClient extends com.yahoo.ycsb.DB
 		{
 		    _debug=true;
 	    }
+		
 
 	    _columnFamily = getProperties().getProperty("columnfamily");
 	    if (_columnFamily == null) 
 	    {
-		    System.err.println("Error, must specify a columnfamily for HBase table");
+		    System.out.println("Error, must specify a columnfamily for HBase table");
 		    throw new DBException("No columnfamily specified");
+		    
 	    }
       _columnFamilyBytes = Bytes.toBytes(_columnFamily);
 
@@ -136,7 +138,8 @@ public class HBaseClient extends com.yahoo.ycsb.DB
     {
         //if this is a "new" table, init HTable object.  Else, use existing one
         if (!_table.equals(table)) {
-            _hTable = null;
+           
+        	_hTable = null;
             try 
             {
                 getHTable(table);
@@ -187,6 +190,7 @@ public class HBaseClient extends com.yahoo.ycsb.DB
     }
 
   }
+  System.out.println("read works");
 	return Ok;
     }
 
@@ -294,11 +298,16 @@ public class HBaseClient extends com.yahoo.ycsb.DB
     public int update(String table, String key, HashMap<String,String> values)
     {
         //if this is a "new" table, init HTable object.  Else, use existing one
-        if (!_table.equals(table)) {
+    	 System.out.println("step 1 works");
+    	if (!_table.equals(table)) {
+    		
             _hTable = null;
+            System.out.println("step 2 works");
             try 
-            {
+            {	
+            	System.out.println("step 3 works");
                 getHTable(table);
+                System.out.println("step 4 works");
                 _table = table;
             }
             catch (IOException e) 
@@ -313,18 +322,23 @@ public class HBaseClient extends com.yahoo.ycsb.DB
             System.out.println("Setting up put for key: "+key);
         }
         Put p = new Put(Bytes.toBytes(key));
+        System.out.println("step 5 works");
         for (Map.Entry<String, String> entry : values.entrySet())
         {
+        	System.out.println("step 6 works");
             if (_debug) {
                 System.out.println("Adding field/value " + entry.getKey() + "/"+
                   entry.getValue() + " to put request");
-            }	       
+            }	    
+           
             p.add(_columnFamilyBytes,Bytes.toBytes(entry.getKey()),Bytes.toBytes(entry.getValue()));
+            System.out.println("step 7 works");
         }
 
         try 
         {
             _hTable.put(p);
+            System.out.println("step 8 works");
         }
         catch (IOException e)
         {
@@ -338,7 +352,7 @@ public class HBaseClient extends com.yahoo.ycsb.DB
             //do nothing for now...hope this is rare
             return ServerError;
         }
-
+        System.out.println("scan works");
         return Ok;
     }
 
@@ -353,6 +367,7 @@ public class HBaseClient extends com.yahoo.ycsb.DB
 	 */
 	public int insert(String table, String key, HashMap<String,String> values)
     {
+		 System.out.println("write works");
         return update(table,key,values);
     }
 
@@ -396,7 +411,7 @@ public class HBaseClient extends com.yahoo.ycsb.DB
             }
             return ServerError;
         }
-
+        System.out.println("delete works");
         return Ok;
     }
 	/*

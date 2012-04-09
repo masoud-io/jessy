@@ -4,6 +4,7 @@
 	<classpathentry excluding="ycsb/src/|ycsb/workloads/|ycsb/" kind="src" path="benchmark"/>
 	<classpathentry kind="src" path="benchmark/ycsb/src"/>
 	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="src" path="db"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/je-5.0.34.jar" sourcepath="/data/msaeida/Java Packages/Berkeley DB je-5.0.34"/>
 	<classpathentry kind="lib" path="lib/junit-4.10.jar" sourcepath="/data/msaeida/Java Packages/junit4.10/junit/tests"/>
@@ -16,5 +17,10 @@
 	<classpathentry kind="lib" path="lib/db.jar"/>
 	<classpathentry kind="lib" path="lib/fractal.jar"/>
 	<classpathentry kind="lib" path="lib/hbase-0.92.1.jar"/>
+	<classpathentry kind="lib" path="lib/apache-cassandra-0.7.10.jar"/>
+	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/CassandraLib/jackson-core-asl-1.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/CassandraLib/jackson-mapper-asl-1.4.0.jar"/>
+	<classpathentry kind="lib" path="db/hbase/lib/hbase-binding-0.1.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
