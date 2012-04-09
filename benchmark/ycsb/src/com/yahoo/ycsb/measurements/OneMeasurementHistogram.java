@@ -17,11 +17,14 @@
 
 package com.yahoo.ycsb.measurements;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Properties;
 
+import com.yahoo.ycsb.measurements.exporter.JSONMeasurementsExporter;
 import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 
 
@@ -38,6 +41,7 @@ public class OneMeasurementHistogram extends OneMeasurement
 
 	int _buckets;
 	int[] histogram;
+	
 	int histogramoverflow;
 	int operations;
 	long totallatency;
@@ -52,6 +56,7 @@ public class OneMeasurementHistogram extends OneMeasurement
 
 	public OneMeasurementHistogram(String name, Properties props)
 	{
+		
 		super(name);
 		_buckets=Integer.parseInt(props.getProperty(BUCKETS, BUCKETS_DEFAULT));
 		histogram=new int[_buckets];
@@ -64,7 +69,7 @@ public class OneMeasurementHistogram extends OneMeasurement
 		max=-1;
 		returncodes=new HashMap<Integer,int[]>();
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see com.yahoo.ycsb.OneMeasurement#reportReturnCode(int)
 	 */
