@@ -17,7 +17,6 @@ import fr.inria.jessy.transaction.*;
 public class TpccTestStockLevel {
 	
 	LocalJessy jessy;
-	InsertData id;
 	StockLevel sl; 
 
 
@@ -44,9 +43,7 @@ public class TpccTestStockLevel {
 		jessy.addEntity(Order.class);
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
-		id = new InsertData(jessy);
 		sl = new StockLevel(jessy);
-		id.execute();
 	}
 	
 	/**

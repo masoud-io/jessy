@@ -17,7 +17,6 @@ import fr.inria.jessy.transaction.*;
 public class TpccTestDelivery {
 	
 	LocalJessy jessy;
-	InsertData id;
 	Delivery delivery; 
 
 
@@ -44,9 +43,7 @@ public class TpccTestDelivery {
 		jessy.addEntity(Order.class);
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
-		id = new InsertData(jessy);
 		delivery = new Delivery(jessy);
-		id.execute();
 	}
 	
 	/**
