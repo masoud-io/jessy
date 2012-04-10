@@ -28,10 +28,10 @@ public class Delivery extends Transaction {
     		Order_line ol = null;
     		Customer customer;
     		int i,j,k;
-    		
+    		/*
     		File log = new File("log file");
     		FileWriter fw = new FileWriter(log);
-
+            */
         	W_ID = "1";   /* warehouse number (W_ID) is constant */
         	
         	Random rand = new Random(System.currentTimeMillis());
@@ -40,18 +40,19 @@ public class Delivery extends Transaction {
         	/* for each of the 10 districts within the given warehouse */
         	for(i = 1; i<=10; i++) {
         		district = read(District.class, "D_W_"+ W_ID + "_" + "D_"+ i);
+        		/* retrieve the oldest undelivered order of the district */
         		for(j=1;j<district.getD_NEXT_O();j++) {
         			no = read(New_order.class, "NO_W_"+ W_ID +"_"+ "NO_D_"+ i +"_"+ "NO_O_"+ j);
         			if(no != null)
-        				j = district.getD_NEXT_O();   /* to skip */
+        				j = district.getD_NEXT_O();   /* find the result and skip the loop */
         		}
         		
         		if(no == null) {   /* no result, skip */
-        			/* record the result in the log file */
-        			fw.write("no matching result in"+ i + "district\n");
+        			/* record the result in the log file, but not necessary for the moment according to Masoud  */
+        			//fw.write("no matching result in"+ i + "district\n");
         			continue;
         		}
-        		/* save the NO_O_ID before delete the row */
+        		/* save the NO_O_ID which will be used later before delete the row*/
         		int NO_O_ID = no.getNO_O_ID();
         		
         		/* Delete at New_Order */
@@ -82,7 +83,7 @@ public class Delivery extends Transaction {
         		/* Update Customer */
         		write(customer);
         		
-        		fw.close();
+        		//fw.close();
         		
         		return commitTransaction();	
         	}
