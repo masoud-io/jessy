@@ -28,6 +28,7 @@ public class Delivery extends Transaction {
     		Order_line ol = null;
     		Customer customer;
     		int i,j,k;
+    		int order_counter = 0;
     		/*
     		File log = new File("log file");
     		FileWriter fw = new FileWriter(log);
@@ -52,6 +53,8 @@ public class Delivery extends Transaction {
         			//fw.write("no matching result in"+ i + "district\n");
         			continue;
         		}
+        		/* increment the undelivered order number */
+        		order_counter++;
         		/* save the NO_O_ID which will be used later before delete the row*/
         		int NO_O_ID = no.getNO_O_ID();
         		
@@ -83,10 +86,11 @@ public class Delivery extends Transaction {
         		/* Update Customer */
         		write(customer);
         		
-        		//fw.close();
-        		
-        		return commitTransaction();	
+        		//fw.close();      		     			
         	}
+        	/* The transaction is committed unless more orders will be delivery within this transaction  */
+        	if(order_counter>1)
+        		return commitTransaction();      	 
         	
 		} catch (Exception e) {
 			e.printStackTrace();
