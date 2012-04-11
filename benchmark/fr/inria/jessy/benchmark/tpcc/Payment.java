@@ -87,8 +87,8 @@ public class Payment extends Transaction {
    
                 /* retrieve with SK C_LAST */
         		Collection<Customer> collection;
-        		ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>("C_W_ID", C_W_ID);
-        		ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>("C_D_ID", C_D_ID);
+        		ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>("C_W_ID", "C_W_"+C_W_ID);
+        		ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>("C_D_ID", "C_D_"+C_D_ID);
         		ReadRequestKey<String> request_C_LAST = new ReadRequestKey<String>("C_LAST", C_LAST);
      
         		List<ReadRequestKey<?>> request = new ArrayList<ReadRequestKey<?>>();
