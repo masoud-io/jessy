@@ -16,9 +16,7 @@ import java.util.Random;
 public class StockLevel extends Transaction {
 	
 	private String W_ID;
-	private String D_W_ID;
 	private String D_ID;
-	private String OL_O_ID;
 
 	public StockLevel(Jessy jessy) throws Exception {
 		super(jessy);
@@ -39,7 +37,6 @@ public class StockLevel extends Transaction {
 			/* value of (W_ID, D_ID) is constant */
 			W_ID = "1";
 			D_ID = "1";
-			this.D_W_ID = W_ID;
 			
 			/* Selection District */
 			district = read(District.class, "D_W_"+ W_ID + "_" + "D_"+ D_ID);
@@ -54,7 +51,7 @@ public class StockLevel extends Transaction {
 				order = read(Order.class, "O_W_"+ W_ID + "_" + "O_D_"+ D_ID + "_" + "O_"+ i);
 				for(j=1;j<=order.getO_OL_CNT();j++) {
 					/* Selection Order_line */
-					ol = read(Order_line.class, "OL_W_"+W_ID + "_" + "OL_D_"+D_ID + "_" + "OL_O_"+OL_O_ID +"_" + "OL_"+j);
+					ol = read(Order_line.class, "OL_W_"+W_ID + "_" + "OL_D_"+D_ID + "_" + "OL_O_"+order.getO_ID() +"_" + "OL_"+j);
 					/* Stocks must be counted only for distinct items */
 					if(!listItems.contains(ol.getOL_I_ID())) {
 						/* add into the item list */
