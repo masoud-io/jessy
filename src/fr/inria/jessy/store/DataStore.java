@@ -92,7 +92,6 @@ public class DataStore {
 		// SUBSTANTIALLY
 		// envConfig.setLocking(false); //The cleaner becomes disable here!
 		// Influence the performance tremendously!
-
 		envConfig.setSharedCache(true); // Does not effect the prformance much!
 
 		// TODO subject to change for optimization

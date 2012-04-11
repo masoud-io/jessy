@@ -1,26 +1,42 @@
 package fr.inria.jessy;
 
-import java.util.Set;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
-import net.sourceforge.fractal.membership.Membership;
-import net.sourceforge.fractal.rmcast.WanMessage;
+import net.sourceforge.fractal.Message;
+import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 
-public class RemoteReadRequestMessage extends WanMessage {
+public class RemoteReadRequestMessage<E extends JessyEntity> extends Message {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
+	private ReadRequest<E> request;
+	
 	// For Fractal
 	public RemoteReadRequestMessage() {
 	}
 
-	public RemoteReadRequestMessage(ReadRequest r, Set<String> dest) {
-		super(r, dest, Membership.getInstance().myGroup().name(),
-				Membership.getInstance().myId());
+	public RemoteReadRequestMessage(ReadRequest<E> r) {
+		super();
+		request = r;
 	}
 
-	public ReadRequest getReadRequest() {
-		return (ReadRequest) serializable;
+	public ReadRequest<E> getReadRequest() {
+		return request;
+	}
+	
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public void readExternal(ObjectInput in) throws ClassNotFoundException, IOException{
+		request = (ReadRequest<E>) in.readObject();
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException{
+		out.writeObject(request);
 	}
 	
 }

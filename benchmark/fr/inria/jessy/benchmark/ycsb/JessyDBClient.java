@@ -16,32 +16,43 @@ import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.Partitioner;
+import fr.inria.jessy.vector.VectorFactory;
 
 public class JessyDBClient extends DB {
 
-	private static boolean USE_DIST_JESSY=false;
+	private static boolean USE_DIST_JESSY=true;
 	
-	private Jessy jessy;
+	private static Jessy jessy;
+	
 	private OutputStreamWriter log ;
 	private OutputStreamWriter err ;
 	private int oper;
-	
+
+	static{
+		try {
+			if(USE_DIST_JESSY){
+				jessy = DistributedJessy.getInstance();
+				Partitioner.getInstance().assign("user##########",Partitioner.Distribution.UNIFORM);
+			}else{
+				jessy = LocalJessy.getInstance();
+			}
+			jessy.addEntity(YCSBEntity.class);
+			VectorFactory.changeConfig("nullvector");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	public JessyDBClient() {
 		super();
 		init();
 
 	}
-	
+
 	@Override
 	public void init() {
 		try {
-			if(USE_DIST_JESSY){
-				jessy = DistributedJessy.getInstance();
-				Partitioner.getInstance().assign("#",Partitioner.Distribution.UNIFORM);
-			}else{
-				jessy = LocalJessy.getInstance();
-			}
-			jessy.addEntity(YCSBEntity.class);
 			File f = new File("errors");
 			f.delete();
 			f = new File("log");
@@ -58,13 +69,13 @@ public class JessyDBClient extends DB {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void cleanup() throws DBException
 	{
 		jessy.close();
 	}
-	
+
 	@Override
 	public int read(String table, String key, Set<String> fields,
 			HashMap<String, String> result) {

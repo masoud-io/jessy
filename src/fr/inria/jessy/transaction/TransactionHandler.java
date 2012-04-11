@@ -19,5 +19,9 @@ public class TransactionHandler implements Serializable{
 		return id;
 	}
 	
+	@Override
+	public String toString(){
+		return id.toString();
+	}
 	
 }

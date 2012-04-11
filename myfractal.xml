@@ -6,11 +6,4 @@
       <node id="0" ip="127.0.0.1"/> 
     </nodelist>  
   </BootstrapIdentity>
-  <BootstrapMembership>
-	<grouplist>
-		<group name="0" port="8884" tcp="true">
-			<node id="0"/>
-			</group>
-		</grouplist>
-	</BootstrapMembership>
 </FRACTAL>

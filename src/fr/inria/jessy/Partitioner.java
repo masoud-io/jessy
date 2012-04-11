@@ -66,8 +66,10 @@ public class Partitioner {
 	private Partitioner() {
 		g2rk = new HashMap<Group, Set<String>>();
 		for (Group g : Membership.getInstance().allGroups()) {
-			if(!g.name().equals("ALLNODES")) // FIXME
+			System.out.println("BANG "+g);
+			if(Pattern.matches("J.", g.name())){
 				g2rk.put(g, new HashSet<String>());
+			}
 		}
 		rk2g = new HashMap<String, Group>();
 		keyspaces = new HashSet<String>();
@@ -152,6 +154,7 @@ public class Partitioner {
 				assert g2rk.containsKey(g);
 				g2rk.get(g).add(rootkey);
 				rk2g.put(rootkey,g);
+				System.out.println("ROOTKEY "+rootkey+" FOR "+g);
 			}
 		} else {
 			throw new RuntimeException("NIY");
@@ -166,8 +169,9 @@ public class Partitioner {
 	 * @return the replica group of <i>k</i>.
 	 */
 	public Group resolve(String k) {
-		// TODO check correctness of the key.
-		return rk2g.get(closestRootkeyOf(k));
+		Group ret = rk2g.get(closestRootkeyOf(k)); 
+		System.out.println("RESOLVING "+k+" AS "+ret);
+		return ret;
 	}
 
 	public Set<String> resolveToGroupNames(Set<String> keys) {
@@ -179,8 +183,7 @@ public class Partitioner {
 	}
 
 	public boolean isLocal(String k) {
-		return false;
-		// return Membership.getInstance().myGroups().contains(resolve(k));
+		return Membership.getInstance().myGroups().contains(resolve(k));
 	}
 
 	@Deprecated

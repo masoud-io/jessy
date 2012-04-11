@@ -11,7 +11,15 @@ public class VectorFactory {
 		if (vectorType.equals("dependencevector")) {
 			return new DependenceVector<K>(selfKey);
 		}
+		if(vectorType.equals("nullvector")){
+			return new NullVector<K>(selfKey);
+		}
+		
 		return null;
+	}
+	
+	public static void changeConfig(String t){
+		vectorType=t;
 	}
 	
 	private static String readConfig() {
@@ -22,6 +30,7 @@ public class VectorFactory {
 					"config.property");
 			myProps.load(MyInputStream);
 			vectorType = myProps.getProperty("vector_type");
+			MyInputStream.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
