@@ -17,7 +17,6 @@ public class TpccTestInsertData {
 
 	LocalJessy jessy;
 	InsertData id;
-	TpccVerifyInsertedData vid;
 	Warehouse wh;
 	District di;
 	Item it;
