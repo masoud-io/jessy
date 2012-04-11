@@ -43,7 +43,7 @@ public class Payment extends Transaction {
         	int y = rand.nextInt(100-1)+1;    /* y determines by C_LAST or by C_ID */
         	
         	W_ID = "1";         /* warehouse number (W_ID) is constant  */
-        	H_AMOUNT = (float) (((float)rand.nextInt(500000-1)+100)/100.00); /* 2.5.1.3  (H _AMOUN T) is random within [1.00 .. 5,000.00] */
+        	H_AMOUNT = (float) (((float)rand.nextInt(500000-1)+100)/100.00); /* Clause 2.5.1.3  (H _AMOUN T) is random within [1.00 .. 5,000.00] */
 
         	/* Selection in the Warehouse table */
         	warehouse = read(Warehouse.class, "W_" + W_ID);
