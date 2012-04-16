@@ -19,6 +19,9 @@ package fr.inria.jessy.benchmark.ycsb;
 
 
 import com.yahoo.ycsb.DBException;
+import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
+import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
+import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
 
 
 import java.io.IOException;
@@ -531,6 +534,22 @@ public class HBaseClient extends com.yahoo.ycsb.DB
         System.out.println("Throughput: "+((1000.0)*(((double)(opcount*threadcount))/((double)(en-st))))+" ops/sec");
 
     } */
+	@Override
+	public int readTransaction(List<YCSBTransactionalReadRequest> readList) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public int updateTransaction(List<YCSBTransactionalReadRequest> readList,
+			List<YCSBTransactionalUpdateRequest> updateList) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public int createTransaction(YCSBTransactionalCreateRequest createRequest) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }
 
 /* For customized vim control

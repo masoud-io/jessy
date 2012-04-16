@@ -1,6 +1,7 @@
 package fr.inria.jessy.benchmark.ycsb;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.Map.Entry;
@@ -15,6 +16,9 @@ import voldemort.versioning.Versioned;
 
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
+import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
+import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
+import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
 
 public class VoldemortClient extends DB {
 
@@ -143,6 +147,25 @@ public class VoldemortClient extends DB {
 			}
 		}
 		return OK;
+	}
+
+	@Override
+	public int readTransaction(List<YCSBTransactionalReadRequest> readList) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int updateTransaction(List<YCSBTransactionalReadRequest> readList,
+			List<YCSBTransactionalUpdateRequest> updateList) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int createTransaction(YCSBTransactionalCreateRequest createRequest) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

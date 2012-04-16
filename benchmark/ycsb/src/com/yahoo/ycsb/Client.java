@@ -18,9 +18,17 @@
 package com.yahoo.ycsb;
 
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Vector;
+
+import org.apache.log4j.PropertyConfigurator;
 
 import com.yahoo.ycsb.measurements.Measurements;
 import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
@@ -430,6 +438,7 @@ public class Client
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args)
 	{
+		PropertyConfigurator.configure("log4j.properties");
 		
 		String dbname;
 		Properties props=new Properties();

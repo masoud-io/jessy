@@ -7,12 +7,15 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.apache.log4j.Logger;
+
 import com.sun.org.apache.xml.internal.security.keys.content.KeyValue;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.j5utils.utils.PerformanceProbe.SimpleCounter;
 
+import fr.inria.jessy.consistency.NonMonotonicSnapshotIsolation;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
@@ -24,9 +27,11 @@ import fr.inria.jessy.transaction.termination.TerminationResult;
 import fr.inria.jessy.vector.CompactVector;
 
 public class DistributedJessy extends Jessy {
+	private static Logger logger = Logger
+			.getLogger(DistributedJessy .class);
 
 	private static final int REPLICATION_FACTOR = 1;
-
+	
 	private static DistributedJessy distributedJessy = null;
 	private static DistributedTermination distributedTermination = null;
 	private static RemoteReader remoteReader = null;
@@ -72,21 +77,21 @@ public class DistributedJessy extends Jessy {
 	protected <E extends JessyEntity, SK> E performRead(Class<E> entityClass,
 			String keyName, SK keyValue, CompactVector<String> readSet)
 			throws InterruptedException, ExecutionException {
-		System.out.print(keyValue+" IS ");
+		
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 
 		ReadReply<E> readReply;
 		if (Partitioner.getInstance().isLocal(readRequest.getPartitioningKey())) {
-			System.out.println("LOCAL READ");
+			logger.debug("Performing Local Read for: " + keyValue);
 			readReply = getDataStore().get(readRequest);
 		} else {
-			System.out.println("DISTANT READ");
+			logger.debug("Performing Remote Read for: " + keyValue);
 			remoteCalls.incr();
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
 		}
-		
+
 		if (readReply.getEntity().iterator().hasNext())
 			return readReply.getEntity().iterator().next();
 		else
@@ -113,7 +118,7 @@ public class DistributedJessy extends Jessy {
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
 		}
-		
+
 		if (readReply.getEntity().iterator().hasNext())
 			return readReply.getEntity();
 		else
@@ -123,8 +128,9 @@ public class DistributedJessy extends Jessy {
 	@Override
 	public <E extends JessyEntity> void performNonTransactionalWrite(E entity)
 			throws InterruptedException, ExecutionException {
-		System.out.print(entity.getSecondaryKey()+" IS ");
-		if (Partitioner.getInstance().isLocal(entity.getSecondaryKey()) && REPLICATION_FACTOR == 1) {
+		System.out.print(entity.getSecondaryKey() + " IS ");
+		if (Partitioner.getInstance().isLocal(entity.getSecondaryKey())
+				&& REPLICATION_FACTOR == 1) {
 			System.out.println("LOCAL WRITE");
 			performNonTransactionalLocalWrite(entity);
 		} else {
@@ -175,7 +181,7 @@ public class DistributedJessy extends Jessy {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		} 
+		}
 		super.close();
 		remoteReader.stop();
 	}

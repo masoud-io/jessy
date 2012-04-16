@@ -18,11 +18,16 @@
 package com.yahoo.ycsb;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Enumeration;
 import java.util.Random;
 import java.util.Vector;
+
+import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
+import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
+import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
 
 
 /**
@@ -234,6 +239,28 @@ public class BasicDB extends DB
 			System.out.println("DELETE "+table+" "+key);
 		}
 
+		return 0;
+	}
+
+
+	@Override
+	public int readTransaction(List<YCSBTransactionalReadRequest> readList) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	@Override
+	public int updateTransaction(List<YCSBTransactionalReadRequest> readList,
+			List<YCSBTransactionalUpdateRequest> updateList) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	@Override
+	public int createTransaction(YCSBTransactionalCreateRequest createRequest) {
+		// TODO Auto-generated method stub
 		return 0;
 	}
 

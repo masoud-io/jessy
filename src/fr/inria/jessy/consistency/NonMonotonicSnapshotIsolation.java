@@ -38,11 +38,19 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 
 		TransactionType transactionType = executionHistory.getTransactionType();
 
-		logger.debug(transactionType.toString());
-		logger.debug("ReadSet Vector"
-				+ executionHistory.getReadSet().getCompactVector().toString());
-		logger.debug("WriteSet Vectors"
-				+ executionHistory.getWriteSet().getCompactVector().toString());
+		try{
+		
+			logger.debug(transactionType.toString());
+			logger.debug("ReadSet Vector"
+					+ executionHistory.getReadSet().getCompactVector().toString());
+			logger.debug("WriteSet Vectors"
+					+ executionHistory.getWriteSet().getCompactVector().toString());
+		}
+		catch(Exception ex){
+			ex.printStackTrace();
+			
+		}
+		
 
 		/*
 		 * if the transaction is a read-only transaction, it commits right away.

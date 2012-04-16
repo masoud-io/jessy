@@ -170,7 +170,6 @@ public class Partitioner {
 	 */
 	public Group resolve(String k) {
 		Group ret = rk2g.get(closestRootkeyOf(k)); 
-		System.out.println("RESOLVING "+k+" AS "+ret);
 		return ret;
 	}
 
