@@ -1,4 +1,4 @@
-package fr.inria.jessy.benchmark.ycsb;
+package com.yahoo.ycsb;
 
 
 import java.util.HashMap;

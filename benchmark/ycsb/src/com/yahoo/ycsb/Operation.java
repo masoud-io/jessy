@@ -1,4 +1,4 @@
-package fr.inria.jessy.benchmark.ycsb;
+package com.yahoo.ycsb;
 public class Operation {
 	private OPState OPState;
 	private int OPOrder;

@@ -1,4 +1,4 @@
-package fr.inria.jessy.benchmark.ycsb;
+package com.yahoo.ycsb;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +14,6 @@ import voldemort.client.StoreClient;
 import voldemort.versioning.VectorClock;
 import voldemort.versioning.Versioned;
 
-import com.yahoo.ycsb.DB;
-import com.yahoo.ycsb.DBException;
 import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;

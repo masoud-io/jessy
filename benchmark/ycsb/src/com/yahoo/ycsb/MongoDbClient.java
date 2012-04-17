@@ -7,7 +7,7 @@
  *
  */
 
-package fr.inria.jessy.benchmark.ycsb;
+package com.yahoo.ycsb;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,8 +26,6 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.WriteConcern;
-import com.yahoo.ycsb.DB;
-import com.yahoo.ycsb.DBException;
 import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;

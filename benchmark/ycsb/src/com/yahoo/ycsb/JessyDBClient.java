@@ -1,4 +1,4 @@
-package fr.inria.jessy.benchmark.ycsb;
+package com.yahoo.ycsb;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -12,8 +12,6 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
-import com.yahoo.ycsb.DB;
-import com.yahoo.ycsb.DBException;
 import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
