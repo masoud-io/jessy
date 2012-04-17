@@ -7,15 +7,13 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import net.sourceforge.fractal.FractalManager;
+import net.sourceforge.fractal.membership.Group;
+import net.sourceforge.fractal.membership.Membership;
+import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
+
 import org.apache.log4j.Logger;
 
-import com.sun.org.apache.xml.internal.security.keys.content.KeyValue;
-
-import net.sourceforge.fractal.FractalManager;
-import net.sourceforge.fractal.membership.Membership;
-import net.sourceforge.j5utils.utils.PerformanceProbe.SimpleCounter;
-
-import fr.inria.jessy.consistency.NonMonotonicSnapshotIsolation;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
@@ -27,49 +25,68 @@ import fr.inria.jessy.transaction.termination.TerminationResult;
 import fr.inria.jessy.vector.CompactVector;
 
 public class DistributedJessy extends Jessy {
-	private static Logger logger = Logger
-			.getLogger(DistributedJessy .class);
-
-	private static final int REPLICATION_FACTOR = 1;
 	
+	private static Logger logger = Logger.getLogger(DistributedJessy .class);
 	private static DistributedJessy distributedJessy = null;
-	private static DistributedTermination distributedTermination = null;
-	private static RemoteReader remoteReader = null;
+	
+	private ConstantPool.EXECUTION_MODE mode = ConstantPool.EXECUTION_MODE.PROXY; 
+	private DistributedTermination distributedTermination = null;
 
+	public FractalManager fractal;
+	public Membership membership; 
+	public RemoteReader remoteReader;
+	
 	private static SimpleCounter remoteCalls;
 
-	static {
+	private DistributedJessy() throws Exception {
+		super();
 		try {
 
-			// FIXME merge this in a PropertyHandler class (use Jean-Michel's
-			// work).
+			// FIXME move this.
+			// Merge it in a PropertyHandler class (use Jean-Michel's work).
 			Properties myProps = new Properties();
-			FileInputStream MyInputStream = new FileInputStream(
-					"config.property");
+			FileInputStream MyInputStream = new FileInputStream("config.property");
 			myProps.load(MyInputStream);
 			String fractalFile = myProps.getProperty("fractal_file");
+			String executionMode = myProps.getProperty("execution_mode");
+			if(executionMode.equals("server")) mode = ConstantPool.EXECUTION_MODE.SERVER;
 			MyInputStream.close();
 
-			remoteCalls = new SimpleCounter("Jessy#DistantRemoteCalls");
+			// Initialize Fractal
+			fractal = FractalManager.init(fractalFile);
+			membership = fractal.membership;
 
-			FractalManager.init(fractalFile);
-			Membership.getInstance().dispatchPeers("J", REPLICATION_FACTOR);
-			distributedJessy = new DistributedJessy();
-			distributedTermination = new DistributedTermination(
-					distributedJessy);
+			// Create Jessy server groups
+			if(mode.equals(ConstantPool.EXECUTION_MODE.SERVER)){
+				membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP, ConstantPool.JESSY_SERVER_PORT, ConstantPool.REPLICATION_FACTOR);
+				distributedTermination = new DistributedTermination(distributedJessy,fractal.membership.myGroup());
+			}else{
+
+			}
+
+			// Create Jessy global group
+			Group g = fractal.membership.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_ALL_GROUP, ConstantPool.JESSY_ALL_PORT);
+			g.putNodes(fractal.membership.allNodes());
+
 			remoteReader = new RemoteReader(distributedJessy);
 			remoteReader.start();
+
+			// Logging facilities
+			remoteCalls = new SimpleCounter("Jessy#DistantRemoteCalls");
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 
-	private DistributedJessy() throws Exception {
-		super();
-	}
-
-	public static synchronized DistributedJessy getInstance() throws Exception {
+	public static synchronized DistributedJessy getInstance() {
+		if(distributedJessy==null){
+			try {
+				distributedJessy = new DistributedJessy();
+			} catch (Exception e) {
+				throw new RuntimeException(e.getMessage());
+			}
+		}
 		return distributedJessy;
 	}
 
@@ -130,7 +147,7 @@ public class DistributedJessy extends Jessy {
 			throws InterruptedException, ExecutionException {
 		System.out.print(entity.getSecondaryKey() + " IS ");
 		if (Partitioner.getInstance().isLocal(entity.getSecondaryKey())
-				&& REPLICATION_FACTOR == 1) {
+				&& ConstantPool.REPLICATION_FACTOR == 1) {
 			System.out.println("LOCAL WRITE");
 			performNonTransactionalLocalWrite(entity);
 		} else {

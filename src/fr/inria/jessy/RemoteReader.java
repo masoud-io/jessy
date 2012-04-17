@@ -14,10 +14,11 @@ import net.sourceforge.fractal.MutedStream;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
-import utils.ExecutorPool;
+
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
+import fr.inria.jessy.utils.ExecutorPool;
 
 /**
  * 
@@ -44,23 +45,27 @@ public class RemoteReader extends MutedStream implements Runnable{
 	
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
-	private Group myGroup;
+	private Membership membership;
+	private Group group;
+	
 	private Map<UUID, ReadReply<? extends JessyEntity>> replies;
 	private Map<UUID, ReadRequest<? extends JessyEntity>> requests;
 	
-	private Thread myThread;
+	private Thread thread;
 	private boolean isTerminated;
-	private BlockingQueue<Message> myQueue;	
+	private BlockingQueue<Message> queue;	
 
 	public RemoteReader(DistributedJessy j) {
 		jessy = j;
 		isTerminated = false;
-		myQueue = new LinkedBlockingQueue<Message>();
-		assert myQueue != null;
-		myGroup = Membership.getInstance().myGroup();
-		myGroup.registerReceiver("RemoteReadReplyMessage",myQueue);
-		myGroup.registerReceiver("RemoteReadRequestMessage",myQueue);
-		myThread = new Thread(this,"RemoteReaderThread");
+		
+		membership  = jessy.membership;
+		group = membership.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_ALL_GROUP,	ConstantPool.JESSY_ALL_PORT);
+		queue = new LinkedBlockingQueue<Message>();
+		group.registerQueue("RemoteReadReplyMessage",queue);
+		group.registerQueue("RemoteReadRequestMessage",queue);
+		
+		thread = new Thread(this,"RemoteReaderThread");
 		
 		replies = new ConcurrentHashMap<UUID, ReadReply<? extends JessyEntity>>();
 		requests = new ConcurrentHashMap<UUID, ReadRequest<? extends JessyEntity>>();
@@ -81,7 +86,7 @@ public class RemoteReader extends MutedStream implements Runnable{
 	public void run() {
 		try{
 			while(!isTerminated){
-				Message m = myQueue.take();
+				Message m = queue.take();
 				if(m instanceof RemoteReadRequestMessage){
 					pool.submit(new RemoteReadReplyTask((RemoteReadRequestMessage) m));
 				}else{
@@ -102,19 +107,18 @@ public class RemoteReader extends MutedStream implements Runnable{
 	@Override
 	public void start() {
 		isTerminated=false;
-		if(myThread.getState().equals(Thread.State.NEW))
-			myThread.start();
+		if(thread.getState().equals(Thread.State.NEW))
+			thread.start();
 	}
 
 	@Override
 	public void stop() {
 		isTerminated=true;
-		myThread.interrupt();
+		thread.interrupt();
 	}
 	
 	
 	@SuppressWarnings("unchecked")
-	@Deprecated
 	public void learn(Stream s, Serializable v) {
 		if (v instanceof RemoteReadRequestMessage) {
 			System.out.println("GOT "+((RemoteReadRequestMessage) v).getReadRequest().getReadRequestId());
@@ -143,8 +147,8 @@ public class RemoteReader extends MutedStream implements Runnable{
 			// TODO fault tolerance, asynchronism ?
 			Group destGroup = Partitioner.getInstance().resolve(request.getPartitioningKey());
 			synchronized(requests.get(request.getReadRequestId())){
-				int peer = destGroup.getAllIds().iterator().next();
-				destGroup.unicastSW(peer,new RemoteReadRequestMessage<E>(request));
+				int peer = destGroup.members().iterator().next();
+				destGroup.unicast(peer,new RemoteReadRequestMessage<E>(request));
 				System.out.println("ASKING "+peer+" FOR "+request.getReadRequestId());
 				requests.get(request.getReadRequestId()).wait();
 			}
@@ -165,8 +169,8 @@ public class RemoteReader extends MutedStream implements Runnable{
 		public ReadReply<E> call() throws Exception {
 			ReadRequest<E> readRequest = message.getReadRequest();
 			ReadReply<E> readReply = jessy.getDataStore().get(readRequest);
-			Group destGroup = Membership.getInstance().groupOf(message.source).iterator().next();
-			destGroup.unicastSW(message.source, new RemoteReadReplyMessage<E>(readReply));
+			Group destGroup = membership.groupOf(message.source).iterator().next();
+			destGroup.unicast(message.source, new RemoteReadReplyMessage<E>(readReply));
 			return null;
 		}
 

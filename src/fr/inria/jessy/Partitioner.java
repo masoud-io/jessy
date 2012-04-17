@@ -53,23 +53,23 @@ public class Partitioner {
 		UNIFORM, NORMAL, ZIPF
 	};
 
+	private Membership membership;
 	private HashSet<String> keyspaces; // TODO check intersection
 	private Map<Group, Set<String>> g2rk; // groups to rootkeys
 	private Map<String, Group> rk2g; // rootkeys to groups
 
 	public static Partitioner getInstance() {
-		if (instance == null)
-			instance = new Partitioner();
+		if (instance == null){
+			instance = new Partitioner(DistributedJessy.getInstance().membership);
+		}
 		return instance;
 	}
 
-	private Partitioner() {
+	private Partitioner(Membership m) {
+		membership = m;
 		g2rk = new HashMap<Group, Set<String>>();
-		for (Group g : Membership.getInstance().allGroups()) {
-			System.out.println("BANG "+g);
-			if(Pattern.matches("J.", g.name())){
-				g2rk.put(g, new HashSet<String>());
-			}
+		for (Group g : membership.allGroups(ConstantPool.JESSY_SERVER_GROUP)) {
+			g2rk.put(g, new HashSet<String>());
 		}
 		rk2g = new HashMap<String, Group>();
 		keyspaces = new HashSet<String>();
@@ -182,12 +182,12 @@ public class Partitioner {
 	}
 
 	public boolean isLocal(String k) {
-		return Membership.getInstance().myGroups().contains(resolve(k));
+		return membership.myGroups().contains(resolve(k));
 	}
 
 	@Deprecated
 	public boolean isTrueLocal(String k) {
-		return Membership.getInstance().myGroups().contains(resolve(k));
+		return membership.myGroups().contains(resolve(k));
 	}
 	
 	//

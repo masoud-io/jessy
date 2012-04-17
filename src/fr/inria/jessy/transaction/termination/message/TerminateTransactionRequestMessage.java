@@ -2,7 +2,6 @@ package fr.inria.jessy.transaction.termination.message;
 
 import java.util.Set;
 
-import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -15,9 +14,8 @@ public class TerminateTransactionRequestMessage extends WanAMCastMessage {
 	public TerminateTransactionRequestMessage() {
 	}
 
-	public TerminateTransactionRequestMessage(ExecutionHistory eh,
-			Set<String> dest, String myGroup) {
-		super(eh, dest, myGroup, Membership.getInstance().myId());
+	public TerminateTransactionRequestMessage(ExecutionHistory eh, Set<String> dest, String gSource, int source) {
+		super(eh, dest, gSource, source);
 	}
 
 	public ExecutionHistory getExecutionHistory() {

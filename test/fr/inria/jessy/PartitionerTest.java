@@ -11,12 +11,15 @@ public class PartitionerTest {
 
 	@BeforeClass
 	public static void initGroups(){
-		Membership membership = Membership.getInstance();
+		Membership membership = new Membership();
 		membership.addNode(1,"1");
 		membership.addNode(2,"2");
 		membership.addNode(3,"3");
 		membership.addNode(4,"4");
-		membership.dispatchPeers(4);
+		membership.dispatchPeers(
+				ConstantPool.JESSY_SERVER_GROUP,
+				ConstantPool.JESSY_SERVER_PORT,
+				ConstantPool.REPLICATION_FACTOR);
 	}
 	
 	@Test
