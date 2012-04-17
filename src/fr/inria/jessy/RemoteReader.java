@@ -145,7 +145,7 @@ public class RemoteReader extends MutedStream implements Runnable{
 		@SuppressWarnings("unchecked")
 		public ReadReply<E> call() throws Exception {
 			// TODO fault tolerance, asynchronism ?
-			Group destGroup = Partitioner.getInstance().resolve(request.getPartitioningKey());
+			Group destGroup = jessy.partitioner.resolve(request.getPartitioningKey());
 			synchronized(requests.get(request.getReadRequestId())){
 				int peer = destGroup.members().iterator().next();
 				destGroup.unicast(peer,new RemoteReadRequestMessage<E>(request));

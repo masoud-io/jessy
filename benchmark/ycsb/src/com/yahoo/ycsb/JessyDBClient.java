@@ -28,7 +28,7 @@ public class JessyDBClient extends DB {
 
 	private static Logger logger = Logger.getLogger(JessyDBClient.class);
 
-	private static boolean USE_DIST_JESSY = false;
+	private static boolean USE_DIST_JESSY = true;
 
 	private static Jessy jessy;
 
@@ -41,13 +41,11 @@ public class JessyDBClient extends DB {
 		try {
 			if (USE_DIST_JESSY) {
 				jessy = DistributedJessy.getInstance();
-				Partitioner.getInstance().assign("user##########",
-						Partitioner.Distribution.UNIFORM);
+				((DistributedJessy)jessy).partitioner.assign("user##########",Partitioner.Distribution.UNIFORM);
 			} else {
 				jessy = LocalJessy.getInstance();
 			}
 			jessy.addEntity(YCSBEntity.class);
-			// VectorFactory.changeConfig("nullvector");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

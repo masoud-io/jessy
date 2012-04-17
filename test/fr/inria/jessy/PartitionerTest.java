@@ -9,6 +9,8 @@ import static fr.inria.jessy.Partitioner.Distribution.UNIFORM;
 
 public class PartitionerTest {
 
+	private static Partitioner partitioner;
+	
 	@BeforeClass
 	public static void initGroups(){
 		Membership membership = new Membership();
@@ -20,17 +22,16 @@ public class PartitionerTest {
 				ConstantPool.JESSY_SERVER_GROUP,
 				ConstantPool.JESSY_SERVER_PORT,
 				ConstantPool.REPLICATION_FACTOR);
+		partitioner = new Partitioner(membership);
 	}
 	
 	@Test
 	public void assignement(){
-		Partitioner partitioner = Partitioner.getInstance();
 		partitioner.assign("test#for###the######fun",UNIFORM);
 	}
 	
 	@Test
 	public void resolution(){
-		Partitioner partitioner = Partitioner.getInstance();
 		partitioner.assign("abc##",UNIFORM);
 		assert partitioner.resolve("abc90").name().equals("3");
 		partitioner.assign("#",UNIFORM);

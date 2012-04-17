@@ -13,6 +13,7 @@ import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * This class implements a partitioner, that is a function that maps object keys
@@ -46,9 +47,9 @@ import org.apache.commons.lang3.StringUtils;
  */
 
 public class Partitioner {
-
-	private static Partitioner instance;
-
+	
+	private static Logger logger = Logger.getLogger(Partitioner.class);
+	
 	public static enum Distribution {
 		UNIFORM, NORMAL, ZIPF
 	};
@@ -58,17 +59,10 @@ public class Partitioner {
 	private Map<Group, Set<String>> g2rk; // groups to rootkeys
 	private Map<String, Group> rk2g; // rootkeys to groups
 
-	public static Partitioner getInstance() {
-		if (instance == null){
-			instance = new Partitioner(DistributedJessy.getInstance().membership);
-		}
-		return instance;
-	}
-
-	private Partitioner(Membership m) {
+	public Partitioner(Membership m) {
 		membership = m;
 		g2rk = new HashMap<Group, Set<String>>();
-		for (Group g : membership.allGroups(ConstantPool.JESSY_SERVER_GROUP)) {
+		for (Group g : membership.allGroups(ConstantPool.JESSY_SERVER_GROUP)){
 			g2rk.put(g, new HashSet<String>());
 		}
 		rk2g = new HashMap<String, Group>();
@@ -154,7 +148,7 @@ public class Partitioner {
 				assert g2rk.containsKey(g);
 				g2rk.get(g).add(rootkey);
 				rk2g.put(rootkey,g);
-				System.out.println("ROOTKEY "+rootkey+" FOR "+g);
+				logger.debug("ROOTKEY "+rootkey+" FOR "+g);
 			}
 		} else {
 			throw new RuntimeException("NIY");
@@ -169,7 +163,8 @@ public class Partitioner {
 	 * @return the replica group of <i>k</i>.
 	 */
 	public Group resolve(String k) {
-		Group ret = rk2g.get(closestRootkeyOf(k)); 
+		Group ret = rk2g.get(closestRootkeyOf(k));
+		assert ret!=null;
 		return ret;
 	}
 

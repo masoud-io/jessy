@@ -30,18 +30,19 @@ public class DistributedJessy extends Jessy {
 	private static DistributedJessy distributedJessy = null;
 	
 	private ConstantPool.EXECUTION_MODE mode = ConstantPool.EXECUTION_MODE.PROXY; 
-	private DistributedTermination distributedTermination = null;
 
 	public FractalManager fractal;
 	public Membership membership; 
 	public RemoteReader remoteReader;
+	public DistributedTermination distributedTermination;
+	public Partitioner partitioner;
 	
 	private static SimpleCounter remoteCalls;
 
 	private DistributedJessy() throws Exception {
 		super();
 		try {
-
+			
 			// FIXME move this.
 			// Merge it in a PropertyHandler class (use Jean-Michel's work).
 			Properties myProps = new Properties();
@@ -59,7 +60,8 @@ public class DistributedJessy extends Jessy {
 			// Create Jessy server groups
 			if(mode.equals(ConstantPool.EXECUTION_MODE.SERVER)){
 				membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP, ConstantPool.JESSY_SERVER_PORT, ConstantPool.REPLICATION_FACTOR);
-				distributedTermination = new DistributedTermination(distributedJessy,fractal.membership.myGroup());
+				distributedTermination = new DistributedTermination(this,fractal.membership.myGroup());
+				partitioner = new Partitioner(membership);
 			}else{
 
 			}
@@ -68,7 +70,7 @@ public class DistributedJessy extends Jessy {
 			Group g = fractal.membership.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_ALL_GROUP, ConstantPool.JESSY_ALL_PORT);
 			g.putNodes(fractal.membership.allNodes());
 
-			remoteReader = new RemoteReader(distributedJessy);
+			remoteReader = new RemoteReader(this);
 			remoteReader.start();
 
 			// Logging facilities
@@ -99,7 +101,7 @@ public class DistributedJessy extends Jessy {
 				keyValue, readSet);
 
 		ReadReply<E> readReply;
-		if (Partitioner.getInstance().isLocal(readRequest.getPartitioningKey())) {
+		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("Performing Local Read for: " + keyValue);
 			readReply = getDataStore().get(readRequest);
 		} else {
@@ -126,11 +128,11 @@ public class DistributedJessy extends Jessy {
 				readSet);
 
 		ReadReply<E> readReply;
-		if (Partitioner.getInstance().isLocal(readRequest.getPartitioningKey())) {
-			System.out.println("LOCAL READ");
+		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
+			logger.debug("Performing Local Read for: " + keys);
 			readReply = getDataStore().get(readRequest);
 		} else {
-			System.out.println("DISTANT READ");
+			logger.debug("Performing Remote Read for: " + keys);
 			remoteCalls.incr();
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
@@ -145,13 +147,12 @@ public class DistributedJessy extends Jessy {
 	@Override
 	public <E extends JessyEntity> void performNonTransactionalWrite(E entity)
 			throws InterruptedException, ExecutionException {
-		System.out.print(entity.getSecondaryKey() + " IS ");
-		if (Partitioner.getInstance().isLocal(entity.getSecondaryKey())
+		if (partitioner.isLocal(entity.getSecondaryKey())
 				&& ConstantPool.REPLICATION_FACTOR == 1) {
-			System.out.println("LOCAL WRITE");
+			logger.debug("Performing Local Write for: " + entity.getSecondaryKey());
 			performNonTransactionalLocalWrite(entity);
 		} else {
-			System.out.println("DISTRIBUTED WRITE");
+			logger.debug("Performing Distributed Write for: " + entity.getSecondaryKey());
 			remoteCalls.incr();
 			// 1 - Create a blind write transaction.
 			TransactionHandler transactionHandler = new TransactionHandler();

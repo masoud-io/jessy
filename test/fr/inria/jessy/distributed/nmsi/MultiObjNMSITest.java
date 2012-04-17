@@ -68,7 +68,7 @@ public class MultiObjNMSITest extends TestCase {
 		jessy.addEntity(SampleEntityClass.class);
 		jessy.addEntity(Sample2EntityClass.class);
 
-		Partitioner.getInstance().assign(SampleEntityClass.pattern, Partitioner.Distribution.UNIFORM );
+		jessy.partitioner.assign(SampleEntityClass.pattern, Partitioner.Distribution.UNIFORM );
 	}
 
 	/**

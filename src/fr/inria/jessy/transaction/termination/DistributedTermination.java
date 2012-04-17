@@ -225,7 +225,7 @@ public class DistributedTermination implements Learner, Runnable {
 		if(terminationResult.getTransactionState() == COMMITTED && executionHistory != null){
 			boolean hasLocal=false;
 			for(JessyEntity e: executionHistory.getWriteSet().getEntities()){
-				if(Partitioner.getInstance().isLocal(e.getSecondaryKey())){
+				if(jessy.partitioner.isLocal(e.getSecondaryKey())){
 					try {
 						hasLocal=true;
 						jessy.performNonTransactionalLocalWrite(e);
@@ -314,7 +314,7 @@ public class DistributedTermination implements Learner, Runnable {
 						TransactionState.COMMITTED, null);
 			}
 
-			destGroups.addAll(Partitioner.getInstance().resolveToGroupNames(concernedKeys));
+			destGroups.addAll(jessy.partitioner.resolveToGroupNames(concernedKeys));
 
 			/*
 			 * if this process will receive this transaction through atomic multicast
@@ -368,7 +368,7 @@ public class DistributedTermination implements Learner, Runnable {
 			 * votes to all replicas <i>that replicate objects modified inside
 			 * the transaction</i>.
 			 */
-			Set<String> dest = Partitioner.getInstance().resolveToGroupNames(
+			Set<String> dest = jessy.partitioner.resolveToGroupNames(
 					msg.getExecutionHistory().getWriteSet().getKeys());
 			rmStream.multicast(
 					new VoteMessage(
