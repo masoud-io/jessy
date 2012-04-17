@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
 import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
@@ -20,12 +22,15 @@ import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.Partitioner;
+import fr.inria.jessy.consistency.NonMonotonicSnapshotIsolation;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.vector.VectorFactory;
 
 public class JessyDBClient extends DB {
+
+	private static Logger logger = Logger.getLogger(JessyDBClient.class);
 
 	private static boolean USE_DIST_JESSY = false;
 
@@ -34,6 +39,7 @@ public class JessyDBClient extends DB {
 	private OutputStreamWriter log;
 	private OutputStreamWriter err;
 	private int oper;
+	private static boolean closeDB = false;
 
 	static {
 		try {
@@ -45,7 +51,7 @@ public class JessyDBClient extends DB {
 				jessy = LocalJessy.getInstance();
 			}
 			jessy.addEntity(YCSBEntity.class);
-//			VectorFactory.changeConfig("nullvector");
+			// VectorFactory.changeConfig("nullvector");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -80,7 +86,8 @@ public class JessyDBClient extends DB {
 
 	@Override
 	public void cleanup() throws DBException {
-//		jessy.close();
+		if (closeDB)
+			jessy.close();
 	}
 
 	@Override
@@ -174,6 +181,7 @@ public class JessyDBClient extends DB {
 
 	@Override
 	public int insert(String table, String key, HashMap<String, String> values) {
+		closeDB=true;
 		Operation op = new Operation(oper, table + ":" + key, OPState.UNKNOWN,
 				OPType.WRITE);
 		oper++;
@@ -259,8 +267,10 @@ public class JessyDBClient extends DB {
 						try {
 							YCSBEntity en = read(YCSBEntity.class,
 									request.table + ":" + request.key);
-							if (en == null){
-								System.out.println("FUCKKKKKKKkkkk");
+							if (en == null) {
+								logger.error("Read Operation for: "
+										+ request.table + ":" + request.key
+										+ " failed.");
 								return null;
 							}
 						} catch (Exception e) {
@@ -317,7 +327,7 @@ public class JessyDBClient extends DB {
 
 							en.setFields(request.values);
 							write(en);
- 
+
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -346,6 +356,7 @@ public class JessyDBClient extends DB {
 	@Override
 	public int createTransaction(
 			final YCSBTransactionalCreateRequest createRequest) {
+		closeDB = true;
 		try {
 			Transaction trans = new Transaction(jessy) {
 				@Override
@@ -356,7 +367,6 @@ public class JessyDBClient extends DB {
 							createRequest.values);
 
 					create(en);
-
 					return commitTransaction();
 				}
 			};
@@ -364,9 +374,9 @@ public class JessyDBClient extends DB {
 			ExecutionHistory history = trans.execute();
 			if (history == null)
 				return -1;
-			if (history.getTransactionState() == TransactionState.COMMITTED)
+			if (history.getTransactionState() == TransactionState.COMMITTED) {
 				return 0;
-			else
+			} else
 				return -1;
 
 		} catch (Exception e) {

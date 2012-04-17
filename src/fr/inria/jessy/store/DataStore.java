@@ -2,6 +2,7 @@ package fr.inria.jessy.store;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -272,21 +273,32 @@ public class DataStore {
 					.get(entityClass.getName() + secondaryKeyName);
 
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
-			E entity = cur.last();
+			E entity = cur.first();
 
-			if (readSet == null) {
+			List<E> entity2=new ArrayList<E>();
+			
+			if (readSet == null) {				
 				cur.close();
 				return entity;
 			}
 
 			while (entity != null) {
+				entity2.add(entity);
 				if (entity.getLocalVector().isCompatible(readSet)) {
 					cur.close();
 					return entity;
 				} else {
-					entity = cur.prev();
+					entity = cur.prev();					
 				}
 			}
+			System.out.println("==================**********************");
+			for (E tmp:entity2){			
+				System.out.println("Local Vector_SELF Key" + tmp.getLocalVector().getSelfKey());
+				System.out.println("Local Vector_SELF Value" + tmp.getLocalVector().getSelfValue());
+				System.out.println("SELF KEY VALUE ON READSET" + readSet.getValue(tmp.getLocalVector().getSelfKey()));
+			}
+			System.out.println("==================");
+			
 			cur.close();
 			return null;
 		} catch (NullPointerException ex) {
