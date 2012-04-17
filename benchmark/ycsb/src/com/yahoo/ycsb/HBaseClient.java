@@ -15,10 +15,9 @@
  * LICENSE file.                                                                                                                                                                   
  */
 
-package fr.inria.jessy.benchmark.ycsb;
+package com.yahoo.ycsb;
 
 
-import com.yahoo.ycsb.DBException;
 import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
