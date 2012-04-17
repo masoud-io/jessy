@@ -291,13 +291,13 @@ public class DataStore {
 					entity = cur.prev();					
 				}
 			}
-			System.out.println("==================**********************");
-			for (E tmp:entity2){			
-				System.out.println("Local Vector_SELF Key" + tmp.getLocalVector().getSelfKey());
-				System.out.println("Local Vector_SELF Value" + tmp.getLocalVector().getSelfValue());
-				System.out.println("SELF KEY VALUE ON READSET" + readSet.getValue(tmp.getLocalVector().getSelfKey()));
-			}
-			System.out.println("==================");
+//			System.out.println("==================**********************");
+//			for (E tmp:entity2){			
+//				System.out.println("Local Vector_SELF Key" + tmp.getLocalVector().getSelfKey());
+//				System.out.println("Local Vector_SELF Value" + tmp.getLocalVector().getSelfValue());
+//				System.out.println("SELF KEY VALUE ON READSET" + readSet.getValue(tmp.getLocalVector().getSelfKey()));
+//			}
+//			System.out.println("==================");
 			
 			cur.close();
 			return null;
