@@ -54,7 +54,7 @@ public abstract class JessyEntity implements Serializable{
 	}
 
 	@PrimaryKey(sequence = "Jessy_Sequence")
-	private Long primaryKey;
+	private  Long primaryKey;
 
 	@SecondaryKey(relate = MANY_TO_ONE)
 	private String secondaryKey;

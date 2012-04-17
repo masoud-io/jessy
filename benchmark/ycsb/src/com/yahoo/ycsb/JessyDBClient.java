@@ -35,7 +35,7 @@ public class JessyDBClient extends DB {
 	private OutputStreamWriter log;
 	private OutputStreamWriter err;
 	private int oper;
-	private static boolean closeDB = false;
+	private static boolean closeDB = true;
 
 	static {
 		try {

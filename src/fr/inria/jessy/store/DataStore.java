@@ -273,7 +273,7 @@ public class DataStore {
 					.get(entityClass.getName() + secondaryKeyName);
 
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
-			E entity = cur.first();
+			E entity = cur.last();
 
 			List<E> entity2=new ArrayList<E>();
 			
