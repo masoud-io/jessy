@@ -28,8 +28,8 @@ workload=com.yahoo.ycsb.workloads.TransactionalWorkload
 
 readallfields=true
 
-readproportion=1
-updateproportion=0
+readproportion=0.9
+updateproportion=0.1
 scanproportion=0
 insertproportion=0
 

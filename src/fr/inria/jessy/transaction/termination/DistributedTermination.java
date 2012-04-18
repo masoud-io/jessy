@@ -369,8 +369,9 @@ public class DistributedTermination implements Learner, Runnable {
 
 			/*
 			 * Wait here until the result of the transaction is known. While is
-			 * for preventing spurious wakeup
+			 * for preventing <i>spurious wakeup</i>
 			 */
+			System.out.println("STIL WAITING");
 			synchronized (executionHistory.getTransactionHandler()) {
 				while (!terminationResults.containsKey(executionHistory
 						.getTransactionHandler().getId())) {
