@@ -11,14 +11,15 @@ import fr.inria.jessy.ConstantPool;
 /**
  * @author Masoud Saeida Ardekani This class implements dependence vector for
  *         jessy objects.
+ * 
  *         TODO WRITE DOCs
  */
 
 @Persistent
-public class DependenceVector<K> extends Vector<K> implements Serializable{
+public class DependenceVector<K> extends Vector<K> implements Serializable {
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
-	
+
 	public DependenceVector() {
 		super();
 	}
@@ -53,7 +54,7 @@ public class DependenceVector<K> extends Vector<K> implements Serializable{
 	public boolean isCompatible(CompactVector<K> other)
 			throws NullPointerException {
 		// check special values
-		
+
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
 		}
@@ -68,7 +69,6 @@ public class DependenceVector<K> extends Vector<K> implements Serializable{
 			return false;
 		}
 
-		
 		Integer selfValueOnOtherKey;
 		Integer otherValueOnOtherKey;
 
@@ -77,7 +77,7 @@ public class DependenceVector<K> extends Vector<K> implements Serializable{
 			otherValueOnOtherKey = other.getValue(k);
 
 			if (otherValueOnOtherKey < selfValueOnOtherKey) {
-				return false;				
+				return false;
 			}
 
 		}
@@ -113,17 +113,17 @@ public class DependenceVector<K> extends Vector<K> implements Serializable{
 		}
 	}
 
-	
 	/**
-	 * update method gets two {@link CompactVector} as readSet and writeSet
-	 * and applies them into its local vector.
-	 * <b> this implementation does not assume read before write rule <\b> 
+	 * update method gets two {@link CompactVector} as readSet and writeSet and
+	 * applies them into its local vector. <b> this implementation does not
+	 * assume read before write rule <\b>
 	 */
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
 		// Readset can be simply applied by using the update method of
 		// ValueVector Class
-		super.update(readSet);
+		if (readSet.size() > 0)
+			super.update(readSet);
 
 		// Write set is more involved.
 		Integer value;

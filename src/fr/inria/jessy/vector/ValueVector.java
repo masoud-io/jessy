@@ -25,7 +25,7 @@ import static fr.inria.jessy.vector.ValueVector.ComparisonResult.*;
  *            the type of the values of the vector.
  */
 @Persistent
-public class ValueVector<K, V extends Comparable<V>> implements Cloneable{
+public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Serializable{
 
 	//
 	// CONSTANTS

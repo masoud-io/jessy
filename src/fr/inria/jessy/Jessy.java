@@ -230,6 +230,7 @@ public abstract class Jessy {
 	 *            The value of the secondary key
 	 * @return The entity with the keyName field value equals keyValue
 	 */
+	@Deprecated
 	public <E extends JessyEntity, SK> E read(
 			TransactionHandler transactionHandler, Class<E> entityClass,
 			String keyName, SK keyValue) throws Exception {

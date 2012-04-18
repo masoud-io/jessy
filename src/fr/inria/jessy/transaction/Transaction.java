@@ -34,11 +34,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		return entity;
 	}
 
-	public <E extends JessyEntity, SK> E read(Class<E> entityClass,
-			String keyName, SK keyValue) throws Exception {
-		return jessy.read(transactionHandler, entityClass, keyName, keyValue);
-	}
-
 	public <E extends JessyEntity> Collection<E> read(Class<E> entityClass,
 			List<ReadRequestKey<?>> keys) throws Exception {
 		return jessy.read(transactionHandler, entityClass, keys);
