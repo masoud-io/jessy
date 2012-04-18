@@ -177,6 +177,7 @@ public class DistributedJessy extends Jessy {
 	@Override
 	public ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
+		logger.info(transactionHandler+" IS COMMITTING");
 		ExecutionHistory executionHistory = getExecutionHistory(transactionHandler);
 		Future<TerminationResult> terminationResultFuture = distributedTermination
 				.terminateTransaction(executionHistory);
@@ -189,6 +190,7 @@ public class DistributedJessy extends Jessy {
 		}
 		assert (terminationResult != null);
 		executionHistory.changeState(terminationResult.getTransactionState());
+		logger.info(transactionHandler+" IS" + terminationResult.getTransactionState());
 		return executionHistory;
 	}
 
@@ -201,6 +203,7 @@ public class DistributedJessy extends Jessy {
 			e.printStackTrace();
 		}
 		super.close(object);
+		logger.info("Jessy is closed.");
 		remoteReader.stop();
 	}
 

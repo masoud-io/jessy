@@ -17,6 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Logger;
+
+import com.yahoo.ycsb.JessyDBClient;
+
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
@@ -90,7 +94,7 @@ public class DistributedTermination implements Learner, Runnable {
 	}
 
 	public Future<TerminationResult> terminateTransaction(ExecutionHistory ex) {
-		System.out.println(ex.getTransactionHandler()+" IS COMMITTING");
+
 		ex.changeState(TransactionState.COMMITTING);
 		Future<TerminationResult> reply = pool.submit(new AtomicMulticastTask(ex));
 		terminationRequests.put(ex.getTransactionHandler().getId() , ex.getTransactionHandler());
