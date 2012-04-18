@@ -14,23 +14,18 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.log4j.Logger;
-
-import com.yahoo.ycsb.JessyDBClient;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
-import net.sourceforge.fractal.multicast.*;
+import net.sourceforge.fractal.multicast.MulticastMessage;
+import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 import fr.inria.jessy.DistributedJessy;
-import fr.inria.jessy.Partitioner;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -55,7 +50,7 @@ public class DistributedTermination implements Learner, Runnable {
 	private Group group;
 
 	private Map<UUID, TransactionHandler> terminationRequests;
-	private Map<TransactionHandler, TerminationResult> terminationResults;
+	private Map<UUID, TerminationResult> terminationResults;
 	private Map<TransactionHandler, VotingQuorum> votingQuorums;
 	private Map<TransactionHandler, String> coordinatorGroups;
 
@@ -84,7 +79,7 @@ public class DistributedTermination implements Learner, Runnable {
 		amStream.start();
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
-		terminationResults = new ConcurrentHashMap<TransactionHandler, TerminationResult>();
+		terminationResults = new ConcurrentHashMap<UUID, TerminationResult>();
 		atomicDeliveredMessages = new LinkedBlockingQueue<TerminateTransactionRequestMessage>();
 		processingMessages = new ConcurrentHashMap<TransactionHandler, TerminateTransactionRequestMessage>();
 		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
@@ -151,6 +146,8 @@ public class DistributedTermination implements Learner, Runnable {
 	 * committing transactions, creates a new {@code CertifyAndVoteTask} for
 	 * processing it. Otherwise, waits until one message in processingMessages
 	 * list finishes its execution.
+	 * 
+	 * FIXME
 	 */
 	@Override
 	public void run() {
@@ -277,10 +274,9 @@ public class DistributedTermination implements Learner, Runnable {
 		 * result to the coordinator group.
 		 */
 		if (transactionHandler != null) {
-			terminationResults.put(terminationResult.getTransactionHandler(),
-					terminationResult);
 			synchronized (transactionHandler) {
-//				System.out.println("Before Notify: " + terminationResult);
+				terminationResults.put(terminationResult
+						.getTransactionHandler().getId(), terminationResult);
 				transactionHandler.notify();
 			}
 		} else if (terminationResult.isSendBackToCoordinator()) {
@@ -306,7 +302,7 @@ public class DistributedTermination implements Learner, Runnable {
 
 		if (terminationRequests.containsKey(transactionHandler.getId())) {
 			terminationRequests.remove(transactionHandler);
-			terminationResults.remove(transactionHandler);
+			// terminationResults.remove(transactionHandler);
 			votingQuorums.remove(transactionHandler);
 			coordinatorGroups.remove(transactionHandler);
 		}
@@ -367,12 +363,23 @@ public class DistributedTermination implements Learner, Runnable {
 							.myId()));
 
 			synchronized (executionHistory.getTransactionHandler()) {
-				executionHistory.getTransactionHandler().wait();
+				/*
+				 * While is for preventing spurious wakeup
+				 */
+				while (!terminationResults.containsKey(executionHistory
+						.getTransactionHandler().getId()))
+					executionHistory.getTransactionHandler().wait();
 			}
 
-//			System.out.println("Before Result: " + terminationResults.values());
 			TerminationResult result = terminationResults.get(executionHistory
-					.getTransactionHandler());
+					.getTransactionHandler().getId());
+			/*
+			 * garbage collect he result. We do not need it anymore. Note, you
+			 * cannot garbage collect {@code terminationResults} in {@code
+			 * garbageCollect}.
+			 */
+			terminationResults.remove(executionHistory.getTransactionHandler()
+					.getId());
 			return result;
 		}
 	}
