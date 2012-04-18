@@ -211,6 +211,8 @@ public class DistributedTermination implements Learner, Runnable {
 	 * at the coordinator (coordinator does not replicate an object concerned by
 	 * the transaction), the {@code terminationCode} should be send to the
 	 * coordinator.
+	 * 
+	 * TODO should it be synchronized?
 	 */
 	private synchronized void handleTerminationResult(
 			ExecutionHistory executionHistory,
@@ -269,7 +271,7 @@ public class DistributedTermination implements Learner, Runnable {
 	/**
 	 * Garbage collect all concurrent hash maps entries for the given
 	 * {@code transactionHandler}
-	 * 
+	 * TODO is it necessary to be synchronized?
 	 * @param transactionHandler
 	 *            The transactionHandler to be garbage collected.
 	 */

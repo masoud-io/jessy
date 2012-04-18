@@ -197,11 +197,11 @@ public class DistributedJessy extends Jessy {
 	@Override
 	public void close(Object object) {
 		// FIXME do a proper separation of client and server nodes.
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(5000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 		super.close(object);
 		logger.info("Jessy is closed.");
 		remoteReader.stop();

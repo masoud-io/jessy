@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.log4j.Logger;
+
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequestKey;
@@ -11,6 +14,8 @@ import fr.inria.jessy.store.ReadRequestKey;
 //FIXME COMMENT ME PLZ!
 public abstract class Transaction implements Callable<ExecutionHistory> {
 
+	private static Logger logger = Logger.getLogger(Transaction.class);
+	
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
 
@@ -45,6 +50,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	}
 
 	public <E extends JessyEntity> void create(E entity) {
+		logger.info("Entity is created. >>" + entity.getSecondaryKey());
 		jessy.create(transactionHandler, entity);
 	}
 

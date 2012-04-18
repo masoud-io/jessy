@@ -91,7 +91,7 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable{
 	 * @inheritDoc
 	 */
 	public String toString() {
-		return map.toString();
+		return (map!=null) ? map.toString() : "";
 	}
 
 	//
