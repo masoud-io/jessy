@@ -12,6 +12,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
+import com.sleepycat.je.DatabaseException;
 import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
@@ -35,7 +36,6 @@ public class JessyDBClient extends DB {
 	private OutputStreamWriter log;
 	private OutputStreamWriter err;
 	private int oper;
-	private static boolean closeDB = true;
 
 	static {
 		try {
@@ -59,8 +59,9 @@ public class JessyDBClient extends DB {
 	}
 
 	@Override
-	public void init() {
+	public void init() {		
 		try {
+			jessy.registerClient(this);
 			File f = new File("errors");
 			f.delete();
 			f = new File("log");
@@ -79,9 +80,12 @@ public class JessyDBClient extends DB {
 	}
 
 	@Override
-	public void cleanup() throws DBException {
-		if (closeDB)
-			jessy.close();
+	public void cleanup() {
+		try {
+			jessy.close(this);
+		} catch (DatabaseException ex) {
+			System.out.println("GOT IT");
+		}
 	}
 
 	@Override
@@ -134,6 +138,7 @@ public class JessyDBClient extends DB {
 
 	@Override
 	public int update(String table, String key, HashMap<String, String> values) {
+
 		Operation op = new Operation(oper, table + ":" + key, OPState.UNKNOWN,
 				OPType.UPDATE);
 		oper++;
@@ -175,7 +180,6 @@ public class JessyDBClient extends DB {
 
 	@Override
 	public int insert(String table, String key, HashMap<String, String> values) {
-		closeDB=true;
 		Operation op = new Operation(oper, table + ":" + key, OPState.UNKNOWN,
 				OPType.WRITE);
 		oper++;
@@ -254,6 +258,7 @@ public class JessyDBClient extends DB {
 	@Override
 	public int readTransaction(final List<YCSBTransactionalReadRequest> readList) {
 		try {
+
 			Transaction trans = new Transaction(jessy) {
 				@Override
 				public ExecutionHistory execute() {
@@ -297,6 +302,7 @@ public class JessyDBClient extends DB {
 			final List<YCSBTransactionalReadRequest> readList,
 			final List<YCSBTransactionalUpdateRequest> updateList) {
 		try {
+
 			Transaction trans = new Transaction(jessy) {
 				@Override
 				public ExecutionHistory execute() {
@@ -350,8 +356,8 @@ public class JessyDBClient extends DB {
 	@Override
 	public int createTransaction(
 			final YCSBTransactionalCreateRequest createRequest) {
-		closeDB = true;
 		try {
+
 			Transaction trans = new Transaction(jessy) {
 				@Override
 				public ExecutionHistory execute() {

@@ -126,17 +126,14 @@ public class DataStore {
 		}
 	}
 
-	public synchronized void close() {
+	public synchronized void close() throws DatabaseException {
 		if (env != null) {
-			try {
-				for(EntityStore e : entityStores.values()){
-					if(e!=null) e.close();
-				}
-				env.cleanLog();
-				env.close();
-			} catch (DatabaseException ex) {
-				ex.printStackTrace();
+			for (EntityStore e : entityStores.values()) {
+				if (e != null)
+					e.close();
 			}
+			env.cleanLog();
+			env.close();
 		}
 	}
 
@@ -275,9 +272,9 @@ public class DataStore {
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
 			E entity = cur.last();
 
-			List<E> entity2=new ArrayList<E>();
-			
-			if (readSet == null) {				
+			List<E> entity2 = new ArrayList<E>();
+
+			if (readSet == null) {
 				cur.close();
 				return entity;
 			}
@@ -288,17 +285,20 @@ public class DataStore {
 					cur.close();
 					return entity;
 				} else {
-					entity = cur.prev();					
+					entity = cur.prev();
 				}
 			}
-//			System.out.println("==================**********************");
-//			for (E tmp:entity2){			
-//				System.out.println("Local Vector_SELF Key" + tmp.getLocalVector().getSelfKey());
-//				System.out.println("Local Vector_SELF Value" + tmp.getLocalVector().getSelfValue());
-//				System.out.println("SELF KEY VALUE ON READSET" + readSet.getValue(tmp.getLocalVector().getSelfKey()));
-//			}
-//			System.out.println("==================");
-			
+			// System.out.println("==================**********************");
+			// for (E tmp:entity2){
+			// System.out.println("Local Vector_SELF Key" +
+			// tmp.getLocalVector().getSelfKey());
+			// System.out.println("Local Vector_SELF Value" +
+			// tmp.getLocalVector().getSelfValue());
+			// System.out.println("SELF KEY VALUE ON READSET" +
+			// readSet.getValue(tmp.getLocalVector().getSelfKey()));
+			// }
+			// System.out.println("==================");
+
 			cur.close();
 			return null;
 		} catch (NullPointerException ex) {

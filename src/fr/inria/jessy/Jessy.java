@@ -3,13 +3,16 @@ package fr.inria.jessy;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 
+import com.sleepycat.je.DatabaseException;
 import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.consistency.Consistency;
@@ -45,7 +48,6 @@ public abstract class Jessy {
 		UNDEFINED,
 	};
 
-	
 	protected DataStore dataStore;
 	Consistency consistency;
 
@@ -83,7 +85,7 @@ public abstract class Jessy {
 		abortedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
 
 		lastCommittedEntities = new ConcurrentHashMap<String, JessyEntity>();
-		
+
 	}
 
 	protected DataStore getDataStore() {
@@ -116,9 +118,12 @@ public abstract class Jessy {
 	 */
 	public <E extends JessyEntity> void addEntity(Class<E> entityClass)
 			throws Exception {
-		dataStore.addPrimaryIndex(entityClass);
-		dataStore.addSecondaryIndex(entityClass, String.class, "secondaryKey");
-		entityClasses.add(entityClass);
+		if (!entityClasses.contains(entityClass)) {
+			dataStore.addPrimaryIndex(entityClass);
+			dataStore.addSecondaryIndex(entityClass, String.class,
+					"secondaryKey");
+			entityClasses.add(entityClass);
+		}
 	}
 
 	/**
@@ -439,8 +444,7 @@ public abstract class Jessy {
 	 * @return
 	 */
 	public abstract ExecutionHistory commitTransaction(
-			TransactionHandler transactionHandler) ;
-
+			TransactionHandler transactionHandler);
 
 	/**
 	 * Put the transaction in the aborted list, and does nothing else. TODO
@@ -556,11 +560,12 @@ public abstract class Jessy {
 		throw new Exception(
 				"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
 	}
-	
-	protected abstract <E extends JessyEntity> void performNonTransactionalWrite(E entity)
-			throws InterruptedException, ExecutionException;
 
-	protected void garbageCollectTransaction(TransactionHandler transactionHandler) {
+	protected abstract <E extends JessyEntity> void performNonTransactionalWrite(
+			E entity) throws InterruptedException, ExecutionException;
+
+	protected void garbageCollectTransaction(
+			TransactionHandler transactionHandler) {
 		handler2executionHistory.remove(transactionHandler);
 	}
 
@@ -568,8 +573,17 @@ public abstract class Jessy {
 		return lastCommittedEntities;
 	}
 
-	public void close(){
-		dataStore.close();
+	private Set<Object> activeClients=new HashSet<Object>() ;
+
+	public synchronized void registerClient(Object object) {
+		if (!activeClients.contains(object))
+			activeClients.add(object);
 	}
-	
+
+	public synchronized void close(Object object) throws DatabaseException {
+		activeClients.remove(object);
+		if (activeClients.size() == 0) {
+			dataStore.close();
+		}
+	}
 }
