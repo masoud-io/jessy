@@ -17,6 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Logger;
+
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
@@ -39,6 +41,9 @@ import fr.inria.jessy.utils.ExecutorPool;
 //TODO COMMENT ME
 //TODO Clean these ConcurrentMaps
 public class DistributedTermination implements Learner, Runnable {
+
+	private static Logger logger = Logger
+			.getLogger(DistributedTermination.class);
 
 	private DistributedJessy jessy;
 
@@ -362,13 +367,15 @@ public class DistributedTermination implements Learner, Runnable {
 					executionHistory, destGroups, group.name(), membership
 							.myId()));
 
+			/*
+			 * Wait here until the result of the transaction is known. While is
+			 * for preventing spurious wakeup
+			 */
 			synchronized (executionHistory.getTransactionHandler()) {
-				/*
-				 * While is for preventing spurious wakeup
-				 */
 				while (!terminationResults.containsKey(executionHistory
-						.getTransactionHandler().getId()))
+						.getTransactionHandler().getId())) {
 					executionHistory.getTransactionHandler().wait();
+				}
 			}
 
 			TerminationResult result = terminationResults.get(executionHistory
