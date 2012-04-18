@@ -573,17 +573,14 @@ public abstract class Jessy {
 		return lastCommittedEntities;
 	}
 
-	private Set<Object> activeClients=new HashSet<Object>() ;
+	protected Set<Object> activeClients = new HashSet<Object>();
 
 	public synchronized void registerClient(Object object) {
 		if (!activeClients.contains(object))
 			activeClients.add(object);
 	}
 
-	public synchronized void close(Object object) throws DatabaseException {
-		activeClients.remove(object);
-		if (activeClients.size() == 0) {
-			dataStore.close();
-		}
+	public void close(Object object) throws DatabaseException {
+		dataStore.close();
 	}
 }

@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import com.sleepycat.je.DatabaseException;
+
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
@@ -85,6 +87,13 @@ public class LocalJessy extends Jessy {
 	public <E extends JessyEntity> void performNonTransactionalWrite(E entity) {
 		dataStore.put(entity);
 
+	}
+
+	public synchronized void close(Object object) throws DatabaseException {
+		activeClients.remove(object);
+		if (activeClients.size() == 0) {
+			super.close(object);
+		}
 	}
 
 }

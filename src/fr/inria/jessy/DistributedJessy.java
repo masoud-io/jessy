@@ -200,7 +200,7 @@ public class DistributedJessy extends Jessy {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		dataStore.close();
+		super.close(object);
 		remoteReader.stop();
 	}
 
