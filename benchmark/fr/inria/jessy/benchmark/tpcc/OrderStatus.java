@@ -32,8 +32,10 @@ public class OrderStatus extends Transaction {
         	Order order;
         	Order_line ol;
         	NURand nur;
-    		int i,j;
+    		int i,j,random;
         	
+    		String[] lastnames = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE", "ANTI", "CALLY", "ATION", "EING"};
+    		
         	Random rand = new Random(System.currentTimeMillis());
         	int y = rand.nextInt(100-1)+1;  /* determine by C_LAST or by C_ID */
         	W_ID = "1";   /* warehouse number (W_ID) is constant  */
@@ -51,10 +53,12 @@ public class OrderStatus extends Transaction {
 			}
 			else {       /* by C_LAST */
 				nur = new NURand(255,0,999);
-        		C_LAST = Integer.toString(nur.calculate());
+				random = nur.calculate();
+				
+        		C_LAST = lastnames[random/100]+lastnames[(random%100)/10]+lastnames[random%10];
        		
         		/* retrieve with SK C_LAST */
-        		Collection<Customer> collection;
+        		Collection<Customer> collection = null;
         		ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>("C_W_ID", "C_W_"+C_W_ID);
         		ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>("C_D_ID", "C_D_"+C_D_ID);
         		ReadRequestKey<String> request_C_LAST = new ReadRequestKey<String>("C_LAST", C_LAST);
@@ -63,7 +67,7 @@ public class OrderStatus extends Transaction {
         		request.add(request_C_W_ID);
         		request.add(request_C_D_ID);
         		request.add(request_C_LAST);
-         		collection = read(Customer.class, request);
+        		collection = read(Customer.class, request);       		
          		
          		List<Customer> list = new ArrayList<Customer>();
          		
@@ -85,7 +89,7 @@ public class OrderStatus extends Transaction {
                            
                 }
         		/* the row at position n/2 of the results set is selected */
-        		customer = list.get(list.size()/2);
+        		customer = list.get((list.size()+1)/2);
 			}
 			/* should we make a READ operation on District? but we need D_Next_O_ID to determine the number of orders. 
 			 * So there will be a involved selection operation on the District table not mentioned in the benchmark */

@@ -1,8 +1,6 @@
 package fr.inria.jessy.benchmark.tpcc;
 
-import java.util.ArrayList;
 import java.util.*;
-import java.util.Random;
 
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.benchmark.tpcc.entities.Customer;
@@ -37,6 +35,9 @@ public class Payment extends Transaction {
         	Customer customer;
         	History history;
         	NURand nur;
+        	int random;
+        	
+        	String[] lastnames = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE", "ANTI", "CALLY", "ATION", "EING"};
         	
         	Random rand = new Random(System.currentTimeMillis());
         	int x = rand.nextInt(100-1)+1;    /* x determines local or remote warehouse */
@@ -82,11 +83,14 @@ public class Payment extends Transaction {
         		customer.setC_PAYMENT_CNT(customer.getC_PAYMENT_CNT() + 1);
         	}
         	else {     /* by C_LAST */
+        		
         		nur = new NURand(255,0,999);
-        		C_LAST = Integer.toString(nur.calculate());   /* generate C_LAST */
+    			random = nur.calculate();
+    		
+        		C_LAST = lastnames[random/100]+lastnames[(random%100)/10]+lastnames[random%10];   /* generate C_LAST */
    
                 /* retrieve with SK C_LAST */
-        		Collection<Customer> collection;
+        		Collection<Customer> collection = null;
         		ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>("C_W_ID", "C_W_"+C_W_ID);
         		ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>("C_D_ID", "C_D_"+C_D_ID);
         		ReadRequestKey<String> request_C_LAST = new ReadRequestKey<String>("C_LAST", C_LAST);
@@ -95,7 +99,7 @@ public class Payment extends Transaction {
         		request.add(request_C_W_ID);
         		request.add(request_C_D_ID);
         		request.add(request_C_LAST);
-         		collection = read(Customer.class, request);
+    			collection = read(Customer.class, request);    		
          		
          		List<Customer> list = new ArrayList<Customer>();
          		
@@ -117,7 +121,7 @@ public class Payment extends Transaction {
                            
                 }
         		/* the row at position n/2 of the results set is selected */
-        		customer = list.get(list.size()/2);
+        		customer = list.get((list.size()+1)/2);
         		
         		customer.setC_BALANCE(customer.getC_BALANCE() - this.H_AMOUNT);
         		customer.setC_YTD_PAYMENT(customer.getC_YTD_PAYMENT() + this.H_AMOUNT);
