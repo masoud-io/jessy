@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,8 +59,8 @@ public class Partitioner {
 
 	private Membership membership;
 	private HashSet<String> keyspaces; // TODO check intersection
-	private Map<Group, Set<String>> g2rk; // groups to rootkeys
-	private Map<String, Group> rk2g; // rootkeys to groups
+	private TreeMap<Group, Set<String>> g2rk; // groups to rootkeys
+	private TreeMap<String, Group> rk2g; // rootkeys to groups
 
 	static{
 		resolveTime = new TimeRecorder("Partitioner#resolveTime");
@@ -67,11 +68,11 @@ public class Partitioner {
 	
 	public Partitioner(Membership m) {
 		membership = m;
-		g2rk = new HashMap<Group, Set<String>>();
+		g2rk = new TreeMap<Group, Set<String>>();
 		for (Group g : membership.allGroups(ConstantPool.JESSY_SERVER_GROUP)){
 			g2rk.put(g, new HashSet<String>());
 		}
-		rk2g = new HashMap<String, Group>();
+		rk2g = new TreeMap<String, Group>();
 		keyspaces = new HashSet<String>();
 	}
 

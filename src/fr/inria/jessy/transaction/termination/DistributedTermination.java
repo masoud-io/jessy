@@ -147,7 +147,12 @@ public class DistributedTermination implements Learner, Runnable {
 			assert replyMessage.getTerminationResult()
 					.isSendBackToCoordinator();
 
-			handleTerminationResult(null, replyMessage.getTerminationResult());
+			try {
+				handleTerminationResult(null, replyMessage.getTerminationResult());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 		} else { // VoteMessage
 
@@ -251,7 +256,7 @@ public class DistributedTermination implements Learner, Runnable {
 	 */
 	private void handleTerminationResult(
 			ExecutionHistory executionHistory,
-			TerminationResult terminationResult) {
+			TerminationResult terminationResult) throws Exception{
 
 		logger.debug("handling termination result for "
 				+ terminationResult.getTransactionHandler().getId());
@@ -306,6 +311,7 @@ public class DistributedTermination implements Learner, Runnable {
 				.getTransactionHandler().getId())) {
 			TransactionHandler transactionHandler = terminationRequests
 					.get(terminationResult.getTransactionHandler().getId());
+			logger.debug("at the coordinator, notifying for "+transactionHandler.getId());
 			synchronized (transactionHandler) {
 				terminationResults.put(terminationResult
 						.getTransactionHandler().getId(), terminationResult);
@@ -315,10 +321,12 @@ public class DistributedTermination implements Learner, Runnable {
 			MulticastMessage replyMessage = new TerminateTransactionReplyMessage(
 					terminationResult, cordinatorGroup, group.name(),
 					membership.myId());
+
 			logger.debug("send a terminateTransactionReplyMesssage for "
 					+ executionHistory.getTransactionHandler().getId());
 			terminationNotificationStream.unicast(replyMessage,
 					executionHistory.getCoordinator());
+
 		}
 
 		garbageCollect(terminationResult.getTransactionHandler());

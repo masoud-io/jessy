@@ -16,6 +16,7 @@ import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import com.yahoo.ycsb.YCSBEntity;
 
@@ -89,7 +90,7 @@ public class DistributedJessy extends Jessy {
 						
 			logger.getRoot().setLevel(Level.INFO);
 			// PROVIDE REMOTE ACCESS FOR THOSE METHODS.
-			partitioner.assign("#",Partitioner.Distribution.UNIFORM);
+			partitioner.assign("user##########",Partitioner.Distribution.UNIFORM);
 			addEntity(YCSBEntity.class);
 
 		} catch (Exception ex) {
@@ -242,8 +243,12 @@ public class DistributedJessy extends Jessy {
 	 */
 	public static void main(String args[]){
 		try{
-			final DistributedJessy j=DistributedJessy.getInstance();
+			
+			// Logging.
 			PerformanceProbe.setOutput("/dev/stdout");
+			PropertyConfigurator.configure("log4j.properties");
+			
+			final DistributedJessy j=DistributedJessy.getInstance();
 			j.open();
 			SignalHandler sh = new SignalHandler(){
 				@Override

@@ -42,7 +42,6 @@ public class JessyDBClient extends DB {
 		try {
 			if (USE_DIST_JESSY) {
 				jessy = DistributedJessy.getInstance();
-				((DistributedJessy)jessy).partitioner.assign("user##########",Partitioner.Distribution.UNIFORM);
 			} else {
 				jessy = LocalJessy.getInstance();
 			}
