@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import net.sourceforge.fractal.Message;
+import net.sourceforge.fractal.multicast.MulticastMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 
-public class RemoteReadRequestMessage<E extends JessyEntity> extends Message {
+public class RemoteReadRequestMessage<E extends JessyEntity> extends MulticastMessage {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
@@ -31,11 +31,13 @@ public class RemoteReadRequestMessage<E extends JessyEntity> extends Message {
 	@Override
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws ClassNotFoundException, IOException{
+		super.readExternal(in);
 		request = (ReadRequest<E>) in.readObject();
 	}
 	
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException{
+		super.writeExternal(out);
 		out.writeObject(request);
 	}
 	

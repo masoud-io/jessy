@@ -37,6 +37,7 @@ public class JessyDBClient extends DB {
 	private OutputStreamWriter err;
 	private int oper;
 
+	// FIXME merge this into init
 	static {
 		try {
 			if (USE_DIST_JESSY) {

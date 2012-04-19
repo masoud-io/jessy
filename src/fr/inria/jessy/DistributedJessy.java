@@ -10,10 +10,17 @@ import java.util.concurrent.Future;
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
+import net.sourceforge.fractal.utils.PerformanceProbe;
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import com.yahoo.ycsb.YCSBEntity;
+
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
@@ -29,16 +36,22 @@ public class DistributedJessy extends Jessy {
 	private static Logger logger = Logger.getLogger(DistributedJessy .class);
 	private static DistributedJessy distributedJessy = null;
 	
-	private ConstantPool.EXECUTION_MODE mode = ConstantPool.EXECUTION_MODE.PROXY; 
+	private static SimpleCounter remoteCall;
+	private static TimeRecorder writeRequestTime, readRequestTime;
 
 	public FractalManager fractal;
 	public Membership membership; 
 	public RemoteReader remoteReader;
 	public DistributedTermination distributedTermination;
 	public Partitioner partitioner;
-	
-	private static SimpleCounter remoteCalls;
 
+	static{
+		// Performance measuring facilities
+		remoteCall = new SimpleCounter("Jessy#RemoteCalls");
+		writeRequestTime = new TimeRecorder("Jessy#WriteRequest");
+		readRequestTime = new TimeRecorder("Jessy#ReadRequest");
+	}
+	
 	private DistributedJessy() throws Exception {
 		super();
 		try {
@@ -49,32 +62,35 @@ public class DistributedJessy extends Jessy {
 			FileInputStream MyInputStream = new FileInputStream("config.property");
 			myProps.load(MyInputStream);
 			String fractalFile = myProps.getProperty("fractal_file");
-			String executionMode = myProps.getProperty("execution_mode");
-			if(executionMode.equals("server")) mode = ConstantPool.EXECUTION_MODE.SERVER;
 			MyInputStream.close();
 
-			// Initialize Fractal
-			fractal = FractalManager.init(fractalFile);
+			// Initialize Fractal: create server groups, initialize this node and create the global group.
+			fractal = FractalManager.getInstance();
+			fractal.loadFile(fractalFile);
 			membership = fractal.membership;
+			membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP, ConstantPool.JESSY_SERVER_PORT, ConstantPool.REPLICATION_FACTOR);
+			membership.loadIdenitity(null);
+			// membership.loadIdenitity("192.168.1.2");
+			Group replicaGroup =  ! membership.myGroups().isEmpty() ? membership.myGroups().iterator().next() : null; // this node is a server ?
+			Group allGroup  = fractal.membership.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_ALL_GROUP, ConstantPool.JESSY_ALL_PORT);
+			allGroup.putNodes(fractal.membership.allNodes());			
+			fractal.start();
 
-			// Create Jessy server groups
-			if(mode.equals(ConstantPool.EXECUTION_MODE.SERVER)){
-				membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP, ConstantPool.JESSY_SERVER_PORT, ConstantPool.REPLICATION_FACTOR);
-				distributedTermination = new DistributedTermination(this,fractal.membership.myGroup());
-				partitioner = new Partitioner(membership);
+			if(replicaGroup!=null){
+				logger.info("Server mode");
+				distributedTermination = new DistributedTermination(this,replicaGroup);
 			}else{
-
+				logger.info("Proxy mode");
+				distributedTermination = new DistributedTermination(this,allGroup);
 			}
-
-			// Create Jessy global group
-			Group g = fractal.membership.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_ALL_GROUP, ConstantPool.JESSY_ALL_PORT);
-			g.putNodes(fractal.membership.allNodes());
-
-			remoteReader = new RemoteReader(this);
-			remoteReader.start();
-
-			// Logging facilities
-			remoteCalls = new SimpleCounter("Jessy#DistantRemoteCalls");
+			
+			remoteReader = new RemoteReader(this,allGroup);
+			partitioner = new Partitioner(membership);
+						
+			logger.getRoot().setLevel(Level.INFO);
+			// PROVIDE REMOTE ACCESS FOR THOSE METHODS.
+			partitioner.assign("#",Partitioner.Distribution.UNIFORM);
+			addEntity(YCSBEntity.class);
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -97,19 +113,20 @@ public class DistributedJessy extends Jessy {
 			String keyName, SK keyValue, CompactVector<String> readSet)
 			throws InterruptedException, ExecutionException {
 		
+		readRequestTime.start();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
-
 		ReadReply<E> readReply;
 		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("Performing Local Read for: " + keyValue);
 			readReply = getDataStore().get(readRequest);
 		} else {
 			logger.debug("Performing Remote Read for: " + keyValue);
-			remoteCalls.incr();
+			remoteCall.incr();
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
 		}
+		readRequestTime.stop();
 
 		if (readReply.getEntity().iterator().hasNext())
 			return readReply.getEntity().iterator().next();
@@ -123,21 +140,23 @@ public class DistributedJessy extends Jessy {
 			Class<E> entityClass, List<ReadRequestKey<?>> keys,
 			CompactVector<String> readSet) throws InterruptedException,
 			ExecutionException {
-		System.out.print("GOT");
+		
+		
+		readRequestTime.start();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
-
 		ReadReply<E> readReply;
 		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("Performing Local Read for: " + keys);
 			readReply = getDataStore().get(readRequest);
 		} else {
 			logger.debug("Performing Remote Read for: " + keys);
-			remoteCalls.incr();
+			remoteCall.incr();
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
-			readReply = future.get();
+			readReply = future.get();		
 		}
-
+		readRequestTime.stop();
+		
 		if (readReply.getEntity().iterator().hasNext())
 			return readReply.getEntity();
 		else
@@ -147,13 +166,15 @@ public class DistributedJessy extends Jessy {
 	@Override
 	public <E extends JessyEntity> void performNonTransactionalWrite(E entity)
 			throws InterruptedException, ExecutionException {
-		if (partitioner.isLocal(entity.getSecondaryKey())
-				&& ConstantPool.REPLICATION_FACTOR == 1) {
-			logger.debug("Performing Local Write for: " + entity.getSecondaryKey());
-			performNonTransactionalLocalWrite(entity);
-		} else {
-			logger.debug("Performing Distributed Write for: " + entity.getSecondaryKey());
-			remoteCalls.incr();
+	
+		writeRequestTime.start();
+//		if (partitioner.isLocal(entity.getSecondaryKey())
+//				&& ConstantPool.REPLICATION_FACTOR == 1) {
+//			logger.debug("Performing Local Write for: " + entity.getSecondaryKey());
+//			performNonTransactionalLocalWrite(entity);
+//		} else {
+			logger.debug("Performing Remote Write for: " + entity.getSecondaryKey());
+			remoteCall.incr();
 			// 1 - Create a blind write transaction.
 			TransactionHandler transactionHandler = new TransactionHandler();
 			ExecutionHistory executionHistory = new ExecutionHistory(
@@ -163,12 +184,15 @@ public class DistributedJessy extends Jessy {
 			Future<TerminationResult> result = distributedTermination
 					.terminateTransaction(executionHistory);
 			result.get();
-		}
+		// }
+		writeRequestTime.stop();
 	}
 
 	public <E extends JessyEntity> void performNonTransactionalLocalWrite(
 			E entity) throws InterruptedException, ExecutionException {
+		writeRequestTime.start();
 		dataStore.put(entity);
+		writeRequestTime.stop();
 	}
 
 	// FIXME Should this method be synchronized? I think it should only be
@@ -195,16 +219,41 @@ public class DistributedJessy extends Jessy {
 	}
 
 	@Override
+	public void open() {
+		logger.info("Jessy is opened.");
+		super.open();
+	}
+	
 	public void close(Object object) {
-		// FIXME do a proper separation of client and server nodes.
-//		try {
-//			Thread.sleep(5000);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
 		super.close(object);
 		logger.info("Jessy is closed.");
-		remoteReader.stop();
+		FractalManager.getInstance().stop();
 	}
 
+	/**
+	 * Main entry point to Distributed Jessy Runtime.
+	 * @param args 
+	 */
+	public static void main(String args[]){
+		try{
+			final DistributedJessy j=DistributedJessy.getInstance();
+			PerformanceProbe.setOutput("/dev/stdout");
+			j.open();
+			SignalHandler sh = new SignalHandler(){
+				@Override
+				public void handle(Signal s) {
+					j.close(null);
+					System.exit(0);
+				}
+			};
+			Signal.handle(new Signal("INT"), sh);
+			Signal.handle(new Signal("TERM"), sh);
+			Thread.currentThread().interrupt();
+		}catch(Exception e){
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
+
+	
 }

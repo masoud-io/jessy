@@ -9,11 +9,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Logger;
+
+import net.sourceforge.fractal.FractalManager;
+import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Message;
 import net.sourceforge.fractal.MutedStream;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
+import net.sourceforge.fractal.multicast.MulticastStream;
 
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
@@ -39,34 +44,25 @@ import fr.inria.jessy.utils.ExecutorPool;
  */
 
 // FIXME fix parametrized types.
-public class RemoteReader extends MutedStream implements Runnable{
+public class RemoteReader implements Learner{
 
+	private static Logger logger = Logger.getLogger(RemoteReader.class);
+	
 	private DistributedJessy jessy;
+	private MulticastStream remoteReadStream;
 	
 	private ExecutorPool pool = ExecutorPool.getInstance();
-
-	private Membership membership;
-	private Group group;
 	
 	private Map<UUID, ReadReply<? extends JessyEntity>> replies;
 	private Map<UUID, ReadRequest<? extends JessyEntity>> requests;
 	
-	private Thread thread;
-	private boolean isTerminated;
-	private BlockingQueue<Message> queue;	
-
-	public RemoteReader(DistributedJessy j) {
+	public RemoteReader(DistributedJessy j, Group g) {
 		jessy = j;
-		isTerminated = false;
-		
-		membership  = jessy.membership;
-		group = membership.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_ALL_GROUP,	ConstantPool.JESSY_ALL_PORT);
-		queue = new LinkedBlockingQueue<Message>();
-		group.registerQueue("RemoteReadReplyMessage",queue);
-		group.registerQueue("RemoteReadRequestMessage",queue);
-		
-		thread = new Thread(this,"RemoteReaderThread");
-		
+		remoteReadStream = FractalManager.getInstance().getOrCreateMulticastStream(g.name(), g.name());
+		remoteReadStream.registerLearner("RemoteReadRequestMessage", this);
+		remoteReadStream.registerLearner("RemoteReadReplyMessage", this);
+		remoteReadStream.start();
+				
 		replies = new ConcurrentHashMap<UUID, ReadReply<? extends JessyEntity>>();
 		requests = new ConcurrentHashMap<UUID, ReadRequest<? extends JessyEntity>>();
 	}
@@ -78,61 +74,28 @@ public class RemoteReader extends MutedStream implements Runnable{
 		Future<ReadReply<E>> reply = pool.submit(new RemoteReadRequestTask(readRequest));
 		return reply;
 	}
-
-	
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public void run() {
-		try{
-			while(!isTerminated){
-				Message m = queue.take();
-				if(m instanceof RemoteReadRequestMessage){
-					pool.submit(new RemoteReadReplyTask((RemoteReadRequestMessage) m));
-				}else{
-					ReadReply reply = ((RemoteReadReplyMessage) m).getReadReply();
-					replies.put(reply.getReadRequestId(), reply);
-					synchronized(requests.get(reply.getReadRequestId())){
-						requests.get(reply.getReadRequestId()).notify();
-					}
-				}
-			}
-		}catch(InterruptedException e){
-			if(!isTerminated)
-				e.printStackTrace();
-		}
-		
-	}
-
-	@Override
-	public void start() {
-		isTerminated=false;
-		if(thread.getState().equals(Thread.State.NEW))
-			thread.start();
-	}
-
-	@Override
-	public void stop() {
-		isTerminated=true;
-		thread.interrupt();
-	}
-	
 	
 	@SuppressWarnings("unchecked")
 	public void learn(Stream s, Serializable v) {
+	
 		if (v instanceof RemoteReadRequestMessage) {
-			System.out.println("GOT "+((RemoteReadRequestMessage) v).getReadRequest().getReadRequestId());
-			pool.submit(new RemoteReadReplyTask((RemoteReadRequestMessage) v));
-		} else { // RemoteReadReplyMessage
+			
+			RemoteReadRequestMessage request = (RemoteReadRequestMessage) v;
+			logger.debug("request "+request.getReadRequest().getReadRequestId());
+			pool.submit(new RemoteReadReplyTask(request));
+			
+		} else {
+			
 			ReadReply reply = ((RemoteReadReplyMessage) v).getReadReply();
+			logger.debug("reply "+reply.getReadRequestId());
 			replies.put(reply.getReadRequestId(), reply);
 			synchronized(requests.get(reply.getReadRequestId())){
 				requests.get(reply.getReadRequestId()).notify();
 			}
 		}
-
 	}
 
+	// FIXME fault tolerance, asynchronism, cancellation ?
 	class RemoteReadRequestTask<E extends JessyEntity> implements
 			Callable<ReadReply<E>> {
 
@@ -144,12 +107,11 @@ public class RemoteReader extends MutedStream implements Runnable{
 
 		@SuppressWarnings("unchecked")
 		public ReadReply<E> call() throws Exception {
-			// TODO fault tolerance, asynchronism ?
 			Group destGroup = jessy.partitioner.resolve(request.getPartitioningKey());
 			synchronized(requests.get(request.getReadRequestId())){
-				int peer = destGroup.members().iterator().next();
-				destGroup.unicast(peer,new RemoteReadRequestMessage<E>(request));
-				System.out.println("ASKING "+peer+" FOR "+request.getReadRequestId());
+				int node = destGroup.members().iterator().next();
+				logger.debug("asking "+node+" for "+request.getReadRequestId());
+				remoteReadStream.unicast(new RemoteReadRequestMessage<E>(request),node);
 				requests.get(request.getReadRequestId()).wait();
 			}
 			ReadReply<E> reply = (ReadReply<E>) replies.get(request.getReadRequestId());
@@ -167,10 +129,10 @@ public class RemoteReader extends MutedStream implements Runnable{
 		}
 
 		public ReadReply<E> call() throws Exception {
-			ReadRequest<E> readRequest = message.getReadRequest();
-			ReadReply<E> readReply = jessy.getDataStore().get(readRequest);
-			Group destGroup = membership.groupOf(message.source).iterator().next();
-			destGroup.unicast(message.source, new RemoteReadReplyMessage<E>(readReply));
+			ReadRequest<E> request = message.getReadRequest();
+			logger.debug("asnswering to"+message.source+" for "+request.getReadRequestId());
+			ReadReply<E> readReply = jessy.getDataStore().get(request);
+			remoteReadStream.unicast(new RemoteReadReplyMessage<E>(readReply),message.source);
 			return null;
 		}
 

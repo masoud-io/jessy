@@ -57,15 +57,15 @@ public class ExecutionHistory implements Serializable {
 	private EntitySet createSet;
 	private EntitySet writeSet;
 	private EntitySet readSet;
+	private int coordinator;
 
-	public ExecutionHistory(List<Class<? extends JessyEntity>> entityClasses,
+	public ExecutionHistory(
+			List<Class<? extends JessyEntity>> entityClasses,
 			TransactionHandler transactionHandler) {
+		
 		readSet = new EntitySet();
-
 		writeSet = new EntitySet();
-
 		createSet = new EntitySet();
-
 		transactionState2StartingTime = new ConcurrentHashMap<TransactionState, Long>();
 
 		for (Class<? extends JessyEntity> entityClass : entityClasses) {
@@ -73,7 +73,7 @@ public class ExecutionHistory implements Serializable {
 		}
 
 		this.transactionHandler = transactionHandler;
-
+		
 	}
 
 	private <E extends JessyEntity> void addEntityClass(Class<E> entityClass) {
@@ -167,5 +167,12 @@ public class ExecutionHistory implements Serializable {
 		this.certifyAtCoordinator = certifyAtCoordinator;
 	}
 
+	public void setCoordinator(int coordinator){
+		this.coordinator=coordinator;
+	}
+	
+	public int getCoordinator(){
+		return coordinator;
+	}
 	
 }

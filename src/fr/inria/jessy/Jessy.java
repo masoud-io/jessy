@@ -584,4 +584,7 @@ public abstract class Jessy {
 	public void close(Object object) throws DatabaseException {
 		dataStore.close();
 	}
+
+	public void open() {		
+	}
 }

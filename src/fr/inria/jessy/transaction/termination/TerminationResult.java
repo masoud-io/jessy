@@ -25,11 +25,15 @@ public class TerminationResult implements Serializable {
 	private TransactionState transactionState;
 	private Boolean sendBackToCoordinator;
 
-	TerminationResult(TransactionHandler transactionHandler,
-			TransactionState transactionState, Boolean sendBackToCoordinator) {
+
+	TerminationResult(
+			TransactionHandler transactionHandler,
+			TransactionState transactionState,
+			Boolean sendBackToCoordinator) {
 		this.transactionHandler = transactionHandler;
 		this.transactionState = transactionState;
 		this.sendBackToCoordinator = sendBackToCoordinator;
+		
 	}
 
 	public TransactionHandler getTransactionHandler() {
@@ -44,4 +48,5 @@ public class TerminationResult implements Serializable {
 		return sendBackToCoordinator;
 	}
 
+	
 }

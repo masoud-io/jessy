@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -49,6 +50,7 @@ import org.apache.log4j.Logger;
 public class Partitioner {
 	
 	private static Logger logger = Logger.getLogger(Partitioner.class);
+	private static TimeRecorder resolveTime;
 	
 	public static enum Distribution {
 		UNIFORM, NORMAL, ZIPF
@@ -59,6 +61,10 @@ public class Partitioner {
 	private Map<Group, Set<String>> g2rk; // groups to rootkeys
 	private Map<String, Group> rk2g; // rootkeys to groups
 
+	static{
+		resolveTime = new TimeRecorder("Partitioner#resolveTime");
+	}
+	
 	public Partitioner(Membership m) {
 		membership = m;
 		g2rk = new HashMap<Group, Set<String>>();
@@ -95,6 +101,9 @@ public class Partitioner {
 	 */
 	public void assign(String ks, Distribution dist)
 			throws InvalidParameterException {
+		
+		if(keyspaces.contains(ks))
+			return;
 		
 		// Check length
 		if(ks.length()>32) 
@@ -177,12 +186,18 @@ public class Partitioner {
 	}
 
 	public boolean isLocal(String k) {
-		return membership.myGroups().contains(resolve(k));
+		resolveTime.start();
+		boolean ret = membership.myGroups().contains(resolve(k));
+		resolveTime.stop();
+		return ret;
 	}
 
 	@Deprecated
 	public boolean isTrueLocal(String k) {
-		return membership.myGroups().contains(resolve(k));
+		resolveTime.start();
+		boolean ret = membership.myGroups().contains(resolve(k));
+		resolveTime.stop();
+		return ret;
 	}
 	
 	//
@@ -205,6 +220,7 @@ public class Partitioner {
 				dc=dr;
 			}
 		}
+		assert closest != null;
 		return closest;
 	}
 
