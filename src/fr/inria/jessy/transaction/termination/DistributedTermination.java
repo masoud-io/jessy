@@ -1,25 +1,20 @@
 package fr.inria.jessy.transaction.termination;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
-import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.READONLY_TRANSACTION;
 import static fr.inria.jessy.transaction.TransactionState.COMMITTED;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.hadoop.fs.Trash;
-import org.apache.log4j.Logger;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
@@ -29,6 +24,9 @@ import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
+
+import org.apache.log4j.Logger;
+
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.consistency.ConsistencyFactory;
@@ -102,7 +100,7 @@ public class DistributedTermination implements Learner, Runnable {
 		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 		coordinatorGroups = new ConcurrentHashMap<TransactionHandler, String>();
 
-		terminated = new ArrayList<TransactionHandler>();
+		terminated = new CopyOnWriteArrayList<TransactionHandler>();
 
 		thread = new Thread(this);
 		thread.start();
@@ -169,7 +167,6 @@ public class DistributedTermination implements Learner, Runnable {
 	 * processing it. Otherwise, waits until one message in processingMessages
 	 * list finishes its execution.
 	 * 
-	 * FIXME
 	 */
 	@Override
 	public void run() {
@@ -177,42 +174,43 @@ public class DistributedTermination implements Learner, Runnable {
 
 		while (true) {
 
-			// FIXME
-			// msg = atomicDeliveredMessages.peek();
-			// if (msg == null)
-			// continue;
-			//
-			// /*
-			// * if there is a conflict, it cannot proceed to handle the head
-			// * message, thus waits until one of a messages in {@link
-			// *
-			// * @processingMessgaes} finishes and notify this queue.
-			// */
-			// for (TerminateTransactionRequestMessage committing :
-			// processingMessages
-			// .values()) {
-			// if (ConsistencyFactory.getConsistency().hasConflict(
-			// msg.getExecutionHistory(),
-			// committing.getExecutionHistory())) {
-			// try {
-			// wait();
-			// } catch (InterruptedException e) {
-			// e.printStackTrace();
-			// }
-			// }
-			// }
-
 			/*
-			 * There is no conflict with already processing messages in {@code
-			 * processingMessages}, thus a new {@code CertifyAndVoteTask} is
-			 * created for handling this messages.
+			 * When a new certify and vote task is submitted, it is first check
+			 * whether is a concurrent conflicting transaction already
+			 * committing or not. If not, the message is put in {@code
+			 * processingMessages} map, otherwise, it should wait until one
+			 * transaction finishes its termination.
 			 */
 			try {
 				msg = atomicDeliveredMessages.take();
+				Iterator<TerminateTransactionRequestMessage> itr = processingMessages
+						.values().iterator();
+				while (itr.hasNext()) {
+					if (ConsistencyFactory.getConsistency().hasConflict(
+							msg.getExecutionHistory(),
+							itr.next().getExecutionHistory())) {
+						try {
+							synchronized (processingMessages) {
+								processingMessages.wait();
+							}
+							itr = processingMessages.values().iterator();
+							continue;
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				processingMessages.put(msg.getExecutionHistory()
+						.getTransactionHandler(), msg);
+
+				/*
+				 * There is no conflict with already processing messages in
+				 * {@code processingMessages}, thus a new {@code
+				 * CertifyAndVoteTask} is created for handling this messages.
+				 */
 				pool.submit(new CertifyAndVoteTask(msg));
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
 			}
 
 		}
@@ -245,10 +243,13 @@ public class DistributedTermination implements Learner, Runnable {
 	 * to the coordinator.
 	 * 
 	 * PIERRE null for executionHistory indicates that we are at the coordinator
-	 * and the coordinator is not in the replica set FIXME change this TODO
-	 * should it be synchronized?
+	 * and the coordinator is not in the replica set 
+	 * 
+	 * FIXME change this 
+	 * 
+	 * TODO should it be synchronized?
 	 */
-	private synchronized void handleTerminationResult(
+	private void handleTerminationResult(
 			ExecutionHistory executionHistory,
 			TerminationResult terminationResult) {
 
@@ -325,16 +326,21 @@ public class DistributedTermination implements Learner, Runnable {
 
 	/**
 	 * Garbage collect all concurrent hash maps entries for the given
-	 * {@code transactionHandler} TODO is it necessary to be synchronized?
+	 * {@code transactionHandler}
+	 * 
+	 * TODO is it necessary to be synchronized?
 	 * 
 	 * @param transactionHandler
 	 *            The transactionHandler to be garbage collected.
 	 */
-	private synchronized void garbageCollect(
-			TransactionHandler transactionHandler) {
+	private void garbageCollect(TransactionHandler transactionHandler) {
+		/*
+		 * Upon removing the transaction from {@code processingMessages}, it
+		 * notifies the main thread to process waiting messages again.
+		 */
 		processingMessages.remove(transactionHandler);
 		synchronized (processingMessages) {
-			processingMessages.notifyAll();
+			processingMessages.notify();
 		}
 
 		terminated.add(transactionHandler);
@@ -342,7 +348,6 @@ public class DistributedTermination implements Learner, Runnable {
 		if (terminationRequests.containsKey(transactionHandler.getId())) {
 			logger.debug("garbage-collect for " + transactionHandler.getId());
 			terminationRequests.remove(transactionHandler);
-			// terminationResults.remove(transactionHandler);
 			votingQuorums.remove(transactionHandler);
 			coordinatorGroups.remove(transactionHandler);
 		}
@@ -430,33 +435,6 @@ public class DistributedTermination implements Learner, Runnable {
 		}
 
 		public Boolean call() throws Exception {
-
-			/*
-			 * When a new certify and vote task is submitted, it is first check
-			 * whether is a concurrent conflicting transaction already
-			 * committing or not. If not, the message is put in {@code
-			 * processingMessages} map, otherwise, it should wait until one
-			 * transaction finishes its termination.
-			 */
-			Iterator<TerminateTransactionRequestMessage> itr = processingMessages
-					.values().iterator();
-			while (itr.hasNext()) {
-				if (ConsistencyFactory.getConsistency().hasConflict(
-						msg.getExecutionHistory(),
-						itr.next().getExecutionHistory())) {
-					try {
-						synchronized (processingMessages) {
-							processingMessages.wait();
-						}
-						itr = processingMessages.values().iterator();
-						continue;
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			processingMessages.put(msg.getExecutionHistory()
-					.getTransactionHandler(), msg);
 
 			try {
 
