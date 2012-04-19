@@ -6,7 +6,6 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequestKey;
@@ -15,9 +14,12 @@ import fr.inria.jessy.store.ReadRequestKey;
 public abstract class Transaction implements Callable<ExecutionHistory> {
 
 	private static Logger logger = Logger.getLogger(Transaction.class);
-	
+
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
+
+	// TODO read from config file
+	private boolean retryCommitOnAbort = true;
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;
@@ -49,8 +51,28 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		jessy.create(transactionHandler, entity);
 	}
 
+	/*
+	 * Tries to commit a transaction. If commit is not successful, and it is
+	 * defined to retryCommitOnAbort, it will do so, until it commits the
+	 * transaction.
+	 * 
+	 * FIXME Can it happen to abort a transaction indefinitely?
+	 * 
+	 * TODO Re-execution was tested successfully for localJessy. The test for
+	 * distributedJessy was not done extensively.
+	 */
 	public ExecutionHistory commitTransaction() {
-		return jessy.commitTransaction(transactionHandler);
+		ExecutionHistory executionHistory = jessy
+				.commitTransaction(transactionHandler);
+		if (executionHistory.getTransactionState() != TransactionState.COMMITTED
+				&& retryCommitOnAbort) {
+			logger.warn("Re-executing aborted transaction: "
+					+ executionHistory.getTransactionHandler());
+			jessy.prepareReExecution(transactionHandler);
+			executionHistory = execute();
+		}
+		jessy.garbageCollectTransaction(transactionHandler);
+		return executionHistory;
 	}
 
 	public ExecutionHistory abortTransaction() {

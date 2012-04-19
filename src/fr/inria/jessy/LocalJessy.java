@@ -77,8 +77,7 @@ public class LocalJessy extends Jessy {
 			result.changeState(TransactionState.ABORTED_BY_CERTIFICATION);
 
 		}
-
-		garbageCollectTransaction(transactionHandler);
+		
 		return result;
 
 	}

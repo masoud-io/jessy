@@ -57,8 +57,10 @@ public class ExecutionHistory implements Serializable {
 	private EntitySet createSet;
 	private EntitySet writeSet;
 	private EntitySet readSet;
-	private int coordinator;
+	private int coordinator;		
 
+	private List<Class<? extends JessyEntity>> entityClasses;
+	
 	public ExecutionHistory(
 			List<Class<? extends JessyEntity>> entityClasses,
 			TransactionHandler transactionHandler) {
@@ -68,6 +70,7 @@ public class ExecutionHistory implements Serializable {
 		createSet = new EntitySet();
 		transactionState2StartingTime = new ConcurrentHashMap<TransactionState, Long>();
 
+		this.entityClasses=entityClasses;
 		for (Class<? extends JessyEntity> entityClass : entityClasses) {
 			addEntityClass(entityClass);
 		}
@@ -175,4 +178,15 @@ public class ExecutionHistory implements Serializable {
 		return coordinator;
 	}
 	
+	public void cleanForReExecution(){
+		transactionState = TransactionState.NOT_STARTED;
+
+		createSet.clear();
+		readSet.clear();
+		writeSet.clear();
+		
+		for (Class<? extends JessyEntity> entityClass : entityClasses) {
+			addEntityClass(entityClass);
+		}
+	}
 }

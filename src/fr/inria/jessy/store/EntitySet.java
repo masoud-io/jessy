@@ -24,7 +24,7 @@ import fr.inria.jessy.vector.CompactVector;
  *         {@link ExecutionHistory}
  * 
  */
-public class EntitySet implements Serializable{
+public class EntitySet implements Serializable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
@@ -142,14 +142,19 @@ public class EntitySet implements Serializable{
 	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> getEntitiesMap() {
 		return entities;
 	}
-	
-	//FIXME Performance Bottleneck. There are so many loops here.
-	public Set<String> getKeys(){
-		Set<String> keys=new HashSet<String>();
-		List<? extends JessyEntity> entityList=getEntities();
-		for(JessyEntity e:entityList){
+
+	// FIXME Performance Bottleneck. There are so many loops here.
+	public Set<String> getKeys() {
+		Set<String> keys = new HashSet<String>();
+		List<? extends JessyEntity> entityList = getEntities();
+		for (JessyEntity e : entityList) {
 			keys.add(e.getKey());
 		}
 		return keys;
+	}
+
+	public void clear() {
+		entities.clear();
+		compactVector = new CompactVector<String>();
 	}
 }

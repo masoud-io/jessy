@@ -225,6 +225,12 @@ public class DistributedJessy extends Jessy {
 	}
 	
 	public void close(Object object) {
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		super.close(object);
 		logger.info("Jessy is closed.");
 		FractalManager.getInstance().stop();

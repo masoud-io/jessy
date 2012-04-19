@@ -565,7 +565,7 @@ public abstract class Jessy {
 	protected abstract <E extends JessyEntity> void performNonTransactionalWrite(
 			E entity) throws InterruptedException, ExecutionException;
 
-	protected void garbageCollectTransaction(
+	public void garbageCollectTransaction(
 			TransactionHandler transactionHandler) {
 		handler2executionHistory.remove(transactionHandler);
 	}
@@ -585,6 +585,14 @@ public abstract class Jessy {
 		dataStore.close();
 	}
 
+	//TODO
 	public void open() {		
+	}
+	
+	public void prepareReExecution(TransactionHandler transactionHandler){
+
+		abortedTransactions.remove(transactionHandler);
+		handler2executionHistory.get(transactionHandler).cleanForReExecution();
+		
 	}
 }
