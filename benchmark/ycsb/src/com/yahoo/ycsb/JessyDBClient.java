@@ -82,12 +82,6 @@ public class JessyDBClient extends DB {
 
 	@Override
 	public void cleanup() {
-
-		try {
-			jessy.close(this);
-		} catch (DatabaseException ex) {
-			System.out.println("GOT IT");
-		}
 	}
 
 	@Override
