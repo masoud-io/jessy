@@ -74,22 +74,26 @@ public class OrderStatus extends Transaction {
          		/* Save the results in a List for sort */
          		list.addAll(collection);
                 
-        		/* Sort the results by C_FIRST in ascending order */
-        		for(int a=0;a<list.size();a++) {
-                	
-                    int smallest=a;
-                    int b;
-                    for(b=a;b<list.size();b++) {
+         		if(list.size()>1) {    /* if more than one results */
+         			
+         			/* Sort the results by C_FIRST in ascending order */
+            		for(int a=0;a<list.size();a++) {
                     	
-                        if(list.get(b).getC_FIRST().compareTo(list.get(smallest).getC_FIRST())<0) {
-                            smallest=b;
+                        int smallest=a;
+                        int b;
+                        for(b=a;b<list.size();b++) {
+                        	
+                            if(list.get(b).getC_FIRST().compareTo(list.get(smallest).getC_FIRST())<0) {
+                                smallest=b;
+                            }
                         }
+                        swap(list,a,smallest);
+                               
                     }
-                    swap(list,a,smallest);
-                           
-                }
+         		}
+        		
         		/* the row at position n/2 of the results set is selected */
-        		customer = list.get((list.size()+1)/2);
+        		customer = list.get(list.size()/2);
 			}
 			/* should we make a READ operation on District? but we need D_Next_O_ID to determine the number of orders. 
 			 * So there will be a involved selection operation on the District table not mentioned in the benchmark */

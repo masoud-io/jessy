@@ -105,23 +105,27 @@ public class Payment extends Transaction {
          		
          		/* Save the results in a List for sort */
          		list.addAll(collection);
-   
-        		/* Sort the results by C_FIRST in ascending order */
-        		for(int i=0;i<list.size();i++) {
-                	
-                    int smallest=i;
-                    int j;
-                    for(j=i;j<list.size();j++) {
+                
+         		if(list.size()>1) {   /* if more than one results */
+         			
+         			/* Sort the results by C_FIRST in ascending order */
+            		for(int i=0;i<list.size();i++) {
                     	
-                        if(list.get(j).getC_FIRST().compareTo(list.get(smallest).getC_FIRST())<0) {
-                            smallest=j;
+                        int smallest=i;
+                        int j;
+                        for(j=i;j<list.size();j++) {
+                        	
+                            if(list.get(j).getC_FIRST().compareTo(list.get(smallest).getC_FIRST())<0) {
+                                smallest=j;
+                            }
                         }
+                        swap(list,i,smallest);
+                               
                     }
-                    swap(list,i,smallest);
-                           
-                }
+         		}
+        		
         		/* the row at position n/2 of the results set is selected */
-        		customer = list.get((list.size()+1)/2);
+        		customer = list.get(list.size()/2);
         		
         		customer.setC_BALANCE(customer.getC_BALANCE() - this.H_AMOUNT);
         		customer.setC_YTD_PAYMENT(customer.getC_YTD_PAYMENT() + this.H_AMOUNT);

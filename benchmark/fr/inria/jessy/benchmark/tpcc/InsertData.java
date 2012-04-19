@@ -19,7 +19,7 @@ public class InsertData extends Transaction {
 	@Override
 	public ExecutionHistory execute() {
 		try {
-			int i, j, k, l;
+			int i, j, k, l, random;
 			Random rand = new Random(System.currentTimeMillis());			
 			String[] lastnames = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE", "ANTI", "CALLY", "ATION", "EING"};
 			int[] randCustomerId = new int[3000]; // random permutation of 3k customer IDs, used while creating Order table
@@ -43,6 +43,7 @@ public class InsertData extends Transaction {
 			Order_line ol;
 			New_order no;
 			NURand nu;
+		
 			
 			/*for i  warehouses*/
 			for(i=1; i<=1; i++){			
@@ -119,6 +120,18 @@ public class InsertData extends Transaction {
 							nu = new NURand(255, 0, 999);
 							cus.setC_LAST(Integer.toString(nu.calculate()));
 						}
+						/*
+						lastname = "";
+						if(k<1000) {   // first 1000 customers 
+							lastname = lastnames[k/100]+lastnames[(k%100)/10]+lastnames[k%10];
+						}
+						else {
+							nu = new NURand(255, 0, 999);
+							random = nu.calculate();
+							lastname = lastnames[random/100]+lastnames[(random%100)/10]+lastnames[random%10];
+						}
+						cus.setC_LAST(lastname);
+						*/
 						cus.setC_MIDDLE("OE");
 						cus.setC_FIRST(NString.generate(8, 16));
 						cus.setC_STREET_1(NString.generate(10, 20));
