@@ -43,6 +43,10 @@ public class TpccTestPayment {
 		jessy.addEntity(Order.class);
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
+		
+		jessy.addSecondaryIndex(Customer.class, String.class, "C_W_ID");
+		jessy.addSecondaryIndex(Customer.class, String.class, "C_D_ID");
+		jessy.addSecondaryIndex(Customer.class, String.class, "C_LAST");
 		payment = new Payment(jessy);
 	}
 	

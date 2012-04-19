@@ -109,18 +109,18 @@ public class InsertData extends Transaction {
 						cus.setC_ID(Integer.toString(k));
 						cus.setC_D_ID(dis.getD_ID());
 						cus.setC_W_ID(wh.getW_ID());
-						if(k<=1000){//first 1000 customers
-							lastname = "";
-							for(l=0; l<3; l++){
-								lastname = lastname+lastnames[rand.nextInt(10)]; /* 0..9 */
-							}
-							cus.setC_LAST(lastname);
-						}
-						else{
-							nu = new NURand(255, 0, 999);
-							cus.setC_LAST(Integer.toString(nu.calculate()));
-						}
-						/*
+//						if(k<=1000){//first 1000 customers
+//							lastname = "";
+//							for(l=0; l<3; l++){
+//								lastname = lastname+lastnames[rand.nextInt(10)]; /* 0..9 */
+//							}
+//							cus.setC_LAST(lastname);
+//						}
+//						else{
+//							nu = new NURand(255, 0, 999);
+//							cus.setC_LAST(Integer.toString(nu.calculate()));
+//						}
+						
 						lastname = "";
 						if(k<1000) {   // first 1000 customers 
 							lastname = lastnames[k/100]+lastnames[(k%100)/10]+lastnames[k%10];
@@ -131,7 +131,7 @@ public class InsertData extends Transaction {
 							lastname = lastnames[random/100]+lastnames[(random%100)/10]+lastnames[random%10];
 						}
 						cus.setC_LAST(lastname);
-						*/
+						
 						cus.setC_MIDDLE("OE");
 						cus.setC_FIRST(NString.generate(8, 16));
 						cus.setC_STREET_1(NString.generate(10, 20));
