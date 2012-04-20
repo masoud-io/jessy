@@ -2,9 +2,9 @@ package fr.inria.jessy;
 
 import java.math.BigInteger;
 import java.security.InvalidParameterException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -16,6 +16,9 @@ import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+
+import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.ReadRequest;
 
 /**
  * This class implements a partitioner, that is a function that maps object keys
@@ -178,6 +181,12 @@ public class Partitioner {
 		return ret;
 	}
 
+	//TODO Implement me.
+	public <E extends JessyEntity> Set<Group> resolve(ReadRequest<E> readRequest) {		
+		return new HashSet<Group>();
+	}
+
+	
 	public Set<String> resolveToGroupNames(Set<String> keys) {
 		Set<String> results = new HashSet<String>();
 		for (String key : keys) {

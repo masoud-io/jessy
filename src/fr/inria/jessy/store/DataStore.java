@@ -200,7 +200,8 @@ public class DataStore {
 			secondaryIndexes.put(entityClass.getName() + secondaryKeyName,
 					sindex);
 		} catch (Exception ex) {
-			throw new Exception("StoreName or PrimaryIndex does not exists");
+			throw new Exception(
+					"StoreName or PrimaryIndex does not exists. Otherwise, entity field is not annottated properly.");
 		}
 	}
 

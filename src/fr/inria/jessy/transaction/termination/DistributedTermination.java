@@ -148,7 +148,8 @@ public class DistributedTermination implements Learner, Runnable {
 					.isSendBackToCoordinator();
 
 			try {
-				handleTerminationResult(null, replyMessage.getTerminationResult());
+				handleTerminationResult(null,
+						replyMessage.getTerminationResult());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -175,7 +176,8 @@ public class DistributedTermination implements Learner, Runnable {
 	 */
 	@Override
 	public void run() {
-		TerminateTransactionRequestMessage msg;
+		TerminateTransactionRequestMessage terminateRequestMessage;
+		TerminateTransactionRequestMessage processingMessage;
 
 		while (true) {
 
@@ -187,16 +189,17 @@ public class DistributedTermination implements Learner, Runnable {
 			 * transaction finishes its termination.
 			 */
 			try {
-				msg = atomicDeliveredMessages.take();
+				terminateRequestMessage = atomicDeliveredMessages.take();
 				Iterator<TerminateTransactionRequestMessage> itr = processingMessages
 						.values().iterator();
 				while (itr.hasNext()) {
+					processingMessage = itr.next();
 					if (ConsistencyFactory.getConsistency().hasConflict(
-							msg.getExecutionHistory(),
-							itr.next().getExecutionHistory())) {
+							terminateRequestMessage.getExecutionHistory(),
+							processingMessage.getExecutionHistory())) {
 						try {
-							synchronized (processingMessages) {
-								processingMessages.wait();
+							synchronized (processingMessage) {
+								processingMessage.wait();
 							}
 							itr = processingMessages.values().iterator();
 							continue;
@@ -205,15 +208,16 @@ public class DistributedTermination implements Learner, Runnable {
 						}
 					}
 				}
-				processingMessages.put(msg.getExecutionHistory()
-						.getTransactionHandler(), msg);
+				processingMessages.put(terminateRequestMessage
+						.getExecutionHistory().getTransactionHandler(),
+						terminateRequestMessage);
 
 				/*
 				 * There is no conflict with already processing messages in
 				 * {@code processingMessages}, thus a new {@code
 				 * CertifyAndVoteTask} is created for handling this messages.
 				 */
-				pool.submit(new CertifyAndVoteTask(msg));
+				pool.submit(new CertifyAndVoteTask(terminateRequestMessage));
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
@@ -248,15 +252,14 @@ public class DistributedTermination implements Learner, Runnable {
 	 * to the coordinator.
 	 * 
 	 * PIERRE null for executionHistory indicates that we are at the coordinator
-	 * and the coordinator is not in the replica set 
+	 * and the coordinator is not in the replica set
 	 * 
-	 * FIXME change this 
+	 * FIXME change this
 	 * 
 	 * TODO should it be synchronized?
 	 */
-	private void handleTerminationResult(
-			ExecutionHistory executionHistory,
-			TerminationResult terminationResult) throws Exception{
+	private void handleTerminationResult(ExecutionHistory executionHistory,
+			TerminationResult terminationResult) throws Exception {
 
 		logger.debug("handling termination result for "
 				+ terminationResult.getTransactionHandler().getId());
@@ -311,7 +314,8 @@ public class DistributedTermination implements Learner, Runnable {
 				.getTransactionHandler().getId())) {
 			TransactionHandler transactionHandler = terminationRequests
 					.get(terminationResult.getTransactionHandler().getId());
-			logger.debug("at the coordinator, notifying for "+transactionHandler.getId());
+			logger.debug("at the coordinator, notifying for "
+					+ transactionHandler.getId());
 			synchronized (transactionHandler) {
 				terminationResults.put(terminationResult
 						.getTransactionHandler().getId(), terminationResult);
@@ -346,9 +350,11 @@ public class DistributedTermination implements Learner, Runnable {
 		 * Upon removing the transaction from {@code processingMessages}, it
 		 * notifies the main thread to process waiting messages again.
 		 */
+		TerminateTransactionRequestMessage terminatedMessage = processingMessages
+				.get(transactionHandler);
 		processingMessages.remove(transactionHandler);
-		synchronized (processingMessages) {
-			processingMessages.notify();
+		synchronized (terminatedMessage) {
+			terminatedMessage.notify();
 		}
 
 		terminated.add(transactionHandler);

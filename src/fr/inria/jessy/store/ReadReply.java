@@ -32,4 +32,9 @@ public class ReadReply<E extends JessyEntity> implements Serializable {
 		return entities;
 	}
 
+	public synchronized void mergeReply(ReadReply<E> readReply) {
+		if (this.readRequestId.equals(readReply.getReadRequestId()))
+			entities.addAll(readReply.getEntity());
+	}
+
 }
