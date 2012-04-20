@@ -35,11 +35,19 @@ public class Customer extends JessyEntity {
 	}
 
 	private String C_ID;
+	
+	@SecondaryKey(relate = MANY_TO_ONE)
 	private String C_D_ID;
+	
+	@SecondaryKey(relate = MANY_TO_ONE)
 	private String C_W_ID;
+	
 	private String C_FIRST;
 	private String C_MIDDLE;
+	
+	@SecondaryKey(relate = MANY_TO_ONE)
 	private String C_LAST;
+	
 	private String C_STREET_1;
 	private String C_STREET_2;
 	private String C_CITY;
