@@ -5,6 +5,7 @@ import fr.inria.jessy.benchmark.tpcc.entities.*;
 import fr.inria.jessy.transaction.*;
 
 import java.util.*;
+import java.io.*;
 
 /**
  * @author Wang Haiyun & ZHAO Guang
@@ -43,6 +44,11 @@ public class InsertData extends Transaction {
 			Order_line ol;
 			New_order no;
 			NURand nu;
+			
+			String filePath = "logfile.txt";
+			File file = new File(filePath);
+			FileWriter fw = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(fw);
 		
 			
 			/*for i  warehouses*/
@@ -122,6 +128,7 @@ public class InsertData extends Transaction {
 //						}
 						
 						lastname = "";
+						random = 0;
 						if(k<1000) {   // first 1000 customers 
 							lastname = lastnames[k/100]+lastnames[(k%100)/10]+lastnames[k%10];
 						}
@@ -131,6 +138,26 @@ public class InsertData extends Transaction {
 							lastname = lastnames[random/100]+lastnames[(random%100)/10]+lastnames[random%10];
 						}
 						cus.setC_LAST(lastname);
+						
+						/* write the customers into a log file */
+						
+						bw.write(Integer.toString(i));
+						bw.write("   ");
+						bw.write(Integer.toString(j));
+						
+						bw.write("   ");
+						if(k<1000) {
+							bw.write(Integer.toString(k));
+						}
+						else{
+							bw.write(Integer.toString(random));
+						}
+						
+						bw.write("   ");
+						bw.write(lastname);
+						bw.newLine();
+						bw.flush();
+						
 						
 						cus.setC_MIDDLE("OE");
 						cus.setC_FIRST(NString.generate(8, 16));
@@ -230,6 +257,9 @@ public class InsertData extends Transaction {
 				else it.setI_DATA(NString.generate(26, 50));
 				create(it);
 			}
+			
+			bw.close();
+			fw.close();
 			
 			return commitTransaction();			
 		} catch (Exception ex) {

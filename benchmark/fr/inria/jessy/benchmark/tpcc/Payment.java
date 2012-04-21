@@ -101,10 +101,13 @@ public class Payment extends Transaction {
         		request.add(request_C_LAST);
     			collection = read(Customer.class, request);    		
          		
+    			//int resultSize = collection.size();
+    			
          		List<Customer> list = new ArrayList<Customer>();
          		
          		/* Save the results in a List for sort */
          		list.addAll(collection);
+         		
                 
          		if(list.size()>1) {   /* if more than one results */
          			
