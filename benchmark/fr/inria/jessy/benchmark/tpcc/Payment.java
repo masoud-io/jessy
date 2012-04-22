@@ -91,8 +91,8 @@ public class Payment extends Transaction {
    
                 /* retrieve with SK C_LAST */
         		Collection<Customer> collection = null;
-        		ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>("C_W_ID", "C_W_"+C_W_ID);
-        		ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>("C_D_ID", "C_D_"+C_D_ID);
+        		ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>("C_W_ID", C_W_ID);
+        		ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>("C_D_ID", C_D_ID);
         		ReadRequestKey<String> request_C_LAST = new ReadRequestKey<String>("C_LAST", C_LAST);
      
         		List<ReadRequestKey<?>> request = new ArrayList<ReadRequestKey<?>>();
@@ -100,7 +100,10 @@ public class Payment extends Transaction {
         		request.add(request_C_D_ID);
         		request.add(request_C_LAST);
     			collection = read(Customer.class, request);    		
-         		
+         		if (collection.size()==0){
+         			System.out.println("OPSSSSS" + request_C_W_ID.getKeyValue() + ":"  + request_C_D_ID.getKeyValue() + ":" +request_C_LAST.getKeyValue());
+         			System.exit(0);
+         		}
     			//int resultSize = collection.size();
     			
          		List<Customer> list = new ArrayList<Customer>();
