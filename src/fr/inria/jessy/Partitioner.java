@@ -81,6 +81,9 @@ public class Partitioner {
 	<E extends JessyEntity> void assign(Keyspace keyspace)
 			throws IllegalArgumentException {
 		
+		if(keyspace==null)
+			throw new IllegalArgumentException("null keyspace");
+		
 		if(keyspaces.contains(keyspace))
 			return;
 		

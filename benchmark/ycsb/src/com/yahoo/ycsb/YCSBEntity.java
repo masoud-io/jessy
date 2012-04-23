@@ -5,11 +5,19 @@ import java.util.HashMap;
 import java.util.Set;
 
 import com.sleepycat.persist.model.Entity;
+import com.yahoo.ycsb.workloads.CoreWorkload;
 
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.Keyspace;
+import fr.inria.jessy.store.Keyspace.Distribution;
 
 @Entity
 public class YCSBEntity extends JessyEntity{
+	
+	private static final long serialVersionUID = 1L;
+	
+	public static Keyspace keyspace = 
+		new Keyspace(CoreWorkload.TABLENAME_PROPERTY_DEFAULT+":user##########",Distribution.UNIFORM);
 	
 	public YCSBEntity(){
 		super("","");

@@ -58,7 +58,9 @@ public class Keyspace {
 		distribution = dist;
 	}
 	
-	private boolean isCorrectDefinition(String def){ 
+	private boolean isCorrectDefinition(String def){
+		if(def.equals(""))
+			return false;
 		if(def.length()>32)
 			return false;
 		Pattern ps = Pattern.compile("^(([^#])*#*)+$");
