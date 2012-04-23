@@ -59,15 +59,22 @@ public class OrderStatus extends Transaction {
        		
         		/* retrieve with SK C_LAST */
         		Collection<Customer> collection = null;
-        		ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>("C_W_ID", "C_W_"+C_W_ID);
-        		ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>("C_D_ID", "C_D_"+C_D_ID);
+        		ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>("C_W_ID", C_W_ID);
+        		ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>("C_D_ID", C_D_ID);
         		ReadRequestKey<String> request_C_LAST = new ReadRequestKey<String>("C_LAST", C_LAST);
      
         		List<ReadRequestKey<?>> request = new ArrayList<ReadRequestKey<?>>();
         		request.add(request_C_W_ID);
         		request.add(request_C_D_ID);
         		request.add(request_C_LAST);
-        		collection = read(Customer.class, request);       		
+        		collection = read(Customer.class, request); 
+        		if (collection.size() == 0) {
+					System.out.println("OPSSSSS: ***  "
+							+ request_C_W_ID.getKeyValue() + ":"
+							+ request_C_D_ID.getKeyValue() + ":"
+							+ request_C_LAST.getKeyValue());
+					System.exit(0);
+				} 
          		
          		List<Customer> list = new ArrayList<Customer>();
          		
@@ -97,13 +104,16 @@ public class OrderStatus extends Transaction {
 			}
 			/* should we make a READ operation on District? but we need D_Next_O_ID to determine the number of orders. 
 			 * So there will be a involved selection operation on the District table not mentioned in the benchmark */
-			int tmp = 0;
+			int tmp = 0;			
 			district = read(District.class, "D_W_"+ W_ID + "_" + "D_"+ D_ID);
+			
+			//System.out.println(district.getD_NEXT_O());
 			for(j=1;j<district.getD_NEXT_O();j++) {
 				order = read(Order.class, "O_W_"+ C_W_ID + "_" + "O_D_"+ C_D_ID + "_" + "O_"+ j);
-				if(order.getO_C_ID().equals(C_ID)) 
+				if(order.getO_C_ID().equals(customer.getC_ID())) 
 					tmp = j;
 			}
+			//System.out.println(tmp);
 			/* Selection of the most recent order */
 			order = read(Order.class, "O_W_"+ C_W_ID + "_" + "O_D_"+ C_D_ID + "_" + "O_"+ tmp);
 			

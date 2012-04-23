@@ -50,28 +50,7 @@ public class Payment extends Transaction {
 												 */
 
 			W_ID = "1"; /* warehouse number (W_ID) is constant */
-			H_AMOUNT = (float) (((float) rand.nextInt(500000 - 1) + 100) / 100.00); /*
-																					 * Clause
-																					 * 2.5
-																					 * .1
-																					 * .3
-																					 * (
-																					 * H
-																					 * _AMOUN
-																					 * T
-																					 * )
-																					 * is
-																					 * random
-																					 * within
-																					 * [
-																					 * 1.00
-																					 * .
-																					 * .
-																					 * 5
-																					 * ,
-																					 * 000.00
-																					 * ]
-																					 */
+			H_AMOUNT = (float) (((float) rand.nextInt(500000 - 1) + 100) / 100.00); /* Clause 2.5.1.3(H_AMOUNT)is random within[1.00.. 5,000.00* ]*/
 
 			/* Selection in the Warehouse table */
 			warehouse = read(Warehouse.class, "W_" + W_ID);
@@ -98,10 +77,8 @@ public class Payment extends Transaction {
 			district = read(District.class, "D_W_" + W_ID + "_" + "D_" + D_ID);
 			district.setD_YTD(district.getD_YTD() + this.H_AMOUNT); /*
 																	 * increase
-																	 * district
-																	 * 's
-																	 * year-to
-																	 * -date by
+																	 * district's
+																	 * year-to-date by
 																	 * H_AMOUNT
 																	 */
 			/* Update District */
@@ -111,24 +88,19 @@ public class Payment extends Transaction {
 				C_D_ID = this.D_ID;
 				C_W_ID = this.W_ID;
 			} else { /* remote warehouse */
-				C_D_ID = Integer.toString(rand.nextInt(10 - 1) + 1); /*
-																	 * C_D_ID is
-																	 * randomly
-																	 * selected
-																	 * within [1
-																	 * .. 10]
-																	 */
+			
+				C_D_ID = Integer.toString(rand.nextInt(10 - 1) + 1); /* C_D_ID is randomly selected within [1.. 10] */
 				while (true) {
-					C_W_ID = Integer.toString(rand.nextInt(89 - 1) + 1); /*
-																		 * not
-																		 * sure
-																		 * !!!
-																		 */
+					C_W_ID = Integer.toString(rand.nextInt(10 - 1) + 1); /* not sure ! */
 					if (C_W_ID != this.W_ID) /* different to local warehouse ID 1 */
 						break;
 				}
+				
+				System.out.println("Remote Warhouse \n");
+				return commitTransaction();
 
 			}
+
 
 			/* Selection Customer */
 			if (y > 60) { /* by C_ID */
@@ -152,7 +124,7 @@ public class Payment extends Transaction {
 				/* retrieve with SK C_LAST */
 				Collection<Customer> collection = null;
 				ReadRequestKey<String> request_C_W_ID = new ReadRequestKey<String>(
-						"C_W_ID", "" + C_W_ID);
+						"C_W_ID", C_W_ID);
 				ReadRequestKey<String> request_C_D_ID = new ReadRequestKey<String>(
 						"C_D_ID", C_D_ID);
 				ReadRequestKey<String> request_C_LAST = new ReadRequestKey<String>(
@@ -198,7 +170,7 @@ public class Payment extends Transaction {
 				}
 
 				/* the row at position n/2 of the results set is selected */
-				customer = list.get(list.size() / 2);
+				customer = list.get(list.size()/ 2);
 
 				customer.setC_BALANCE(customer.getC_BALANCE() - this.H_AMOUNT);
 				customer.setC_YTD_PAYMENT(customer.getC_YTD_PAYMENT()
