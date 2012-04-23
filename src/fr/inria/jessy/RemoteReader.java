@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
@@ -41,6 +42,7 @@ import fr.inria.jessy.utils.ExecutorPool;
 
 // FIXME fix parametrized types.
 // TODO CAUTION: this implementation is not fault tolerant
+
 public class RemoteReader implements Learner {
 
 	private static Logger logger = Logger.getLogger(RemoteReader.class);
@@ -58,7 +60,7 @@ public class RemoteReader implements Learner {
 	 * corresponding value in the map becomes zero.
 	 * 
 	 */
-	private Map<UUID, Integer> readRequestRecipientCounts;
+	private Map<UUID, AtomicInteger> readRequestRecipientCounts;
 
 	private Map<UUID, ReadRequest<? extends JessyEntity>> requests;
 
@@ -72,7 +74,7 @@ public class RemoteReader implements Learner {
 
 		replies = new ConcurrentHashMap<UUID, ReadReply<? extends JessyEntity>>();
 		requests = new ConcurrentHashMap<UUID, ReadRequest<? extends JessyEntity>>();
-		readRequestRecipientCounts = new ConcurrentHashMap<UUID, Integer>();
+		readRequestRecipientCounts = new ConcurrentHashMap<UUID, AtomicInteger>();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -99,19 +101,16 @@ public class RemoteReader implements Learner {
 			ReadReply reply = ((RemoteReadReplyMessage) v).getReadReply();
 			logger.debug("reply " + reply.getReadRequestId());
 
-			Integer unAnsweredRequests = readRequestRecipientCounts.get(reply
-					.getReadRequestId()) - 1;
-
 			if (replies.containsKey(reply.getReadRequestId())) {
 				replies.get(reply.getReadRequestId()).mergeReply(reply);
 			} else {
 				replies.put(reply.getReadRequestId(), reply);
 			}
 
-			if (unAnsweredRequests > 0) {
-				readRequestRecipientCounts.put(reply.getReadRequestId(),
-						unAnsweredRequests);
-			} else {
+			Integer unAnsweredRequests = readRequestRecipientCounts.get(reply
+					.getReadRequestId()).decrementAndGet();
+			
+			if (unAnsweredRequests == 0) {
 				readRequestRecipientCounts.remove(reply.getReadRequestId());
 				synchronized (requests.get(reply.getReadRequestId())) {
 					requests.get(reply.getReadRequestId()).notify();
@@ -120,7 +119,6 @@ public class RemoteReader implements Learner {
 		}
 	}
 
-	// FIXME fault tolerance, asynchronism, cancellation ?
 	class RemoteReadRequestTask<E extends JessyEntity> implements
 			Callable<ReadReply<E>> {
 
@@ -134,7 +132,7 @@ public class RemoteReader implements Learner {
 		public ReadReply<E> call() throws Exception {
 			Set<Group> destGroups = jessy.partitioner.resolve(request);
 			readRequestRecipientCounts.put(request.getReadRequestId(),
-					destGroups.size());
+					new AtomicInteger(destGroups.size()));
 			synchronized (requests.get(request.getReadRequestId())) {
 				for (Group dest : destGroups) {
 					logger.debug("asking group" + dest + " for "
@@ -148,23 +146,6 @@ public class RemoteReader implements Learner {
 					.getReadRequestId());
 			return reply;
 		}
-
-		// @SuppressWarnings("unchecked")
-		// public ReadReply<E> call() throws Exception {
-		// Group destGroup =
-		// jessy.partitioner.resolve(request.getPartitioningKey());
-		// synchronized(requests.get(request.getReadRequestId())){
-		// int node = destGroup.members().iterator().next();
-		// logger.debug("asking "+node+" for "+request.getReadRequestId());
-		// remoteReadStream.unicast(new
-		// RemoteReadRequestMessage<E>(request),node);
-		//
-		// requests.get(request.getReadRequestId()).wait();
-		// }
-		// ReadReply<E> reply = (ReadReply<E>)
-		// replies.get(request.getReadRequestId());
-		// return reply;
-		// }
 
 	}
 

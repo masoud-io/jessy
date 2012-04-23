@@ -18,10 +18,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.ReadRequest;
 
 /**
- * This class implements a partitioner, that is a function that maps object keys
+ * This class implements a partitioner, that is a function that maps objects
  * to groups.
  * 
  * The assign method of the partitioner takes as input a keyspace and a
@@ -30,8 +31,8 @@ import fr.inria.jessy.store.ReadRequest;
  * For some key k, the replica group of k is the group holding the rootkey rk
  * having the smallest Levenshtein distance to k.
  * 
- * A keyspace definition matches the following regex: ([:xdigit:]*#)* For
- * instance, warhouse#:district# is a valid keyspace. It is interpreted as the
+ * A keyspace definition matches the following regex: ([:xdigit:]*#)* 
+ * For instance, warhouse#:district# is a valid keyspace. It is interpreted as the
  * set of strings that matches the regex warhouse[:digits:]district[:digits:].
  * That is the character # is a shortcut for the class [:digits:].
  * 
@@ -56,10 +57,6 @@ public class Partitioner {
 	private static Logger logger = Logger.getLogger(Partitioner.class);
 	private static TimeRecorder resolveTime;
 	
-	public static enum Distribution {
-		UNIFORM, NORMAL, ZIPF
-	};
-
 	private Membership membership;
 	private HashSet<String> keyspaces; // TODO check intersection
 	private TreeMap<Group, Set<String>> g2rk; // groups to rootkeys
@@ -103,7 +100,7 @@ public class Partitioner {
 	 * @param a
 	 *            distribution
 	 */
-	public void assign(String ks, Distribution dist)
+	public void assign(String ks, Keyspace.Distribution dist)
 			throws InvalidParameterException {
 		
 		if(keyspaces.contains(ks))
@@ -129,7 +126,7 @@ public class Partitioner {
 		// TODO
 		keyspaces.add(ks);
 		
-		if (dist == Distribution.UNIFORM) {
+		if (dist == Keyspace.Distribution.UNIFORM) {
 				
 			// Generate rootkeys
 			String rootkey;
@@ -181,13 +178,22 @@ public class Partitioner {
 		return ret;
 	}
 
-	//TODO Implement me.
+
 	public <E extends JessyEntity> Set<Group> resolve(ReadRequest<E> readRequest) {		
-		return new HashSet<Group>();
+		Set<Group> ret = new HashSet<Group>();
+		ret.add(rk2g.get(closestRootkeyOf(readRequest.getPartitioningKey())));
+		return ret;
 	}
 
+	public Set<Group> resolve(Set<String> keys){
+		Set<Group> ret = new HashSet<Group>();
+		for(String key : keys){
+			ret.add(resolve(key));
+		}
+		return ret;
+	}
 	
-	public Set<String> resolveToGroupNames(Set<String> keys) {
+	public Set<String> resolveNames(Set<String> keys) {
 		Set<String> results = new HashSet<String>();
 		for (String key : keys) {
 			results.add(rk2g.get(closestRootkeyOf(key)).name());
@@ -196,14 +202,6 @@ public class Partitioner {
 	}
 
 	public boolean isLocal(String k) {
-		resolveTime.start();
-		boolean ret = membership.myGroups().contains(resolve(k));
-		resolveTime.stop();
-		return ret;
-	}
-
-	@Deprecated
-	public boolean isTrueLocal(String k) {
 		resolveTime.start();
 		boolean ret = membership.myGroups().contains(resolve(k));
 		resolveTime.stop();

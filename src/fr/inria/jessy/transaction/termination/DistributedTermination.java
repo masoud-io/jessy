@@ -197,15 +197,11 @@ public class DistributedTermination implements Learner, Runnable {
 					if (ConsistencyFactory.getConsistency().hasConflict(
 							terminateRequestMessage.getExecutionHistory(),
 							processingMessage.getExecutionHistory())) {
-						try {
-							synchronized (processingMessage) {
-								processingMessage.wait();
-							}
-							itr = processingMessages.values().iterator();
-							continue;
-						} catch (InterruptedException e) {
-							e.printStackTrace();
+						synchronized (processingMessage) {
+							processingMessage.wait();
 						}
+						itr = processingMessages.values().iterator();
+						continue;
 					}
 				}
 				processingMessages.put(terminateRequestMessage
@@ -394,7 +390,7 @@ public class DistributedTermination implements Learner, Runnable {
 			}
 
 			destGroups.addAll(jessy.partitioner
-					.resolveToGroupNames(concernedKeys));
+					.resolveNames(concernedKeys));
 
 			/*
 			 * if this process will receive this transaction through atomic
@@ -481,7 +477,7 @@ public class DistributedTermination implements Learner, Runnable {
 					 * modified inside the transaction</i>.
 					 */
 					Set<String> dest = jessy.partitioner
-							.resolveToGroupNames(msg.getExecutionHistory()
+							.resolveNames(msg.getExecutionHistory()
 									.getWriteSet().getKeys());
 					voteStream.multicast(new VoteMessage(new Vote(msg
 							.getExecutionHistory().getTransactionHandler(),

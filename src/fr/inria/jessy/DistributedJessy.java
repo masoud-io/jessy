@@ -23,6 +23,7 @@ import com.yahoo.ycsb.YCSBEntity;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
@@ -69,7 +70,7 @@ public class DistributedJessy extends Jessy {
 			fractal = FractalManager.getInstance();
 			fractal.loadFile(fractalFile);
 			membership = fractal.membership;
-			membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP, ConstantPool.JESSY_SERVER_PORT, ConstantPool.REPLICATION_FACTOR);
+			membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP, ConstantPool.JESSY_SERVER_PORT, ConstantPool.GROUP_SIZE);
 			membership.loadIdenitity(null);
 			// membership.loadIdenitity("192.168.1.2");
 			Group replicaGroup =  ! membership.myGroups().isEmpty() ? membership.myGroups().iterator().next() : null; // this node is a server ?
@@ -90,7 +91,7 @@ public class DistributedJessy extends Jessy {
 						
 			logger.getRoot().setLevel(Level.INFO);
 			// PROVIDE REMOTE ACCESS FOR THOSE METHODS.
-			partitioner.assign("user##########",Partitioner.Distribution.UNIFORM);
+			partitioner.assign("user##########",Keyspace.Distribution.UNIFORM);
 			addEntity(YCSBEntity.class);
 
 		} catch (Exception ex) {

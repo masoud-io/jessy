@@ -8,6 +8,7 @@ import java.util.UUID;
 import fr.inria.jessy.ConstantPool;
 
 public class ReadReply<E extends JessyEntity> implements Serializable {
+	
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	UUID readRequestId;
@@ -33,8 +34,9 @@ public class ReadReply<E extends JessyEntity> implements Serializable {
 	}
 
 	public synchronized void mergeReply(ReadReply<E> readReply) {
-		if (this.readRequestId.equals(readReply.getReadRequestId()))
-			entities.addAll(readReply.getEntity());
+		if ( !this.readRequestId.equals(readReply.getReadRequestId()) )
+			throw new IllegalArgumentException("Invalid requestId");
+		entities.addAll(readReply.getEntity());
 	}
 
 }

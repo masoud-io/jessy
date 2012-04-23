@@ -15,7 +15,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.DistributedJessy;
-import fr.inria.jessy.Partitioner;
 import fr.inria.jessy.distributed.nmsi.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.distributed.nmsi.transaction.SampleTransactionMultiObj1;
 import fr.inria.jessy.distributed.nmsi.transaction.SampleTransactionMultiObj2;
@@ -23,6 +22,7 @@ import fr.inria.jessy.distributed.nmsi.transaction.SampleTransactionMultiObj3;
 import fr.inria.jessy.distributed.nmsi.transaction.SampleTransactionMultiObj4;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
+import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
 
@@ -68,7 +68,7 @@ public class MultiObjNMSITest extends TestCase {
 		jessy.addEntity(SampleEntityClass.class);
 		jessy.addEntity(Sample2EntityClass.class);
 
-		jessy.partitioner.assign(SampleEntityClass.pattern, Partitioner.Distribution.UNIFORM );
+		jessy.partitioner.assign(SampleEntityClass.pattern, Keyspace.Distribution.UNIFORM );
 	}
 
 	/**

@@ -21,14 +21,15 @@ import fr.inria.jessy.vector.VectorFactory;
  *         {@link String}
  */
 
+// FIXME transient removed field ?
+
 @Persistent
 public abstract class JessyEntity implements Serializable{
 	
-	
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-	// FIXME transient ?
 	private Vector<String> localVector;  
+	private Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
 	transient private boolean removed = false;
 
 	public boolean isRemovoed() {
@@ -90,6 +91,14 @@ public abstract class JessyEntity implements Serializable{
 		this.localVector = localVector;
 	}
 
+	public void setKeySpace(Keyspace ks){
+		keyspace = ks;
+	}
+	
+	public Keyspace getKeySpace(){
+		return keyspace;
+	}
+	
 	public abstract String getKey();
-
+	
 }

@@ -20,6 +20,6 @@ public class ConstantPool {
 	public static final int JESSY_ALL_PORT = 4479;
 	public static final String JESSY_SERVER_GROUP = "JSERV";
 	public static final int JESSY_SERVER_PORT = 4480;
-	static final int REPLICATION_FACTOR = 1;
+	static final int GROUP_SIZE = 1;
 	
 }

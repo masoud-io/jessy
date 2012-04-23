@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import net.sourceforge.fractal.membership.Membership;
 
-import static fr.inria.jessy.Partitioner.Distribution.UNIFORM;
+import static fr.inria.jessy.store.Keyspace.Distribution.UNIFORM;
 
 public class PartitionerTest {
 
@@ -21,7 +21,7 @@ public class PartitionerTest {
 		membership.dispatchPeers(
 				ConstantPool.JESSY_SERVER_GROUP,
 				ConstantPool.JESSY_SERVER_PORT,
-				ConstantPool.REPLICATION_FACTOR);
+				ConstantPool.GROUP_SIZE);
 		partitioner = new Partitioner(membership);
 	}
 	
