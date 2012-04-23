@@ -133,14 +133,10 @@ public class EntitySet implements Serializable {
 		Iterator<? extends JessyEntity> itr = getEntities().iterator();
 		while (itr.hasNext()) {
 			JessyEntity temp = itr.next();
-			result = temp.getKey() + "--" + temp.getLocalVector() + "\n";
+			result = result + "--" + temp.getLocalVector() ;
 		}
 
 		return result;
-	}
-
-	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> getEntitiesMap() {
-		return entities;
 	}
 
 	// FIXME Performance Bottleneck. There are so many loops here.

@@ -92,11 +92,16 @@ public abstract class Jessy {
 		return dataStore;
 	}
 
-	protected ExecutionHistory getExecutionHistory(
+	public ExecutionHistory getExecutionHistory(
 			TransactionHandler transactionHandler) {
 		return handler2executionHistory.get(transactionHandler);
 	}
 
+	public void setExecutionHistory(
+			ExecutionHistory executionHistory) {
+		handler2executionHistory.put(executionHistory.getTransactionHandler(), executionHistory);
+	}
+	
 	public JessyEntity getLastCommittedEntity(String key) {
 		return lastCommittedEntities.get(key);
 	}
@@ -463,57 +468,33 @@ public abstract class Jessy {
 		return executionHistory;
 	}
 
-	/**
-	 * Apply changes of a writeSet of a committed transaction to the datastore.
-	 * 
-	 * @param transactionHandler
-	 *            handler of a committed transaction.
-	 */
-	protected void applyWriteSet(TransactionHandler transactionHandler) {
-		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
 
-		Iterator<? extends JessyEntity> itr = executionHistory.getWriteSet()
-				.getEntities().iterator();
-
-		while (itr.hasNext()) {
-			JessyEntity tmp = itr.next();
-
-			// Send the entity to the datastore to be saved
-			dataStore.put(tmp);
-
-			// Store the entity as the last committed entity for this particular
-			// key.
-			lastCommittedEntities.put(tmp.getKey(), tmp);
-
-		}
-	}
-
-	/**
-	 * Apply changes of a createSet of a committed transaction to the datastore.
-	 * 
-	 * @param transactionHandler
-	 *            handler of a committed transaction.
-	 */
-	protected void applyCreateSet(TransactionHandler transactionHandler) {
-		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
-
-		Iterator<? extends JessyEntity> itr = executionHistory.getCreateSet()
-				.getEntities().iterator();
-
-		while (itr.hasNext()) {
-			JessyEntity tmp = itr.next();
-
-			// Send the entity to the datastore to be saved
-			dataStore.put(tmp);
-
-			// Store the entity as the last committed entity for this particular
-			// key.
-			lastCommittedEntities.put(tmp.getKey(), tmp);
-
-		}
-	}
+	// /**
+	// * Apply changes of a createSet of a committed transaction to the
+	// datastore.
+	// *
+	// * @param transactionHandler
+	// * handler of a committed transaction.
+	// */
+	// protected void applyCreateSet(TransactionHandler transactionHandler) {
+	// ExecutionHistory executionHistory = handler2executionHistory
+	// .get(transactionHandler);
+	//
+	// Iterator<? extends JessyEntity> itr = executionHistory.getCreateSet()
+	// .getEntities().iterator();
+	//
+	// while (itr.hasNext()) {
+	// JessyEntity tmp = itr.next();
+	//
+	// // Send the entity to the datastore to be saved
+	// dataStore.put(tmp);
+	//
+	// // Store the entity as the last committed entity for this particular
+	// // key.
+	// lastCommittedEntities.put(tmp.getKey(), tmp);
+	//
+	// }
+	// }
 
 	/**
 	 * Executes a non-transactional read on local datastore. This read is
@@ -565,12 +546,12 @@ public abstract class Jessy {
 	protected abstract <E extends JessyEntity> void performNonTransactionalWrite(
 			E entity) throws InterruptedException, ExecutionException;
 
-	public void garbageCollectTransaction(
-			TransactionHandler transactionHandler) {
+	public void garbageCollectTransaction(TransactionHandler transactionHandler) {
 		handler2executionHistory.remove(transactionHandler);
 	}
 
 	public ConcurrentMap<String, JessyEntity> getLastCommittedEntities() {
+		System.out.println(lastCommittedEntities);
 		return lastCommittedEntities;
 	}
 
@@ -585,14 +566,14 @@ public abstract class Jessy {
 		dataStore.close();
 	}
 
-	//TODO
-	public void open() {		
+	// TODO
+	public void open() {
 	}
-	
-	public void prepareReExecution(TransactionHandler transactionHandler){
+
+	public void prepareReExecution(TransactionHandler transactionHandler) {
 
 		abortedTransactions.remove(transactionHandler);
 		handler2executionHistory.get(transactionHandler).cleanForReExecution();
-		
+
 	}
 }

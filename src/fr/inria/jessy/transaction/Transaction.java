@@ -19,6 +19,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	private TransactionHandler transactionHandler;
 
 	// TODO read from config file
+	//TODO Test me
 	private boolean retryCommitOnAbort = true;
 
 	public Transaction(Jessy jessy) throws Exception {
@@ -82,5 +83,15 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public ExecutionHistory call() {
 		return execute();
 	}
+
+	public boolean isRetryCommitOnAbort() {
+		return retryCommitOnAbort;
+	}
+
+	public void setRetryCommitOnAbort(boolean retryCommitOnAbort) {
+		this.retryCommitOnAbort = retryCommitOnAbort;
+	}
+	
+	
 
 }

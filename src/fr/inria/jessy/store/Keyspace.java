@@ -1,11 +1,14 @@
 package fr.inria.jessy.store;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.sleepycat.persist.model.Persistent;
+
+import fr.inria.jessy.ConstantPool;
 
 /**
  * A keyspace definition matches the following regex: ([:xdigit:]*#)* 
@@ -24,8 +27,10 @@ import com.sleepycat.persist.model.Persistent;
  */
 
 @Persistent
-public class Keyspace {
+public class Keyspace implements Serializable{
 
+	private static final long serialVersionUID = ConstantPool.JESSY_MID;
+	
 	public static Keyspace DEFAULT_KEYSPACE= 
 		new Keyspace(
 				"00000000000000000000000000000000" 

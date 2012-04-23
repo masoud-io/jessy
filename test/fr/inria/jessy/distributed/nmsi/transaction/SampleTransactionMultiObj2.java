@@ -25,7 +25,7 @@ public class SampleTransactionMultiObj2 extends Transaction {
 			se.setData("Second Trans");
 			write(se);
 			
-			Thread.sleep(3000);
+			Thread.sleep(4000);
 			
 			return commitTransaction();			
 		} catch (Exception ex) {

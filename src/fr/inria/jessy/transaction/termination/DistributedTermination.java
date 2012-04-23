@@ -27,6 +27,8 @@ import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 
 import org.apache.log4j.Logger;
 
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.consistency.ConsistencyFactory;
@@ -389,8 +391,7 @@ public class DistributedTermination implements Learner, Runnable {
 						TransactionState.COMMITTED, null);
 			}
 
-			destGroups.addAll(jessy.partitioner
-					.resolveNames(concernedKeys));
+			destGroups.addAll(jessy.partitioner.resolveNames(concernedKeys));
 
 			/*
 			 * if this process will receive this transaction through atomic
@@ -458,6 +459,8 @@ public class DistributedTermination implements Learner, Runnable {
 								jessy.getLastCommittedEntities(),
 								msg.getExecutionHistory());
 
+				jessy.setExecutionHistory(msg.getExecutionHistory());
+
 				/*
 				 * If it holds all keys, it can decide <i>locally</i> according
 				 * to the value of <@code certified>.
@@ -476,9 +479,8 @@ public class DistributedTermination implements Learner, Runnable {
 					 * out the votes to all replicas <i>that replicate objects
 					 * modified inside the transaction</i>.
 					 */
-					Set<String> dest = jessy.partitioner
-							.resolveNames(msg.getExecutionHistory()
-									.getWriteSet().getKeys());
+					Set<String> dest = jessy.partitioner.resolveNames(msg
+							.getExecutionHistory().getWriteSet().getKeys());
 					voteStream.multicast(new VoteMessage(new Vote(msg
 							.getExecutionHistory().getTransactionHandler(),
 							certified, group.name(), msg.gDest), dest, group
