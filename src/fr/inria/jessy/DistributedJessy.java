@@ -17,6 +17,8 @@ import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import com.yahoo.ycsb.YCSBEntity;
+
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 import fr.inria.jessy.store.JessyEntity;
@@ -81,7 +83,7 @@ public class DistributedJessy extends Jessy {
 			fractal.start();
 
 			if (replicaGroup != null) {
-				logger.info("Server mode");
+				logger.info("Server mode ("+replicaGroup+")");
 				distributedTermination = new DistributedTermination(this,
 						replicaGroup);
 			} else {
@@ -92,6 +94,11 @@ public class DistributedJessy extends Jessy {
 
 			remoteReader = new RemoteReader(this, allGroup);
 			partitioner = new Partitioner(membership);
+			
+			// FIXME
+			super.addEntity(YCSBEntity.class);
+			partitioner.assign(YCSBEntity.keyspace);
+			// TODO for TPCC classes.
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -107,13 +114,6 @@ public class DistributedJessy extends Jessy {
 			}
 		}
 		return distributedJessy;
-	}
-	
-	@Override
-	public <E extends JessyEntity> void addEntity(Class<E> entityClass)
-	throws Exception {
-		super.addEntity(entityClass);
-		partitioner.assign(E.keyspace);
 	}
 
 	@Override
@@ -232,19 +232,10 @@ public class DistributedJessy extends Jessy {
 	@Override
 	public void open() {
 		logger.info("Jessy is opened.");
-		super.open();
 	}
 
 	public void close(Object object) {
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		super.close(object);
 		logger.info("Jessy is closed.");
-		FractalManager.getInstance().stop();
 	}
 
 	/**

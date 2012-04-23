@@ -78,7 +78,7 @@ public class Partitioner {
 	 * @param a
 	 *            distribution
 	 */
-	<E extends JessyEntity> void assign(Keyspace keyspace)
+	public synchronized <E extends JessyEntity> void assign(Keyspace keyspace)
 			throws IllegalArgumentException {
 		
 		if(keyspace==null)
@@ -132,12 +132,14 @@ public class Partitioner {
 				assert g2rk.containsKey(g);
 				g2rk.get(g).add(rootkey);
 				rk2g.put(rootkey,g);
-				logger.debug("ROOTKEY "+rootkey+" FOR "+g);
+				logger.debug("assigning rootkey "+rootkey+" to"+g);
 			}
 			
 		} else {
 			throw new RuntimeException("NIY");
 		}
+		
+		
 
 	}
 
@@ -147,20 +149,21 @@ public class Partitioner {
 	 * @param k a key
 	 * @return the replica group of <i>k</i>.
 	 */
-	public Group resolve(String k) {
-		Group ret = rk2g.get(closestRootkeyOf(k));
+	public synchronized Group resolve(String k) {
+		String closest = closestRootkeyOf(k);
+		Group ret = rk2g.get(closest);
 		assert ret!=null;
 		return ret;
 	}
 
 
-	public <E extends JessyEntity> Set<Group> resolve(ReadRequest<E> readRequest) {		
+	public synchronized <E extends JessyEntity> Set<Group> resolve(ReadRequest<E> readRequest) {		
 		Set<Group> ret = new HashSet<Group>();
 		ret.add(rk2g.get(closestRootkeyOf(readRequest.getPartitioningKey())));
 		return ret;
 	}
 
-	public Set<Group> resolve(Set<String> keys){
+	public synchronized Set<Group> resolve(Set<String> keys){
 		Set<Group> ret = new HashSet<Group>();
 		for(String key : keys){
 			ret.add(resolve(key));
@@ -168,7 +171,7 @@ public class Partitioner {
 		return ret;
 	}
 	
-	public Set<String> resolveNames(Set<String> keys) {
+	public synchronized Set<String> resolveNames(Set<String> keys) {
 		Set<String> results = new HashSet<String>();
 		for (String key : keys) {
 			results.add(rk2g.get(closestRootkeyOf(key)).name());
@@ -176,9 +179,10 @@ public class Partitioner {
 		return results;
 	}
 
-	public boolean isLocal(String k) {
+	public synchronized boolean isLocal(String k) {
 		resolveTime.start();
 		boolean ret = membership.myGroups().contains(resolve(k));
+		logger.debug("is local "+k+" ? "+ret);
 		resolveTime.stop();
 		return ret;
 	}
@@ -204,6 +208,7 @@ public class Partitioner {
 			}
 		}
 		assert closest != null;
+		logger.debug("closest key to "+k+" is "+closest+" ("+rk2g.get(closest)+")");
 		return closest;
 	}
 

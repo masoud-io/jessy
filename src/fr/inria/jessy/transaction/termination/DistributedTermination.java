@@ -6,6 +6,7 @@ import static fr.inria.jessy.transaction.TransactionState.COMMITTED;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -153,7 +154,6 @@ public class DistributedTermination implements Learner, Runnable {
 				handleTerminationResult(null,
 						replyMessage.getTerminationResult());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -262,6 +262,9 @@ public class DistributedTermination implements Learner, Runnable {
 		logger.debug("handling termination result for "
 				+ terminationResult.getTransactionHandler().getId());
 
+		if(terminated.contains(terminationResult.getTransactionHandler()))
+			return;
+		
 		HashSet<String> cordinatorGroup = new HashSet<String>();
 		cordinatorGroup.add(coordinatorGroups.get(terminationResult
 				.getTransactionHandler()));
@@ -344,15 +347,19 @@ public class DistributedTermination implements Learner, Runnable {
 	 *            The transactionHandler to be garbage collected.
 	 */
 	private void garbageCollect(TransactionHandler transactionHandler) {
+		
 		/*
 		 * Upon removing the transaction from {@code processingMessages}, it
 		 * notifies the main thread to process waiting messages again.
 		 */
-		TerminateTransactionRequestMessage terminatedMessage = processingMessages
-				.get(transactionHandler);
-		processingMessages.remove(transactionHandler);
-		synchronized (terminatedMessage) {
-			terminatedMessage.notify();
+		if(processingMessages.containsKey(transactionHandler)){
+			TerminateTransactionRequestMessage terminatedMessage = processingMessages
+			.get(transactionHandler);
+
+			processingMessages.remove(transactionHandler);
+			synchronized (terminatedMessage) {
+				terminatedMessage.notify();
+			}
 		}
 
 		terminated.add(transactionHandler);
@@ -481,11 +488,19 @@ public class DistributedTermination implements Learner, Runnable {
 					 */
 					Set<String> dest = jessy.partitioner.resolveNames(msg
 							.getExecutionHistory().getWriteSet().getKeys());
-					voteStream.multicast(new VoteMessage(new Vote(msg
+					
+					Vote vote= new Vote(msg
 							.getExecutionHistory().getTransactionHandler(),
-							certified, group.name(), msg.gDest), dest, group
+							certified, group.name(), msg.gDest);
+					voteStream.multicast(new VoteMessage(vote, dest, group
 							.name(), membership.myId()));
+					addVote(vote);
 
+					logger.debug("voting quorum for "+msg.getExecutionHistory().getTransactionHandler());
+					logger.debug("result is "+ votingQuorums.get(
+								msg.getExecutionHistory().getTransactionHandler())
+								.getTerminationResult());
+					
 					TransactionState state = votingQuorums.get(
 							msg.getExecutionHistory().getTransactionHandler())
 							.getTerminationResult();

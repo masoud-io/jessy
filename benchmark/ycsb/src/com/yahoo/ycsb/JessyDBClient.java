@@ -20,7 +20,6 @@ import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.LocalJessy;
-import fr.inria.jessy.Partitioner;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;

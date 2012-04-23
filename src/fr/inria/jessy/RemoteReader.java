@@ -160,7 +160,7 @@ public class RemoteReader implements Learner {
 
 		public ReadReply<E> call() throws Exception {
 			ReadRequest<E> request = message.getReadRequest();
-			logger.debug("asnswering to" + message.source + " for "
+			logger.debug("asnswering to " + message.source + " for "
 					+ request.getReadRequestId());
 			ReadReply<E> readReply = jessy.getDataStore().get(request);
 			remoteReadStream.unicast(new RemoteReadReplyMessage<E>(readReply),
