@@ -14,16 +14,12 @@ import net.sourceforge.fractal.utils.PerformanceProbe;
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-
-import com.yahoo.ycsb.YCSBEntity;
 
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
@@ -72,7 +68,6 @@ public class DistributedJessy extends Jessy {
 			membership = fractal.membership;
 			membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP, ConstantPool.JESSY_SERVER_PORT, ConstantPool.GROUP_SIZE);
 			membership.loadIdenitity(null);
-			// membership.loadIdenitity("192.168.1.2");
 			Group replicaGroup =  ! membership.myGroups().isEmpty() ? membership.myGroups().iterator().next() : null; // this node is a server ?
 			Group allGroup  = fractal.membership.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_ALL_GROUP, ConstantPool.JESSY_ALL_PORT);
 			allGroup.putNodes(fractal.membership.allNodes());			
@@ -88,11 +83,6 @@ public class DistributedJessy extends Jessy {
 			
 			remoteReader = new RemoteReader(this,allGroup);
 			partitioner = new Partitioner(membership);
-						
-			logger.getRoot().setLevel(Level.INFO);
-			// PROVIDE REMOTE ACCESS FOR THOSE METHODS.
-			partitioner.assign("user##########",Keyspace.Distribution.UNIFORM);
-			addEntity(YCSBEntity.class);
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -108,6 +98,13 @@ public class DistributedJessy extends Jessy {
 			}
 		}
 		return distributedJessy;
+	}
+	
+	@Override
+	public <E extends JessyEntity> void addEntity(Class<E> entityClass)
+	throws Exception {
+		super.addEntity(entityClass);
+		partitioner.assign(E.keyspace);
 	}
 
 	@Override
@@ -142,7 +139,6 @@ public class DistributedJessy extends Jessy {
 			Class<E> entityClass, List<ReadRequestKey<?>> keys,
 			CompactVector<String> readSet) throws InterruptedException,
 			ExecutionException {
-		
 		
 		readRequestTime.start();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,

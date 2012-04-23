@@ -28,8 +28,9 @@ public abstract class JessyEntity implements Serializable{
 	
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
+	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
+	
 	private Vector<String> localVector;  
-	private Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
 	transient private boolean removed = false;
 
 	public boolean isRemovoed() {

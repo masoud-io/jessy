@@ -1,14 +1,9 @@
 package fr.inria.jessy.entity;
 
 import com.sleepycat.persist.model.Entity;
-import com.sleepycat.persist.model.PrimaryKey;
-import static com.sleepycat.persist.model.Relationship.*;
 
-import com.sleepycat.persist.model.SecondaryKey;
-
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.vector.DependenceVector;
-import fr.inria.jessy.vector.Vector;
 
 /**
  * @author Masoud Saeida Ardekani
@@ -17,9 +12,9 @@ import fr.inria.jessy.vector.Vector;
 
 @Entity
 public class SampleEntityClass extends JessyEntity {
-
-	public static String pattern="#";
 	
+	private static final long serialVersionUID = ConstantPool.JESSY_MID;
+
 	public SampleEntityClass() {
 		super("", "");
 	}

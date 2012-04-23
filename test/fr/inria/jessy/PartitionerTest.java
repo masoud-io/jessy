@@ -3,6 +3,8 @@ package fr.inria.jessy;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.inria.jessy.store.Keyspace;
+
 import net.sourceforge.fractal.membership.Membership;
 
 import static fr.inria.jessy.store.Keyspace.Distribution.UNIFORM;
@@ -27,15 +29,15 @@ public class PartitionerTest {
 	
 	@Test
 	public void assignement(){
-		partitioner.assign("test#for###the######fun",UNIFORM);
+		partitioner.assign(new Keyspace("test#for###the######fun",UNIFORM));
 	}
 	
 	@Test
 	public void resolution(){
-		partitioner.assign("abc##",UNIFORM);
-		assert partitioner.resolve("abc90").name().equals("3");
-		partitioner.assign("#",UNIFORM);
-		assert partitioner.resolve("0").name().equals("0");
+		partitioner.assign(new Keyspace("abc##",UNIFORM));
+		assert partitioner.resolve("abc90").name().equals(ConstantPool.JESSY_SERVER_GROUP+"3");
+		partitioner.assign(new Keyspace("#",UNIFORM));
+		assert partitioner.resolve("0").name().equals(ConstantPool.JESSY_SERVER_GROUP+"0");
 	}
 	
 	
