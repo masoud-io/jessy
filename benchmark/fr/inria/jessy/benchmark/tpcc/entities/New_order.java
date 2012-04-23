@@ -67,11 +67,6 @@ public class New_order extends JessyEntity {
 		this.NO_W_ID = NO_W_ID;
 	}
 
-	@Override
-	public String getKey() {
-		return Customer.class.toString() + this.getSecondaryKey();
-	}
-
 }
 
 

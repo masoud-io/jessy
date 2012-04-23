@@ -275,7 +275,7 @@ public class DistributedTermination implements Learner, Runnable {
 				&& executionHistory != null) {
 			boolean hasLocal = false;
 			for (JessyEntity e : executionHistory.getWriteSet().getEntities()) {
-				if (jessy.partitioner.isLocal(e.getSecondaryKey())) {
+				if (jessy.partitioner.isLocal(e.getKey())) {
 					try {
 						hasLocal = true;
 						jessy.performNonTransactionalLocalWrite(e);
@@ -285,7 +285,7 @@ public class DistributedTermination implements Learner, Runnable {
 				}
 			}
 			for (JessyEntity e : executionHistory.getCreateSet().getEntities()) {
-				if (jessy.partitioner.isLocal(e.getSecondaryKey())) {
+				if (jessy.partitioner.isLocal(e.getKey())) {
 					try {
 						hasLocal = true;
 						jessy.performNonTransactionalLocalWrite(e);

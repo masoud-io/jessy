@@ -58,10 +58,6 @@ public class YCSBEntity extends JessyEntity{
 		return fields.get(fieldName);
 	}
 
-	/* Get the key of the Entity */
-	public String getKey() {
-		return YCSBEntity.class.toString() + this.getSecondaryKey();
-	}
 	/*Delete field*/
 	public void remove (String key) {
 		fields.remove(key);

@@ -241,14 +241,5 @@ public class Customer extends JessyEntity {
 		this.C_DATA = C_DATA;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see fr.inria.jessy.store.JessyEntity#getKey()
-	 */
-	@Override
-	public String getKey() {
-		return Customer.class.toString() + this.getSecondaryKey();
-	}
 
 }

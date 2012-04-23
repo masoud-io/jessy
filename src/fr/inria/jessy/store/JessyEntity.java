@@ -7,6 +7,7 @@ import java.io.Serializable;
 import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.SecondaryKey;
+import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
@@ -24,13 +25,13 @@ import fr.inria.jessy.vector.VectorFactory;
 // FIXME transient removed field ?
 
 @Persistent
-public abstract class JessyEntity implements Serializable{
-	
+public abstract class JessyEntity implements Serializable {
+
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
-	
-	private Vector<String> localVector;  
+
+	private Vector<String> localVector;
 	transient private boolean removed = false;
 
 	public boolean isRemovoed() {
@@ -52,35 +53,30 @@ public abstract class JessyEntity implements Serializable{
 
 	public JessyEntity(String entityClassName, String entityId) {
 		localVector = VectorFactory.getVector(entityClassName + entityId);
-		this.secondaryKey=entityId;
+		this.secondaryKey = entityId;
 	}
 
 	@PrimaryKey(sequence = "Jessy_Sequence")
-	private  Long primaryKey;
+	private Long primaryKey;
 
 	@SecondaryKey(relate = MANY_TO_ONE)
 	private String secondaryKey;
 
 	/**
-	 * @return the primaryKey
-	 */
-	public Long getPrimaryKey() {
-		return primaryKey;
-	}
-
-	/**
 	 * @param primaryKey
 	 *            the primaryKey to set
 	 */
+	@Deprecated
 	public void setPrimaryKey(Long primaryKey) {
 		this.primaryKey = primaryKey;
 	}
 
 	/**
 	 * This key is also the partitioning key.
+	 * 
 	 * @return
 	 */
-	public String getSecondaryKey() {
+	public String getKey() {
 		return secondaryKey;
 	}
 
@@ -95,7 +91,4 @@ public abstract class JessyEntity implements Serializable{
 	public void setLocalVector(Vector<String> localVector) {
 		this.localVector = localVector;
 	}
-
-	public abstract String getKey();
-	
 }

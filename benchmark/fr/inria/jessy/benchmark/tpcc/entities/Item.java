@@ -86,9 +86,5 @@ public class Item extends JessyEntity {
 		this.I_DATA = I_DATA;
 	}
 
-	@Override
-	public String getKey() {
-		return Customer.class.toString() + this.getSecondaryKey();
-	}
 
 }

@@ -132,9 +132,4 @@ public class Order_line extends JessyEntity {
 		this.OL_DIST_INFO = OL_DIST_INFO;
 	}
 
-	@Override
-	public String getKey() {
-		return Customer.class.toString() + this.getSecondaryKey();
-	}
-
 }

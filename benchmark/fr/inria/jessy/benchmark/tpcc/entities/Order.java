@@ -112,9 +112,4 @@ public class Order extends JessyEntity {
 		this.O_ALL_LOCAL = O_ALL_LOCAL;
 	}
 
-	@Override
-	public String getKey() {
-		return Customer.class.toString() + this.getSecondaryKey();
-	}
-
 }

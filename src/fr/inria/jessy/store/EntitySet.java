@@ -64,7 +64,7 @@ public class EntitySet implements Serializable {
 
 		ConcurrentMap<String, E> temp = (ConcurrentMap<String, E>) entities
 				.get(entity.getClass().toString());
-		temp.put(entity.getSecondaryKey(), entity);
+		temp.put(entity.getKey(), entity);
 
 		entities.put(entity.getClass().toString(), temp);
 	}
@@ -76,7 +76,7 @@ public class EntitySet implements Serializable {
 
 			ConcurrentMap<String, E> temp = (ConcurrentMap<String, E>) entities
 					.get(entity.getClass().toString());
-			temp.put(entity.getSecondaryKey(), entity);
+			temp.put(entity.getKey(), entity);
 
 			entities.put(entity.getClass().toString(), temp);
 		}

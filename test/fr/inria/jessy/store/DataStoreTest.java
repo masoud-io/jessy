@@ -105,7 +105,7 @@ public class DataStoreTest extends TestCase {
 		ReadRequest<SampleEntityClass> readRequest = new ReadRequest<SampleEntityClass>(
 				SampleEntityClass.class, "secondaryKey", "0", null);
 		ReadReply<SampleEntityClass> reply = dsGet.get(readRequest);
-		assertEquals("Result", "0", reply.getEntity().iterator().next().getSecondaryKey());
+		assertEquals("Result", "0", reply.getEntity().iterator().next().getKey());
 
 		boolean deleteResult = dsGet.delete(SampleEntityClass.class,
 				"secondaryKey", "" + 0);

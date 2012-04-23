@@ -44,12 +44,7 @@ public class Sample2EntityClass extends JessyEntity{
 	public void setData(String data) {
 		this.data = data;
 	}
-
-	@Override
-	public String getKey() {		
-		return Sample2EntityClass.class.toString() + this.getSecondaryKey();
-	}
-
+ 
   
 
 }

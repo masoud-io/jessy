@@ -165,7 +165,7 @@ public abstract class Jessy {
 	 * written a new value previously, it returns that value, otherwise, it
 	 * calls the {@link Jessy#performRead(Class, String, Object, List)} method.
 	 * <p>
-	 * This read is performed on {@link JessyEntity#getSecondaryKey()}
+	 * This read is performed on {@link JessyEntity#getKey()}
 	 * 
 	 * @param <E>
 	 *            Type of the entity to read the value from.
@@ -221,7 +221,7 @@ public abstract class Jessy {
 	 * {@link Jessy#performRead(Class, String, Object, List)} method to read the
 	 * data.
 	 * <p>
-	 * This read is performed on {@link JessyEntity#getSecondaryKey()}
+	 * This read is performed on {@link JessyEntity#getKey()}
 	 * 
 	 * @param <E>
 	 *            The Type of the entity to read the value from.
@@ -386,11 +386,11 @@ public abstract class Jessy {
 			// TODO make this conditional according to user definition! (if
 			// disabled, performance gain)
 			JessyEntity tmp = executionHistory.getReadEntity(entity.getClass(),
-					entity.getSecondaryKey());
+					entity.getKey());
 			if (tmp == null) {
 				// the opeation is a blind write! First issue a read operation.
 				try {
-					read(entity.getClass(), entity.getSecondaryKey());
+					read(entity.getClass(), entity.getKey());
 				} catch (Exception e) {
 					// if this is a first write opeation, then it comes here!
 				}
@@ -498,7 +498,7 @@ public abstract class Jessy {
 
 	/**
 	 * Executes a non-transactional read on local datastore. This read is
-	 * performed on {@link JessyEntity#getSecondaryKey()}
+	 * performed on {@link JessyEntity#getKey()}
 	 * 
 	 * @param <E>
 	 *            The Type of the entity to read the value from.
@@ -523,7 +523,7 @@ public abstract class Jessy {
 	/**
 	 * Executes a non-transactional write. Write the entity into the local
 	 * datastore This write is performed on
-	 * {@link JessyEntity#getSecondaryKey()}
+	 * {@link JessyEntity#getKey()}
 	 * 
 	 * @param <E>
 	 *            Type of the entity to read the value from.
@@ -551,7 +551,6 @@ public abstract class Jessy {
 	}
 
 	public ConcurrentMap<String, JessyEntity> getLastCommittedEntities() {
-		System.out.println(lastCommittedEntities);
 		return lastCommittedEntities;
 	}
 

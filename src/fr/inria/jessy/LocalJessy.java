@@ -129,7 +129,7 @@ public class LocalJessy extends Jessy {
 	@Override
 	public <E extends JessyEntity> void performNonTransactionalWrite(E entity) {
 		dataStore.put(entity);
-		lastCommittedEntities.put(entity.getKey(), entity);
+//		lastCommittedEntities.put(entity.getKey(), entity);
 	}
 
 	public synchronized void close(Object object) throws DatabaseException {

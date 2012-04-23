@@ -48,7 +48,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	}
 
 	public <E extends JessyEntity> void create(E entity) {
-		logger.info("Entity is created. >>" + entity.getSecondaryKey());
+		logger.info("Entity is created. >>" + entity.getKey());
 		jessy.create(transactionHandler, entity);
 	}
 

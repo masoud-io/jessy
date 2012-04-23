@@ -114,11 +114,6 @@ public class History extends JessyEntity {
 		this.H_DATA = H_DATA;
 	}
 
-	@Override
-	public String getKey() {
-		return Customer.class.toString() + this.getSecondaryKey();
-	}
-
 }
 
 

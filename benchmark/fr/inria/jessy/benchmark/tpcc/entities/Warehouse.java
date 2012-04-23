@@ -111,8 +111,4 @@ public class Warehouse extends JessyEntity {
 		this.W_YTD = d;
 	}
 
-	@Override
-	public String getKey() {
-		return Customer.class.toString() + this.getSecondaryKey();
-	}
 }

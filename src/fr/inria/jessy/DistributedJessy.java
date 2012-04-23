@@ -181,7 +181,7 @@ public class DistributedJessy extends Jessy {
 		// entity.getSecondaryKey());
 		// performNonTransactionalLocalWrite(entity);
 		// } else {
-		logger.debug("Performing Remote Write for: " + entity.getSecondaryKey());
+		logger.debug("Performing Remote Write for: " + entity.getKey());
 		remoteCall.incr();
 		// 1 - Create a blind write transaction.
 		TransactionHandler transactionHandler = new TransactionHandler();

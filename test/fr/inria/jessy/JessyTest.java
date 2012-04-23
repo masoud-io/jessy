@@ -54,8 +54,8 @@ public class JessyTest {
 					SampleEntityClass.class, "1");
 			Sample2EntityClass sample2Entity = jessy.read(
 					Sample2EntityClass.class, "1");
-			assertEquals("Result", "1", sampleEntity.getSecondaryKey());
-			assertEquals("Result", "1", sample2Entity.getSecondaryKey());
+			assertEquals("Result", "1", sampleEntity.getKey());
+			assertEquals("Result", "1", sample2Entity.getKey());
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -73,7 +73,7 @@ public class JessyTest {
 			jessy.write(new SampleEntityClass("2", "sample entity"));
 			SampleEntityClass sampleEntity = jessy.read(
 					SampleEntityClass.class, "2");
-			assertEquals("Result", "2", sampleEntity.getSecondaryKey());
+			assertEquals("Result", "2", sampleEntity.getKey());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

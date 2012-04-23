@@ -193,10 +193,4 @@ public class Stock extends JessyEntity {
 		this.S_DATA = S_DATA;
 	}
 
-	@Override
-	public String getKey() {
-		return Customer.class.toString() + this.getSecondaryKey();
-	}
-
-
 }

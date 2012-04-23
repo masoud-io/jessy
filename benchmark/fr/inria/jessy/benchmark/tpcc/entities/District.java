@@ -141,8 +141,4 @@ public class District extends JessyEntity {
 		this.D_NEXT_O = D_NEXT_O;
 	}
 
-	@Override
-	public String getKey() {
-		return Customer.class.toString() + this.getSecondaryKey();
-	}
 }
