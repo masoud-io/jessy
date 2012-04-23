@@ -337,7 +337,7 @@ public class DataStore {
 
 			SecondaryIndex sindex;
 			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
-					.get(entityClass.getClass().getName());
+					.get(entityClass.getName());
 			EntityJoin<Long, E> entityJoin = new EntityJoin<Long, E>(pindex);
 
 			for (ReadRequestKey key : keys) {
