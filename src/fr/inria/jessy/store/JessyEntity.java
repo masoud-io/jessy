@@ -76,6 +76,10 @@ public abstract class JessyEntity implements Serializable{
 		this.primaryKey = primaryKey;
 	}
 
+	/**
+	 * This key is also the partitioning key.
+	 * @return
+	 */
 	public String getSecondaryKey() {
 		return secondaryKey;
 	}
@@ -92,14 +96,6 @@ public abstract class JessyEntity implements Serializable{
 		this.localVector = localVector;
 	}
 
-	public void setKeySpace(Keyspace ks){
-		keyspace = ks;
-	}
-	
-	public Keyspace getKeySpace(){
-		return keyspace;
-	}
-	
 	public abstract String getKey();
 	
 }

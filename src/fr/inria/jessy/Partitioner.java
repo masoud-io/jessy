@@ -78,7 +78,7 @@ public class Partitioner {
 	 * @param a
 	 *            distribution
 	 */
-	void assign(Keyspace keyspace)
+	<E extends JessyEntity> void assign(Keyspace keyspace)
 			throws IllegalArgumentException {
 		
 		if(keyspaces.contains(keyspace))
@@ -111,7 +111,9 @@ public class Partitioner {
 				double a = (double)i/(double)ngroups;
 				double b = Math.pow(10,nsharps);
 				range = new Double(Math.floor(a*b));
-				rs = String.format("%"+(nsharps==0 ? "" : "0"+nsharps)+"d", range.longValue());
+				rs = String.format(
+						"%"+(nsharps==0 ? "" : "0"+nsharps)+"d",
+						range.longValue());
 				rootkey = new String();
 				pos=0;
 				
