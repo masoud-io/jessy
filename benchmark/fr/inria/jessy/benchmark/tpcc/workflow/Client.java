@@ -17,7 +17,9 @@ public class Client {
 	Delivery delivery;
 	StockLevel stocklevel;
 	
-	int big = 0;        /* for the number of NewOrder and Payment transactions */ 
+	int quotient = 0;        /* for the number of NewOrder and Payment transactions */ 
+	int rest = 0;
+	int i,j;
 	
 	public void execute() {
 		
@@ -26,10 +28,11 @@ public class Client {
 		String s = reader.nextLine();
 		int number = (int)Integer.valueOf(s);
 		
-		big = 10*(number/23);
+		quotient = 10*(number/23);
+		rest = number%23;
 		
 		try {
-			for(int i=1; i<=big; i++) {
+			for(i=1; i<=quotient; i++) {
 				
 				System.out.println(i);
 				
@@ -39,8 +42,8 @@ public class Client {
 				payment();
 				System.out.println("Payment transaction committed");
 				
+				/* for decks */
 				if(i!=0 && i%10 == 0) {
-					System.out.println("in"+i);
 					
 					orderstatus();					
 					System.out.println("OrderStatus transaction committed");
@@ -50,6 +53,24 @@ public class Client {
 					
 					stocklevel();
 					System.out.println("StockLevel transaction committed");
+				}
+				
+				/* for the rest */
+				for(j=0; j<rest/2;j++) {
+					
+					System.out.println(j);
+					
+					neworder();
+					System.out.println("NewOrder transaction committed");
+					
+					payment();
+					System.out.println("Payment transaction committed");
+				}
+				
+				if(rest%2==1) {
+					System.out.println(j+1);
+					neworder();
+					System.out.println("NewOrder transaction committed");
 				}
 			}
 		} catch (Exception e) {
