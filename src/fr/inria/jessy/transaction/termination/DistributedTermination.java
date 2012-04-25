@@ -262,9 +262,13 @@ public class DistributedTermination implements Learner, Runnable {
 		logger.debug("handling termination result for "
 				+ terminationResult.getTransactionHandler().getId());
 
-		if(terminated.contains(terminationResult.getTransactionHandler()))
+		if (terminated.contains(terminationResult.getTransactionHandler())) {
+			logger.debug("Transaction "
+					+ terminationResult.getTransactionHandler().getId()
+					+ " already terminated!");
 			return;
-		
+		}
+
 		HashSet<String> cordinatorGroup = new HashSet<String>();
 		cordinatorGroup.add(coordinatorGroups.get(terminationResult
 				.getTransactionHandler()));
@@ -276,6 +280,8 @@ public class DistributedTermination implements Learner, Runnable {
 		 */
 		if (terminationResult.getTransactionState() == COMMITTED
 				&& executionHistory != null) {
+			logger.debug("Applying modified entities of committed transaction "
+					+ terminationResult.getTransactionHandler().getId());
 			boolean hasLocal = false;
 			for (JessyEntity e : executionHistory.getWriteSet().getEntities()) {
 				if (jessy.partitioner.isLocal(e.getKey())) {
@@ -328,7 +334,7 @@ public class DistributedTermination implements Learner, Runnable {
 					membership.myId());
 
 			logger.debug("send a terminateTransactionReplyMesssage for "
-					+ executionHistory.getTransactionHandler().getId());
+					+ executionHistory.getTransactionHandler().getId() + " to the coordinator");
 			terminationNotificationStream.unicast(replyMessage,
 					executionHistory.getCoordinator());
 
@@ -347,14 +353,14 @@ public class DistributedTermination implements Learner, Runnable {
 	 *            The transactionHandler to be garbage collected.
 	 */
 	private void garbageCollect(TransactionHandler transactionHandler) {
-		
+
 		/*
 		 * Upon removing the transaction from {@code processingMessages}, it
 		 * notifies the main thread to process waiting messages again.
 		 */
-		if(processingMessages.containsKey(transactionHandler)){
+		if (processingMessages.containsKey(transactionHandler)) {
 			TerminateTransactionRequestMessage terminatedMessage = processingMessages
-			.get(transactionHandler);
+					.get(transactionHandler);
 
 			processingMessages.remove(transactionHandler);
 			synchronized (terminatedMessage) {
@@ -488,19 +494,22 @@ public class DistributedTermination implements Learner, Runnable {
 					 */
 					Set<String> dest = jessy.partitioner.resolveNames(msg
 							.getExecutionHistory().getWriteSet().getKeys());
-					
-					Vote vote= new Vote(msg
-							.getExecutionHistory().getTransactionHandler(),
-							certified, group.name(), msg.gDest);
+
+					Vote vote = new Vote(msg.getExecutionHistory()
+							.getTransactionHandler(), certified, group.name(),
+							msg.gDest);
 					voteStream.multicast(new VoteMessage(vote, dest, group
 							.name(), membership.myId()));
 					addVote(vote);
 
-					logger.debug("voting quorum for "+msg.getExecutionHistory().getTransactionHandler());
-					logger.debug("result is "+ votingQuorums.get(
-								msg.getExecutionHistory().getTransactionHandler())
-								.getTerminationResult());
-					
+					logger.debug("voting quorum for "
+							+ msg.getExecutionHistory().getTransactionHandler());
+					logger.debug("result is "
+							+ votingQuorums.get(
+									msg.getExecutionHistory()
+											.getTransactionHandler())
+									.getTerminationResult());
+
 					TransactionState state = votingQuorums.get(
 							msg.getExecutionHistory().getTransactionHandler())
 							.getTerminationResult();
