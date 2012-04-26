@@ -80,13 +80,13 @@ public class HBaseClient extends com.yahoo.ycsb.DB
     }
 	public void init() throws DBException
 	{
-		
+		_columnFamily = "usertable";
 		getProperties().setProperty("columnfamily", "value");
-		if ( (getProperties().getProperty("debug")!=null) &&
+		/*if ( (getProperties().getProperty("debug")!=null) &&
 				(getProperties().getProperty("debug").compareTo("true")==0) )
 		{
 		    _debug=true;
-	    }
+	    }*/
 		
 
 	    _columnFamily = getProperties().getProperty("columnfamily");
@@ -97,7 +97,7 @@ public class HBaseClient extends com.yahoo.ycsb.DB
 		    
 	    }
       _columnFamilyBytes = Bytes.toBytes(_columnFamily);
-
+	
     }
 
     /**
