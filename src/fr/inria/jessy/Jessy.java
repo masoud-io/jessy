@@ -4,12 +4,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 
 import com.sleepycat.je.DatabaseException;
@@ -54,9 +52,6 @@ public abstract class Jessy {
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	protected List<Class<? extends JessyEntity>> entityClasses;
 
-	protected CopyOnWriteArraySet<TransactionHandler> commitedTransactions;
-	private CopyOnWriteArraySet<TransactionHandler> abortedTransactions;
-
 	/**
 	 * Stores the last committed entities in a concurrent map. This is used
 	 * during certification to check for conflicting concurrent transactions.
@@ -69,7 +64,6 @@ public abstract class Jessy {
 
 	protected Jessy() throws Exception {
 
-		// TODO load from system property
 		File environmentHome = new File(System.getProperty("user.dir"));
 		boolean readOnly = false;
 		String storeName = "store";
@@ -80,9 +74,6 @@ public abstract class Jessy {
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 
 		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
-
-		commitedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
-		abortedTransactions = new CopyOnWriteArraySet<TransactionHandler>();
 
 		lastCommittedEntities = new ConcurrentHashMap<String, JessyEntity>();
 
@@ -210,64 +201,6 @@ public abstract class Jessy {
 		}
 	}
 
-	/**
-	 * TODO returned an already read entity from the local cache.
-	 * 
-	 * This method should be called for reading an entity with a query on
-	 * keyName that is not a default secondary key. It returns only one entity,
-	 * thus the key should be unique key.
-	 * <p>
-	 * Executes a read operation on Jessy. It calls the
-	 * {@link Jessy#performRead(Class, String, Object, List)} method to read the
-	 * data.
-	 * <p>
-	 * This read is performed on {@link JessyEntity#getKey()}
-	 * 
-	 * @param <E>
-	 *            The Type of the entity to read the value from.
-	 * @param <SK>
-	 *            The Type of the secondary key to read the value from.
-	 * @param entityClass
-	 *            The Class of the entity to read the value from.
-	 * @param keyName
-	 *            The name of the secondary key.
-	 * @param keyValue
-	 *            The value of the secondary key
-	 * @return The entity with the keyName field value equals keyValue
-	 */
-	@Deprecated
-	public <E extends JessyEntity, SK> E read(
-			TransactionHandler transactionHandler, Class<E> entityClass,
-			String keyName, SK keyValue) throws Exception {
-
-		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
-
-		if (executionHistory == null) {
-			throw new NullPointerException("Transaction has not been started");
-		}
-
-		E entity;
-
-		/*
-		 * If keyName is null, then it is a read operation on the secondaryKey.
-		 * Otherwise, it is like a where clause. The query should be performed
-		 * on another field of the entity.
-		 */
-		if (keyName == null)
-			entity = performRead(entityClass, "secondaryKey", keyValue,
-					executionHistory.getReadSet().getCompactVector());
-		else
-			entity = performRead(entityClass, keyName, keyValue,
-					executionHistory.getReadSet().getCompactVector());
-
-		if (entity != null) {
-			executionHistory.addReadEntity(entity);
-			return entity;
-		} else {
-			return null;
-		}
-	}
 
 	/**
 	 * 
@@ -388,7 +321,7 @@ public abstract class Jessy {
 			JessyEntity tmp = executionHistory.getReadEntity(entity.getClass(),
 					entity.getKey());
 			if (tmp == null) {
-				// the opeation is a blind write! First issue a read operation.
+				// the operation is a blind write! First issue a read operation.
 				try {
 					read(entity.getClass(), entity.getKey());
 				} catch (Exception e) {
@@ -453,8 +386,7 @@ public abstract class Jessy {
 			TransactionHandler transactionHandler);
 
 	/**
-	 * Put the transaction in the aborted list, and does nothing else. TODO
-	 * re-execute the transaction.
+	 * Put the transaction in the aborted list, and does nothing else.
 	 * 
 	 * @param transactionHandler
 	 */
@@ -463,38 +395,10 @@ public abstract class Jessy {
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);
 		executionHistory.changeState(TransactionState.ABORTED_BY_CLIENT);
-		abortedTransactions.add(transactionHandler);
 
 		return executionHistory;
 	}
 
-
-	// /**
-	// * Apply changes of a createSet of a committed transaction to the
-	// datastore.
-	// *
-	// * @param transactionHandler
-	// * handler of a committed transaction.
-	// */
-	// protected void applyCreateSet(TransactionHandler transactionHandler) {
-	// ExecutionHistory executionHistory = handler2executionHistory
-	// .get(transactionHandler);
-	//
-	// Iterator<? extends JessyEntity> itr = executionHistory.getCreateSet()
-	// .getEntities().iterator();
-	//
-	// while (itr.hasNext()) {
-	// JessyEntity tmp = itr.next();
-	//
-	// // Send the entity to the datastore to be saved
-	// dataStore.put(tmp);
-	//
-	// // Store the entity as the last committed entity for this particular
-	// // key.
-	// lastCommittedEntities.put(tmp.getKey(), tmp);
-	//
-	// }
-	// }
 
 	/**
 	 * Executes a non-transactional read on local datastore. This read is

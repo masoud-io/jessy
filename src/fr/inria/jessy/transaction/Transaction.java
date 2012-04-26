@@ -10,7 +10,10 @@ import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequestKey;
 
-//FIXME COMMENT ME PLZ!
+/**
+ * This class is the interface for transactional execution on top of Jessy.
+ * 
+ */
 public abstract class Transaction implements Callable<ExecutionHistory> {
 
 	private static Logger logger = Logger.getLogger(Transaction.class);
@@ -19,21 +22,35 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	private TransactionHandler transactionHandler;
 
 	// TODO read from config file
-	//TODO Test me
-	private boolean retryCommitOnAbort = false;
+	private boolean retryCommitOnAbort = true;
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;
 		this.transactionHandler = jessy.startTransaction();
 	}
 
+	/**
+	 * Execute the transaction logic.
+	 */
 	public abstract ExecutionHistory execute();
 
+	/**
+	 * Performs a transactional read on top of Jessy.
+	 * 
+	 * @param <E>
+	 *            The type of the entity needed to be read.
+	 * @param entityClass
+	 *            The class of the entity needed to be read.
+	 * @param keyValue
+	 *            The key of the entity needed to be read.
+	 * @return The read entity from jessy.
+	 * @throws Exception
+	 */
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
 			throws Exception {
 		E entity = jessy.read(transactionHandler, entityClass, keyValue);
-		if (entity != null)
-			entity.setPrimaryKey(null);
+//		if (entity != null)
+//			entity.setPrimaryKey(null);
 		return entity;
 	}
 
@@ -44,12 +61,16 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 	public <E extends JessyEntity> void write(E entity)
 			throws NullPointerException {
+		entity.setPrimaryKey(null);
+		
 		jessy.write(transactionHandler, entity);
 	}
 
 	public <E extends JessyEntity> void create(E entity) {
+		entity.setPrimaryKey(null);
+
 		jessy.create(transactionHandler, entity);
-		logger.info("entity " + entity.getKey()+" is created");
+		logger.info("entity " + entity.getKey() + " is created");
 	}
 
 	/*
@@ -58,18 +79,26 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 * transaction.
 	 * 
 	 * FIXME Can it happen to abort a transaction indefinitely?
-	 * 
-	 * TODO Re-execution was tested successfully for localJessy. The test for
-	 * distributedJessy was not done extensively.
 	 */
 	public ExecutionHistory commitTransaction() {
-		
-		ExecutionHistory executionHistory = jessy.commitTransaction(transactionHandler);
-		
-		if ( executionHistory.getTransactionState() != TransactionState.COMMITTED
-			 && retryCommitOnAbort) {
+
+		ExecutionHistory executionHistory = jessy
+				.commitTransaction(transactionHandler);
+
+		if (executionHistory.getTransactionState() != TransactionState.COMMITTED
+				&& retryCommitOnAbort) {
 			try {
-				this.transactionHandler = jessy.startTransaction(); // must have a new handler.
+				/*
+				 * Garbage collect the older execution. We do not need it
+				 * anymore.
+				 */
+				jessy.garbageCollectTransaction(transactionHandler);
+
+				/*
+				 * must have a new handler.
+				 */
+				this.transactionHandler = jessy.startTransaction();
+
 				logger.warn("Re-executing aborted transaction: "
 						+ executionHistory.getTransactionHandler());
 				executionHistory = execute();
@@ -77,7 +106,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 				// FIXME abort properly
 				e.printStackTrace();
 			}
-			
+
 		}
 		jessy.garbageCollectTransaction(transactionHandler);
 		return executionHistory;
@@ -98,7 +127,5 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public void setRetryCommitOnAbort(boolean retryCommitOnAbort) {
 		// this.retryCommitOnAbort = retryCommitOnAbort;
 	}
-	
-	
 
 }

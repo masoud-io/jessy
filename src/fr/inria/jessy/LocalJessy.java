@@ -69,7 +69,6 @@ public class LocalJessy extends Jessy {
 				handler2executionHistory.get(transactionHandler))) {
 			
 			// certification test has returned true. we can commit.
-			commitedTransactions.add(transactionHandler);
 			applyModifiedEntities(transactionHandler);
 			result.changeState(TransactionState.COMMITTED);
 
