@@ -20,7 +20,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 	// TODO read from config file
 	//TODO Test me
-	private boolean retryCommitOnAbort = true;
+	private boolean retryCommitOnAbort = false;
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;
@@ -48,8 +48,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	}
 
 	public <E extends JessyEntity> void create(E entity) {
-		logger.info("Entity is created. >>" + entity.getKey());
 		jessy.create(transactionHandler, entity);
+		logger.info("entity " + entity.getKey()+" is created");
 	}
 
 	/*
@@ -63,14 +63,21 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 * distributedJessy was not done extensively.
 	 */
 	public ExecutionHistory commitTransaction() {
-		ExecutionHistory executionHistory = jessy
-				.commitTransaction(transactionHandler);
-		if (executionHistory.getTransactionState() != TransactionState.COMMITTED
-				&& retryCommitOnAbort) {
-			logger.warn("Re-executing aborted transaction: "
-					+ executionHistory.getTransactionHandler());
-			jessy.prepareReExecution(transactionHandler);
-			executionHistory = execute();
+		
+		ExecutionHistory executionHistory = jessy.commitTransaction(transactionHandler);
+		
+		if ( executionHistory.getTransactionState() != TransactionState.COMMITTED
+			 && retryCommitOnAbort) {
+			try {
+				this.transactionHandler = jessy.startTransaction(); // must have a new handler.
+				logger.warn("Re-executing aborted transaction: "
+						+ executionHistory.getTransactionHandler());
+				executionHistory = execute();
+			} catch (Exception e) {
+				// FIXME abort properly
+				e.printStackTrace();
+			}
+			
 		}
 		jessy.garbageCollectTransaction(transactionHandler);
 		return executionHistory;
@@ -89,7 +96,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	}
 
 	public void setRetryCommitOnAbort(boolean retryCommitOnAbort) {
-		this.retryCommitOnAbort = retryCommitOnAbort;
+		// this.retryCommitOnAbort = retryCommitOnAbort;
 	}
 	
 	

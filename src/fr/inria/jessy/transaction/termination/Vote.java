@@ -8,15 +8,16 @@ import fr.inria.jessy.transaction.TransactionHandler;
 
 public class Vote implements Serializable {
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
-	TransactionHandler transactionHandler;
-	boolean certified;
-	String voterGroupName;
-	Collection<String> allVoterGroups;
+	
+	private TransactionHandler transactionHandler;
+	private boolean isAborted;
+	private String voterGroupName;
+	private Collection<String> allVoterGroups;
 
-	public Vote(TransactionHandler transactionHandler, boolean certified,
+	public Vote(TransactionHandler transactionHandler, boolean aborted,
 			String voterGroupName, Collection<String> allVoterGroups) {
 		this.transactionHandler = transactionHandler;
-		this.certified = certified;
+		this.isAborted = aborted;
 		this.voterGroupName = voterGroupName;
 		this.allVoterGroups = allVoterGroups;
 	}
@@ -25,11 +26,11 @@ public class Vote implements Serializable {
 		return transactionHandler;
 	}
 
-	public boolean isCertified() {
-		return certified;
+	public boolean isAborted() {
+		return isAborted;
 	}
 
-	public String getGroupName() {
+	public String getVoterGroupName() {
 		return voterGroupName;
 	}
 

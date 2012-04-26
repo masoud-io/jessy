@@ -17,7 +17,7 @@ public class YCSBEntity extends JessyEntity{
 	private static final long serialVersionUID = 1L;
 	
 	public static Keyspace keyspace = 
-		new Keyspace(CoreWorkload.TABLENAME_PROPERTY_DEFAULT+":user##########",Distribution.UNIFORM);
+		new Keyspace(CoreWorkload.TABLENAME_PROPERTY_DEFAULT+":user########",Distribution.UNIFORM);
 	
 	public YCSBEntity(){
 		super("","");

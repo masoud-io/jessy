@@ -81,8 +81,8 @@ public class RemoteReader implements Learner {
 	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
 			ReadRequest<E> readRequest) {
 		requests.put(readRequest.getReadRequestId(), readRequest);
-		Future<ReadReply<E>> reply = pool.submit(new RemoteReadRequestTask(
-				readRequest));
+		logger.debug("creating task for "+readRequest);
+		Future<ReadReply<E>> reply = pool.submit(new RemoteReadRequestTask(readRequest));
 		return reply;
 	}
 
@@ -92,8 +92,7 @@ public class RemoteReader implements Learner {
 		if (v instanceof RemoteReadRequestMessage) {
 
 			RemoteReadRequestMessage request = (RemoteReadRequestMessage) v;
-			logger.debug("request "
-					+ request.getReadRequest().getReadRequestId());
+			logger.debug("request "	+ request.getReadRequest());
 			pool.submit(new RemoteReadReplyTask(request));
 
 		} else {
@@ -131,12 +130,12 @@ public class RemoteReader implements Learner {
 		@SuppressWarnings("unchecked")
 		public ReadReply<E> call() throws Exception {
 			Set<Group> destGroups = jessy.partitioner.resolve(request);
+			logger.debug("asking groups " + destGroups + " for " + request);
 			readRequestRecipientCounts.put(request.getReadRequestId(),
 					new AtomicInteger(destGroups.size()));
 			synchronized (requests.get(request.getReadRequestId())) {
 				for (Group dest : destGroups) {
-					logger.debug("asking group" + dest + " for "
-							+ request.getReadRequestId());
+					logger.debug("asking group" + dest + " for " + request);
 					remoteReadStream.unicast(new RemoteReadRequestMessage<E>(
 							request), dest.members().iterator().next());
 				}
@@ -163,6 +162,8 @@ public class RemoteReader implements Learner {
 			logger.debug("asnswering to " + message.source + " for "
 					+ request.getReadRequestId());
 			ReadReply<E> readReply = jessy.getDataStore().get(request);
+			if( !readReply.getEntity().iterator().hasNext() || readReply.getEntity().iterator().next() == null)
+				logger.error("request "+request+ " failed ");
 			remoteReadStream.unicast(new RemoteReadReplyMessage<E>(readReply),
 					message.source);
 			return null;

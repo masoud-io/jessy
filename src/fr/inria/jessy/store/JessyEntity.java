@@ -22,7 +22,7 @@ import fr.inria.jessy.vector.VectorFactory;
  *         {@link String}
  */
 
-// FIXME transient removed field ?
+// FIXME transient field ?
 
 @Persistent
 public abstract class JessyEntity implements Serializable {
@@ -32,7 +32,7 @@ public abstract class JessyEntity implements Serializable {
 	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
 
 	private Vector<String> localVector;
-	transient private boolean removed = false;
+	private boolean removed = false;
 
 	public boolean isRemovoed() {
 		return removed;
@@ -78,10 +78,6 @@ public abstract class JessyEntity implements Serializable {
 	 */
 	public String getKey() {
 		return secondaryKey;
-	}
-
-	public void setSecondaryKey(String secondaryKey) {
-		this.secondaryKey = secondaryKey;
 	}
 
 	public Vector<String> getLocalVector() {

@@ -1,7 +1,11 @@
 package fr.inria.jessy.transaction.termination;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import org.apache.log4j.Logger;
 
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
@@ -23,16 +27,16 @@ import fr.inria.jessy.transaction.TransactionState;
  */
 public class VotingQuorum {
 
-	TransactionState result = TransactionState.COMMITTING;
+	private static Logger logger = Logger.getLogger(VotingQuorum.class);
+	
+	private TransactionState result = TransactionState.COMMITTING;
+	private TransactionHandler transactionHandler;
+	private Set<String> votingGroups;
 
-	TransactionHandler transactionHandler;
-	CopyOnWriteArraySet<String> receivedVotes;
-
-	public VotingQuorum(TransactionHandler transactionHandler,
+	public VotingQuorum(TransactionHandler th,
 			Collection<String> groups) {
-		this.transactionHandler = transactionHandler;
-		receivedVotes = new CopyOnWriteArraySet<String>();
-		receivedVotes.addAll(groups);
+		transactionHandler = th;
+		votingGroups = new HashSet<String>(groups);
 	}
 
 	/**
@@ -46,20 +50,18 @@ public class VotingQuorum {
 	 * @param vote
 	 */
 	public synchronized void addVote(Vote vote) {
-		if (vote.isCertified() == false) {
+		logger.debug("adding vote for "+transactionHandler+" for "+vote.getVoterGroupName()+" with result "+vote.isAborted());
+		if (vote.isAborted() == false) {
 			result = TransactionState.ABORTED_BY_VOTING;
-			synchronized (this) {
+			notify();
+		} else {
+			votingGroups.remove(vote.getVoterGroupName());
+			if (votingGroups.size() == 0) {
+				result = TransactionState.COMMITTED;
 				notify();
 			}
-		} else {
-			receivedVotes.remove(vote.getGroupName());
-			if (receivedVotes.size() == 0) {
-				result = TransactionState.COMMITTED;
-				synchronized (this) {
-					notify();
-				}
-			}
 		}
+		logger.debug("state vote for "+transactionHandler+" "+votingGroups+" "+result);
 	}
 
 	/**
@@ -69,17 +71,16 @@ public class VotingQuorum {
 	 * @return either {@link TransactionState.COMMITTED} or
 	 *         {@link TransactionState.ABORTED_BY_VOTING}
 	 */
-	public TransactionState getTerminationResult() {
-		try {
-			if (result == TransactionState.COMMITTING)
-				synchronized (this) {
-					wait();
-				}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public synchronized TransactionState waitVoteResult() {
+		logger.debug("waiting vote for "+transactionHandler);
+		if (result == TransactionState.COMMITTING){
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// FIXME ignore this ?
+				e.printStackTrace();
+			}
 		}
-
 		return result;
 	}
 

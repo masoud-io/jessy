@@ -40,11 +40,11 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 
 		try{
 			
-			logger.info(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString());
-			logger.debug("ReadSet Vector"
-					+ executionHistory.getReadSet().getCompactVector().toString());
-			logger.debug("WriteSet Vectors"
-					+ executionHistory.getWriteSet().getCompactVector().toString());
+			logger.debug(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString());
+//			logger.debug("ReadSet Vector"
+//					+ executionHistory.getReadSet().getCompactVector().toString());
+//			logger.debug("WriteSet Vectors"
+//					+ executionHistory.getWriteSet().getCompactVector().toString());
 		}
 		catch(Exception ex){
 			ex.printStackTrace();
@@ -56,7 +56,7 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 		 * if the transaction is a read-only transaction, it commits right away.
 		 */
 		if (transactionType == TransactionType.READONLY_TRANSACTION) {			
-			logger.info(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> COMMITTED");
+			logger.debug(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> COMMITTED");
 			return true;
 		}
 
@@ -75,7 +75,7 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 				// entity.
 				tmp.getLocalVector().increament();
 			}
-			logger.info(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> INIT_TRANSACTION COMMITTED");
+			logger.debug(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> INIT_TRANSACTION COMMITTED");
 			return true;
 		}
 
@@ -115,10 +115,10 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 			// entity.
 			updatedVector.setSelfKey(tmp.getLocalVector().getSelfKey());
 			tmp.setLocalVector(updatedVector.clone());
-			logger.debug("ResultSet Vectors" + tmp.getLocalVector().toString());
+			// logger.debug("ResultSet Vectors" + tmp.getLocalVector().toString());
 
 		}		
-		logger.info(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> COMMITTED");
+		logger.debug(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> COMMITTED");
 		return true;
 	}
 

@@ -1,30 +1,31 @@
-/**
- * 
- */
 package fr.inria.jessy.store;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
+import net.sourceforge.fractal.Messageable;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.vector.CompactVector;
 
 /**
- * @author Masoud Saeida Ardekani This class maintains a list of entities read
- *         or written by a transaction. It is fundamental to
- *         {@link ExecutionHistory}
+ * @author Masoud Saeida Ardekani
+ * 	
+ *  This class maintains a list of entities read
+ *  or written by a transaction. It is fundamental to
+ *  {@link ExecutionHistory}
  * 
  */
-public class EntitySet implements Serializable {
+public class EntitySet implements Messageable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
@@ -32,18 +33,18 @@ public class EntitySet implements Serializable {
 	 * maps works as follows: ClassName > SecondaryKey > Entity
 	 * 
 	 */
-	private ConcurrentMap<String, ConcurrentMap<String, ? extends JessyEntity>> entities;
+	private Map<String, Map<String, ? extends JessyEntity>> entities;
 
 	private CompactVector<String> compactVector;
 
 	public EntitySet() {
-		entities = new ConcurrentHashMap<String, ConcurrentMap<String, ? extends JessyEntity>>();
+		entities = new HashMap<String, Map<String, ? extends JessyEntity>>();
 		compactVector = new CompactVector<String>();
 	}
 
-	public <E extends JessyEntity> void addEntityClass(Class<E> entityClass) {
+	public synchronized <E extends JessyEntity> void addEntityClass(Class<E> entityClass) {
 		// initialize writeList
-		entities.put(entityClass.toString(), new ConcurrentHashMap<String, E>());
+		entities.put(entityClass.toString(), new HashMap<String, E>());
 	}
 
 	public CompactVector<String> getCompactVector() {
@@ -51,7 +52,7 @@ public class EntitySet implements Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> E getEntity(Class<E> entityClass,
+	public synchronized <E extends JessyEntity> E getEntity(Class<E> entityClass,
 			String keyValue) {
 		Map<String, E> writes = (Map<String, E>) entities.get(entityClass
 				.toString());
@@ -59,50 +60,42 @@ public class EntitySet implements Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> void addEntity(E entity) {
+	public synchronized <E extends JessyEntity> void addEntity(E entity) {
 		compactVector.update(entity.getLocalVector());
-
-		ConcurrentMap<String, E> temp = (ConcurrentMap<String, E>) entities
-				.get(entity.getClass().toString());
+		if(!entities.containsKey(entity.getClass().toString()))
+			entities.put(entity.getClass().toString(), new HashMap<String, JessyEntity>());
+		Map<String, E> temp = (Map<String, E>) entities.get(entity.getClass().toString());
 		temp.put(entity.getKey(), entity);
-
 		entities.put(entity.getClass().toString(), temp);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> void addEntity(Collection<E> entityCol) {
+	public synchronized <E extends JessyEntity> void addEntity(Collection<E> entityCol) {
 		for (E entity : entityCol) {
-			compactVector.update(entity.getLocalVector());
-
-			ConcurrentMap<String, E> temp = (ConcurrentMap<String, E>) entities
-					.get(entity.getClass().toString());
-			temp.put(entity.getKey(), entity);
-
-			entities.put(entity.getClass().toString(), temp);
+			addEntity(entity);
 		}
 	}
 
-	public void addEntity(EntitySet entitySet) {
+	public synchronized void addEntity(EntitySet entitySet) {
 		Iterator<? extends JessyEntity> itr = entitySet.getEntities()
 				.iterator();
 		while (itr.hasNext()) {
 			JessyEntity jessyEntity = itr.next();
 			addEntity(jessyEntity);
-			compactVector.update(jessyEntity.getLocalVector());
 		}
 
 	}
 
-	public List<? extends JessyEntity> getEntities() {
+	public synchronized List<? extends JessyEntity> getEntities() {
 		List<JessyEntity> result = new ArrayList<JessyEntity>();
 
-		Collection<ConcurrentMap<String, ? extends JessyEntity>> writeListValues = entities
+		Collection<Map<String, ? extends JessyEntity>> writeListValues = entities
 				.values();
 
-		Iterator<ConcurrentMap<String, ? extends JessyEntity>> itr = writeListValues
+		Iterator<Map<String, ? extends JessyEntity>> itr = writeListValues
 				.iterator();
 		while (itr.hasNext()) {
-			ConcurrentMap<String, ? extends JessyEntity> entities = itr.next();
+			Map<String, ? extends JessyEntity> entities = itr.next();
 			result.addAll(entities.values());
 		}
 
@@ -114,7 +107,7 @@ public class EntitySet implements Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> boolean contains(Class<E> entityClass,
+	public synchronized <E extends JessyEntity> boolean contains(Class<E> entityClass,
 			String keyValue) {
 
 		Map<String, E> temp = (Map<String, E>) entities.get(entityClass
@@ -142,7 +135,7 @@ public class EntitySet implements Serializable {
 	// FIXME Performance Bottleneck. There are so many loops here.
 	public Set<String> getKeys() {
 		Set<String> keys = new HashSet<String>();
-		List<? extends JessyEntity> entityList = getEntities();
+		List<? extends JessyEntity>  entityList = getEntities();
 		for (JessyEntity e : entityList) {
 			keys.add(e.getKey());
 		}
@@ -152,5 +145,16 @@ public class EntitySet implements Serializable {
 	public void clear() {
 		entities.clear();
 		compactVector = new CompactVector<String>();
+	}
+
+	@SuppressWarnings("unchecked")
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		entities = (Map<String, Map<String, ? extends JessyEntity>>) in.readObject();
+		compactVector = (CompactVector<String>) in.readObject();
+	}
+
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(entities);
+		out.writeObject(compactVector);
 	}
 }

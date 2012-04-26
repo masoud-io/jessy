@@ -14,6 +14,7 @@ import javax.lang.model.type.TypeVariable;
 import org.junit.Test;
 
 import com.sleepycat.je.DatabaseException;
+import com.sleepycat.je.Durability;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.persist.EntityCursor;
@@ -94,10 +95,8 @@ public class DataStore {
 		// envConfig.setLocking(false); //The cleaner becomes disable here!
 		// Influence the performance tremendously!
 		envConfig.setSharedCache(true); // Does not effect the prformance much!
-
 		// TODO subject to change for optimization
-		envConfig.setCachePercent(90);
-
+		// envConfig.setCachePercent(90);
 		env = new Environment(envHome, envConfig);
 	}
 

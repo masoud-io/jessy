@@ -1,32 +1,27 @@
 package fr.inria.jessy.transaction;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
+import net.sourceforge.fractal.Messageable;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.termination.TerminationResult;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+
 //TODO COMMENT ME
-public class ExecutionHistory implements Serializable {
-
-	private TransactionHandler transactionHandler;
-
-	/**
-	 * if true, the coordinator will perform a certification, thus does not need to
-	 * receive the result from other processes. Otherwise, the proxy will only
-	 * atomic multicast the transaction for certification, thus it needs to
-	 * receive back the {@link TerminationResult}.
-	 */
-	private boolean certifyAtCoordinator;
+public class ExecutionHistory implements Messageable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
-
-	public enum TransactionType {
+	
+	private static TimeRecorder packingTime = new TimeRecorder("ExecutioNHistory#packingTime");
+	
+	public static enum TransactionType {
 		/**
 		 * the execution history is for a read only transaction
 		 */
@@ -44,22 +39,41 @@ public class ExecutionHistory implements Serializable {
 		 */
 		INIT_TRANSACTION
 	};
+	
+
+	private TransactionHandler transactionHandler;
+
+	/**
+	 * if true, the coordinator will perform a certification, thus does not need to
+	 * receive the result from other processes. Otherwise, the proxy will only
+	 * atomic multicast the transaction for certification, thus it needs to
+	 * receive back the {@link TerminationResult}.
+	 */
+	private boolean certifyAtCoordinator;
 
 	private TransactionState transactionState = TransactionState.NOT_STARTED;
-
-	private ConcurrentMap<TransactionState, Long> transactionState2StartingTime;
 
 	/**
 	 * readSet and writeSet to store read and written entities
 	 * 
 	 */
-
 	private EntitySet createSet;
 	private EntitySet writeSet;
 	private EntitySet readSet;
 	private int coordinator;		
 
 	private List<Class<? extends JessyEntity>> entityClasses;
+	
+	// for fractal
+	@Deprecated
+	public ExecutionHistory(){}
+	
+	public ExecutionHistory(TransactionHandler transactionHandler){
+		readSet = new EntitySet();
+		writeSet = new EntitySet();
+		createSet = new EntitySet();
+		this.transactionHandler = transactionHandler;
+	}
 	
 	public ExecutionHistory(
 			List<Class<? extends JessyEntity>> entityClasses,
@@ -68,7 +82,6 @@ public class ExecutionHistory implements Serializable {
 		readSet = new EntitySet();
 		writeSet = new EntitySet();
 		createSet = new EntitySet();
-		transactionState2StartingTime = new ConcurrentHashMap<TransactionState, Long>();
 
 		this.entityClasses=entityClasses;
 		for (Class<? extends JessyEntity> entityClass : entityClasses) {
@@ -146,8 +159,6 @@ public class ExecutionHistory implements Serializable {
 
 	public void changeState(TransactionState transactionNewState) {
 		transactionState = transactionNewState;
-		transactionState2StartingTime.put(transactionState,
-				System.currentTimeMillis());
 	}
 
 	public String toString() {
@@ -178,15 +189,33 @@ public class ExecutionHistory implements Serializable {
 		return coordinator;
 	}
 	
-	public void cleanForReExecution(){
-		transactionState = TransactionState.NOT_STARTED;
-
-		createSet.clear();
-		readSet.clear();
-		writeSet.clear();
+	@SuppressWarnings("unchecked")
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		
-		for (Class<? extends JessyEntity> entityClass : entityClasses) {
-			addEntityClass(entityClass);
-		}
+		transactionHandler = (TransactionHandler) in.readObject();
+		certifyAtCoordinator = in.readBoolean();
+		transactionState = (TransactionState) in.readObject();
+		
+		createSet = (EntitySet) in.readObject();
+		writeSet = (EntitySet) in.readObject();
+		readSet = (EntitySet) in.readObject();
+		
+		coordinator = in.readInt();
+		entityClasses = (List) in.readObject();
+	}
+
+	public void writeExternal(ObjectOutput out) throws IOException {
+
+		out.writeObject(transactionHandler);
+		out.writeBoolean(certifyAtCoordinator);
+		out.writeObject(transactionState);
+		
+		out.writeObject(createSet);
+		out.writeObject(writeSet);
+		out.writeObject(readSet);
+
+		out.writeInt(coordinator);
+		out.writeObject(entityClasses);
+		
 	}
 }

@@ -84,5 +84,10 @@ public class ReadRequest<E extends JessyEntity> implements Serializable {
 	public String getPartitioningKey() {
 		return this.keys.get(0).getKeyValue().toString();
 	}
+	
+	@Override 
+	public String toString(){
+		return getReadRequestId().toString();
+	}
 
 }

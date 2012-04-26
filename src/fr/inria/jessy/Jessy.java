@@ -569,10 +569,4 @@ public abstract class Jessy {
 	public void open() {
 	}
 
-	public void prepareReExecution(TransactionHandler transactionHandler) {
-
-		abortedTransactions.remove(transactionHandler);
-		handler2executionHistory.get(transactionHandler).cleanForReExecution();
-
-	}
 }
