@@ -27,7 +27,7 @@ public class JessyDBClient extends DB {
 	private static boolean USE_DIST_JESSY = true;
 
 	private static Jessy jessy;
-
+	
 	// FIXME merge this into init
 	static {
 		try {
