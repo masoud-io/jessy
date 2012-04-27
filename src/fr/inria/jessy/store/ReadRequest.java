@@ -13,7 +13,7 @@ public class ReadRequest<E extends JessyEntity> implements Serializable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-	Class<E> entityClass;
+	String entityClassName;
 	CompactVector<String> readSet;
 	List<ReadRequestKey<?>> keys;
 	UUID readRequestId;
@@ -31,7 +31,7 @@ public class ReadRequest<E extends JessyEntity> implements Serializable {
 	 */
 	public <K> ReadRequest(Class<E> entityClass, String keyName, K keyValue,
 			CompactVector<String> readSet) {
-		this.entityClass = entityClass;
+		this.entityClassName = entityClass.getName();
 		this.readSet = readSet;
 
 		keys = new ArrayList<ReadRequestKey<?>>();
@@ -51,15 +51,15 @@ public class ReadRequest<E extends JessyEntity> implements Serializable {
 	 */
 	public ReadRequest(Class<E> entityClass, List<ReadRequestKey<?>> keys,
 			CompactVector<String> readSet) {
-		this.entityClass = entityClass;
+		this.entityClassName = entityClass.getName();
 		this.readSet = readSet;
 
 		this.keys = keys;
 		readRequestId = UUID.randomUUID();
 	}
 
-	public Class<E> getEntityClass() {
-		return entityClass;
+	public String getEntityClassName() {
+		return entityClassName;
 	}
 
 	public CompactVector<String> getReadSet() {

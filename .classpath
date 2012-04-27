@@ -17,30 +17,5 @@
 	<classpathentry kind="lib" path="lib/hbase-0.92.1.jar"/>
 	<classpathentry kind="lib" path="db/hbase/lib/hbase-binding-0.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.1.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/antlr-3.2.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/apache-cassandra-1.0.9.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/apache-cassandra-clientutil-1.0.9.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/apache-cassandra-thrift-1.0.9.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/avro-1.4.0-fixes.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/avro-1.4.0-sources-fixes.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/commons-cli-1.1.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/commons-codec-1.2.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/commons-lang-2.4.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/compress-lzf-0.8.4.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/concurrentlinkedhashmap-lru-1.2.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/guava-r08.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/high-scale-lib-1.1.2.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/jackson-core-asl-1.4.0.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/jackson-mapper-asl-1.4.0.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/jamm-0.2.5.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/jline-0.9.94.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/json-simple-1.1.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/libthrift-0.6.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/log4j-1.2.16.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/servlet-api-2.5-20081211.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/slf4j-api-1.6.1.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/slf4j-log4j12-1.6.1.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/snakeyaml-1.6.jar"/>
-	<classpathentry kind="lib" path="config/Cassandra_latest_version_lib/lib/snappy-java-1.0.4.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

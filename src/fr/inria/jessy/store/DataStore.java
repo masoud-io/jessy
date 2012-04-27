@@ -175,8 +175,8 @@ public class DataStore {
 	 * @param storeName
 	 *            the name of the store that the primary index works in. The
 	 *            primary index stores entities inside this store.
-	 * @param entityClass
-	 *            the class that extends JessyEntity
+	 * @param entityClassName
+	 *            the class name of the entity
 	 * @param secondaryKeyClass
 	 *            Class of the secondary key field (annotated with
 	 * @SecondaryIndex)
@@ -248,8 +248,8 @@ public class DataStore {
 	 *            the type of the secondary key field (annotated with
 	 * @SecondaryKey)
 	 * @param <V>
-	 * @param entityClass
-	 *            the class that extends JessyEntity
+	 * @param entityClassName
+	 *            the class name of the entity
 	 * @param secondaryKeyName
 	 *            Name of the secondary key field (annotated with
 	 * @SecondaryKey)
@@ -261,13 +261,13 @@ public class DataStore {
 	 * @return
 	 * @throws NullPointerException
 	 */
-	private <E extends JessyEntity, SK> E get(Class<E> entityClass,
+	private <E extends JessyEntity, SK> E get(String entityClassName,
 			String secondaryKeyName, SK keyValue, CompactVector<String> readSet)
 			throws NullPointerException {
 		try {
 			@SuppressWarnings("unchecked")
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
-					.get(entityClass.getName() + secondaryKeyName);
+					.get(entityClassName + secondaryKeyName);
 
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
 			E entity = cur.last();
@@ -316,8 +316,8 @@ public class DataStore {
 	 * @param <SK>
 	 *            the type of the secondary key field (annotated with
 	 * @SecondaryKey)
-	 * @param entityClass
-	 *            the class that extends JessyEntity
+	 * @param entityClassName
+	 *            the class name of the entity
 	 * @param keyNameToValues
 	 *            Map the name of the secondary key field (annotated with
 	 * @SecondaryKey) to the desired value for the query.
@@ -329,18 +329,18 @@ public class DataStore {
 	 * @throws NullPointerException
 	 */
 	@SuppressWarnings("unchecked")
-	private <E extends JessyEntity, SK> Collection<E> get(Class<E> entityClass,
-			List<ReadRequestKey<?>> keys, CompactVector<String> readSet)
-			throws NullPointerException {
+	private <E extends JessyEntity, SK> Collection<E> get(
+			String entityClassName, List<ReadRequestKey<?>> keys,
+			CompactVector<String> readSet) throws NullPointerException {
 		try {
 
 			SecondaryIndex sindex;
 			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
-					.get(entityClass.getName());
+					.get(entityClassName);
 			EntityJoin<Long, E> entityJoin = new EntityJoin<Long, E>(pindex);
 
 			for (ReadRequestKey key : keys) {
-				sindex = secondaryIndexes.get(entityClass.getName()
+				sindex = secondaryIndexes.get(entityClassName
 						+ key.getKeyName());
 				entityJoin.addCondition(sindex, key.getKeyValue());
 			}
@@ -383,14 +383,14 @@ public class DataStore {
 
 		if (readRequest.getKeys().size() == 1) {
 			ReadRequestKey readRequestKey = readRequest.getKeys().get(0);
-			E entity = get(readRequest.getEntityClass(),
+			E entity = get(readRequest.getEntityClassName(),
 					readRequestKey.getKeyName(), readRequestKey.getKeyValue(),
 					readRequest.getReadSet());
 
 			return new ReadReply<E>(entity, readRequest.getReadRequestId());
 
 		} else {
-			Collection<E> result = get(readRequest.getEntityClass(),
+			Collection<E> result = get(readRequest.getEntityClassName(),
 					readRequest.getKeys(), readRequest.getReadSet());
 
 			return new ReadReply<E>(result, readRequest.getReadRequestId());
@@ -405,19 +405,19 @@ public class DataStore {
 	 *            the type that extends JessyEntity
 	 * @param <SK>
 	 *            the type of the secondary key field (annotated with
-	 * @param entityClass
-	 *            the class that extends JessyEntity
+	 * @param entityClassName
+	 *            the class name of the entity to be deleted
 	 * @param secondaryKeyName
 	 *            Name of the secondary key field (annotated with the value of
 	 *            the secondary key.
 	 * @throws NullPointerException
 	 */
-	public <E extends JessyEntity, SK> boolean delete(Class<E> entityClass,
+	public <E extends JessyEntity, SK> boolean delete(String entityClassName,
 			String secondaryKeyName, SK keyValue) throws NullPointerException {
 		try {
 			@SuppressWarnings("unchecked")
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
-					.get(entityClass.getName() + secondaryKeyName);
+					.get(entityClassName + secondaryKeyName);
 
 			return sindex.delete(keyValue);
 		} catch (NullPointerException ex) {
@@ -433,20 +433,20 @@ public class DataStore {
 	 *            the type of the secondary key field (annotated with
 	 * @SecondaryIndex)
 	 * @param <V>
-	 * @param entityClass
-	 *            the class that extends JessyEntity
+	 * @param entityClassName
+	 *            the class name of the entity
 	 * @param secondaryKeyName
 	 * @param keyValue
 	 * @return
 	 * @throws NullPointerException
 	 */
 	public <E extends JessyEntity, SK, V> int getEntityCounts(
-			Class<E> entityClass, String secondaryKeyName, SK keyValue)
+			String entityClassName, String secondaryKeyName, SK keyValue)
 			throws NullPointerException {
 		try {
 			@SuppressWarnings("unchecked")
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
-					.get(entityClass.getName() + secondaryKeyName);
+					.get(entityClassName + secondaryKeyName);
 
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
 			if (cur.iterator().hasNext()) {

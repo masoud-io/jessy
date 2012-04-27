@@ -37,7 +37,8 @@ public class DistributedJessy extends Jessy {
 	private static DistributedJessy distributedJessy = null;
 
 	private static SimpleCounter remoteReads;
-	private static TimeRecorder NonTransactionalWriteRequestTime, readRequestTime;
+	private static TimeRecorder NonTransactionalWriteRequestTime,
+			readRequestTime;
 
 	public FractalManager fractal;
 	public Membership membership;
@@ -48,7 +49,8 @@ public class DistributedJessy extends Jessy {
 	static {
 		// Performance measuring facilities
 		remoteReads = new SimpleCounter("Jessy#RemoteReads");
-		NonTransactionalWriteRequestTime = new TimeRecorder("Jessy#NonTransactionalWriteRequestTime");
+		NonTransactionalWriteRequestTime = new TimeRecorder(
+				"Jessy#NonTransactionalWriteRequestTime");
 		readRequestTime = new TimeRecorder("Jessy#ReadRequestTime");
 	}
 
@@ -57,7 +59,7 @@ public class DistributedJessy extends Jessy {
 		try {
 
 			PerformanceProbe.setOutput("/dev/stdout");
-			
+
 			// FIXME move this.
 			// Merge it in a PropertyHandler class (use Jean-Michel's work).
 			Properties myProps = new Properties();
@@ -84,7 +86,7 @@ public class DistributedJessy extends Jessy {
 			fractal.start();
 
 			if (replicaGroup != null) {
-				logger.info("Server mode ("+replicaGroup+")");
+				logger.info("Server mode (" + replicaGroup + ")");
 				distributedTermination = new DistributedTermination(this,
 						replicaGroup);
 			} else {
@@ -95,7 +97,7 @@ public class DistributedJessy extends Jessy {
 
 			remoteReader = new RemoteReader(this, allGroup);
 			partitioner = new Partitioner(membership);
-			
+
 			// FIXME
 			super.addEntity(YCSBEntity.class);
 			partitioner.assign(YCSBEntity.keyspace);
@@ -127,20 +129,23 @@ public class DistributedJessy extends Jessy {
 				keyValue, readSet);
 		ReadReply<E> readReply;
 		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
-			logger.debug("performing local read on " + keyValue +" for request "+readRequest);
+			logger.debug("performing local read on " + keyValue
+					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);
 		} else {
-			logger.debug("performing remote read on " + keyValue +" for request "+readRequest);
+			logger.debug("performing remote read on " + keyValue
+					+ " for request " + readRequest);
 			remoteReads.incr();
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
 		}
 		readRequestTime.stop();
 
-		if (readReply.getEntity().iterator().hasNext() && readReply.getEntity().iterator().next() != null){
+		if (readReply.getEntity().iterator().hasNext()
+				&& readReply.getEntity().iterator().next() != null) {
 			return readReply.getEntity().iterator().next();
-		}else{
-			logger.debug("request "+readRequest+" failed");
+		} else {
+			logger.debug("request " + readRequest + " failed");
 			return null;
 		}
 
@@ -151,26 +156,29 @@ public class DistributedJessy extends Jessy {
 			Class<E> entityClass, List<ReadRequestKey<?>> keys,
 			CompactVector<String> readSet) throws InterruptedException,
 			ExecutionException {
-		
+
 		readRequestTime.start();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
 		ReadReply<E> readReply;
 		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
-			logger.debug("performing local read on " + keys+" for request "+readRequest);
+			logger.debug("performing local read on " + keys + " for request "
+					+ readRequest);
 			readReply = getDataStore().get(readRequest);
 		} else {
-			logger.debug("performing remote read on " + keys+" for request "+readRequest);
+			logger.debug("performing remote read on " + keys + " for request "
+					+ readRequest);
 			remoteReads.incr();
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
 		}
 		readRequestTime.stop();
 
-		if (readReply.getEntity().iterator().hasNext() && readReply.getEntity().iterator().next() != null){
+		if (readReply.getEntity().iterator().hasNext()
+				&& readReply.getEntity().iterator().next() != null) {
 			return readReply.getEntity();
-		}else{
-			logger.debug("request "+readRequest+" failed");
+		} else {
+			logger.debug("request " + readRequest + " failed");
 			return null;
 		}
 	}
@@ -181,27 +189,29 @@ public class DistributedJessy extends Jessy {
 
 		NonTransactionalWriteRequestTime.start();
 
-//		if (partitioner.isLocal(entity.getKey())
-//				&& ConstantPool.GROUP_SIZE == 1) {
-//			
-//			logger.debug("performing local write to " + entity.getKey());
-//			performNonTransactionalLocalWrite(entity);
-//			
-//		} else {
-		
-			logger.debug("performing Write to " + entity.getKey());
+		// if (partitioner.isLocal(entity.getKey())
+		// && ConstantPool.GROUP_SIZE == 1) {
+		//
+		// logger.debug("performing local write to " + entity.getKey());
+		// performNonTransactionalLocalWrite(entity);
+		//
+		// } else {
 
-			// 1 - Create a blind write transaction.
-			TransactionHandler transactionHandler = new TransactionHandler();
-			ExecutionHistory executionHistory = new ExecutionHistory(transactionHandler);
-			executionHistory.addWriteEntity(entity);
+		logger.debug("performing Write to " + entity.getKey());
 
-			// 2 - Submit it to the termination protocol.
-			Future<TerminationResult> result = distributedTermination.terminateTransaction(executionHistory);
-			result.get();
-		
-//		}
-		
+		// 1 - Create a blind write transaction.
+		TransactionHandler transactionHandler = new TransactionHandler();
+		ExecutionHistory executionHistory = new ExecutionHistory(
+				transactionHandler);
+		executionHistory.addWriteEntity(entity);
+
+		// 2 - Submit it to the termination protocol.
+		Future<TerminationResult> result = distributedTermination
+				.terminateTransaction(executionHistory);
+		result.get();
+
+		// }
+
 		NonTransactionalWriteRequestTime.stop();
 	}
 
@@ -211,7 +221,7 @@ public class DistributedJessy extends Jessy {
 		lastCommittedEntities.put(entity.getKey(), entity);
 	}
 
-	// FIXME Should this method be synchronized? I think it should only be
+	// I think it should only be
 	// syncrhonized during certification. Thus, it is safe before certification
 	// test.
 	@Override
@@ -230,8 +240,10 @@ public class DistributedJessy extends Jessy {
 		}
 		assert (terminationResult != null);
 		executionHistory.changeState(terminationResult.getTransactionState());
+
+		logger.debug(transactionHandler + " "
+				+ terminationResult.getTransactionState());
 		
-		logger.debug(transactionHandler + " " + terminationResult.getTransactionState());
 		return executionHistory;
 	}
 
@@ -242,13 +254,13 @@ public class DistributedJessy extends Jessy {
 
 	public void close(Object object) {
 		logger.info("Jessy is closed.");
-//		try {
-//			Thread.currentThread().sleep(500);
-//			super.close(this);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-		
+		// try {
+		// Thread.currentThread().sleep(500);
+		// super.close(this);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+
 	}
 
 	/**

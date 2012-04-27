@@ -1,5 +1,7 @@
 package fr.inria.jessy.utils;
 
+import java.io.FileInputStream;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,8 +25,7 @@ public class ExecutorPool {
 	}
 
 	private ExecutorPool() {
-		// FIXME parameterize in a config file.
-		int poolsize = 100;
+		int poolsize = readConfig();
 		es = Executors.newFixedThreadPool(poolsize);
 	}
 
@@ -35,4 +36,22 @@ public class ExecutorPool {
 	public static ExecutorPool getInstance() {
 		return instance;
 	}
+	
+	private static int readConfig() {
+		String poolSize = "";
+		try {
+			Properties myProps = new Properties();
+			FileInputStream MyInputStream = new FileInputStream(
+					"config.property");
+			myProps.load(MyInputStream);
+			poolSize= myProps.getProperty("pool_size");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			System.out.println("OPS");
+		}
+
+		return Integer.valueOf(poolSize);
+
+	}
+
 }
