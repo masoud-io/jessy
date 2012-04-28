@@ -41,16 +41,22 @@ public class Delivery extends Transaction {
         	/* for each of the 10 districts within the given warehouse */
         	for(i = 1; i<=10; i++) {
         		district = read(District.class, "D_W_"+ W_ID + "_" + "D_"+ i);
+System.out.println("district : "+ district.getD_NEXT_O());
         		/* retrieve the oldest undelivered order of the district */
         		for(j=1;j<district.getD_NEXT_O();j++) {
         			no = read(New_order.class, "NO_W_"+ W_ID +"_"+ "NO_D_"+ i +"_"+ "NO_O_"+ j);
-        			if(no != null)
+        			//System.out.println("new oder : "+ no.getNO_D_ID());
+        			if(no != null) {
+        				System.out.println(no.getNO_O_ID());
         				j = district.getD_NEXT_O();   /* find the result and skip the loop */
+        			}
+        				
         		}
         		
         		if(no == null) {   /* no result, skip */
         			/* record the result in the log file, but not necessary for the moment according to Masoud  */
         			//fw.write("no matching result in"+ i + "district\n");
+System.out.println("null value");
         			continue;
         		}
         		/* increment the undelivered order number */
@@ -63,10 +69,14 @@ public class Delivery extends Transaction {
         		no.setNO_D_ID(null);
         		no.setNO_O_ID(0);
         		write(no);
-        		       		
+System.out.println(NO_O_ID);       		
         		order = read(Order.class, "O_W_"+W_ID + "_" + "O_D_"+ i + "_" + "O_"+NO_O_ID );
-        		O_CARRIER_ID = Integer.toString(rand.nextInt(10 - 1) + 1);   /* The carrier number (O_CARRIER_ID) is randomly selected within [1 .. 10] */
+System.out.println(order.getO_D_ID());
+System.out.println(order.getO_ID());
+System.out.println(order.getO_CARRIER_ID());
+        		O_CARRIER_ID = Integer.toString(rand.nextInt(10) + 1);   /* The carrier number (O_CARRIER_ID) is randomly selected within [1 .. 10] */
         		order.setO_CARRIER_ID(O_CARRIER_ID);
+System.out.println(order.getO_CARRIER_ID());        		
         		/* Update Order */
         		write(order);
         		

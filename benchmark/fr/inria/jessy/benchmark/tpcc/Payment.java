@@ -40,11 +40,11 @@ public class Payment extends Transaction {
 					"ESE", "ANTI", "CALLY", "ATION", "EING" };
 
 			Random rand = new Random(System.currentTimeMillis());
-			int x = rand.nextInt(100 - 1) + 1; /*
+			int x = rand.nextInt(100) + 1; /*
 												 * x determines local or remote
 												 * warehouse
 												 */
-			int y = rand.nextInt(100 - 1) + 1; /*
+			int y = rand.nextInt(100) + 1; /*
 												 * y determines by C_LAST or by
 												 * C_ID
 												 */
@@ -65,7 +65,7 @@ public class Payment extends Transaction {
 			/* Update Warehouse */
 			write(warehouse);
 
-			D_ID = Integer.toString(rand.nextInt(10 - 1) + 1); /*
+			D_ID = Integer.toString(rand.nextInt(10) + 1); /*
 																 * The district
 																 * number (D_ID)
 																 * is randomly
@@ -89,9 +89,9 @@ public class Payment extends Transaction {
 				C_W_ID = this.W_ID;
 			} else { /* remote warehouse */
 			
-				C_D_ID = Integer.toString(rand.nextInt(10 - 1) + 1); /* C_D_ID is randomly selected within [1.. 10] */
+				C_D_ID = Integer.toString(rand.nextInt(10) + 1); /* C_D_ID is randomly selected within [1.. 10] */
 				while (true) {
-					C_W_ID = Integer.toString(rand.nextInt(10 - 1) + 1); /* not sure ! */
+					C_W_ID = Integer.toString(rand.nextInt(10) + 1); /* not sure ! */
 					if (C_W_ID != this.W_ID) /* different to local warehouse ID 1 */
 						break;
 				}
