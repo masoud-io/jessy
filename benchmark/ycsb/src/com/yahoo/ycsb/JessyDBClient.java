@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -22,6 +24,8 @@ import fr.inria.jessy.transaction.TransactionState;
 
 public class JessyDBClient extends DB {
 
+	private static TimeRecorder benchmarkExecutionTime;
+	
 	private static Logger logger = Logger.getLogger(JessyDBClient.class);
 
 	private static boolean USE_DIST_JESSY = true;
@@ -40,23 +44,22 @@ public class JessyDBClient extends DB {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		benchmarkExecutionTime = new TimeRecorder("Jessy#BenchmarkCompletionTime");
 	}
 
 	public JessyDBClient() {
 		super();
-		init();
-
 	}
 
 	@Override
 	public void init() {		
 		jessy.registerClient(this);
+		benchmarkExecutionTime.start();
 	}
 
 	@Override
 	public void cleanup() {
-		
+		benchmarkExecutionTime.stop();
 		try {
 			jessy.close(this);
 		} catch (DatabaseException ex) {

@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.Jessy;
@@ -16,6 +18,10 @@ import fr.inria.jessy.store.ReadRequestKey;
  */
 public abstract class Transaction implements Callable<ExecutionHistory> {
 
+	private static TimeRecorder transactionTotalTime= new TimeRecorder("Jessy#TransactionTotalTime");
+	private static TimeRecorder transactionExecutionTime= new TimeRecorder("Jessy#TransactionExecutionTime");
+	private static TimeRecorder transactionTerminationTime= new TimeRecorder("Jessy#TransactionTerminationTime");
+	
 	private static Logger logger = Logger.getLogger(Transaction.class);
 
 	private Jessy jessy;
@@ -26,7 +32,12 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;
+		
+		transactionTotalTime.start();
+		transactionExecutionTime.start();
+		
 		this.transactionHandler = jessy.startTransaction();
+
 	}
 
 	/**
@@ -81,6 +92,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 * FIXME Can it happen to abort a transaction indefinitely?
 	 */
 	public ExecutionHistory commitTransaction() {
+		transactionExecutionTime.stop();
+		transactionTerminationTime.start();
 
 		ExecutionHistory executionHistory = jessy
 				.commitTransaction(transactionHandler);
@@ -108,7 +121,9 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 			}
 
 		}
-		jessy.garbageCollectTransaction(transactionHandler);
+		transactionTerminationTime.stop();
+		jessy.garbageCollectTransaction(transactionHandler);		
+		transactionTotalTime.stop();
 		return executionHistory;
 	}
 

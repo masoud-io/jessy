@@ -272,15 +272,12 @@ public class DataStore {
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
 			E entity = cur.last();
 
-			List<E> entity2 = new ArrayList<E>();
-
 			if (readSet == null) {
 				cur.close();
 				return entity;
 			}
 
 			while (entity != null) {
-				entity2.add(entity);
 				if (entity.getLocalVector().isCompatible(readSet)) {
 					cur.close();
 					return entity;

@@ -62,8 +62,6 @@ public class ExecutionHistory implements Messageable {
 	private EntitySet readSet;
 	private int coordinator;		
 
-	private List<Class<? extends JessyEntity>> entityClasses;
-	
 	// for fractal
 	@Deprecated
 	public ExecutionHistory(){}
@@ -83,7 +81,6 @@ public class ExecutionHistory implements Messageable {
 		writeSet = new EntitySet();
 		createSet = new EntitySet();
 
-		this.entityClasses=entityClasses;
 		for (Class<? extends JessyEntity> entityClass : entityClasses) {
 			addEntityClass(entityClass);
 		}
@@ -201,7 +198,6 @@ public class ExecutionHistory implements Messageable {
 		readSet = (EntitySet) in.readObject();
 		
 		coordinator = in.readInt();
-		entityClasses = (List) in.readObject();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
@@ -215,7 +211,6 @@ public class ExecutionHistory implements Messageable {
 		out.writeObject(readSet);
 
 		out.writeInt(coordinator);
-		out.writeObject(entityClasses);
 		
 	}
 }
