@@ -254,12 +254,12 @@ public class DistributedJessy extends Jessy {
 
 	public void close(Object object) {
 		logger.info("Jessy is closed.");
-		// try {
-		// Thread.currentThread().sleep(500);
-		// super.close(this);
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
+		 try {
+		 Thread.currentThread().sleep(5000);
+		 super.close(this);
+		 } catch (InterruptedException e) {
+		 e.printStackTrace();
+		 }
 
 	}
 

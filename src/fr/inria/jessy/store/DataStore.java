@@ -89,6 +89,8 @@ public class DataStore {
 		envConfig.setAllowCreate(!readOnly);
 
 		envConfig.setTransactional(false);
+		envConfig.setTxnNoSyncVoid(true);
+		envConfig.setTxnNoSyncVoid(true);
 
 		// TODO database should be clean manually. EFFECT THE PERFORMANCE
 		// SUBSTANTIALLY
