@@ -24,7 +24,7 @@
 <configuration>
   <property>
     <name>hbase.rootdir</name>
-    <value>hdfs://<HBASE_MASTER_SERVER>:20001/hbase</value>
+    <value>hdfs://<HBASE_MASTER_SERVER>:20001/hbase</vdsdsdsalue>
     <description>The directory shared by region servers.
     </description>
   </property>
