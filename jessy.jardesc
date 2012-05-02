@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <jardesc>
-    <jar path="/home/otrack/ALL/These/implementation/jessy/jessy/jessy.jar"/>
+    <jar path="./jessy.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/jessy/bin/jessy.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>

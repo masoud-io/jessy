@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <FRACTAL>
 
-  <BootstrapIdentity>
+  <BootstrapIdentity>  
     <nodelist>
-      <node id="0" ip="127.0.0.1"/> 
+		<node id="0" ip="127.0.0.1"/>
+		<!-- 
+			<node id="1" ip="132.227.105.137"/>
+			<node id="1" ip="132.227.64.183"/> 
+			<node id="0" ip="132.227.64.105"/> 
+		--> 
     </nodelist>  
   </BootstrapIdentity>
 </FRACTAL>
