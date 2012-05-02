@@ -24,8 +24,6 @@ import fr.inria.jessy.transaction.TransactionState;
 
 public class JessyDBClient extends DB {
 
-	private static TimeRecorder benchmarkExecutionTime;
-	
 	private static Logger logger = Logger.getLogger(JessyDBClient.class);
 
 	private static boolean USE_DIST_JESSY = true;
@@ -44,7 +42,6 @@ public class JessyDBClient extends DB {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		benchmarkExecutionTime = new TimeRecorder("Jessy#BenchmarkCompletionTime");
 	}
 
 	public JessyDBClient() {
@@ -54,12 +51,10 @@ public class JessyDBClient extends DB {
 	@Override
 	public void init() {		
 		jessy.registerClient(this);
-		benchmarkExecutionTime.start();
 	}
 
 	@Override
 	public void cleanup() {
-		benchmarkExecutionTime.stop();
 		try {
 			jessy.close(this);
 		} catch (DatabaseException ex) {
