@@ -13,9 +13,13 @@ import java.util.regex.Pattern;
  * 
  */
 public class NewOrder extends Transaction {
+	
+	private int warhouseNumber;
+	
 	/* this class is written according to tpcc section 2.4.2*/
-	public NewOrder(Jessy jessy) throws Exception{
+	public NewOrder(Jessy jessy, int warhouseNumber) throws Exception{
 		super(jessy);
+		this.warhouseNumber = warhouseNumber;
 	}
 
 	@Override
@@ -44,7 +48,7 @@ public class NewOrder extends Transaction {
 			/*generate how many items we have in this new order, [5..15]*/
 			int ol_cnt = rand.nextInt(15-5+1)+5; 			
 			
-			wh = read(Warehouse.class, "W_1");
+			wh = read(Warehouse.class, "W_"+ this.warhouseNumber);
 			/* The district number (D_ID) is randomly selected within [1 .. 10] from the home warehouse (D_W_ID =
 			W_ID).*/
 			district_id = Integer.toString(rand.nextInt(10)+1);
@@ -150,7 +154,7 @@ public class NewOrder extends Transaction {
 			return commitTransaction();			
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return null;
+			return abortTransaction();
 		}		
 	}
 

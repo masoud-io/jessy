@@ -20,9 +20,12 @@ public class Payment extends Transaction {
 	private String C_ID;
 	private String C_LAST;
 	private double H_AMOUNT;
+	
+	private int warhouseNumber;
 
-	public Payment(Jessy jessy) throws Exception {
+	public Payment(Jessy jessy, int warhouseNumber) throws Exception {
 		super(jessy);
+		this.warhouseNumber = warhouseNumber;
 	}
 
 	@Override
@@ -49,7 +52,7 @@ public class Payment extends Transaction {
 												 * C_ID
 												 */
 
-			W_ID = "1"; /* warehouse number (W_ID) is constant */
+			W_ID = Integer.toString(this.warhouseNumber); /* warehouse number (W_ID) is constant */
 			H_AMOUNT = (float) (((float) rand.nextInt(500000 - 1) + 100) / 100.00); /* Clause 2.5.1.3(H_AMOUNT)is random within[1.00.. 5,000.00* ]*/
 
 			/* Selection in the Warehouse table */
@@ -211,8 +214,8 @@ public class Payment extends Transaction {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			return abortTransaction();
 		}
-		return null;
 
 	}
 

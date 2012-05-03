@@ -47,7 +47,7 @@ public class TpccTestInsertData {
 		jessy.addEntity(Order.class);
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
-		id = new InsertData(jessy);
+		id = new InsertData(jessy,1);
 
 	}
 

@@ -31,15 +31,18 @@ public class TpccClient {
 	OrderStatus orderstatus;
 	Delivery delivery;
 	StockLevel stocklevel;
-
-	int quotient = 0; /* for the number of NewOrder and Payment transactions */
+    
+	int numberTransaction;     /* number of Transactions to execute */
+	int quotient = 0; /* for the number of NewOrder and Payment Transactions */
 	int rest = 0;
 	int i, j;
 
 	private static Logger logger = Logger.getLogger(TpccClient.class);
 
-	public TpccClient() {
+	public TpccClient(int numberTransaction) {
 		PropertyConfigurator.configure("log4j.properties");
+		
+		this.numberTransaction = numberTransaction;
 
 		try {
 			jessy = LocalJessy.getInstance();
@@ -65,57 +68,83 @@ public class TpccClient {
 	}
 
 	public void execute() {
-
+        
+		/*
 		System.out.print("Input the number of transactions : ");
 		Scanner reader = new Scanner(System.in);
 		String s = reader.nextLine();
 		int number = (int) Integer.valueOf(s);
-
-		quotient = 10 * (number / 23);
-		rest = number % 23;
+        */
+		
+		quotient = 10 * (numberTransaction / 23);
+		rest = numberTransaction % 23;
 
 		try {
-			for (i = 1; i <= quotient; i++) {
-
-				logger.debug(i);
-
-				neworder();
-				System.out.println("NewOrder transaction committed");
-
-				payment();
-				System.out.println("Payment transaction committed");
-
-				/* for decks */
-				if (i != 0 && i % 10 == 0) {
-
-					orderstatus();
-					System.out.println("OrderStatus transaction committed");
-
-					delivery();
-					System.out.println("Delivery transaction committed");
-
-					stocklevel();
-					System.out.println("StockLevel transaction committed");
-				}
-
+			if(this.numberTransaction<23) {
+				
 				/* for the rest */
-				for (j = 0; j < rest / 2; j++) {
-
-					System.out.println(j);
-
+				for (i = 1; i <= rest / 2; i++) {
+                    
+					logger.debug(i);
+					
 					neworder();
-					System.out.println("NewOrder transaction committed");
+					logger.debug("NewOrder transaction committed");
 
 					payment();
-					System.out.println("Payment transaction committed");
+					logger.debug("Payment transaction committed");
 				}
 
 				if (rest % 2 == 1) {
-					System.out.println(j + 1);
+					
 					neworder();
-					System.out.println("NewOrder transaction committed");
+					logger.debug("NewOrder transaction committed");
+				}
+				
+			} else {
+				for (i = 1; i <= quotient; i++) {
+
+					logger.debug(i);
+
+					neworder();
+					logger.debug("NewOrder transaction committed");
+
+					payment();
+					logger.debug("Payment transaction committed");
+
+					/* for decks */
+					if (i != 0 && i % 10 == 0) {
+
+						orderstatus();
+						logger.debug("OrderStatus transaction committed");
+
+						delivery();
+						logger.debug("Delivery transaction committed");
+
+						stocklevel();
+						logger.debug("StockLevel transaction committed");
+					}
+
+					
+				}
+				
+				/* for the rest */
+				for (j = 0; j < rest / 2; j++) {
+
+					neworder();
+					logger.debug("NewOrder transaction committed");
+
+					payment();
+					logger.debug("Payment transaction committed");
+				}
+
+				if (rest % 2 == 1) {
+					
+					neworder();
+					logger.debug("NewOrder transaction committed");
 				}
 			}
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -124,37 +153,37 @@ public class TpccClient {
 
 	public void neworder() throws Exception {
 
-		neworder = new NewOrder(jessy);
+		neworder = new NewOrder(jessy, 1);
 		neworder.execute();
 	}
 
 	public void payment() throws Exception {
 
-		payment = new Payment(jessy);
+		payment = new Payment(jessy, 1);
 		payment.execute();
 	}
 
 	public void orderstatus() throws Exception {
 
-		orderstatus = new OrderStatus(jessy);
+		orderstatus = new OrderStatus(jessy, 1);
 		orderstatus.execute();
 	}
 
 	public void delivery() throws Exception {
 
-		delivery = new Delivery(jessy);
+		delivery = new Delivery(jessy, 1);
 		delivery.execute();
 	}
 
 	public void stocklevel() throws Exception {
 
-		stocklevel = new StockLevel(jessy);
+		stocklevel = new StockLevel(jessy, 1);
 		stocklevel.execute();
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		TpccClient client = new TpccClient();
+		TpccClient client = new TpccClient(26);
 		client.execute();
 
 	}

@@ -17,9 +17,12 @@ public class OrderStatus extends Transaction {
 	private String C_ID;
 	private String C_LAST;
 	private String O_ID; 
+	
+	private int warhouseNumber;
 
-	public OrderStatus(Jessy jessy) throws Exception {
+	public OrderStatus(Jessy jessy, int warhouseNumber) throws Exception {
 		super(jessy);
+		this.warhouseNumber = warhouseNumber;
 		// TODO Auto-generated constructor stub
 	}
 
@@ -38,7 +41,7 @@ public class OrderStatus extends Transaction {
     		
         	Random rand = new Random(System.currentTimeMillis());
         	int y = rand.nextInt(100-1)+1;  /* determine by C_LAST or by C_ID */
-        	W_ID = "1";   /* warehouse number (W_ID) is constant  */
+        	W_ID = Integer.toString(this.warhouseNumber);   /* warehouse number (W_ID) is constant  */
 			
 			D_ID = Integer.toString(rand.nextInt(10 - 1) + 1);  /* The district number (D_ID) is randomly selected within [1 ..10] */
 			
@@ -126,9 +129,8 @@ public class OrderStatus extends Transaction {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-    	
-		return null;
+			return abortTransaction();
+		}	
 	}
     	
     public void swap(List<Customer> list,int from,int to) {

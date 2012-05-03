@@ -47,7 +47,7 @@ public class TpccTestPayment {
 		jessy.addSecondaryIndex(Customer.class, String.class, "C_W_ID");
 		jessy.addSecondaryIndex(Customer.class, String.class, "C_D_ID");
 		jessy.addSecondaryIndex(Customer.class, String.class, "C_LAST");
-		payment = new Payment(jessy);
+		payment = new Payment(jessy, 1);
 	}
 	
 	/**

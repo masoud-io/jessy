@@ -43,7 +43,7 @@ public class TpccTestDelivery {
 		jessy.addEntity(Order.class);
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
-		delivery = new Delivery(jessy);
+		delivery = new Delivery(jessy, 1);
 	}
 	
 	/**

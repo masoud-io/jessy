@@ -47,7 +47,7 @@ public class TpccTestOrderStatus {
 		jessy.addSecondaryIndex(Customer.class, String.class, "C_W_ID");
 		jessy.addSecondaryIndex(Customer.class, String.class, "C_D_ID");
 		jessy.addSecondaryIndex(Customer.class, String.class, "C_LAST");
-		os = new OrderStatus(jessy);
+		os = new OrderStatus(jessy, 1);
 	}
 	
 	/**

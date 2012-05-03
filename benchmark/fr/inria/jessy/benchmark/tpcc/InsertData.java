@@ -20,8 +20,11 @@ public class InsertData extends Transaction {
 	private static final int NUMBER_OF_NEWORDER=900;
 	private static final int NUMBER_OF_ITEM=100000;
 	
-	public InsertData(Jessy jessy) throws Exception{
+	private int NumberWarhouse;
+	
+	public InsertData(Jessy jessy, int NumberWarhouse) throws Exception{
 		super(jessy);
+		this.NumberWarhouse = NumberWarhouse;
 	}
 
 	@Override
@@ -59,7 +62,7 @@ public class InsertData extends Transaction {
 		
 			
 			/*for i  warehouses*/
-			for(i=1; i<=1; i++){			
+			for(i=1; i<=this.NumberWarhouse; i++){			
 				wh = new Warehouse("W_"+i);
 				wh.setW_ID(Integer.toString(i));
 				wh.setW_NAME(NString.generate(6, 10));
@@ -244,7 +247,7 @@ public class InsertData extends Transaction {
 						no = new New_order("NO_W_"+wh.getW_ID()+"_NO_D_"+dis.getD_ID()+"_NO_O_"+l);
 						no.setNO_W_ID(wh.getW_ID());
 						no.setNO_D_ID(dis.getD_ID());
-						no.setNO_O_ID(2101+k);
+						no.setNO_O_ID(2100+k);
 						create(no);
 					}
 				}
@@ -271,7 +274,7 @@ public class InsertData extends Transaction {
 			return commitTransaction();			
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return null;
+			return abortTransaction();
 		}		
 	}
 

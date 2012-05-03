@@ -17,9 +17,12 @@ public class StockLevel extends Transaction {
 	
 	private String W_ID;
 	private String D_ID;
+	
+	private int warhouseNumber;
 
-	public StockLevel(Jessy jessy) throws Exception {
+	public StockLevel(Jessy jessy, int warhouseNumber) throws Exception {
 		super(jessy);
+		this.warhouseNumber = warhouseNumber;
 	}
 
 	@Override
@@ -35,7 +38,7 @@ public class StockLevel extends Transaction {
 			int i,j;
 			
 			/* value of (W_ID, D_ID) is constant */
-			W_ID = "1";
+			W_ID = Integer.toString(this.warhouseNumber);
 			D_ID = "1";
 			
 			/* Selection District */
@@ -70,9 +73,9 @@ public class StockLevel extends Transaction {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			return abortTransaction();
 		}
 		
-		return null;
 	}
 
 }

@@ -13,9 +13,12 @@ public class Delivery extends Transaction {
 	
 	private String W_ID;
 	private String O_CARRIER_ID;
+	
+	private int warhouseNumber;
 
-	public Delivery(Jessy jessy) throws Exception {
+	public Delivery(Jessy jessy, int warhouseNumber) throws Exception {
 		super(jessy);
+		this.warhouseNumber = warhouseNumber;
 	}
 
 	@Override
@@ -33,7 +36,7 @@ public class Delivery extends Transaction {
     		File log = new File("log file");
     		FileWriter fw = new FileWriter(log);
             */
-        	W_ID = "1";   /* warehouse number (W_ID) is constant */
+        	W_ID = Integer.toString(this.warhouseNumber);   /* warehouse number (W_ID) is constant */
         	
         	Random rand = new Random(System.currentTimeMillis());
         	
@@ -105,8 +108,7 @@ System.out.println(order.getO_CARRIER_ID());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	
-		return null;
+    	return abortTransaction();
 	}
 
 }
