@@ -28,7 +28,7 @@ public class JessyDBClient extends DB {
 
 	private static boolean USE_DIST_JESSY = true;
 
-	private static Jessy jessy;
+	private  static Jessy jessy;
 	
 	// FIXME merge this into init
 	static {
@@ -46,6 +46,16 @@ public class JessyDBClient extends DB {
 
 	public JessyDBClient() {
 		super();
+//		try {
+//			if (USE_DIST_JESSY) {
+//				jessy = DistributedJessy.getInstance();
+//			} else {
+//				jessy = LocalJessy.getInstance();
+//			}
+//			jessy.addEntity(YCSBEntity.class);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	@Override

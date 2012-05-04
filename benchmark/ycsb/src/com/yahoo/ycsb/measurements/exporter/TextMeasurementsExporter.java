@@ -48,6 +48,7 @@ public class TextMeasurementsExporter implements MeasurementsExporter
 
   public void close() throws IOException
   {
+	  //this.bw.flush();
     this.bw.close();
   }
 

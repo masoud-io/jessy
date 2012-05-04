@@ -401,7 +401,7 @@ public class Client
 			
 			if (exportFile == null)
 			{
-				out = System.out;
+				out = System.err;
 			} else
 			{
 				out = new FileOutputStream(exportFile);
@@ -430,7 +430,7 @@ public class Client
 		{
 			if (exporter != null)
 			{
-				exporter.close();
+				exporter.close();	
 			}
 		}
 	}
