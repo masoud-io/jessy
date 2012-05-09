@@ -2,6 +2,10 @@ package fr.inria.jessy.store;
 
 import static com.sleepycat.persist.model.Relationship.MANY_TO_ONE;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
 import com.sleepycat.persist.model.Persistent;
@@ -11,6 +15,7 @@ import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
+import fr.inria.jessy.vector.NullVector;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
 
@@ -25,14 +30,14 @@ import fr.inria.jessy.vector.VectorFactory;
 // FIXME transient field ?
 
 @Persistent
-public abstract class JessyEntity implements Serializable {
+public abstract class JessyEntity implements Externalizable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
 
 	private Vector<String> localVector;
-	private boolean removed = false;
+	private transient boolean removed = true;
 
 	public boolean isRemovoed() {
 		return removed;
@@ -86,5 +91,16 @@ public abstract class JessyEntity implements Serializable {
 
 	public void setLocalVector(Vector<String> localVector) {
 		this.localVector = localVector;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		localVector=(Vector<String>) in.readObject();
+//		localVector=new NullVector<String>();
+	}
+
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(localVector);
+		
 	}
 }
