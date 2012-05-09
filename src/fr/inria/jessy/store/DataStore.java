@@ -94,11 +94,11 @@ public class DataStore {
 
 		// TODO database should be clean manually. EFFECT THE PERFORMANCE
 		// SUBSTANTIALLY
-		// envConfig.setLocking(false); //The cleaner becomes disable here!
+		 envConfig.setLocking(false); //The cleaner becomes disable here!
 		// Influence the performance tremendously!
 		envConfig.setSharedCache(true); // Does not effect the prformance much!
 		// TODO subject to change for optimization
-		// envConfig.setCachePercent(90);
+		 envConfig.setCachePercent(90);
 		env = new Environment(envHome, envConfig);
 	}
 
@@ -117,7 +117,7 @@ public class DataStore {
 			storeConfig.setAllowCreate(true);
 
 			// Caution: Durability cannot be ensured!
-			// storeConfig.setDeferredWrite(true);
+			 storeConfig.setDeferredWrite(true);
 
 			EntityStore store = new EntityStore(env, storeName, storeConfig);
 
