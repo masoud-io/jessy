@@ -1,11 +1,20 @@
 package fr.inria.jessy.vector;
 
-import java.io.*;
-import java.util.*;
+import static fr.inria.jessy.vector.ValueVector.ComparisonResult.EQUAL_TO;
+import static fr.inria.jessy.vector.ValueVector.ComparisonResult.GREATER_THAN;
+import static fr.inria.jessy.vector.ValueVector.ComparisonResult.LOWER_THAN;
+import static fr.inria.jessy.vector.ValueVector.ComparisonResult.NOT_COMPARABLE;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import com.sleepycat.persist.model.Persistent;
-
-import static fr.inria.jessy.vector.ValueVector.ComparisonResult.*;
 
 /**
  * A generic value vector. It consist of a set of (key, value) pairs. Values are
@@ -25,7 +34,7 @@ import static fr.inria.jessy.vector.ValueVector.ComparisonResult.*;
  *            the type of the values of the vector.
  */
 @Persistent
-public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Serializable{
+public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Externalizable{
 
 	//
 	// CONSTANTS

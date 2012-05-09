@@ -1,5 +1,10 @@
 package fr.inria.jessy.vector;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.HashMap;
 import java.util.List;
 
 import com.sleepycat.persist.model.Persistent;
@@ -9,7 +14,7 @@ import fr.inria.jessy.vector.ValueVector;
 ;
 
 @Persistent
-public abstract class Vector<K> extends ValueVector<K, Integer> {
+public abstract class Vector<K> extends ValueVector<K, Integer> implements Externalizable{
 
 	K selfKey;
 
@@ -63,4 +68,14 @@ public abstract class Vector<K> extends ValueVector<K, Integer> {
 		setValue(selfKey, getSelfValue() + 1);
 	}
 
+	@SuppressWarnings("unchecked")
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		super.readExternal(in);
+		selfKey = (K) in.readObject();
+	}
+
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(selfKey);
+	}
 }
