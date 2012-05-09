@@ -1,6 +1,9 @@
 package fr.inria.jessy.store;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -9,7 +12,7 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.vector.CompactVector;
 
 //TODO Comment me and all methods
-public class ReadRequest<E extends JessyEntity> implements Serializable {
+public class ReadRequest<E extends JessyEntity> implements Externalizable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
@@ -18,6 +21,14 @@ public class ReadRequest<E extends JessyEntity> implements Serializable {
 	List<ReadRequestKey<?>> keys;
 	UUID readRequestId;
 
+	/**
+	 * For externalizable interface
+	 */
+	@Deprecated
+	public ReadRequest(){
+		
+	}
+	
 	/**
 	 * This constructor should be called if the {@code ReadRequest} is only on
 	 * one {@code ReadRequestKey}
@@ -88,6 +99,24 @@ public class ReadRequest<E extends JessyEntity> implements Serializable {
 	@Override 
 	public String toString(){
 		return getReadRequestId().toString();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(entityClassName);
+		out.writeObject(readSet);
+		out.writeObject(keys);
+		out.writeObject(readRequestId);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+
+		entityClassName=(String)in.readObject();
+		readSet=(CompactVector<String>)in.readObject();
+		keys=(List<ReadRequestKey<?>>)in.readObject();
+		readRequestId=(UUID)in.readObject();
 	}
 
 }
