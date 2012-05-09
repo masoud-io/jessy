@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;

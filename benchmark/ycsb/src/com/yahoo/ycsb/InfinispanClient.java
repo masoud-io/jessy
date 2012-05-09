@@ -41,18 +41,22 @@ public class InfinispanClient extends DB {
 
 	private EmbeddedCacheManager infinispanManager;
 
-	private static final Log logger = LogFactory.getLog(InfinispanClient.class);
+	//private static final Log logger = LogFactory.getLog(InfinispanClient.class);
 
 	public InfinispanClient() {
-		clustered = Boolean.getBoolean("infinispan.clustered");
+		
+		clustered = Boolean.getBoolean("infin" +
+				"ispan.clustered");
+		
 	}
 
 	public void init() throws DBException {
-		try {
-			infinispanManager = new DefaultCacheManager("infinispan-config.xml");
-		} catch (IOException e) {
-			throw new DBException(e);
-		}
+			
+			
+				
+					infinispanManager = new DefaultCacheManager();
+				
+	
 	}
 
 	public void cleanup() {
@@ -86,7 +90,7 @@ public class InfinispanClient extends DB {
 	}
 
 	public int scan(String table, String startkey, int recordcount, Set<String> fields, Vector<HashMap<String, String>> result) {
-		logger.warn("Infinispan does not support scan semantics");
+		//logger.warn("Infinispan does not support scan semantics");
 		return OK;
 	}
 

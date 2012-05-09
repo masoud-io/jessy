@@ -140,5 +140,6 @@
 	<classpathentry kind="lib" path="lib/infinispan/lib/stax2-api-3.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/infinispan/lib/woodstox-core-asl-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/redis-binding-0.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/gemfire-binding-0.1.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

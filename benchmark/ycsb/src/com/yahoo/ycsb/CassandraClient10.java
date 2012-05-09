@@ -399,7 +399,7 @@ public class CassandraClient10 extends DB
 */
   public int update(String table, String key, HashMap<String, String> values)
   {
-	  System.out.println(table+"\t"+key+"\n"+values);
+	 
     return insert(table, key, values);
   }
 
