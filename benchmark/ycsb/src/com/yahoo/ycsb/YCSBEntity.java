@@ -1,6 +1,10 @@
 package com.yahoo.ycsb;
 
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -12,7 +16,7 @@ import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.Keyspace.Distribution;
 
 @Entity
-public class YCSBEntity extends JessyEntity{
+public class YCSBEntity extends JessyEntity implements Externalizable{
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -40,9 +44,7 @@ public class YCSBEntity extends JessyEntity{
 
 		this(entityClassName,entityId);
 
-		for (String k : insFields.keySet()) {
-			this.fields.put(k, insFields.get(k));
-		}
+		this.fields=insFields;
 	}
 	/*Get the Set of fields' names (Keys)*/
 	public Set<String> getFields() {
@@ -69,6 +71,20 @@ public class YCSBEntity extends JessyEntity{
 		fields.clear();
 		fields = null;
 
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		// out.writeObject(fields);		
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		super.readExternal(in);
+		// fields=(HashMap<String, String> ) in.readObject();
+		fields = new HashMap<String, String>();
 	}
 
 
