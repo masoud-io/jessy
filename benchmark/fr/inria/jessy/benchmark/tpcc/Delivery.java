@@ -14,6 +14,8 @@ public class Delivery extends Transaction {
 	private String W_ID;
 	private String O_CARRIER_ID;
 	
+	private int noNumber;
+	
 	private int warhouseNumber;
 
 	public Delivery(Jessy jessy, int warhouseNumber) throws Exception {
@@ -51,6 +53,7 @@ System.out.println("district : "+ district.getD_NEXT_O());
         			//System.out.println("new oder : "+ no.getNO_D_ID());
         			if(no != null) {
         				System.out.println(no.getNO_O_ID());
+        				noNumber = j;
         				j = district.getD_NEXT_O();   /* find the result and skip the loop */
         			}
         				
@@ -59,21 +62,20 @@ System.out.println("district : "+ district.getD_NEXT_O());
         		if(no == null) {   /* no result, skip */
         			/* record the result in the log file, but not necessary for the moment according to Masoud  */
         			//fw.write("no matching result in"+ i + "district\n");
-System.out.println("null value");
         			continue;
         		}
         		/* increment the undelivered order number */
         		order_counter++;
         		/* save the NO_O_ID which will be used later before delete the row*/
-        		int NO_O_ID = no.getNO_O_ID();
+        		//int NO_O_ID = no.getNO_O_ID();
         		
         		/* Delete at New_Order */
         		no.setNO_W_ID(null);
         		no.setNO_D_ID(null);
         		no.setNO_O_ID(0);
         		write(no);
-System.out.println(NO_O_ID);       		
-        		order = read(Order.class, "O_W_"+W_ID + "_" + "O_D_"+ i + "_" + "O_"+NO_O_ID );
+System.out.println(noNumber);       		
+        		order = read(Order.class, "O_W_"+W_ID + "_" + "O_D_"+ i + "_" + "O_"+noNumber);
 System.out.println(order.getO_D_ID());
 System.out.println(order.getO_ID());
 System.out.println(order.getO_CARRIER_ID());

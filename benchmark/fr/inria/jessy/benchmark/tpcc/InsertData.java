@@ -211,6 +211,7 @@ public class InsertData extends Transaction {
 						or.setO_C_ID(Integer.toString(randCustomerId[k-1]));
 						or.setO_W_ID(wh.getW_ID());
 						or.setO_D_ID(dis.getD_ID());
+						or.setO_ID(k);
 						or.setO_ENTRY_D(new Date());
 						if(k<2101)
 							or.setO_CARRIER_ID(Integer.toString(rand.nextInt(10)+1));

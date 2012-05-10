@@ -56,6 +56,7 @@ public class StockLevel extends Transaction {
 					/* Selection Order_line */
 					ol = read(Order_line.class, "OL_W_"+W_ID + "_" + "OL_D_"+D_ID + "_" + "OL_O_"+order.getO_ID() +"_" + "OL_"+j);
 					/* Stocks must be counted only for distinct items */
+System.out.println(ol.getOL_I_ID());
 					if(!listItems.contains(ol.getOL_I_ID())) {
 						/* add into the item list */
 						listItems.add(ol.getOL_I_ID());
