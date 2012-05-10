@@ -104,6 +104,7 @@ public class TpccClient {
 				}
 				
 			} else {
+				
 				for (i = 1; i <= quotient; i++) {
 
 					logger.debug(i);
