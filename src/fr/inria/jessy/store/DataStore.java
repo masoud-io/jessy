@@ -1,22 +1,18 @@
 package fr.inria.jessy.store;
 
 import java.io.File;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.lang.model.type.TypeVariable;
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
-import org.junit.Test;
-
+import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.Durability;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
+import com.sleepycat.je.LockMode;
 import com.sleepycat.persist.EntityCursor;
 import com.sleepycat.persist.EntityJoin;
 import com.sleepycat.persist.EntityStore;
@@ -24,7 +20,6 @@ import com.sleepycat.persist.ForwardCursor;
 import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
-import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
@@ -39,6 +34,10 @@ import fr.inria.jessy.vector.Vector;
 public class DataStore {
 	private Environment env;
 
+	protected static TimeRecorder curTime = new TimeRecorder(
+	"DataStore#curTime");
+
+	
 	/**
 	 * Indicates the default store that put and get operations should be
 	 * executed in.
@@ -90,16 +89,18 @@ public class DataStore {
 
 		envConfig.setTransactional(false);
 		envConfig.setTxnNoSyncVoid(true);
-		envConfig.setTxnNoSyncVoid(true);
+//		envConfig.setTxnWriteNoSyncVoid(true);
+		
 
 		// TODO database should be clean manually. EFFECT THE PERFORMANCE
 		// SUBSTANTIALLY
-		 envConfig.setLocking(false); //The cleaner becomes disable here!
+		envConfig= envConfig.setLocking(false); //The cleaner becomes disable here!
 		// Influence the performance tremendously!
 		envConfig.setSharedCache(true); // Does not effect the prformance much!
 		// TODO subject to change for optimization
 		 envConfig.setCachePercent(90);
 		env = new Environment(envHome, envConfig);
+		
 	}
 
 	/**
@@ -117,7 +118,9 @@ public class DataStore {
 			storeConfig.setAllowCreate(true);
 
 			// Caution: Durability cannot be ensured!
-			 storeConfig.setDeferredWrite(true);
+			 storeConfig.setDeferredWriteVoid(true);
+			 
+			 storeConfig.setTransactionalVoid(false);
 
 			EntityStore store = new EntityStore(env, storeName, storeConfig);
 
@@ -266,13 +269,22 @@ public class DataStore {
 	private <E extends JessyEntity, SK> E get(String entityClassName,
 			String secondaryKeyName, SK keyValue, CompactVector<String> readSet)
 			throws NullPointerException {
+
+		curTime.start();
 		try {
 			@SuppressWarnings("unchecked")
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
 					.get(entityClassName + secondaryKeyName);
 
+			
+//			E entity2=sindex.get(keyValue);
+//			if(entity2!=null){
+//				return entity2;
+//			}
+			
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
 			E entity = cur.last();
+			curTime.stop();
 
 			if (readSet == null) {
 				cur.close();
@@ -385,7 +397,6 @@ public class DataStore {
 			E entity = get(readRequest.getEntityClassName(),
 					readRequestKey.getKeyName(), readRequestKey.getKeyValue(),
 					readRequest.getReadSet());
-
 			return new ReadReply<E>(entity, readRequest.getReadRequestId());
 
 		} else {

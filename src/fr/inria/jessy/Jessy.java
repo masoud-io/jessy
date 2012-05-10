@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.persist.model.SecondaryKey;
 

@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+
 import com.sleepycat.je.DatabaseException;
 
 import fr.inria.jessy.store.JessyEntity;
@@ -25,23 +27,28 @@ public class LocalJessy extends Jessy {
 		super();
 	}
 
-	public static synchronized LocalJessy getInstance() throws Exception {		
+	public static synchronized LocalJessy getInstance() throws Exception {
 		if (localJessy == null) {
 			localJessy = new LocalJessy();
 		}
 		return localJessy;
 	}
 
+	protected static TimeRecorder getTime = new TimeRecorder(
+			"LocalJessy#getTime");
+
 	@Override
 	protected <E extends JessyEntity, SK> E performRead(Class<E> entityClass,
 			String keyName, SK keyValue, CompactVector<String> readSet) {
+		getTime.start();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 		Collection<E> col = getDataStore().get(readRequest).getEntity();
+		getTime.stop();
 
-		if (col.iterator().hasNext())
+		if (col.iterator().hasNext()) {
 			return col.iterator().next();
-		else
+		} else
 			return null;
 	}
 
@@ -57,7 +64,6 @@ public class LocalJessy extends Jessy {
 
 	}
 
- 
 	@Override
 	public ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
@@ -67,7 +73,7 @@ public class LocalJessy extends Jessy {
 
 		if (consistency.certify(lastCommittedEntities,
 				handler2executionHistory.get(transactionHandler))) {
-			
+
 			// certification test has returned true. we can commit.
 			applyModifiedEntities(transactionHandler);
 			result.changeState(TransactionState.COMMITTED);
@@ -76,7 +82,7 @@ public class LocalJessy extends Jessy {
 			result.changeState(TransactionState.ABORTED_BY_CERTIFICATION);
 
 		}
-		
+
 		return result;
 
 	}
@@ -124,11 +130,11 @@ public class LocalJessy extends Jessy {
 			}
 		}
 	}
-	
+
 	@Override
 	public <E extends JessyEntity> void performNonTransactionalWrite(E entity) {
 		dataStore.put(entity);
-//		lastCommittedEntities.put(entity.getKey(), entity);
+		// lastCommittedEntities.put(entity.getKey(), entity);
 	}
 
 	public synchronized void close(Object object) throws DatabaseException {

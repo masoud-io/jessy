@@ -9,12 +9,15 @@ import java.util.List;
 import java.util.UUID;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.utils.CustomUUID;
 import fr.inria.jessy.vector.CompactVector;
 
 //TODO Comment me and all methods
 public class ReadRequest<E extends JessyEntity> implements Externalizable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
+
+	private static CustomUUID customUUID=new CustomUUID();
 
 	String entityClassName;
 	CompactVector<String> readSet;
@@ -25,10 +28,10 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	 * For externalizable interface
 	 */
 	@Deprecated
-	public ReadRequest(){
-		
+	public ReadRequest() {
+
 	}
-	
+
 	/**
 	 * This constructor should be called if the {@code ReadRequest} is only on
 	 * one {@code ReadRequestKey}
@@ -47,8 +50,8 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 
 		keys = new ArrayList<ReadRequestKey<?>>();
 		ReadRequestKey<K> key = new ReadRequestKey<K>(keyName, keyValue);
-		keys.add(key);
-		readRequestId = UUID.randomUUID();
+		keys.add(key);		
+		readRequestId = customUUID.getNextUUID();
 	}
 
 	/**
@@ -86,8 +89,8 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	}
 
 	/**
-	 * FIXME consider the first key as the partitioning key. Is it correct?
-	 * This method returns the key that is used to partition entities across
+	 * FIXME consider the first key as the partitioning key. Is it correct? This
+	 * method returns the key that is used to partition entities across
 	 * different processes.
 	 * 
 	 * @return
@@ -95,9 +98,9 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	public String getPartitioningKey() {
 		return this.keys.get(0).getKeyValue().toString();
 	}
-	
-	@Override 
-	public String toString(){
+
+	@Override
+	public String toString() {
 		return getReadRequestId().toString();
 	}
 
@@ -113,10 +116,10 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 
-		entityClassName=(String)in.readObject();
-		readSet=(CompactVector<String>)in.readObject();
-		keys=(List<ReadRequestKey<?>>)in.readObject();
-		readRequestId=(UUID)in.readObject();
+		entityClassName = (String) in.readObject();
+		readSet = (CompactVector<String>) in.readObject();
+		keys = (List<ReadRequestKey<?>>) in.readObject();
+		readRequestId = (UUID) in.readObject();
 	}
 
 }

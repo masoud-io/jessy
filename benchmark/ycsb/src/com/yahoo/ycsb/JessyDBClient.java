@@ -25,9 +25,9 @@ public class JessyDBClient extends DB {
 
 	private static Logger logger = Logger.getLogger(JessyDBClient.class);
 
-	private static boolean USE_DIST_JESSY = true;
+	private static boolean USE_DIST_JESSY = false;
 
-	private  static Jessy jessy;
+	private static Jessy jessy;
 	
 	// FIXME merge this into init
 	static {

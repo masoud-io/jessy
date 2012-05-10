@@ -4,15 +4,18 @@ import java.io.Serializable;
 import java.util.UUID;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.utils.CustomUUID;
 
 public class TransactionHandler implements Serializable{
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 	
+	private static CustomUUID customUUID;
+	
 	private  UUID id;
 	
 	public TransactionHandler(){
-		this.id=UUID.randomUUID();
+		this.id=customUUID.getNextUUID();
 	}
 
 	public UUID getId() {
