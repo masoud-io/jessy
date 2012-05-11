@@ -3,11 +3,16 @@
  */
 package fr.inria.jessy.vector;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.store.ReadRequestKey;
 
 /**
  * @author Masoud Saeida Ardekani
@@ -17,7 +22,7 @@ import fr.inria.jessy.ConstantPool;
  *         sending over the network
  */
 public class CompactVector<K> extends ValueVector<K, Integer> implements
-		Serializable {
+		Externalizable {
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;;
 
@@ -44,4 +49,18 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	public int size(){
 		return keys.size();
 	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(keys);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		super.readExternal(in);
+		keys = (List<K>) in.readObject();
+	}
+
 }

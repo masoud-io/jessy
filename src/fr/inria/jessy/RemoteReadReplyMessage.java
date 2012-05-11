@@ -6,6 +6,7 @@ import java.io.ObjectOutput;
 
 import net.sourceforge.fractal.Message;
 import net.sourceforge.fractal.multicast.MulticastMessage;
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 
@@ -13,6 +14,7 @@ import fr.inria.jessy.store.ReadReply;
 public class RemoteReadReplyMessage<E extends JessyEntity> extends MulticastMessage {
 
 	static final long serialVersionUID = ConstantPool.JESSY_MID;
+	private static TimeRecorder unpackTime = new TimeRecorder("RemoteReadReplyMessage#unpackTime");
 
 	private ReadReply<E> reply;
 	
@@ -33,7 +35,9 @@ public class RemoteReadReplyMessage<E extends JessyEntity> extends MulticastMess
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws ClassNotFoundException, IOException{
 		super.readExternal(in);
+		unpackTime.start();
 		reply = (ReadReply<E>) in.readObject();
+		unpackTime.stop();
 	}
 	
 	@Override

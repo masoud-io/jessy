@@ -76,15 +76,14 @@ public class YCSBEntity extends JessyEntity implements Externalizable{
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
-		// out.writeObject(fields);		
+		out.writeObject(fields);		
 	}
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		super.readExternal(in);
-		// fields=(HashMap<String, String> ) in.readObject();
-		fields = new HashMap<String, String>();
+		fields=(HashMap<String, String> ) in.readObject();
 	}
 
 

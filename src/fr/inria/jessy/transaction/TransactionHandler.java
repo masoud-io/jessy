@@ -10,7 +10,7 @@ public class TransactionHandler implements Serializable{
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 	
-	private static CustomUUID customUUID;
+	private static CustomUUID customUUID=new CustomUUID();
 	
 	private  UUID id;
 	

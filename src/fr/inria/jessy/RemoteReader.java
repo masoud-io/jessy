@@ -14,6 +14,8 @@ import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
+import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import org.apache.log4j.Logger;
 
@@ -46,6 +48,11 @@ import fr.inria.jessy.utils.ExecutorPool;
 public class RemoteReader implements Learner {
 
 	private static Logger logger = Logger.getLogger(RemoteReader.class);
+	
+	private static TimeRecorder serverRead=new TimeRecorder("RemoteReader#serverRead");
+	private static TimeRecorder clientRead=new TimeRecorder("RemoteReader#clientRead");
+	private static TimeRecorder serverAnsweringTime
+							= new TimeRecorder("RemoteReader#serverAnsweringTime");
 
 	private DistributedJessy jessy;
 	private MulticastStream remoteReadStream;
@@ -91,12 +98,15 @@ public class RemoteReader implements Learner {
 
 		if (v instanceof RemoteReadRequestMessage) {
 
+			serverRead.start();
 			RemoteReadRequestMessage request = (RemoteReadRequestMessage) v;
 			logger.debug("request "	+ request.getReadRequest());
 			pool.submit(new RemoteReadReplyTask(request));
+			serverRead.stop();
 
 		} else {
 
+			clientRead.start();
 			ReadReply reply = ((RemoteReadReplyMessage) v).getReadReply();
 			logger.debug("reply " + reply.getReadRequestId());
 
@@ -115,6 +125,7 @@ public class RemoteReader implements Learner {
 					requests.get(reply.getReadRequestId()).notify();
 				}
 			}
+			clientRead.stop();
 		}
 	}
 
@@ -158,6 +169,7 @@ public class RemoteReader implements Learner {
 		}
 
 		public ReadReply<E> call() throws Exception {
+			serverAnsweringTime.start();
 			ReadRequest<E> request = message.getReadRequest();
 			logger.debug("asnswering to " + message.source + " for "
 					+ request.getReadRequestId());
@@ -166,6 +178,7 @@ public class RemoteReader implements Learner {
 				logger.error("request "+request+ " failed ");
 			remoteReadStream.unicast(new RemoteReadReplyMessage<E>(readReply),
 					message.source);
+			serverAnsweringTime.stop();
 			return null;
 		}
 

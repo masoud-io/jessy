@@ -48,6 +48,8 @@ public abstract class Jessy {
 		UNDEFINED,
 	};
 
+	private static TimeRecorder ReadTime = new TimeRecorder("Jessy#readTime");
+	
 	protected DataStore dataStore;
 	Consistency consistency;
 
@@ -78,7 +80,7 @@ public abstract class Jessy {
 		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
 
 		lastCommittedEntities = new ConcurrentHashMap<String, JessyEntity>();
-
+		
 	}
 
 	protected DataStore getDataStore() {
@@ -172,10 +174,13 @@ public abstract class Jessy {
 			TransactionHandler transactionHandler, Class<E> entityClass,
 			String keyValue) throws Exception {
 
+		ReadTime.start();
+		
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);
 
 		if (executionHistory == null) {
+			ReadTime.stop();
 			throw new NullPointerException("Transaction has not been started");
 		}
 
@@ -197,8 +202,10 @@ public abstract class Jessy {
 
 		if (entity != null) {
 			executionHistory.addReadEntity(entity);
+			ReadTime.stop();
 			return entity;
 		} else {
+			ReadTime.stop();
 			return null;
 		}
 	}

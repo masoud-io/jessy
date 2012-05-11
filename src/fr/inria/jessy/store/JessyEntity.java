@@ -37,7 +37,7 @@ public abstract class JessyEntity implements Externalizable {
 	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
 
 	private Vector<String> localVector;
-	private transient boolean removed = true;
+	private boolean removed = true;
 
 	public boolean isRemovoed() {
 		return removed;
@@ -95,11 +95,13 @@ public abstract class JessyEntity implements Externalizable {
 	
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		secondaryKey=(String) in.readObject();
 		localVector=(Vector<String>) in.readObject();
 //		localVector=new NullVector<String>();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(secondaryKey);
 		out.writeObject(localVector);
 		
 	}

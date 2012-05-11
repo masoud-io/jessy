@@ -13,6 +13,7 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.je.LockMode;
+import com.sleepycat.je.PreloadConfig;
 import com.sleepycat.persist.EntityCursor;
 import com.sleepycat.persist.EntityJoin;
 import com.sleepycat.persist.EntityStore;
@@ -157,11 +158,18 @@ public class DataStore {
 		try {
 			PrimaryIndex<Long, E> pindex = entityStores.get(storeName)
 					.getPrimaryIndex(Long.class, entityClass);
+			
+			PreloadConfig preloadConfig=new PreloadConfig();
+			preloadConfig.setMaxBytes(1073741824);
+			preloadConfig.setLoadLNs(true);
+			
+//			pindex.getDatabase().preload(preloadConfig);
+			
 			primaryIndexes.put(entityClass.getName(), pindex);
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("Store with the name " + storeName
 					+ " does not exists.");
-		}
+		}		
 	}
 
 	public <E extends JessyEntity> void addPrimaryIndex(Class<E> entityClass)
@@ -276,14 +284,36 @@ public class DataStore {
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
 					.get(entityClassName + secondaryKeyName);
 
+
 			
 //			E entity2=sindex.get(keyValue);
 //			if(entity2!=null){
+//				curTime.stop();
 //				return entity2;
 //			}
+
 			
+			
+//			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();	
+//			E entity = cur.first();
+//			curTime.stop();
+//
+//			if (readSet == null) {
+//				cur.close();
+//				return entity;
+//			}
+//
+//			while (entity != null) {
+//				if (entity.getLocalVector().isCompatible(readSet)) {
+//					cur.close();
+//					return entity;
+//				} else {
+//					entity = cur.prev();
+//				}
+//			}
+
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
-			E entity = cur.last();
+			E entity = cur.prevNoDup();
 			curTime.stop();
 
 			if (readSet == null) {
@@ -296,19 +326,9 @@ public class DataStore {
 					cur.close();
 					return entity;
 				} else {
-					entity = cur.prev();
+					entity = cur.prevDup();
 				}
 			}
-			// System.out.println("==================**********************");
-			// for (E tmp:entity2){
-			// System.out.println("Local Vector_SELF Key" +
-			// tmp.getLocalVector().getSelfKey());
-			// System.out.println("Local Vector_SELF Value" +
-			// tmp.getLocalVector().getSelfValue());
-			// System.out.println("SELF KEY VALUE ON READSET" +
-			// readSet.getValue(tmp.getLocalVector().getSelfKey()));
-			// }
-			// System.out.println("==================");
 
 			cur.close();
 			return null;

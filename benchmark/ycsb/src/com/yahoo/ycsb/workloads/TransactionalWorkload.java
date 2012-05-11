@@ -429,7 +429,7 @@ public class TransactionalWorkload extends Workload {
 		String keyname;
 		HashSet<String> fields = null;
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 4; i++) {
 			do {
 				keynum = keychooser.nextInt();
 			} while (keynum > transactioninsertkeysequence.lastInt());
