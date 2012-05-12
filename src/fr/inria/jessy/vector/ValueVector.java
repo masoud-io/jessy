@@ -296,16 +296,17 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 		
 	}
 	
+	public void setBydefault(V bydefault){
+		this.bydefault=bydefault;
+	}
 
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		map = (HashMap<K, V>) in.readObject();
-		bydefault = (V) in.readObject();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(map);
-		out.writeObject(bydefault);
 	}
 
 	//
@@ -326,93 +327,6 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 		}
 	}
 
-	/**
-	 * A version vector, i.e. a vector of Integer values.
-	 * 
-	 * @param <K>
-	 *            the type of the keys of the vector.
-	 */
-	public static class VersionVector<K> extends ValueVector<K, Integer> {
-
-		// 
-		// Constants
-		//
-		private static final long serialVersionUID = 1L;
-
-		// 
-		// Object fields
-		//
-		private K local;
-
-		// 
-		// Constructors
-		//
-		
-		/**
-		 * To be externalizable.
-		 */
-		public VersionVector(){
-		}
-
-		
-		/**
-		 * Creates a version vector associated to the specified local key.
-		 * 
-		 * @param local
-		 *            the key the vector is associated with.
-		 * 
-		 */
-		public VersionVector(K local) {
-			super(0);
-			this.local = local;
-		}
-
-		/**
-		 * @inheritDoc
-		 */
-		public Object clone() {
-			return super.clone();
-		}
-
-		//
-		// METHODS
-		//
-		/**
-		 * Increments the value of the local key.
-		 * 
-		 * @return a clone of this version vector.
-		 */
-		@SuppressWarnings("unchecked")
-		public synchronized VersionVector<K> incr() {
-			setValue(local, getValue(local) + 1);
-			return (VersionVector<K>) clone();
-		}
-
-		/**
-		 * Compresses the specified version vector. See
-		 * {@link ValueVector#compress(ValueVector)}.
-		 * 
-		 * @param vector
-		 *            the vector to compress.
-		 * @return the compressed representation of the specified vector.
-		 */
-		public VersionVector<K> compress(VersionVector<K> vector) {
-			return (VersionVector<K>) super.compress(vector);
-		}
-
-		/**
-		 * Expands the specified version vector. See
-		 * {@link ValueVector#expand(ValueVector)}.
-		 * 
-		 * @param vector
-		 *            the vector to compress.
-		 * @return the compressed representation of the specified vector.
-		 */
-		public VersionVector<K> expand(VersionVector<K> vector) {
-			return (VersionVector<K>) super.expand(vector);
-		}
-
-	}
 	
 }
 

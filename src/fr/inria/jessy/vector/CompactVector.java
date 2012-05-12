@@ -9,10 +9,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.store.ReadRequestKey;
 
 /**
  * @author Masoud Saeida Ardekani
@@ -25,11 +23,12 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 		Externalizable {
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;;
-
+	private final static Integer _bydefault=-1;
+	
 	private List<K> keys;
 
 	public CompactVector() {
-		super(-1);
+		super(_bydefault);
 		keys = new ArrayList<K>();
 	}
 	
@@ -60,6 +59,7 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		super.readExternal(in);
+		super.setBydefault(_bydefault);
 		keys = (List<K>) in.readObject();
 	}
 

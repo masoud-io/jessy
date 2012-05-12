@@ -4,12 +4,11 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.utils.CustomUUID;
 import fr.inria.jessy.vector.CompactVector;
 
 //TODO Comment me and all methods
@@ -17,12 +16,31 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-	private static CustomUUID customUUID=new CustomUUID();
+	private static AtomicInteger requestCounter=new  AtomicInteger(); 
 
 	String entityClassName;
 	CompactVector<String> readSet;
-	List<ReadRequestKey<?>> keys;
-	UUID readRequestId;
+
+	/**
+	 * If true, the query is on one key, thus {@code oneKey} holds the key.
+	 */
+	boolean isOneKeyRequest = true;
+
+	/**
+	 * For performance reasons during marshaling and unmarshaling, the keys are
+	 * seperated. For most queries, the query is only with one key. Thus
+	 * {@code firstKey} is used.
+	 */
+	ReadRequestKey<?> oneKey;
+
+	/**
+	 * If the user needs to perform a query on several keys,
+	 * {@code isOneKeyRequest} is set to false, and this variable is filled with
+	 * the request.
+	 */
+	List<ReadRequestKey<?>> multiKeys;
+
+	int readRequestId;
 
 	/**
 	 * For externalizable interface
@@ -48,10 +66,8 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 		this.entityClassName = entityClass.getName();
 		this.readSet = readSet;
 
-		keys = new ArrayList<ReadRequestKey<?>>();
-		ReadRequestKey<K> key = new ReadRequestKey<K>(keyName, keyValue);
-		keys.add(key);		
-		readRequestId = customUUID.getNextUUID();
+		oneKey = new ReadRequestKey<K>(keyName, keyValue);
+		readRequestId = requestCounter.incrementAndGet();
 	}
 
 	/**
@@ -68,8 +84,9 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 		this.entityClassName = entityClass.getName();
 		this.readSet = readSet;
 
-		this.keys = keys;
-		readRequestId = UUID.randomUUID();
+		isOneKeyRequest = false;
+		this.multiKeys = keys;
+		readRequestId = requestCounter.incrementAndGet();
 	}
 
 	public String getEntityClassName() {
@@ -80,23 +97,25 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 		return readSet;
 	}
 
-	public UUID getReadRequestId() {
+	public Integer getReadRequestId() {
 		return readRequestId;
 	}
 
-	public List<ReadRequestKey<?>> getKeys() {
-		return keys;
+	public ReadRequestKey<?> getOneKey() {
+		return oneKey;
+	}
+
+	public List<ReadRequestKey<?>> getMultiKeys() {
+		return multiKeys;
 	}
 
 	/**
-	 * FIXME consider the first key as the partitioning key. Is it correct? This
-	 * method returns the key that is used to partition entities across
-	 * different processes.
 	 * 
 	 * @return
 	 */
 	public String getPartitioningKey() {
-		return this.keys.get(0).getKeyValue().toString();
+		return oneKey.toString();
+		// return this.keys.get(0).getKeyValue().toString();
 	}
 
 	@Override
@@ -108,8 +127,13 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(entityClassName);
 		out.writeObject(readSet);
-		out.writeObject(keys);
-		out.writeObject(readRequestId);
+		out.writeInt(readRequestId);
+		out.writeBoolean(isOneKeyRequest);
+		if (isOneKeyRequest) {
+			out.writeObject(oneKey);
+		} else {
+			out.writeObject(multiKeys);
+		}
 	}
 
 	@Override
@@ -118,8 +142,13 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 
 		entityClassName = (String) in.readObject();
 		readSet = (CompactVector<String>) in.readObject();
-		keys = (List<ReadRequestKey<?>>) in.readObject();
-		readRequestId = (UUID) in.readObject();
+		readRequestId = in.readInt();
+		isOneKeyRequest = in.readBoolean();
+		if (isOneKeyRequest) {
+			oneKey = (ReadRequestKey<?>) in.readObject();
+		} else {
+			multiKeys = (List<ReadRequestKey<?>>) in.readObject();
+		}
 	}
 
 }

@@ -59,7 +59,7 @@ public class RemoteReader implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
-	private Map<UUID, ReadReply<? extends JessyEntity>> replies;
+	private Map<Integer, ReadReply<? extends JessyEntity>> replies;
 
 	/**
 	 * States the number of different recipients for each particular read
@@ -67,9 +67,9 @@ public class RemoteReader implements Learner {
 	 * corresponding value in the map becomes zero.
 	 * 
 	 */
-	private Map<UUID, AtomicInteger> readRequestRecipientCounts;
+	private Map<Integer, AtomicInteger> readRequestRecipientCounts;
 
-	private Map<UUID, ReadRequest<? extends JessyEntity>> requests;
+	private Map<Integer, ReadRequest<? extends JessyEntity>> requests;
 
 	public RemoteReader(DistributedJessy j, Group g) {
 		jessy = j;
@@ -79,9 +79,9 @@ public class RemoteReader implements Learner {
 		remoteReadStream.registerLearner("RemoteReadReplyMessage", this);
 		remoteReadStream.start();
 
-		replies = new ConcurrentHashMap<UUID, ReadReply<? extends JessyEntity>>();
-		requests = new ConcurrentHashMap<UUID, ReadRequest<? extends JessyEntity>>();
-		readRequestRecipientCounts = new ConcurrentHashMap<UUID, AtomicInteger>();
+		replies = new ConcurrentHashMap<Integer, ReadReply<? extends JessyEntity>>();
+		requests = new ConcurrentHashMap<Integer, ReadRequest<? extends JessyEntity>>();
+		readRequestRecipientCounts = new ConcurrentHashMap<Integer, AtomicInteger>();
 	}
 
 	@SuppressWarnings("unchecked")

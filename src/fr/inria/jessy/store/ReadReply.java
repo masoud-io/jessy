@@ -14,7 +14,7 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-	UUID readRequestId;
+	int readRequestId;
 	Collection<E> entities;
 
 	/**
@@ -25,18 +25,18 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 
 	}
 
-	public ReadReply(E entity, UUID correspondingReadRequestId) {
+	public ReadReply(E entity, int correspondingReadRequestId) {
 		entities = new ArrayList<E>();
 		this.entities.add(entity);
 		this.readRequestId = correspondingReadRequestId;
 	}
 
-	public ReadReply(Collection<E> entities, UUID correspondingReadRequestId) {
+	public ReadReply(Collection<E> entities, int correspondingReadRequestId) {
 		this.entities = entities;
 		this.readRequestId = correspondingReadRequestId;
 	}
 
-	public UUID getReadRequestId() {
+	public int getReadRequestId() {
 		return readRequestId;
 	}
 
@@ -45,14 +45,14 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 	}
 
 	public synchronized void mergeReply(ReadReply<E> readReply) {
-		if (!this.readRequestId.equals(readReply.getReadRequestId()))
+		if (this.readRequestId!=readReply.getReadRequestId())
 			throw new IllegalArgumentException("Invalid requestId");
 		entities.addAll(readReply.getEntity());
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(readRequestId);
+		out.writeInt(readRequestId);
 		// out.writeObject(entities);
 		if (entities.size() == 1) {
 			out.writeBoolean(true);
@@ -66,7 +66,7 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		readRequestId = (UUID) in.readObject();
+		readRequestId = in.readInt();
 		// entities = (Collection<E>) in.readObject();
 		if (in.readBoolean()) {
 			entities = new ArrayList<E>();

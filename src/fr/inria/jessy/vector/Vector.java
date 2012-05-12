@@ -4,12 +4,9 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.HashMap;
 import java.util.List;
 
 import com.sleepycat.persist.model.Persistent;
-
-import fr.inria.jessy.vector.ValueVector;
 
 ;
 
@@ -17,13 +14,14 @@ import fr.inria.jessy.vector.ValueVector;
 public abstract class Vector<K> extends ValueVector<K, Integer> implements Externalizable{
 
 	K selfKey;
+	private final static Integer _bydefault=-1;
 
 	public Vector() {
-		super(-1);
+		super(_bydefault);
 	}
 
 	public Vector(K selfKey) {
-		super(-1);
+		super(_bydefault);
 		this.selfKey = selfKey;
 	}
 
@@ -65,12 +63,13 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements Exter
 	 * Increament the value of selfKey;
 	 */
 	public void increament() {
-		setValue(selfKey, getSelfValue() + 1);
+		setValue(selfKey, (getSelfValue() + 1));
 	}
 
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
+		super.setBydefault(_bydefault);
 		selfKey = (K) in.readObject();
 	}
 

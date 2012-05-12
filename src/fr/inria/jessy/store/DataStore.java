@@ -412,8 +412,8 @@ public class DataStore {
 	public <E extends JessyEntity, SK> ReadReply<E> get(
 			ReadRequest<E> readRequest) throws NullPointerException {
 
-		if (readRequest.getKeys().size() == 1) {
-			ReadRequestKey readRequestKey = readRequest.getKeys().get(0);
+		if (readRequest.isOneKeyRequest) {
+			ReadRequestKey readRequestKey = readRequest.getOneKey();
 			E entity = get(readRequest.getEntityClassName(),
 					readRequestKey.getKeyName(), readRequestKey.getKeyValue(),
 					readRequest.getReadSet());
@@ -421,7 +421,7 @@ public class DataStore {
 
 		} else {
 			Collection<E> result = get(readRequest.getEntityClassName(),
-					readRequest.getKeys(), readRequest.getReadSet());
+					readRequest.getMultiKeys(), readRequest.getReadSet());
 
 			return new ReadReply<E>(result, readRequest.getReadRequestId());
 		}
