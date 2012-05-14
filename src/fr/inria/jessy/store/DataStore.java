@@ -36,19 +36,9 @@ public class DataStore {
 	private Environment env;
 
 	protected static TimeRecorder curTime = new TimeRecorder(
-	"DataStore#curTime");
+			"DataStore#curTime");
 
-	
-	/**
-	 * Indicates the default store that put and get operations should be
-	 * executed in.
-	 */
-	private String defaultStore;
-
-	/**
-	 * Stores all EntityStores defined for this DataStore
-	 */
-	private Map<String, EntityStore> entityStores;
+	private EntityStore entityStore;
 
 	/**
 	 * Store all primary indexes of all entities manage by this DataStore Each
@@ -66,13 +56,11 @@ public class DataStore {
 
 	public DataStore(File envHome, boolean readOnly, String storeName)
 			throws Exception {
-		entityStores = new HashMap<String, EntityStore>();
 		primaryIndexes = new HashMap<String, PrimaryIndex<Long, ? extends JessyEntity>>();
 		secondaryIndexes = new HashMap<String, SecondaryIndex<?, ?, ? extends JessyEntity>>();
 
 		setupEnvironment(envHome, readOnly);
-		addStore(readOnly, storeName);
-		defaultStore = storeName;
+		setupStore(readOnly, storeName);
 	}
 
 	/**
@@ -90,18 +78,18 @@ public class DataStore {
 
 		envConfig.setTransactional(false);
 		envConfig.setTxnNoSyncVoid(true);
-//		envConfig.setTxnWriteNoSyncVoid(true);
-		
+		// envConfig.setTxnWriteNoSyncVoid(true);
 
 		// TODO database should be clean manually. EFFECT THE PERFORMANCE
 		// SUBSTANTIALLY
-		envConfig= envConfig.setLocking(false); //The cleaner becomes disable here!
+		envConfig = envConfig.setLocking(false); // The cleaner becomes disable
+													// here!
 		// Influence the performance tremendously!
 		envConfig.setSharedCache(true); // Does not effect the prformance much!
 		// TODO subject to change for optimization
-		 envConfig.setCachePercent(90);
+		envConfig.setCachePercent(90);
 		env = new Environment(envHome, envConfig);
-		
+
 	}
 
 	/**
@@ -113,30 +101,21 @@ public class DataStore {
 	 * @param storeName
 	 *            a unique store name.
 	 */
-	public void addStore(boolean readonly, String storeName) throws Exception {
-		if (!entityStores.containsKey(storeName)) {
-			StoreConfig storeConfig = new StoreConfig();
-			storeConfig.setAllowCreate(true);
+	public void setupStore(boolean readonly, String storeName) throws Exception {
+		StoreConfig storeConfig = new StoreConfig();
+		storeConfig.setAllowCreate(true);
 
-			// Caution: Durability cannot be ensured!
-			 storeConfig.setDeferredWriteVoid(true);
-			 
-			 storeConfig.setTransactionalVoid(false);
+		// Caution: Durability cannot be ensured!
+		storeConfig.setDeferredWriteVoid(true);
 
-			EntityStore store = new EntityStore(env, storeName, storeConfig);
+		storeConfig.setTransactionalVoid(false);
 
-			entityStores.put(storeName, store);
-		} else {
-			throw new Exception("Store already exists");
-		}
+		entityStore = new EntityStore(env, storeName, storeConfig);
 	}
 
 	public synchronized void close() throws DatabaseException {
 		if (env != null) {
-			for (EntityStore e : entityStores.values()) {
-				if (e != null)
-					e.close();
-			}
+			entityStore.close();
 			env.cleanLog();
 			env.close();
 		}
@@ -153,28 +132,18 @@ public class DataStore {
 	 * @param entityClass
 	 *            A class that extends JessyEntity
 	 */
-	public <E extends JessyEntity> void addPrimaryIndex(String storeName,
-			Class<E> entityClass) throws Exception {
-		try {
-			PrimaryIndex<Long, E> pindex = entityStores.get(storeName)
-					.getPrimaryIndex(Long.class, entityClass);
-			
-			PreloadConfig preloadConfig=new PreloadConfig();
-			preloadConfig.setMaxBytes(1073741824);
-			preloadConfig.setLoadLNs(true);
-			
-//			pindex.getDatabase().preload(preloadConfig);
-			
-			primaryIndexes.put(entityClass.getName(), pindex);
-		} catch (NullPointerException ex) {
-			throw new NullPointerException("Store with the name " + storeName
-					+ " does not exists.");
-		}		
-	}
-
 	public <E extends JessyEntity> void addPrimaryIndex(Class<E> entityClass)
 			throws Exception {
-		addPrimaryIndex(defaultStore, entityClass);
+		PrimaryIndex<Long, E> pindex = entityStore.getPrimaryIndex(Long.class,
+				entityClass);
+
+		PreloadConfig preloadConfig = new PreloadConfig();
+		preloadConfig.setMaxBytes(1073741824);
+		preloadConfig.setLoadLNs(true);
+
+		// pindex.getDatabase().preload(preloadConfig);
+
+		primaryIndexes.put(entityClass.getName(), pindex);
 	}
 
 	/**
@@ -197,16 +166,14 @@ public class DataStore {
 	 *            Name of the secondary key field (annotated with
 	 * @SecondaryIndex)
 	 */
-	public <E extends JessyEntity, SK> void addSecondaryIndex(String storeName,
+	public <E extends JessyEntity, SK> void addSecondaryIndex(
 			Class<E> entityClass, Class<SK> secondaryKeyClass,
 			String secondaryKeyName) throws Exception {
 		try {
 			PrimaryIndex<Long, ? extends JessyEntity> pindex = primaryIndexes
 					.get(entityClass.getName());
 
-			EntityStore store = entityStores.get(storeName);
-
-			SecondaryIndex<SK, Long, ? extends JessyEntity> sindex = store
+			SecondaryIndex<SK, Long, ? extends JessyEntity> sindex = entityStore
 					.getSecondaryIndex(pindex, secondaryKeyClass,
 							secondaryKeyName);
 			secondaryIndexes.put(entityClass.getName() + secondaryKeyName,
@@ -215,13 +182,6 @@ public class DataStore {
 			throw new Exception(
 					"StoreName or PrimaryIndex does not exists. Otherwise, entity field is not annottated properly.");
 		}
-	}
-
-	public <E extends JessyEntity, SK> void addSecondaryIndex(
-			Class<E> entityClass, Class<SK> secondaryKeyClass,
-			String secondaryKeyName) throws Exception {
-		addSecondaryIndex(defaultStore, entityClass, secondaryKeyClass,
-				secondaryKeyName);
 	}
 
 	/**
@@ -284,33 +244,29 @@ public class DataStore {
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
 					.get(entityClassName + secondaryKeyName);
 
+			// E entity2=sindex.get(keyValue);
+			// if(entity2!=null){
+			// curTime.stop();
+			// return entity2;
+			// }
 
-			
-//			E entity2=sindex.get(keyValue);
-//			if(entity2!=null){
-//				curTime.stop();
-//				return entity2;
-//			}
-
-			
-			
-//			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();	
-//			E entity = cur.first();
-//			curTime.stop();
-//
-//			if (readSet == null) {
-//				cur.close();
-//				return entity;
-//			}
-//
-//			while (entity != null) {
-//				if (entity.getLocalVector().isCompatible(readSet)) {
-//					cur.close();
-//					return entity;
-//				} else {
-//					entity = cur.prev();
-//				}
-//			}
+			// EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
+			// E entity = cur.first();
+			// curTime.stop();
+			//
+			// if (readSet == null) {
+			// cur.close();
+			// return entity;
+			// }
+			//
+			// while (entity != null) {
+			// if (entity.getLocalVector().isCompatible(readSet)) {
+			// cur.close();
+			// return entity;
+			// } else {
+			// entity = cur.prev();
+			// }
+			// }
 
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
 			E entity = cur.prevNoDup();
@@ -492,26 +448,5 @@ public class DataStore {
 		}
 	}
 
-	/**
-	 * @return the defaultStore
-	 */
-	public String getDefaultStore() {
-		return defaultStore;
-	}
-
-	/**
-	 * @param defaultStore
-	 *            the defaultStore to set
-	 */
-	public void setDefaultStore(String defaultStore) {
-		this.defaultStore = defaultStore;
-	}
-
-	/**
-	 * @return the entityStores
-	 */
-	public Map<String, EntityStore> getEntityStores() {
-		return entityStores;
-	}
 
 }

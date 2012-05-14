@@ -110,4 +110,5 @@ public abstract class JessyEntity implements Externalizable {
 		out.writeObject(localVector);
 		
 	}
+
 }
