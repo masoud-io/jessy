@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.CompactVector;
 
 //TODO Comment me and all methods
@@ -16,7 +18,7 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-	private static AtomicInteger requestCounter=new  AtomicInteger(); 
+	private static AtomicInteger requestCounter = new AtomicInteger();
 
 	String entityClassName;
 	CompactVector<String> readSet;

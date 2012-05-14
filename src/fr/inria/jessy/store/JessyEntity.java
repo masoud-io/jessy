@@ -8,6 +8,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+
 import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.SecondaryKey;
@@ -32,6 +34,7 @@ import fr.inria.jessy.vector.VectorFactory;
 @Persistent
 public abstract class JessyEntity implements Externalizable {
 
+	private static TimeRecorder unpackTime = new TimeRecorder("JessyEntity#unpackTime");
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
@@ -95,8 +98,10 @@ public abstract class JessyEntity implements Externalizable {
 	
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		unpackTime.start();
 		secondaryKey=(String) in.readObject();
 		localVector=(Vector<String>) in.readObject();
+		unpackTime.stop();
 //		localVector=new NullVector<String>();
 	}
 

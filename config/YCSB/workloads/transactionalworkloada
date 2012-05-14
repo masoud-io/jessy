@@ -25,7 +25,7 @@
 fieldcount=1
 fieldlength=1000
 recordcount=1000
-operationcount=50000
+operationcount=20000
 workload=com.yahoo.ycsb.workloads.TransactionalWorkload
 
 readallfields=true

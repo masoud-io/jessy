@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import net.sourceforge.fractal.Message;
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import fr.inria.jessy.store.JessyEntity;

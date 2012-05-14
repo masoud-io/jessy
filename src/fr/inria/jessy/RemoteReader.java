@@ -49,8 +49,6 @@ public class RemoteReader implements Learner {
 
 	private static Logger logger = Logger.getLogger(RemoteReader.class);
 	
-	private static TimeRecorder serverRead=new TimeRecorder("RemoteReader#serverRead");
-	private static TimeRecorder clientRead=new TimeRecorder("RemoteReader#clientRead");
 	private static TimeRecorder serverAnsweringTime
 							= new TimeRecorder("RemoteReader#serverAnsweringTime");
 
@@ -98,15 +96,12 @@ public class RemoteReader implements Learner {
 
 		if (v instanceof RemoteReadRequestMessage) {
 
-			serverRead.start();
 			RemoteReadRequestMessage request = (RemoteReadRequestMessage) v;
 			logger.debug("request "	+ request.getReadRequest());
 			pool.submit(new RemoteReadReplyTask(request));
-			serverRead.stop();
 
 		} else {
 
-			clientRead.start();
 			ReadReply reply = ((RemoteReadReplyMessage) v).getReadReply();
 			logger.debug("reply " + reply.getReadRequestId());
 
@@ -125,7 +120,6 @@ public class RemoteReader implements Learner {
 					requests.get(reply.getReadRequestId()).notify();
 				}
 			}
-			clientRead.stop();
 		}
 	}
 

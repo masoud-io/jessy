@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry excluding="ycsb/src/|ycsb/workloads/|ycsb/" kind="src" path="benchmark"/>
-	<classpathentry kind="src" path="benchmark/ycsb/src"/>
+	<classpathentry excluding="com/yahoo/ycsb/InfinispanClient.java" kind="src" path="benchmark/ycsb/src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/je-5.0.34.jar" sourcepath="/data/msaeida/Java Packages/Berkeley DB je-5.0.34/src"/>

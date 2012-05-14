@@ -128,7 +128,7 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 		ReadReply<E> readReply;
-		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
+		if (!partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keyValue
 					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);

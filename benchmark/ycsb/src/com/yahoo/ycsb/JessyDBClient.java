@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -28,7 +27,7 @@ public class JessyDBClient extends DB {
 	private static boolean USE_DIST_JESSY = true;
 
 	private static Jessy jessy;
-	
+
 	// FIXME merge this into init
 	static {
 		try {
@@ -45,20 +44,20 @@ public class JessyDBClient extends DB {
 
 	public JessyDBClient() {
 		super();
-//		try {
-//			if (USE_DIST_JESSY) {
-//				jessy = DistributedJessy.getInstance();
-//			} else {
-//				jessy = LocalJessy.getInstance();
-//			}
-//			jessy.addEntity(YCSBEntity.class);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
+		// try {
+		// if (USE_DIST_JESSY) {
+		// jessy = DistributedJessy.getInstance();
+		// } else {
+		// jessy = LocalJessy.getInstance();
+		// }
+		// jessy.addEntity(YCSBEntity.class);
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
 	}
 
 	@Override
-	public void init() {		
+	public void init() {
 		jessy.registerClient(this);
 	}
 
@@ -75,16 +74,16 @@ public class JessyDBClient extends DB {
 	public int read(String table, String key, Set<String> fields,
 			HashMap<String, String> result) {
 		try {
-			YCSBEntity en = jessy.read(YCSBEntity.class, table + ":" + key);
+			YCSBEntity en = jessy.read(YCSBEntity.class, key);
 			if (en == null) {
-				logger.error("unable to read "+table+":"+key);
+				logger.error("unable to read " + key);
 				return -1;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return -1;
 		}
-		logger.info("successfull read "+table+":"+key);
+		logger.info("successfull read " + key);
 		return 0;
 	}
 
@@ -98,9 +97,9 @@ public class JessyDBClient extends DB {
 	public int update(String table, String key, HashMap<String, String> values) {
 
 		try {
-			YCSBEntity en = jessy.read(YCSBEntity.class, table + ":" + key);
+			YCSBEntity en = jessy.read(YCSBEntity.class, key);
 			if (en == null) {
-				logger.error("unable to update "+table+":"+key);
+				logger.error("unable to update " + key);
 				return -1;
 			}
 			en.setFields(values);
@@ -109,21 +108,22 @@ public class JessyDBClient extends DB {
 			e.printStackTrace();
 			return -1;
 		}
-		logger.info("successfull update "+table+":"+key);
+		logger.info("successfull update " + key);
 		return 0;
 	}
 
 	@Override
 	public int insert(String table, String key, HashMap<String, String> values) {
 		try {
-			YCSBEntity en = new YCSBEntity(YCSBEntity.class.toString(), table + ":" + key, values);
+			YCSBEntity en = new YCSBEntity(YCSBEntity.class.toString(), key,
+					values);
 			jessy.write(en);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return -1;
 		}
 
-		logger.info("successfull insert "+table+":"+key);
+		logger.info("successfull insert " + key);
 		return 0;
 	}
 
@@ -141,12 +141,10 @@ public class JessyDBClient extends DB {
 				public ExecutionHistory execute() {
 					for (YCSBTransactionalReadRequest request : readList) {
 						try {
-							YCSBEntity en = read(YCSBEntity.class,
-									request.table + ":" + request.key);
+							YCSBEntity en = read(YCSBEntity.class, request.key);
 							if (en == null) {
 								logger.error("Read Operation for: "
-										+ request.table + ":" + request.key
-										+ " failed.");
+										+ request.key + " failed.");
 								return null;
 							}
 						} catch (Exception e) {
@@ -185,8 +183,7 @@ public class JessyDBClient extends DB {
 				public ExecutionHistory execute() {
 					for (YCSBTransactionalReadRequest request : readList) {
 						try {
-							YCSBEntity en = read(YCSBEntity.class,
-									request.table + ":" + request.key);
+							YCSBEntity en = read(YCSBEntity.class, request.key);
 							if (en == null)
 								return null;
 						} catch (Exception e) {
@@ -198,7 +195,7 @@ public class JessyDBClient extends DB {
 					for (YCSBTransactionalUpdateRequest request : updateList) {
 						try {
 							YCSBEntity en = read(YCSBEntity.class,
-									request.table + ":" + request.key);
+									 request.key);
 							if (en == null)
 								return null;
 
@@ -240,7 +237,7 @@ public class JessyDBClient extends DB {
 				public ExecutionHistory execute() {
 
 					YCSBEntity en = new YCSBEntity(YCSBEntity.class.toString(),
-							createRequest.table + ":" + createRequest.key,
+							 createRequest.key,
 							createRequest.values);
 
 					create(en);
@@ -262,5 +259,6 @@ public class JessyDBClient extends DB {
 			return -1;
 		}
 	}
+
 
 }
