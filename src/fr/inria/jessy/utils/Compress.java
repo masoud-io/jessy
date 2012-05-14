@@ -2,8 +2,8 @@ package fr.inria.jessy.utils;
 
 public class Compress {
 
-//	static public String compressClassName(String className){
-//		return className.substring(className.indexOf("."));
-//	}
+	public static String compressClassName(String className) {
+		return className.substring(className.lastIndexOf((".")));
+	}
 
 }

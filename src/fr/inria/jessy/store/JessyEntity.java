@@ -17,6 +17,7 @@ import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
+import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.NullVector;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
@@ -34,7 +35,8 @@ import fr.inria.jessy.vector.VectorFactory;
 @Persistent
 public abstract class JessyEntity implements Externalizable {
 
-	private static TimeRecorder unpackTime = new TimeRecorder("JessyEntity#unpackTime");
+	private static TimeRecorder unpackTime = new TimeRecorder(
+			"JessyEntity#unpackTime");
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
@@ -60,8 +62,8 @@ public abstract class JessyEntity implements Externalizable {
 	}
 
 	public JessyEntity(String entityClassName, String entityId) {
-		localVector = VectorFactory.getVector(entityClassName + entityId);
 		this.secondaryKey = entityId;
+		localVector = VectorFactory.getVector(entityClassName + entityId);
 	}
 
 	@PrimaryKey(sequence = "Jessy_Sequence")
@@ -95,20 +97,21 @@ public abstract class JessyEntity implements Externalizable {
 	public void setLocalVector(Vector<String> localVector) {
 		this.localVector = localVector;
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
 		unpackTime.start();
-		secondaryKey=(String) in.readObject();
-		localVector=(Vector<String>) in.readObject();
+		secondaryKey = (String) in.readObject();
+		localVector = (Vector<String>) in.readObject();
 		unpackTime.stop();
-//		localVector=new NullVector<String>();
+		// localVector=new NullVector<String>();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(secondaryKey);
 		out.writeObject(localVector);
-		
+
 	}
 
 }

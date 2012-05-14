@@ -65,7 +65,7 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	 */
 	public <K> ReadRequest(Class<E> entityClass, String keyName, K keyValue,
 			CompactVector<String> readSet) {
-		this.entityClassName = entityClass.getName();
+		this.entityClassName = Compress.compressClassName(entityClass.getName());
 		this.readSet = readSet;
 
 		oneKey = new ReadRequestKey<K>(keyName, keyValue);
@@ -83,7 +83,7 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	 */
 	public ReadRequest(Class<E> entityClass, List<ReadRequestKey<?>> keys,
 			CompactVector<String> readSet) {
-		this.entityClassName = entityClass.getName();
+		this.entityClassName = Compress.compressClassName(entityClass.getName());
 		this.readSet = readSet;
 
 		isOneKeyRequest = false;

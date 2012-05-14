@@ -19,6 +19,7 @@ import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.utils.Compress;
 
 public class JessyDBClient extends DB {
 
@@ -236,7 +237,7 @@ public class JessyDBClient extends DB {
 				@Override
 				public ExecutionHistory execute() {
 
-					YCSBEntity en = new YCSBEntity(YCSBEntity.class.toString(),
+					YCSBEntity en = new YCSBEntity(Compress.compressClassName(YCSBEntity.class.toString()),
 							 createRequest.key,
 							createRequest.values);
 

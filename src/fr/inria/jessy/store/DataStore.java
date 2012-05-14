@@ -22,6 +22,7 @@ import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
 
+import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 
@@ -143,7 +144,7 @@ public class DataStore {
 
 		// pindex.getDatabase().preload(preloadConfig);
 
-		primaryIndexes.put(entityClass.getName(), pindex);
+		primaryIndexes.put(Compress.compressClassName(entityClass.getName()), pindex);
 	}
 
 	/**
@@ -169,14 +170,15 @@ public class DataStore {
 	public <E extends JessyEntity, SK> void addSecondaryIndex(
 			Class<E> entityClass, Class<SK> secondaryKeyClass,
 			String secondaryKeyName) throws Exception {
+		
 		try {
 			PrimaryIndex<Long, ? extends JessyEntity> pindex = primaryIndexes
-					.get(entityClass.getName());
+					.get(Compress.compressClassName(entityClass.getName()));
 
 			SecondaryIndex<SK, Long, ? extends JessyEntity> sindex = entityStore
 					.getSecondaryIndex(pindex, secondaryKeyClass,
 							secondaryKeyName);
-			secondaryIndexes.put(entityClass.getName() + secondaryKeyName,
+			secondaryIndexes.put(Compress.compressClassName(entityClass.getName()) + secondaryKeyName,
 					sindex);
 		} catch (Exception ex) {
 			throw new Exception(
@@ -198,7 +200,7 @@ public class DataStore {
 		try {
 			@SuppressWarnings("unchecked")
 			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
-					.get(entity.getClass().getName());
+					.get(Compress.compressClassName(entity.getClass().getName()));
 			pindex.put(entity);
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("PrimaryIndex cannot be found");

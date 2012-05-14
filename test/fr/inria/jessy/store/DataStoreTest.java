@@ -35,18 +35,18 @@ public class DataStoreTest extends TestCase {
 	public void setUp() throws Exception {
 		String executionPath = System.getProperty("user.dir");
 		dsPut = new DataStore(new File(executionPath), false, "myStore");
-		dsPut.addPrimaryIndex("myStore", SampleEntityClass.class);
-		dsPut.addSecondaryIndex("myStore", SampleEntityClass.class,
+		dsPut.addPrimaryIndex( SampleEntityClass.class);
+		dsPut.addSecondaryIndex( SampleEntityClass.class,
 				String.class, "secondaryKey");
 
 		dsGet = new DataStore(new File(executionPath), false, "GetStore");
-		dsGet.addPrimaryIndex("GetStore", SampleEntityClass.class);
-		dsGet.addSecondaryIndex("GetStore", SampleEntityClass.class,
+		dsGet.addPrimaryIndex( SampleEntityClass.class);
+		dsGet.addSecondaryIndex( SampleEntityClass.class,
 				String.class, "secondaryKey");
 
 		dsGet2 = new DataStore(new File(executionPath), false, "GetStore");
-		dsGet2.addPrimaryIndex("GetStore", SampleEntityClass.class);
-		dsGet2.addSecondaryIndex("GetStore", SampleEntityClass.class,
+		dsGet2.addPrimaryIndex( SampleEntityClass.class);
+		dsGet2.addSecondaryIndex(SampleEntityClass.class,
 				String.class, "secondaryKey");
 
 		SampleEntityClass ec;
