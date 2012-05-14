@@ -83,11 +83,29 @@ public class RemoteReader implements Learner {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
+	public <E extends JessyEntity> ReadReply<E> remoteRead(
 			ReadRequest<E> readRequest) {
 		requests.put(readRequest.getReadRequestId(), readRequest);
-		logger.debug("creating task for "+readRequest);
-		Future<ReadReply<E>> reply = pool.submit(new RemoteReadRequestTask(readRequest));
+		Set<Group> destGroups = jessy.partitioner.resolve(readRequest);
+		logger.debug("asking groups " + destGroups + " for " + readRequest);
+		readRequestRecipientCounts.put(readRequest.getReadRequestId(),
+				new AtomicInteger(destGroups.size()));
+
+		for (Group dest : destGroups) {
+			logger.debug("asking group" + dest + " for " + readRequest);
+			remoteReadStream.unicast(new RemoteReadRequestMessage<E>(
+					readRequest), dest.members().iterator().next());
+		}
+		
+		synchronized (requests.get(readRequest.getReadRequestId())) {
+			try {
+				requests.get(readRequest.getReadRequestId()).wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		ReadReply<E> reply = (ReadReply<E>) replies.get(readRequest
+				.getReadRequestId());
 		return reply;
 	}
 
@@ -123,35 +141,35 @@ public class RemoteReader implements Learner {
 		}
 	}
 
-	class RemoteReadRequestTask<E extends JessyEntity> implements
-			Callable<ReadReply<E>> {
-
-		private ReadRequest<E> request;
-
-		private RemoteReadRequestTask(ReadRequest<E> readRequest) {
-			this.request = readRequest;
-		}
-
-		@SuppressWarnings("unchecked")
-		public ReadReply<E> call() throws Exception {
-			Set<Group> destGroups = jessy.partitioner.resolve(request);
-			logger.debug("asking groups " + destGroups + " for " + request);
-			readRequestRecipientCounts.put(request.getReadRequestId(),
-					new AtomicInteger(destGroups.size()));
-			synchronized (requests.get(request.getReadRequestId())) {
-				for (Group dest : destGroups) {
-					logger.debug("asking group" + dest + " for " + request);
-					remoteReadStream.unicast(new RemoteReadRequestMessage<E>(
-							request), dest.members().iterator().next());
-				}
-				requests.get(request.getReadRequestId()).wait();
-			}
-			ReadReply<E> reply = (ReadReply<E>) replies.get(request
-					.getReadRequestId());
-			return reply;
-		}
-
-	}
+//	class RemoteReadRequestTask<E extends JessyEntity> implements
+//			Callable<ReadReply<E>> {
+//
+//		private ReadRequest<E> request;
+//
+//		private RemoteReadRequestTask(ReadRequest<E> readRequest) {
+//			this.request = readRequest;
+//		}
+//
+//		@SuppressWarnings("unchecked")
+//		public ReadReply<E> call() throws Exception {
+//			Set<Group> destGroups = jessy.partitioner.resolve(request);
+//			logger.debug("asking groups " + destGroups + " for " + request);
+//			readRequestRecipientCounts.put(request.getReadRequestId(),
+//					new AtomicInteger(destGroups.size()));
+//			synchronized (requests.get(request.getReadRequestId())) {
+//				for (Group dest : destGroups) {
+//					logger.debug("asking group" + dest + " for " + request);
+//					remoteReadStream.unicast(new RemoteReadRequestMessage<E>(
+//							request), dest.members().iterator().next());
+//				}
+//				requests.get(request.getReadRequestId()).wait();
+//			}
+//			ReadReply<E> reply = (ReadReply<E>) replies.get(request
+//					.getReadRequestId());
+//			return reply;
+//		}
+//
+//	}
 
 	class RemoteReadReplyTask<E extends JessyEntity> implements
 			Callable<ReadReply<E>> {

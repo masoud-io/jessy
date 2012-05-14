@@ -136,8 +136,9 @@ public class DistributedJessy extends Jessy {
 			logger.debug("performing remote read on " + keyValue
 					+ " for request " + readRequest);
 			remoteReads.incr();
-			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
-			readReply = future.get();
+//			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
+//			readReply = future.get();
+			readReply=remoteReader.remoteRead(readRequest);
 		}
 		readRequestTime.stop();
 
@@ -169,8 +170,9 @@ public class DistributedJessy extends Jessy {
 			logger.debug("performing remote read on " + keys + " for request "
 					+ readRequest);
 			remoteReads.incr();
-			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
-			readReply = future.get();
+//			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
+//			readReply = future.get();
+			readReply=	remoteReader.remoteRead(readRequest);;
 		}
 		readRequestTime.stop();
 
