@@ -53,7 +53,7 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(readRequestId);
-		// out.writeObject(entities);
+//		 out.writeObject(entities);
 		if (entities.size() == 1) {
 			out.writeBoolean(true);
 			out.writeObject(entities.iterator().next());
@@ -67,7 +67,7 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		readRequestId = in.readInt();
-		// entities = (Collection<E>) in.readObject();
+//		 entities = (Collection<E>) in.readObject();
 		if (in.readBoolean()) {
 			entities = new ArrayList<E>();
 			entities.add((E) in.readObject());

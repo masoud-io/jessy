@@ -5,11 +5,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import fr.inria.jessy.ConstantPool;
-
 public class ReadRequestKey<K> implements Externalizable {
 
-	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 	private String keyName;
 	private K keyValue;
 
