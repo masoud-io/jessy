@@ -35,7 +35,7 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 		this.readRequestId = correspondingReadRequestId;
 	}
 
-	public int getReadRequestId() {
+	public Integer getReadRequestId() {
 		return readRequestId;
 	}
 

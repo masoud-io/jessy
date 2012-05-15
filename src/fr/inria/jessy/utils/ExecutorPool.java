@@ -26,7 +26,8 @@ public class ExecutorPool {
 
 	private ExecutorPool() {
 		int poolsize = readConfig();
-		es = Executors.newFixedThreadPool(poolsize);
+//		es = Executors.newFixedThreadPool(poolsize);
+		es=Executors.newCachedThreadPool();
 	}
 
 	public <T> Future<T> submit(Callable<T> t) {
