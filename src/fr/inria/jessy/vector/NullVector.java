@@ -1,6 +1,9 @@
 package fr.inria.jessy.vector;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.List;
 
 import com.sleepycat.persist.model.Persistent;
@@ -8,7 +11,7 @@ import com.sleepycat.persist.model.Persistent;
 import fr.inria.jessy.ConstantPool;
 
 @Persistent
-public class NullVector<K> extends Vector<K> implements Serializable{
+public class NullVector<K> extends Vector<K> implements Externalizable{
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
 	
@@ -42,5 +45,14 @@ public class NullVector<K> extends Vector<K> implements Serializable{
 
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {}
+	
+	@SuppressWarnings("unchecked")
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		super.readExternal(in);
+	}
+
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+	}
 
 }

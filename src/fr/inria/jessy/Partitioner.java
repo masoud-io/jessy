@@ -78,7 +78,7 @@ public class Partitioner {
 	 * @param a
 	 *            distribution
 	 */
-	public synchronized <E extends JessyEntity> void assign(Keyspace keyspace)
+	public <E extends JessyEntity> void assign(Keyspace keyspace)
 			throws IllegalArgumentException {
 		
 		if(keyspace==null)
@@ -149,7 +149,7 @@ public class Partitioner {
 	 * @param k a key
 	 * @return the replica group of <i>k</i>.
 	 */
-	public synchronized Group resolve(String k) {
+	public Group resolve(String k) {
 		String closest = closestRootkeyOf(k);
 		Group ret = rk2g.get(closest);
 		assert ret!=null;
@@ -157,13 +157,13 @@ public class Partitioner {
 	}
 
 
-	public synchronized <E extends JessyEntity> Set<Group> resolve(ReadRequest<E> readRequest) {		
+	public <E extends JessyEntity> Set<Group> resolve(ReadRequest<E> readRequest) {		
 		Set<Group> ret = new HashSet<Group>();
 		ret.add(rk2g.get(closestRootkeyOf(readRequest.getPartitioningKey())));
 		return ret;
 	}
 
-	public synchronized Set<Group> resolve(Set<String> keys){
+	public Set<Group> resolve(Set<String> keys){
 		Set<Group> ret = new HashSet<Group>();
 		for(String key : keys){
 			ret.add(resolve(key));
@@ -171,7 +171,7 @@ public class Partitioner {
 		return ret;
 	}
 	
-	public synchronized Set<String> resolveNames(Set<String> keys) {
+	public Set<String> resolveNames(Set<String> keys) {
 		Set<String> results = new HashSet<String>();
 		for (String key : keys) {
 			results.add(rk2g.get(closestRootkeyOf(key)).name());
@@ -179,7 +179,7 @@ public class Partitioner {
 		return results;
 	}
 
-	public synchronized boolean isLocal(String k) {
+	public boolean isLocal(String k) {
 		resolveTime.start();
 		boolean ret = membership.myGroups().contains(resolve(k));
 		logger.debug("is local "+k+" ? "+ret);

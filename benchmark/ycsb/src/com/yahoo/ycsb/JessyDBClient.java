@@ -64,10 +64,12 @@ public class JessyDBClient extends DB {
 
 	@Override
 	public void cleanup() {
-		try {
-			jessy.close(this);
-		} catch (DatabaseException ex) {
-			ex.printStackTrace();
+		if( !USE_DIST_JESSY ){
+			try {
+				jessy.close(this);
+			} catch (DatabaseException ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 
@@ -84,7 +86,7 @@ public class JessyDBClient extends DB {
 			e.printStackTrace();
 			return -1;
 		}
-		logger.info("successfull read " + key);
+		logger.debug("successfull read " + key);
 		return 0;
 	}
 
@@ -109,7 +111,7 @@ public class JessyDBClient extends DB {
 			e.printStackTrace();
 			return -1;
 		}
-		logger.info("successfull update " + key);
+		logger.debug("successfull update " + key);
 		return 0;
 	}
 
@@ -124,7 +126,7 @@ public class JessyDBClient extends DB {
 			return -1;
 		}
 
-		logger.info("successfull insert " + key);
+		logger.debug("successfull insert " + key);
 		return 0;
 	}
 

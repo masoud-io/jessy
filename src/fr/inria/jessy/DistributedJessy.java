@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import net.sourceforge.fractal.FractalManager;
+import net.sourceforge.fractal.MessageStream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.utils.PerformanceProbe;
@@ -17,10 +18,12 @@ import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import com.yahoo.ycsb.YCSBEntity;
-
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
+
+import com.yahoo.ycsb.YCSBEntity;
+
+import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
@@ -29,7 +32,15 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.TerminationResult;
+import fr.inria.jessy.transaction.termination.Vote;
+import fr.inria.jessy.transaction.termination.message.TerminateTransactionReplyMessage;
+import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.transaction.termination.message.VoteMessage;
 import fr.inria.jessy.vector.CompactVector;
+import fr.inria.jessy.vector.DependenceVector;
+import fr.inria.jessy.vector.NullVector;
+import fr.inria.jessy.vector.ValueVector;
+import fr.inria.jessy.vector.Vector;
 
 public class DistributedJessy extends Jessy {
 
@@ -99,10 +110,32 @@ public class DistributedJessy extends Jessy {
 			partitioner = new Partitioner(membership);
 
 			// FIXME
+			MessageStream.addClass(YCSBEntity.class.getName());
 			super.addEntity(YCSBEntity.class);
 			partitioner.assign(YCSBEntity.keyspace);
 			// TODO for TPCC classes.
 
+			
+			// FIXME MOVE THIS
+			MessageStream.addClass(JessyEntity.class.getName());
+			MessageStream.addClass(EntitySet.class.getName());
+			MessageStream.addClass(Vector.class.getName());
+			MessageStream.addClass(ValueVector.class.getName());
+			MessageStream.addClass(DependenceVector.class.getName());
+			MessageStream.addClass(NullVector.class.getName());
+			MessageStream.addClass(ReadReply.class.getName());
+			MessageStream.addClass(ReadRequest.class.getName());
+			MessageStream.addClass(RemoteReadRequestMessage.class.getName());
+			MessageStream.addClass(RemoteReadReplyMessage.class.getName());
+			MessageStream.addClass(VoteMessage.class.getName());
+			MessageStream.addClass(Vote.class.getName());
+			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
+			MessageStream.addClass(TerminateTransactionReplyMessage.class.getName());
+			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
+			MessageStream.addClass(TerminationResult.class.getName());
+			MessageStream.addClass(ExecutionHistory.class.getName());
+			MessageStream.addClass(TransactionHandler.class.getName());
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -128,7 +161,7 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 		ReadReply<E> readReply;
-		if (!partitioner.isLocal(readRequest.getPartitioningKey())) {
+		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keyValue
 					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);
@@ -136,9 +169,8 @@ public class DistributedJessy extends Jessy {
 			logger.debug("performing remote read on " + keyValue
 					+ " for request " + readRequest);
 			remoteReads.incr();
-//			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
-//			readReply = future.get();
-			readReply=remoteReader.remoteRead(readRequest);
+			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
+			readReply = future.get();
 		}
 		readRequestTime.stop();
 
@@ -170,9 +202,8 @@ public class DistributedJessy extends Jessy {
 			logger.debug("performing remote read on " + keys + " for request "
 					+ readRequest);
 			remoteReads.incr();
-//			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
-//			readReply = future.get();
-			readReply=	remoteReader.remoteRead(readRequest);;
+			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
+			readReply = future.get();
 		}
 		readRequestTime.stop();
 
@@ -255,14 +286,8 @@ public class DistributedJessy extends Jessy {
 	}
 
 	public void close(Object object) {
+		super.close(this);
 		logger.info("Jessy is closed.");
-//		 try {
-//		 Thread.currentThread().sleep(5000);
-//		 super.close(this);
-//		 } catch (InterruptedException e) {
-//		 e.printStackTrace();
-//		 }
-
 	}
 
 	/**

@@ -101,11 +101,10 @@ public abstract class JessyEntity implements Externalizable {
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		unpackTime.start();
 		secondaryKey = (String) in.readObject();
+		// unpackTime.start();
 		localVector = (Vector<String>) in.readObject();
-		unpackTime.stop();
-		// localVector=new NullVector<String>();
+		// unpackTime.stop();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {

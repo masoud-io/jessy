@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.fractal.FractalManager;
@@ -12,6 +13,7 @@ import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
+import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import org.apache.log4j.Logger;
@@ -19,7 +21,6 @@ import org.apache.log4j.Logger;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
-import fr.inria.jessy.utils.ExecutorPool;
 
 /**
  * 
@@ -45,9 +46,9 @@ import fr.inria.jessy.utils.ExecutorPool;
 public class RemoteReader implements Learner {
 
 	private static Logger logger = Logger.getLogger(RemoteReader.class);
-
-	private static TimeRecorder serverAnsweringTime = new TimeRecorder(
-			"RemoteReader#serverAnsweringTime");
+	
+	private static TimeRecorder serverAnsweringTime
+							= new TimeRecorder("RemoteReader#serverAnsweringTime");
 
 	private DistributedJessy jessy;
 	private MulticastStream remoteReadStream;
@@ -80,29 +81,11 @@ public class RemoteReader implements Learner {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> ReadReply<E> remoteRead(
+	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
 			ReadRequest<E> readRequest) {
 		requests.put(readRequest.getReadRequestId(), readRequest);
-		Set<Group> destGroups = jessy.partitioner.resolve(readRequest);
-		logger.debug("asking groups " + destGroups + " for " + readRequest);
-		readRequestRecipientCounts.put(readRequest.getReadRequestId(),
-				new AtomicInteger(destGroups.size()));
-
-		for (Group dest : destGroups) {
-			logger.debug("asking group" + dest + " for " + readRequest);
-			remoteReadStream.unicast(new RemoteReadRequestMessage<E>(
-					readRequest), dest.members().iterator().next());
-		}
-
-		synchronized (requests.get(readRequest.getReadRequestId())) {
-			try {
-				requests.get(readRequest.getReadRequestId()).wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		ReadReply<E> reply = (ReadReply<E>) replies.get(readRequest
-				.getReadRequestId());
+		logger.debug("creating task for "+readRequest);
+		Future<ReadReply<E>> reply = pool.submit(new RemoteReadRequestTask(readRequest));
 		return reply;
 	}
 
@@ -112,7 +95,7 @@ public class RemoteReader implements Learner {
 		if (v instanceof RemoteReadRequestMessage) {
 
 			RemoteReadRequestMessage request = (RemoteReadRequestMessage) v;
-			logger.debug("request " + request.getReadRequest());
+			logger.debug("request "	+ request.getReadRequest());
 			pool.submit(new RemoteReadReplyTask(request));
 
 		} else {
@@ -126,9 +109,9 @@ public class RemoteReader implements Learner {
 				replies.put(reply.getReadRequestId(), reply);
 			}
 
-			Integer unAnsweredRequests = readRequestRecipientCounts.get(
-					reply.getReadRequestId()).decrementAndGet();
-
+			Integer unAnsweredRequests = readRequestRecipientCounts.get(reply
+					.getReadRequestId()).decrementAndGet();
+			
 			if (unAnsweredRequests == 0) {
 				readRequestRecipientCounts.remove(reply.getReadRequestId());
 				synchronized (requests.get(reply.getReadRequestId())) {
@@ -138,55 +121,36 @@ public class RemoteReader implements Learner {
 		}
 	}
 
-	/**
-	 * 
-	 * This class is written for handling a client read request. I.e., sending a
-	 * read request to a jessy instance that replicates the entity.
-	 * 
-	 * @author Pierre Sutra
-	 * @author Masoud Saeida Ardekani
-	 * 
-	 * @param <E>
-	 */
-	// class RemoteReadRequestTask<E extends JessyEntity> implements
-	// Callable<ReadReply<E>> {
-	//
-	// private ReadRequest<E> request;
-	//
-	// private RemoteReadRequestTask(ReadRequest<E> readRequest) {
-	// this.request = readRequest;
-	// }
-	//
-	// @SuppressWarnings("unchecked")
-	// public ReadReply<E> call() throws Exception {
-	// Set<Group> destGroups = jessy.partitioner.resolve(request);
-	// logger.debug("asking groups " + destGroups + " for " + request);
-	// readRequestRecipientCounts.put(request.getReadRequestId(),
-	// new AtomicInteger(destGroups.size()));
-	// synchronized (requests.get(request.getReadRequestId())) {
-	// for (Group dest : destGroups) {
-	// logger.debug("asking group" + dest + " for " + request);
-	// remoteReadStream.unicast(new RemoteReadRequestMessage<E>(
-	// request), dest.members().iterator().next());
-	// }
-	// requests.get(request.getReadRequestId()).wait();
-	// }
-	// ReadReply<E> reply = (ReadReply<E>) replies.get(request
-	// .getReadRequestId());
-	// return reply;
-	// }
-	//
-	// }
+	class RemoteReadRequestTask<E extends JessyEntity> implements
+			Callable<ReadReply<E>> {
 
-	/**
-	 * This class is used for executing a remote read request, retrieve the
-	 * result from the data store, and send it back to the requesting proxy
-	 * node.
-	 * 
-	 * @author Pierre Sutra
-	 * @author Masoud Saeida Ardekani
-	 */
-	private class RemoteReadReplyTask<E extends JessyEntity> implements
+		private ReadRequest<E> request;
+
+		private RemoteReadRequestTask(ReadRequest<E> readRequest) {
+			this.request = readRequest;
+		}
+
+		@SuppressWarnings("unchecked")
+		public ReadReply<E> call() throws Exception {
+			Set<Group> destGroups = jessy.partitioner.resolve(request);
+			readRequestRecipientCounts.put(request.getReadRequestId(),
+					new AtomicInteger(destGroups.size()));
+			synchronized (requests.get(request.getReadRequestId())) {
+				for (Group dest : destGroups) {
+					logger.debug("asking group" + dest + " for " + request);
+					remoteReadStream.unicast(new RemoteReadRequestMessage<E>(
+							request), dest.members().iterator().next());
+				}
+				requests.get(request.getReadRequestId()).wait();
+			}
+			ReadReply<E> reply = (ReadReply<E>) replies.get(request
+					.getReadRequestId());
+			return reply;
+		}
+
+	}
+
+	class RemoteReadReplyTask<E extends JessyEntity> implements
 			Callable<ReadReply<E>> {
 
 		private RemoteReadRequestMessage<E> message;
@@ -201,9 +165,8 @@ public class RemoteReader implements Learner {
 			logger.debug("asnswering to " + message.source + " for "
 					+ request.getReadRequestId());
 			ReadReply<E> readReply = jessy.getDataStore().get(request);
-			if (!readReply.getEntity().iterator().hasNext()
-					|| readReply.getEntity().iterator().next() == null)
-				logger.error("request " + request + " failed ");
+			if( !readReply.getEntity().iterator().hasNext() || readReply.getEntity().iterator().next() == null)
+				logger.error("request "+request+ " failed ");
 			remoteReadStream.unicast(new RemoteReadReplyMessage<E>(readReply),
 					message.source);
 			serverAnsweringTime.stop();

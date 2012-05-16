@@ -6,7 +6,6 @@ import static fr.inria.jessy.transaction.TransactionState.COMMITTED;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,11 +23,10 @@ import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import net.sourceforge.fractal.multicast.MulticastStream;
+import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 
 import org.apache.log4j.Logger;
-
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
@@ -40,7 +38,6 @@ import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionReplyMessage;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.message.VoteMessage;
-import fr.inria.jessy.utils.ExecutorPool;
 
 //TODO COMMENT ME
 //TODO Clean these ConcurrentMaps

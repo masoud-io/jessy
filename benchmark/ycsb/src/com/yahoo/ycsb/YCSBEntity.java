@@ -20,7 +20,7 @@ public class YCSBEntity extends JessyEntity implements Externalizable {
 	private static final long serialVersionUID = 1L;
 
 	public static Keyspace keyspace = new Keyspace(
-			CoreWorkload.TABLENAME_PROPERTY_DEFAULT + ":user########",
+			"user########",
 			Distribution.UNIFORM);
 
 	public YCSBEntity() {

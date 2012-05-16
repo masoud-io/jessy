@@ -8,7 +8,6 @@ import java.util.List;
 
 import com.sleepycat.persist.model.Persistent;
 
-;
 
 @Persistent
 public abstract class Vector<K> extends ValueVector<K, Integer> implements Externalizable{

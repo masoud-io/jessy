@@ -305,7 +305,7 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		map = (HashMap<K, V>) in.readObject();
-	}
+	} 
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(map);

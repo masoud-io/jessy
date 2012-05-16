@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
-
 /**
  * Any read request (either local or remote) should be sent to the data store
  * layer with an object of class {@code ReadRequestKey}
@@ -63,4 +61,9 @@ public class ReadRequestKey<K> implements Externalizable {
 		arg0.writeObject(keyValue);
 	}
 
+	@Override
+	public String toString(){
+		return keyValue.toString();
+	}
+	
 }
