@@ -145,6 +145,12 @@ public class RemoteReader implements Learner {
 			}
 			ReadReply<E> reply = (ReadReply<E>) replies.get(request
 					.getReadRequestId());
+
+			// FIXME modify this pattern for fault tolerance
+			requests.remove(request.getReadRequestId()); 
+			replies.remove(request.getReadRequestId());
+			readRequestRecipientCounts.remove(request.getReadRequestId());
+			
 			return reply;
 		}
 
