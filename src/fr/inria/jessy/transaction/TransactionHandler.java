@@ -1,21 +1,22 @@
 package fr.inria.jessy.transaction;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.UUID;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.utils.CustomUUID;
 
-public class TransactionHandler implements Serializable{
+public class TransactionHandler implements Externalizable{
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
-	
-	private static CustomUUID customUUID=new CustomUUID();
 	
 	private  UUID id;
 	
 	public TransactionHandler(){
-		this.id=customUUID.getNextUUID();
+		this.id = CustomUUID.getNextUUID();
 	}
 
 	public UUID getId() {
@@ -37,6 +38,17 @@ public class TransactionHandler implements Serializable{
 	@Override
 	public String toString(){
 		return id.toString();
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		id = (UUID) in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(id);
 	}
 	
 }

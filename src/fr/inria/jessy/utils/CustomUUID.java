@@ -3,12 +3,12 @@ package fr.inria.jessy.utils;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class CustomUUID {
 
 	private static long localIP;
-	private AtomicInteger localCounter = new AtomicInteger();
+	private static AtomicLong localCounter = new AtomicLong(System.currentTimeMillis());
 	static {
 		try {
 			localIP = Long.parseLong(InetAddress.getLocalHost()
@@ -18,7 +18,7 @@ public class CustomUUID {
 		}
 	}
 
-	public UUID getNextUUID() {
+	public static UUID getNextUUID() {
 		return new UUID(localIP, localCounter.getAndIncrement());
 	}
 

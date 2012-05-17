@@ -349,7 +349,8 @@ public class DistributedTermination implements Learner, Runnable {
 					membership.myId());
 
 			logger.debug("send a terminateTransactionReplyMesssage for "
-					+ executionHistory.getTransactionHandler().getId() + " to the coordinator");
+					+ executionHistory.getTransactionHandler().getId() + " to the coordinator (" 
+					+ executionHistory.getCoordinator() +")");
 			terminationNotificationStream.unicast(replyMessage,
 					executionHistory.getCoordinator());
 
