@@ -35,12 +35,12 @@ public class EntitySet implements Messageable{
 	/**
 	 * maps works as follows: (Compressed ClassName + SecondaryKey) > Entity
 	 */
-	private Map<String, Object> entities;
+	private Map<String, JessyEntity> entities;
 
 	private CompactVector<String> compactVector;
 
 	public EntitySet() {
-		entities = new HashMap<String, Object>();
+		entities = new HashMap<String, JessyEntity>();
 		compactVector = new CompactVector<String>();
 	}
 
@@ -55,14 +55,12 @@ public class EntitySet implements Messageable{
 				.getName()) + keyValue);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> void addEntity(E entity) {
 		compactVector.update(entity.getLocalVector());
 		entities.put(Compress.compressClassName(entity.getClass().getName())
 				+ entity.getKey(), entity);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> void addEntity(Collection<E> entityCol) {
 		for (E entity : entityCol) {
 			addEntity(entity);
@@ -79,15 +77,14 @@ public class EntitySet implements Messageable{
 
 	}
 
-	public Collection getEntities() {
-		return  entities.values();
+	public Collection<JessyEntity> getEntities() {
+		return (Collection<JessyEntity>) entities.values();
 	}
 
 	public int size() {
 		return compactVector.size();
 	}
 
-	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> boolean contains(
 			Class<E> entityClass, String keyValue) {
 
@@ -120,7 +117,7 @@ public class EntitySet implements Messageable{
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		entities = (Map<String, Object>) in.readObject();
+		entities = (Map<String, JessyEntity>) in.readObject();
 		compactVector = (CompactVector<String>) in.readObject();
 	}
 
