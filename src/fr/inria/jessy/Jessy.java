@@ -6,10 +6,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
@@ -19,6 +21,7 @@ import com.sleepycat.persist.model.SecondaryKey;
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.DataStore;
+import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -34,6 +37,10 @@ import fr.inria.jessy.vector.CompactVector;
  */
 public abstract class Jessy {
 
+	//	
+	//	CONSTANTS
+	//	
+	
 	public enum ExecutionMode {
 		/**
 		 * Jessy only executes transactional operations.
@@ -49,15 +56,30 @@ public abstract class Jessy {
 		UNDEFINED,
 	};
 
-	private static TimeRecorder ReadTime = new TimeRecorder("Jessy#readTime");
+	public static AtomicInteger lastCommittedTransactionSeqNumber;
+
 	
+	//
+	// CLASS FIELDS
+	//
+
+	private static TimeRecorder ReadTime = new TimeRecorder("Jessy#readTime");
+
 	protected DataStore dataStore;
 	Consistency consistency;
 
+	//
+	// OBJECT FIELDS
+	//
+
+	private ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
+	
+//	Map<AtomicInteger, EntitySet> committedWritesets;
+	
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	protected List<Class<? extends JessyEntity>> entityClasses;
 
-	private ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
+
 
 	protected Jessy() throws Exception {
 
@@ -72,6 +94,7 @@ public abstract class Jessy {
 
 		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
 		
+		lastCommittedTransactionSeqNumber.set(0);
 	}
 
 	protected DataStore getDataStore() {
@@ -104,11 +127,11 @@ public abstract class Jessy {
 	 * @throws Exception
 	 */
 	public <E extends JessyEntity> void addEntity(Class<E> entityClass)
-			throws Exception {
+	throws Exception {
 		if (!entityClasses.contains(entityClass)) {
 			dataStore.addPrimaryIndex(entityClass);
 			dataStore.addSecondaryIndex(entityClass, String.class,
-					"secondaryKey");
+			"secondaryKey");
 			entityClasses.add(entityClass);
 		}
 	}
@@ -133,7 +156,7 @@ public abstract class Jessy {
 	 */
 	public <E extends JessyEntity, SK> void addSecondaryIndex(
 			Class<E> entityClass, Class<SK> keyClass, String keyName)
-			throws Exception {
+	throws Exception {
 
 		dataStore.addSecondaryIndex(entityClass, keyClass, keyName);
 	}
@@ -162,9 +185,9 @@ public abstract class Jessy {
 			String keyValue) throws Exception {
 
 		ReadTime.start();
-		
+
 		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
+		.get(transactionHandler);
 
 		if (executionHistory == null) {
 			ReadTime.stop();
@@ -227,7 +250,7 @@ public abstract class Jessy {
 			List<ReadRequestKey<?>> keys) throws Exception {
 
 		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
+		.get(transactionHandler);
 
 		if (executionHistory == null) {
 			throw new NullPointerException("Transaction has not been started");
@@ -302,10 +325,10 @@ public abstract class Jessy {
 	 */
 	public <E extends JessyEntity> void write(
 			TransactionHandler transactionHandler, E entity)
-			throws NullPointerException {
+	throws NullPointerException {
 
 		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
+		.get(transactionHandler);
 
 		if (executionHistory == null) {
 			throw new NullPointerException("Transaction has not been started");
@@ -337,10 +360,10 @@ public abstract class Jessy {
 	 */
 	public <E extends JessyEntity> void create(
 			TransactionHandler transactionHandler, E entity)
-			throws NullPointerException {
+	throws NullPointerException {
 
 		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
+		.get(transactionHandler);
 
 		if (executionHistory == null) {
 			throw new NullPointerException("Transaction has not been started");
@@ -351,7 +374,7 @@ public abstract class Jessy {
 
 	public <E extends JessyEntity> void remove(
 			TransactionHandler transactionHandler, E entity)
-			throws NullPointerException {
+	throws NullPointerException {
 		entity.removoe();
 		write(transactionHandler, entity);
 	}
@@ -370,7 +393,7 @@ public abstract class Jessy {
 
 		}
 		throw new Exception(
-				"Jessy has been accessed in non-transactional way. It cannot be accesesed transactionally");
+		"Jessy has been accessed in non-transactional way. It cannot be accesesed transactionally");
 	}
 
 	/**
@@ -389,7 +412,7 @@ public abstract class Jessy {
 	public ExecutionHistory abortTransaction(
 			TransactionHandler transactionHandler) {
 		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
+		.get(transactionHandler);
 		executionHistory.changeState(TransactionState.ABORTED_BY_CLIENT);
 
 		return executionHistory;
@@ -408,7 +431,7 @@ public abstract class Jessy {
 	 * @return An entity with the secondary key value equals keyValue
 	 */
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
-			throws Exception {
+	throws Exception {
 		if (transactionalAccess == ExecutionMode.UNDEFINED)
 			transactionalAccess = ExecutionMode.NON_TRANSACTIONAL;
 
@@ -417,7 +440,7 @@ public abstract class Jessy {
 		}
 
 		throw new Exception(
-				"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
+		"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
 	}
 
 	/**
@@ -440,7 +463,7 @@ public abstract class Jessy {
 		}
 
 		throw new Exception(
-				"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
+		"Jessy has been accessed in transactional way. It cannot be accesesed non-transactionally");
 	}
 
 	protected abstract <E extends JessyEntity> void performNonTransactionalWrite(
@@ -503,6 +526,4 @@ public abstract class Jessy {
 	public Consistency getConsistency() {
 		return this.consistency;
 	}
-
-
 }

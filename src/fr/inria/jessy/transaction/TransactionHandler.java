@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.Jessy;
 import fr.inria.jessy.utils.CustomUUID;
 
 public class TransactionHandler implements Externalizable{
@@ -14,9 +16,11 @@ public class TransactionHandler implements Externalizable{
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 	
 	private  UUID id;
+	private AtomicInteger transactionSeqNumber;
 	
 	public TransactionHandler(){
 		this.id = CustomUUID.getNextUUID();
+		this.transactionSeqNumber=Jessy.lastCommittedTransactionSeqNumber; 
 	}
 
 	public UUID getId() {
@@ -49,6 +53,14 @@ public class TransactionHandler implements Externalizable{
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(id);
+	}
+	
+	public AtomicInteger getTransactionSeqNumber() {
+		return transactionSeqNumber;
+	}
+
+	public void incrementTransactionSeqNumber() {
+		transactionSeqNumber.incrementAndGet();
 	}
 	
 }

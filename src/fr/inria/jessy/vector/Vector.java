@@ -38,6 +38,11 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements Exter
 
 	public abstract void update(CompactVector<K> readSet,
 			CompactVector<K> writeSet);
+	
+	public void update(int lastCommittedVersionNumber) {
+		new Exception("This method is overridden by {@link ScalarVector#update(int lastCommittedVersionNumber)} " +
+				"and can't be called on others implementations");
+	}
 
 	public K getSelfKey() {
 		return selfKey;
