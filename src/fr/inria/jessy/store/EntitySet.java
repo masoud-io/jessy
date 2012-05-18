@@ -79,8 +79,8 @@ public class EntitySet implements Messageable{
 
 	}
 
-	public Collection<? extends JessyEntity> getEntities() {
-		return (Collection<? extends JessyEntity>) entities.values();
+	public Collection getEntities() {
+		return  entities.values();
 	}
 
 	public int size() {
