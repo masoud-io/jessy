@@ -3,6 +3,8 @@ package fr.inria.jessy.vector;
 import java.io.Externalizable;
 import java.util.List;
 
+import fr.inria.jessy.Jessy;
+
 
 /**
  * 
@@ -20,12 +22,20 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	
 	@Override
 	public boolean isCompatible(Vector<K> other) throws NullPointerException {
+		
+		return check(other);
+	}
+
+
+	@SuppressWarnings("unchecked")
+	private boolean check(ValueVector other) {
+		
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
 		}
 
 		Integer selfValueOnSelfKey = getSelfValue();
-		Integer otherValueOnSelfKey = other.getValue(selfKey);
+		Integer otherValueOnSelfKey = (Integer) other.getValue(selfKey);
 		
 		if(otherValueOnSelfKey<=selfValueOnSelfKey){
 			return true;
@@ -34,11 +44,13 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 		return false;
 	}
 
+
 	@Override
 	public boolean isCompatible(CompactVector<K> other)
 			throws NullPointerException {
-		
-		return isCompatible(other);
+
+		return check(other);
+
 	}
 
 	@Override
@@ -55,7 +67,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 		}
 		return true;
 	}  
-
+	
 	@Override
 	public void update(List<Vector<K>> readList, List<Vector<K>> writeList) {
 		
@@ -65,11 +77,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
 		
-		new Exception("ScalarVector update can't be called using read set end write set. It has to be called with the new version scalar ");
-	}
-	
-	@Override
-	public void update(int lastCommittedVersionNumber) {
-		super.setValue(selfKey, lastCommittedVersionNumber);
+//		new Exception("ScalarVector update can't be called using read set end write set. It has to be called with the new version scalar ");
+		super.setValue(selfKey, Jessy.lastCommittedTransactionSeqNumber.get());
 	}
 }

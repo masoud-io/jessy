@@ -8,6 +8,7 @@ import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 
 public class SnapshotIsolation implements Consistency{
 
@@ -17,11 +18,20 @@ public class SnapshotIsolation implements Consistency{
 	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
 
-		if(executionHistory.getWriteSet().size()==0||
+		if (executionHistory.getTransactionType() == TransactionType.INIT_TRANSACTION) {
+			//			no conflicts can happen
+			//			TODO check if vectors have to be incremented
+			return true;
+		}
+
+		if((executionHistory.getWriteSet().size()==0&&executionHistory.getCreateSet().size()==0)||
 				executionHistory.getTransactionHandler().getTransactionSeqNumber()==Jessy.lastCommittedTransactionSeqNumber){
 			//			any committed concurrent transactions
 			return true;
 		}
+
+		executionHistory.getWriteSet().addEntity(
+				executionHistory.getCreateSet());
 
 		EntitySet concurrentWS = getAllConcurrentWriteSets();
 
@@ -79,7 +89,13 @@ public class SnapshotIsolation implements Consistency{
 	public void prepareToCommit(ExecutionHistory executionHistory) {
 		Jessy.lastCommittedTransactionSeqNumber.incrementAndGet();
 		committedWritesets.put(Jessy.lastCommittedTransactionSeqNumber, executionHistory.getWriteSet());
-
+		
+		executionHistory.getWriteSet().addEntity(
+				executionHistory.getCreateSet());
+		
+		for(JessyEntity je:executionHistory.getWriteSet().getEntities()){
+			je.getLocalVector().update(null, null);
+		}
 	}
 
 }
