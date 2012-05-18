@@ -81,19 +81,8 @@ public class ExecutionHistory implements Messageable {
 		writeSet = new EntitySet();
 		createSet = new EntitySet();
 
-		for (Class<? extends JessyEntity> entityClass : entityClasses) {
-			addEntityClass(entityClass);
-		}
-
 		this.transactionHandler = transactionHandler;
 		
-	}
-
-	private <E extends JessyEntity> void addEntityClass(Class<E> entityClass) {
-		// initialize writeList
-		readSet.addEntityClass(entityClass);
-		writeSet.addEntityClass(entityClass);
-		createSet.addEntityClass(entityClass);
 	}
 
 	public EntitySet getReadSet() {

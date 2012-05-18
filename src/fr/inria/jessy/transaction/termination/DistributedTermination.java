@@ -298,7 +298,11 @@ public class DistributedTermination implements Learner, Runnable {
 			logger.debug("Applying modified entities of committed transaction "
 					+ terminationResult.getTransactionHandler().getId());
 			boolean hasLocal = false;
-			for (JessyEntity e : executionHistory.getWriteSet().getEntities()) {
+			
+			Iterator itr=executionHistory.getWriteSet().getEntities().iterator();
+			JessyEntity e;
+			while (itr.hasNext()){
+				e=(JessyEntity)itr.next();
 				if (jessy.partitioner.isLocal(e.getKey())) {
 					try {
 						hasLocal = true;
@@ -308,7 +312,10 @@ public class DistributedTermination implements Learner, Runnable {
 					}
 				}
 			}
-			for (JessyEntity e : executionHistory.getCreateSet().getEntities()) {
+			
+			itr=executionHistory.getCreateSet().getEntities().iterator();
+			while (itr.hasNext()){
+				e=(JessyEntity)itr.next();
 				if (jessy.partitioner.isLocal(e.getKey())) {
 					try {
 						hasLocal = true;

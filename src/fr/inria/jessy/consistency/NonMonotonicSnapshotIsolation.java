@@ -38,25 +38,25 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 
 		TransactionType transactionType = executionHistory.getTransactionType();
 
-		try{
-			
-			logger.debug(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString());
-//			logger.debug("ReadSet Vector"
-//					+ executionHistory.getReadSet().getCompactVector().toString());
-//			logger.debug("WriteSet Vectors"
-//					+ executionHistory.getWriteSet().getCompactVector().toString());
-		}
-		catch(Exception ex){
+		try {
+
+			logger.debug(executionHistory.getTransactionHandler() + " >> "
+					+ transactionType.toString());
+			// logger.debug("ReadSet Vector"
+			// + executionHistory.getReadSet().getCompactVector().toString());
+			// logger.debug("WriteSet Vectors"
+			// + executionHistory.getWriteSet().getCompactVector().toString());
+		} catch (Exception ex) {
 			ex.printStackTrace();
-			
+
 		}
-		
 
 		/*
 		 * if the transaction is a read-only transaction, it commits right away.
 		 */
-		if (transactionType == TransactionType.READONLY_TRANSACTION) {			
-			logger.debug(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> COMMITTED");
+		if (transactionType == TransactionType.READONLY_TRANSACTION) {
+			logger.debug(executionHistory.getTransactionHandler() + " >> "
+					+ transactionType.toString() + " >> COMMITTED");
 			return true;
 		}
 
@@ -65,9 +65,8 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 		 * increaments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
-			List<? extends JessyEntity> createSet = executionHistory
-					.getCreateSet().getEntities();
-			Iterator<? extends JessyEntity> itr = createSet.iterator();
+			Iterator<? extends JessyEntity> itr = executionHistory
+					.getCreateSet().getEntities().iterator();
 			while (itr.hasNext()) {
 				JessyEntity tmp = itr.next();
 
@@ -75,7 +74,9 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 				// entity.
 				tmp.getLocalVector().increament();
 			}
-			logger.debug(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> INIT_TRANSACTION COMMITTED");
+			logger.debug(executionHistory.getTransactionHandler() + " >> "
+					+ transactionType.toString()
+					+ " >> INIT_TRANSACTION COMMITTED");
 			return true;
 		}
 
@@ -87,16 +88,14 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 		executionHistory.getWriteSet().addEntity(
 				executionHistory.getCreateSet());
 
-		List<? extends JessyEntity> writeSet = executionHistory.getWriteSet()
-				.getEntities();
-
 		// updatedVector is a new vector. It will be used as a new
 		// vector for all modified vectors.
 		Vector<String> updatedVector = VectorFactory.getVector("");
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
 
-		Iterator<? extends JessyEntity> itr = writeSet.iterator();
+		Iterator<? extends JessyEntity> itr = executionHistory.getWriteSet()
+				.getEntities().iterator();
 		while (itr.hasNext()) {
 			JessyEntity tmp = itr.next();
 
@@ -106,7 +105,9 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 				if (!lastComittedEntity.getLocalVector().isCompatible(
 						tmp.getLocalVector())) {
 
-					logger.warn(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> ABORTED");
+					logger.warn(executionHistory.getTransactionHandler()
+							+ " >> " + transactionType.toString()
+							+ " >> ABORTED");
 					return false;
 				}
 			}
@@ -115,10 +116,12 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 			// entity.
 			updatedVector.setSelfKey(tmp.getLocalVector().getSelfKey());
 			tmp.setLocalVector(updatedVector.clone());
-			// logger.debug("ResultSet Vectors" + tmp.getLocalVector().toString());
+			// logger.debug("ResultSet Vectors" +
+			// tmp.getLocalVector().toString());
 
-		}		
-		logger.debug(executionHistory.getTransactionHandler() + " >> "+ transactionType.toString() + " >> COMMITTED");
+		}
+		logger.debug(executionHistory.getTransactionHandler() + " >> "
+				+ transactionType.toString() + " >> COMMITTED");
 		return true;
 	}
 
@@ -126,10 +129,10 @@ public class NonMonotonicSnapshotIsolation implements Consistency {
 	public boolean hasConflict(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
-		Set<String> history2Keys=history2.getWriteSet().getKeys();
-		
+		Set<String> history2Keys = history2.getWriteSet().getKeys();
+
 		for (String key : history1.getWriteSet().getKeys()) {
-			if (history2Keys.contains(key)){
+			if (history2Keys.contains(key)) {
 				return true;
 			}
 		}
