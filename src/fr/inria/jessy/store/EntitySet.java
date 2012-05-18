@@ -83,7 +83,7 @@ public class EntitySet implements Messageable {
 
 	}
 
-	public synchronized Collection getEntities() {
+	public Collection getEntities() {
 		return entities.values();
 	}
 
@@ -92,7 +92,7 @@ public class EntitySet implements Messageable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized <E extends JessyEntity> boolean contains(
+	public <E extends JessyEntity> boolean contains(
 			Class<E> entityClass, String keyValue) {
 
 		return entities.containsKey(Compress.compressClassName(entityClass
