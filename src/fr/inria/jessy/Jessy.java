@@ -56,7 +56,7 @@ public abstract class Jessy {
 		UNDEFINED,
 	};
 
-	public static AtomicInteger lastCommittedTransactionSeqNumber;
+	public static AtomicInteger lastCommittedTransactionSeqNumber=new AtomicInteger();
 
 	
 	//
