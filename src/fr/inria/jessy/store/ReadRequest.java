@@ -7,8 +7,6 @@ import java.io.ObjectOutput;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
-
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.CompactVector;

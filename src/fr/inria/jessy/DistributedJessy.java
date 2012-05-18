@@ -30,10 +30,9 @@ import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
+import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
-import fr.inria.jessy.transaction.termination.TerminationResult;
 import fr.inria.jessy.transaction.termination.Vote;
-import fr.inria.jessy.transaction.termination.message.TerminateTransactionReplyMessage;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.message.VoteMessage;
 import fr.inria.jessy.vector.CompactVector;
@@ -130,9 +129,7 @@ public class DistributedJessy extends Jessy {
 			MessageStream.addClass(VoteMessage.class.getName());
 			MessageStream.addClass(Vote.class.getName());
 			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
-			MessageStream.addClass(TerminateTransactionReplyMessage.class.getName());
 			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
-			MessageStream.addClass(TerminationResult.class.getName());
 			MessageStream.addClass(ExecutionHistory.class.getName());
 			MessageStream.addClass(TransactionHandler.class.getName());
 			
@@ -239,7 +236,7 @@ public class DistributedJessy extends Jessy {
 		executionHistory.addWriteEntity(entity);
 
 		// 2 - Submit it to the termination protocol.
-		Future<TerminationResult> result = distributedTermination
+		Future<TransactionState> result = distributedTermination
 				.terminateTransaction(executionHistory);
 		result.get();
 
@@ -251,31 +248,29 @@ public class DistributedJessy extends Jessy {
 	public <E extends JessyEntity> void performNonTransactionalLocalWrite(
 			E entity) throws InterruptedException, ExecutionException {
 		dataStore.put(entity);
-		lastCommittedEntities.put(entity.getKey(), entity);
 	}
 
 	// I think it should only be
-	// syncrhonized during certification. Thus, it is safe before certification
-	// test.
+	// syncrhonized during certification. 
+	// Thus, it is safe before certification test.
 	@Override
 	public ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
 		logger.debug(transactionHandler + " IS COMMITTING");
 		ExecutionHistory executionHistory = getExecutionHistory(transactionHandler);
-		Future<TerminationResult> terminationResultFuture = distributedTermination
+		Future<TransactionState> stateFuture= distributedTermination
 				.terminateTransaction(executionHistory);
 
-		TerminationResult terminationResult = null;
+		TransactionState stateResult= null;
 		try {
-			terminationResult = terminationResultFuture.get();
+			stateResult = stateFuture.get();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		assert (terminationResult != null);
-		executionHistory.changeState(terminationResult.getTransactionState());
+		assert (stateResult != null);
+		executionHistory.changeState(stateResult);
 
-		logger.debug(transactionHandler + " "
-				+ terminationResult.getTransactionState());
+		logger.debug(transactionHandler + " "+ stateResult);
 		
 		return executionHistory;
 	}

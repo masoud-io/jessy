@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import com.sleepycat.je.DatabaseException;
 import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;

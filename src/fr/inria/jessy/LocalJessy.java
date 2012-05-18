@@ -71,8 +71,7 @@ public class LocalJessy extends Jessy {
 				.get(transactionHandler);
 		result.changeState(TransactionState.COMMITTING);
 
-		if (consistency.certify(lastCommittedEntities,
-				handler2executionHistory.get(transactionHandler))) {
+		if (consistency.certify(handler2executionHistory.get(transactionHandler))) {
 
 			// certification test has returned true. we can commit.
 			applyModifiedEntities(transactionHandler);
@@ -85,50 +84,6 @@ public class LocalJessy extends Jessy {
 
 		return result;
 
-	}
-
-	/**
-	 * Apply changes of a writeSet and createSet of a committed transaction to
-	 * the datastore.
-	 * 
-	 * @param transactionHandler
-	 *            handler of a committed transaction.
-	 */
-	protected void applyModifiedEntities(TransactionHandler transactionHandler) {
-		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
-
-		Iterator<? extends JessyEntity> itr;
-
-		if (executionHistory.getWriteSet().size() > 0) {
-			itr = executionHistory.getWriteSet().getEntities().iterator();
-			while (itr.hasNext()) {
-				JessyEntity tmp = itr.next();
-
-				// Send the entity to the datastore to be saved
-				dataStore.put(tmp);
-
-				// Store the entity as the last committed entity for this
-				// particular
-				// key.
-				lastCommittedEntities.put(tmp.getKey(), tmp);
-			}
-		}
-
-		if (executionHistory.getCreateSet().size() > 0) {
-			itr = executionHistory.getCreateSet().getEntities().iterator();
-			while (itr.hasNext()) {
-				JessyEntity tmp = itr.next();
-
-				// Send the entity to the datastore to be saved
-				dataStore.put(tmp);
-
-				// Store the entity as the last committed entity for this
-				// particular
-				// key.
-				lastCommittedEntities.put(tmp.getKey(), tmp);
-			}
-		}
 	}
 
 	@Override

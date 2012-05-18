@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
 //TODO comment me
@@ -12,9 +13,11 @@ public class ConsistencyFactory {
 
 	private static String ConsistencyType = readConfig();
 	
-	public static Consistency getConsistency() {
+	private static NonMonotonicSnapshotIsolation nmsi; 
+	
+	public static Consistency getConsistency(DataStore dataStore) {
 		if (ConsistencyType.equals("nmsi")) {
-			return new NonMonotonicSnapshotIsolation();
+			return new NonMonotonicSnapshotIsolation(dataStore);
 		}
 		return null;
 	}

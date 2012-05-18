@@ -8,11 +8,9 @@ import java.util.Map;
 
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
-import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
-import com.sleepycat.je.LockMode;
 import com.sleepycat.je.PreloadConfig;
 import com.sleepycat.persist.EntityCursor;
 import com.sleepycat.persist.EntityJoin;
@@ -88,7 +86,7 @@ public class DataStore {
 		// Influence the performance tremendously!
 		envConfig.setSharedCache(true); // Does not effect the prformance much!
 		// TODO subject to change for optimization
-		envConfig.setCachePercent(90);
+		// envConfig.setCachePercent(90);
 		env = new Environment(envHome, envConfig);
 
 	}

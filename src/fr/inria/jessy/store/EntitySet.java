@@ -3,15 +3,11 @@ package fr.inria.jessy.store;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.sourceforge.fractal.Messageable;
 import fr.inria.jessy.ConstantPool;
@@ -32,7 +28,7 @@ import fr.inria.jessy.vector.CompactVector;
  *         thread.
  * 
  */
-public class EntitySet implements Messageable {
+public class EntitySet implements Messageable{
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
@@ -83,8 +79,8 @@ public class EntitySet implements Messageable {
 
 	}
 
-	public Collection getEntities() {
-		return entities.values();
+	public Collection<? extends JessyEntity> getEntities() {
+		return (Collection<? extends JessyEntity>) entities.values();
 	}
 
 	public int size() {

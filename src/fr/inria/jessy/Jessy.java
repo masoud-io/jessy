@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,14 +57,6 @@ public abstract class Jessy {
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	protected List<Class<? extends JessyEntity>> entityClasses;
 
-	/**
-	 * Stores the last committed entities in a concurrent map. This is used
-	 * during certification to check for conflicting concurrent transactions.
-	 * The key is the concatenation of entity class name and entity secondary
-	 * key {@link JessyEntity#getKey()} . The value is the entity.
-	 */
-	ConcurrentMap<String, JessyEntity> lastCommittedEntities;
-
 	private ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
 	protected Jessy() throws Exception {
@@ -73,13 +66,11 @@ public abstract class Jessy {
 		String storeName = "store";
 
 		dataStore = new DataStore(environmentHome, readOnly, storeName);
-		consistency = ConsistencyFactory.getConsistency();
+		consistency = ConsistencyFactory.getConsistency(dataStore);
 
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 
 		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
-
-		lastCommittedEntities = new ConcurrentHashMap<String, JessyEntity>();
 		
 	}
 
@@ -95,10 +86,6 @@ public abstract class Jessy {
 	public void setExecutionHistory(
 			ExecutionHistory executionHistory) {
 		handler2executionHistory.put(executionHistory.getTransactionHandler(), executionHistory);
-	}
-	
-	public JessyEntity getLastCommittedEntity(String key) {
-		return lastCommittedEntities.get(key);
 	}
 
 	/**
@@ -459,12 +446,43 @@ public abstract class Jessy {
 	protected abstract <E extends JessyEntity> void performNonTransactionalWrite(
 			E entity) throws InterruptedException, ExecutionException;
 
+	
+	/**
+	 * Apply changes of a writeSet and createSet of a committed transaction to
+	 * the datastore.
+	 * 
+	 * @param transactionHandler
+	 *            handler of a committed transaction.
+	 */
+	public void applyModifiedEntities(TransactionHandler transactionHandler) {
+		ExecutionHistory executionHistory = handler2executionHistory
+				.get(transactionHandler);
+
+		Iterator<? extends JessyEntity> itr;
+
+		if (executionHistory.getWriteSet().size() > 0) {
+			itr = executionHistory.getWriteSet().getEntities().iterator();
+			while (itr.hasNext()) {
+				JessyEntity tmp = itr.next();
+
+				// Send the entity to the datastore to be saved
+				dataStore.put(tmp);
+			}
+		}
+
+		if (executionHistory.getCreateSet().size() > 0) {
+			itr = executionHistory.getCreateSet().getEntities().iterator();
+			while (itr.hasNext()) {
+				JessyEntity tmp = itr.next();
+
+				// Send the entity to the datastore to be saved
+				dataStore.put(tmp);
+			}
+		}
+	}
+	
 	public void garbageCollectTransaction(TransactionHandler transactionHandler) {
 		handler2executionHistory.remove(transactionHandler);
-	}
-
-	public ConcurrentMap<String, JessyEntity> getLastCommittedEntities() {
-		return lastCommittedEntities;
 	}
 
 	protected Set<Object> activeClients = new HashSet<Object>();
@@ -481,5 +499,10 @@ public abstract class Jessy {
 	// TODO
 	public void open() {
 	}
+	
+	public Consistency getConsistency() {
+		return this.consistency;
+	}
+
 
 }

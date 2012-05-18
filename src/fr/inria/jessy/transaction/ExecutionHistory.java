@@ -7,12 +7,10 @@ import java.util.Collection;
 import java.util.List;
 
 import net.sourceforge.fractal.Messageable;
+import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.transaction.termination.TerminationResult;
-
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 //TODO COMMENT ME
 public class ExecutionHistory implements Messageable {
