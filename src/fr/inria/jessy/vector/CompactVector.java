@@ -13,42 +13,42 @@ import java.util.List;
 import fr.inria.jessy.ConstantPool;
 
 /**
+ * This class implements a generic and externalizable interface. It is used during
+ * read requests for sending requests over the network.
+ * 
  * @author Masoud Saeida Ardekani
  * 
- *         This class implements a generic and serializable interface. It is
- *         used during read requests, and since it is compact, it is perfect for
- *         sending over the network
  */
 public class CompactVector<K> extends ValueVector<K, Integer> implements
 		Externalizable {
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;;
-	private final static Integer _bydefault=-1;
-	
+	private final static Integer _bydefault = -1;
+
 	private List<K> keys;
 
 	public CompactVector() {
 		super(_bydefault);
 		keys = new ArrayList<K>();
 	}
-	
-	public void update(Vector<K> vector){
+
+	public void update(Vector<K> vector) {
 		super.update(vector);
 		keys.add(vector.getSelfKey());
 	}
 
-	public List<K> getKeys(){
+	public List<K> getKeys() {
 		return keys;
 	}
-	
-	public Integer getValue(K key){
+
+	public Integer getValue(K key) {
 		return super.getValue(key);
 	}
-	
-	public int size(){
+
+	public int size() {
 		return keys.size();
 	}
-	
+
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
