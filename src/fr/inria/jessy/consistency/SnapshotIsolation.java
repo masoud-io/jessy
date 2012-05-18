@@ -5,12 +5,18 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.inria.jessy.Jessy;
+import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 
-public class SnapshotIsolation implements Consistency{
+//TODO COMMENT ME
+public class SnapshotIsolation extends Consistency{
+
+	public SnapshotIsolation(DataStore store) {
+		super(store);
+	}
 
 	private Map<AtomicInteger, EntitySet> committedWritesets;
 

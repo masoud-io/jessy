@@ -4,7 +4,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.List;
 import java.util.Map;
 
 import com.sleepycat.persist.model.Persistent;
@@ -88,34 +87,6 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 		return true;
 	}
 
-	@Override
-	public boolean isCompatible(List<Vector<K>> otherList)
-			throws NullPointerException {
-		// check special values
-		if (otherList == null) {
-			throw new NullPointerException("Input Vector is Null");
-		}
-
-		for (Vector<K> other : otherList) {
-			if (isCompatible(other) == false)
-				return false;
-		}
-		return true;
-	}
-
-	@Override
-	public void update(List<Vector<K>> readList, List<Vector<K>> writeList) {
-		for (Vector<K> readVector : readList) {
-			super.update(readVector);
-		}
-
-		for (Vector<K> writeVector : writeList) {
-			super.update(writeVector);
-			super.setValue(writeVector.getSelfKey(),
-					writeVector.getSelfValue() + 1);
-		}
-	}
-
 	/**
 	 * update method gets two {@link CompactVector} as readSet and writeSet and
 	 * applies them into its local vector. <b> this implementation does not
@@ -148,7 +119,6 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 		return (DependenceVector<K>) super.clone();
 	}
 
-	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
 	}
@@ -157,3 +127,32 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 		super.writeExternal(out);
 	}
 }
+
+
+//@Override
+//public boolean isCompatible(List<Vector<K>> otherList)
+//		throws NullPointerException {
+//	// check special values
+//	if (otherList == null) {
+//		throw new NullPointerException("Input Vector is Null");
+//	}
+//
+//	for (Vector<K> other : otherList) {
+//		if (isCompatible(other) == false)
+//			return false;
+//	}
+//	return true;
+//}
+//
+//@Override
+//public void update(List<Vector<K>> readList, List<Vector<K>> writeList) {
+//	for (Vector<K> readVector : readList) {
+//		super.update(readVector);
+//	}
+//
+//	for (Vector<K> writeVector : writeList) {
+//		super.update(writeVector);
+//		super.setValue(writeVector.getSelfKey(),
+//				writeVector.getSelfValue() + 1);
+//	}
+//}

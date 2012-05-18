@@ -36,14 +36,6 @@ public class NullVector<K> extends Vector<K> implements Externalizable{
 	}
 
 	@Override
-	public boolean isCompatible(List<Vector<K>> otherList) throws NullPointerException {
-		return true;
-	}
-
-	@Override
-	public void update(List<Vector<K>> readList, List<Vector<K>> writeList) {}
-
-	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {}
 	
 	@SuppressWarnings("unchecked")

@@ -1,7 +1,6 @@
 package fr.inria.jessy.vector;
 
 import java.io.Externalizable;
-import java.util.List;
 
 import fr.inria.jessy.Jessy;
 
@@ -51,27 +50,6 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 
 		return check(other);
 
-	}
-
-	@Override
-	public boolean isCompatible(List<Vector<K>> otherList)
-			throws NullPointerException {
-		
-		if (otherList == null) {
-			throw new NullPointerException("Input Vector is Null");
-		}
-
-		for (Vector<K> other : otherList) {
-			if (isCompatible(other) == false)
-				return false;
-		}
-		return true;
-	}  
-	
-	@Override
-	public void update(List<Vector<K>> readList, List<Vector<K>> writeList) {
-		
-		new Exception("ScalarVector update can't be called using read set end write set. It has to be called with the new version scalar ");
 	}
 
 	@Override

@@ -14,39 +14,20 @@ import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
 
-/**
- * This class implements Non-Monotonic Snapshot Isolation consistency criterion.
- * 
- * @author Masoud Saeida Ardekani
- * 
- */
-public class NonMonotonicSnapshotIsolation extends Consistency {
+public class Serializability extends Consistency {
 
-	private static Logger logger = Logger
-			.getLogger(NonMonotonicSnapshotIsolation.class);
+	private static Logger logger = Logger.getLogger(Serializability.class);
 
-	public NonMonotonicSnapshotIsolation(DataStore dataStore) {
-		super(dataStore);
+	public Serializability(DataStore dateStore) {
+		super(dateStore);
 	}
 
+	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
 		TransactionType transactionType = executionHistory.getTransactionType();
 
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ transactionType.toString());
-		// logger.debug("ReadSet Vector"
-		// + executionHistory.getReadSet().getCompactVector().toString());
-		// logger.debug("WriteSet Vectors"
-		// + executionHistory.getWriteSet().getCompactVector().toString());
-
-		/*
-		 * if the transaction is a read-only transaction, it commits right away.
-		 */
-		if (transactionType == TransactionType.READONLY_TRANSACTION) {
-			logger.debug(executionHistory.getTransactionHandler() + " >> "
-					+ transactionType.toString() + " >> COMMITTED");
-			return true;
-		}
 
 		/*
 		 * if the transaction is an initalization transaction, it first
@@ -69,19 +50,19 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 		}
 
 		/*
-		 * If the transaction is not read-only or init, we consider the create
-		 * operations as update operations. Thus, we move them to the writeSet
-		 * List.
+		 * If the transaction is not init, we consider the create operations as
+		 * update operations. Thus, we move them to the writeSet List.
 		 */
 		executionHistory.getWriteSet().addEntity(
 				executionHistory.getCreateSet());
 
-
 		JessyEntity lastComittedEntity;
+
+		/*
+		 * Firstly, the writeSet is checked.
+		 */
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
-
 			try {
-
 				lastComittedEntity = store
 						.get(new ReadRequest<JessyEntity>(
 								(Class<JessyEntity>) tmp.getClass(),
@@ -99,6 +80,30 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 			}
 
 		}
+
+		/*
+		 * Secondly, the readSet is checked.
+		 */
+		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
+			try {
+				lastComittedEntity = store
+						.get(new ReadRequest<JessyEntity>(
+								(Class<JessyEntity>) tmp.getClass(),
+								"secondaryKey", tmp.getKey(), null))
+						.getEntity().iterator().next();
+
+				if (!lastComittedEntity.getLocalVector().isCompatible(
+						tmp.getLocalVector())) {
+					return false;
+				}
+
+			} catch (NullPointerException e) {
+				// nothing to do.
+				// the key is simply not there.
+			}
+
+		}
+
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ transactionType.toString() + " >> COMMITTED");
 		return true;
@@ -108,28 +113,28 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 	public boolean hasConflict(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
-		Set<String> history2Keys = history2.getWriteSet().getKeys();
+		Set<String> history1Keys = history1.getWriteSet().getKeys();
+		history1Keys.addAll(history1.getReadSet().getKeys());
 
-		for (String key : history1.getWriteSet().getKeys()) {
+		Set<String> history2Keys = history2.getWriteSet().getKeys();
+		history2Keys.addAll(history2.getReadSet().getKeys());
+
+		for (String key : history1Keys) {
 			if (history2Keys.contains(key)) {
 				return true;
 			}
 		}
 		return false;
+
 	}
 
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
 
-		// updatedVector is a new vector. It will be used as a new
-		// vector for all modified vectors.
-		Vector<String> updatedVector = VectorFactory.getVector("");
-		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
-				executionHistory.getWriteSet().getCompactVector());
-
 		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
-			entity.setLocalVector(updatedVector);
+			entity.getLocalVector().update(null, null);
 		}
 
 	}
+
 }

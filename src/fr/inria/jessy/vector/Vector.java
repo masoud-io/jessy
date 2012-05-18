@@ -4,16 +4,15 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.List;
 
 import com.sleepycat.persist.model.Persistent;
 
-
 @Persistent
-public abstract class Vector<K> extends ValueVector<K, Integer> implements Externalizable{
+public abstract class Vector<K> extends ValueVector<K, Integer> implements
+		Externalizable {
 
 	K selfKey;
-	private final static Integer _bydefault=-1;
+	private final static Integer _bydefault = -1;
 
 	public Vector() {
 		super(_bydefault);
@@ -24,26 +23,33 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements Exter
 		this.selfKey = selfKey;
 	}
 
+	/**
+	 * This method is called inside {@code Consistency#certify} method.
+	 * 
+	 * @param other
+	 * @return
+	 * @throws NullPointerException
+	 */
 	public abstract boolean isCompatible(Vector<K> other)
 			throws NullPointerException;
 
+	/**
+	 * This method is called in
+	 * {@code DataStore#get(fr.inria.jessy.store.ReadRequest)} upon receiving a
+	 * read request. An entity will be returned such that its {@code Vector} is
+	 * compatible with the received {@code CompactVector}
+	 * 
+	 * @param other
+	 *            the compactVector containing all previously read entities.
+	 * @return true if the entity can be read, otherwise false.
+	 * @throws NullPointerException
+	 */
 	public abstract boolean isCompatible(CompactVector<K> other)
 			throws NullPointerException;
-
-	public abstract boolean isCompatible(List<Vector<K>> otherList)
-			throws NullPointerException;
-
-	public abstract void update(List<Vector<K>> readList,
-			List<Vector<K>> writeList);
 
 	public abstract void update(CompactVector<K> readSet,
 			CompactVector<K> writeSet);
 	
-	public void update(int lastCommittedVersionNumber) {
-		new Exception("This method is overridden by {@link ScalarVector#update(int lastCommittedVersionNumber)} " +
-				"and can't be called on others implementations");
-	}
-
 	public K getSelfKey() {
 		return selfKey;
 	}
@@ -56,6 +62,7 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements Exter
 		return super.getValue(selfKey);
 	}
 
+	@SuppressWarnings("unchecked")
 	public Vector<K> clone() {
 		Vector<K> result = (Vector<K>) super.clone();
 		result.selfKey = selfKey;
@@ -71,7 +78,8 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements Exter
 	}
 
 	@SuppressWarnings("unchecked")
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
 		super.readExternal(in);
 		super.setBydefault(_bydefault);
 		selfKey = (K) in.readObject();
