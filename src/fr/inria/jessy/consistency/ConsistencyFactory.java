@@ -19,8 +19,14 @@ public class ConsistencyFactory {
 		if (ConsistencyType.equals("nmsi")) {
 			return new NonMonotonicSnapshotIsolation(dataStore);
 		}
+		
+		if (ConsistencyType.equals("si")) {
+			return new SnapshotIsolation(dataStore);
+		}
 		return null;
 	}
+	
+	
 	
 	public static Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
 		Set<String> keys=new HashSet<String>();

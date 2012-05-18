@@ -1,3 +1,8 @@
+#config.properties
+
+#vector_type: "dependencevector" | "nullvector" | "lightscalarvector" | "scalarvector"
+#consistency_type: "nmsi" | "si"
+
 vector_type = dependencevector
 consistency_type = nmsi
 fractal_file=myfractal.xml

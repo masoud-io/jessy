@@ -14,6 +14,12 @@ public class VectorFactory {
 		if(vectorType.equals("nullvector")){
 			return new NullVector<K>(selfKey);
 		}
+		if(vectorType.equals("lightscalarvector")){
+			return new LightScalarVector<K>();
+		}
+		if(vectorType.equals("scalarvector")){
+			return new ScalarVector<K>(selfKey);
+		}
 		
 		return null;
 	}
