@@ -266,7 +266,8 @@ public class DistributedJessy extends Jessy {
 		executionHistory.changeState(stateResult);
 
 		logger.debug(transactionHandler + " "+ stateResult);
-		
+		if (stateResult==TransactionState.COMMITTED)
+			applyModifiedEntities(transactionHandler);
 		return executionHistory;
 	}
 

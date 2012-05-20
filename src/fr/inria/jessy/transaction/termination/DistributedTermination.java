@@ -258,7 +258,7 @@ public class DistributedTermination implements Learner, Runnable {
 		if ( executionHistory.getTransactionState() == COMMITTED ) {
 			logger.debug("Applying modified entities of committed transaction "	+ th.getId());
 			jessy.getConsistency().prepareToCommit(executionHistory);
-			jessy.applyModifiedEntities(th);
+			
 		}
 
 	}
