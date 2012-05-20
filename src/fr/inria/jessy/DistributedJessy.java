@@ -14,6 +14,7 @@ import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.utils.PerformanceProbe;
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -47,8 +48,8 @@ public class DistributedJessy extends Jessy {
 	private static DistributedJessy distributedJessy = null;
 
 	private static SimpleCounter remoteReads;
-	private static TimeRecorder NonTransactionalWriteRequestTime,
-			readRequestTime;
+	private static TimeRecorder NonTransactionalWriteRequestTime;
+	private static ValueRecorder readRequestTime;
 
 	public FractalManager fractal;
 	public Membership membership;
@@ -61,7 +62,9 @@ public class DistributedJessy extends Jessy {
 		remoteReads = new SimpleCounter("Jessy#RemoteReads");
 		NonTransactionalWriteRequestTime = new TimeRecorder(
 				"Jessy#NonTransactionalWriteRequestTime");
-		readRequestTime = new TimeRecorder("Jessy#ReadRequestTime");
+		readRequestTime = new ValueRecorder("Jessy#ReadRequestTime(us)");
+		readRequestTime.setFormat("%a");
+		readRequestTime.setFactor(1000);
 	}
 
 	private DistributedJessy() throws Exception {
@@ -154,7 +157,7 @@ public class DistributedJessy extends Jessy {
 			String keyName, SK keyValue, CompactVector<String> readSet)
 			throws InterruptedException, ExecutionException {
 
-		readRequestTime.start();
+		long start = System.nanoTime();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 		ReadReply<E> readReply;
@@ -169,10 +172,12 @@ public class DistributedJessy extends Jessy {
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
 		}
-		readRequestTime.stop();
+		readRequestTime.add(System.nanoTime()-start);
 
-		if (readReply.getEntity().iterator().hasNext()
-				&& readReply.getEntity().iterator().next() != null) {
+		if ( readReply != null
+			 &&	readReply.getEntity() != null 
+			 && readReply.getEntity().iterator().hasNext()
+			 && readReply.getEntity().iterator().next() != null) { // FIXME improve this
 			return readReply.getEntity().iterator().next();
 		} else {
 			logger.debug("request " + readRequest + " failed");
@@ -187,7 +192,7 @@ public class DistributedJessy extends Jessy {
 			CompactVector<String> readSet) throws InterruptedException,
 			ExecutionException {
 
-		readRequestTime.start();
+		long start = System.nanoTime();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
 		ReadReply<E> readReply;
@@ -202,7 +207,7 @@ public class DistributedJessy extends Jessy {
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
 		}
-		readRequestTime.stop();
+		readRequestTime.add(System.nanoTime()-start);
 
 		if (readReply.getEntity().iterator().hasNext()
 				&& readReply.getEntity().iterator().next() != null) {
@@ -219,14 +224,6 @@ public class DistributedJessy extends Jessy {
 
 		NonTransactionalWriteRequestTime.start();
 
-		// if (partitioner.isLocal(entity.getKey())
-		// && ConstantPool.GROUP_SIZE == 1) {
-		//
-		// logger.debug("performing local write to " + entity.getKey());
-		// performNonTransactionalLocalWrite(entity);
-		//
-		// } else {
-
 		logger.debug("performing Write to " + entity.getKey());
 
 		// 1 - Create a blind write transaction.
@@ -239,8 +236,6 @@ public class DistributedJessy extends Jessy {
 		Future<TransactionState> result = distributedTermination
 				.terminateTransaction(executionHistory);
 		result.get();
-
-		// }
 
 		NonTransactionalWriteRequestTime.stop();
 	}

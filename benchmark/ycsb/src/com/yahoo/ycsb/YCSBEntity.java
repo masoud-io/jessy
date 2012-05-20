@@ -13,6 +13,7 @@ import com.yahoo.ycsb.workloads.CoreWorkload;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.Keyspace.Distribution;
+import fr.inria.jessy.utils.Compress;
 
 @Entity
 public class YCSBEntity extends JessyEntity implements Externalizable {
@@ -36,7 +37,7 @@ public class YCSBEntity extends JessyEntity implements Externalizable {
 
 	/* Constructor */
 	public YCSBEntity(String entityClassName, String entityId) {
-		super(entityClassName, entityId);
+		super(Compress.compressClassName(entityClassName), entityId);
 	}
 
 	/* Constructor Using a hashmap already Definded */

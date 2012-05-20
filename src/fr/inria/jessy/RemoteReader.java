@@ -14,7 +14,7 @@ import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.utils.ExecutorPool;
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 
@@ -47,8 +47,13 @@ public class RemoteReader implements Learner {
 
 	private static Logger logger = Logger.getLogger(RemoteReader.class);
 	
-	private static TimeRecorder serverAnsweringTime
-							= new TimeRecorder("RemoteReader#serverAnsweringTime");
+	private static ValueRecorder serverAnsweringTime;
+	static{
+		serverAnsweringTime = new ValueRecorder("RemoteReader#serverAnsweringTime(us)");
+		serverAnsweringTime.setFormat("%a");
+		serverAnsweringTime.setFactor(1000);
+	}
+
 
 	private DistributedJessy jessy;
 	private MulticastStream remoteReadStream;
@@ -94,9 +99,18 @@ public class RemoteReader implements Learner {
 
 		if (v instanceof RemoteReadRequestMessage) {
 
-			RemoteReadRequestMessage request = (RemoteReadRequestMessage) v;
-			logger.debug("request "	+ request.getReadRequest());
-			pool.submit(new RemoteReadReplyTask(request));
+			RemoteReadRequestMessage message = (RemoteReadRequestMessage) v;
+			logger.debug("request "	+ message.getReadRequest());
+			long start = System.nanoTime();
+			ReadRequest request = message.getReadRequest();
+			logger.debug("asnswering to " + message.source + " for "
+					+ request.getReadRequestId());
+			ReadReply readReply = jessy.getDataStore().get(request);
+			if( !readReply.getEntity().iterator().hasNext() || readReply.getEntity().iterator().next() == null)
+				logger.error("request "+request+ " failed ");
+			remoteReadStream.unicast(new RemoteReadReplyMessage(readReply),
+					message.source);
+			serverAnsweringTime.add(System.nanoTime() - start);
 
 		} else {
 
@@ -166,7 +180,7 @@ public class RemoteReader implements Learner {
 		}
 
 		public ReadReply<E> call() throws Exception {
-			serverAnsweringTime.start();
+			long start = System.nanoTime();
 			ReadRequest<E> request = message.getReadRequest();
 			logger.debug("asnswering to " + message.source + " for "
 					+ request.getReadRequestId());
@@ -175,7 +189,7 @@ public class RemoteReader implements Learner {
 				logger.error("request "+request+ " failed ");
 			remoteReadStream.unicast(new RemoteReadReplyMessage<E>(readReply),
 					message.source);
-			serverAnsweringTime.stop();
+			serverAnsweringTime.add(System.nanoTime() - start);
 			return null;
 		}
 
