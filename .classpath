@@ -127,6 +127,6 @@
 	<classpathentry kind="lib" path="lib/voldemort/voldemort-test-0.81.jar"/>
 	<classpathentry kind="lib" path="lib/voldemort/xercesImpl-2.9.1.jar"/>
 	<classpathentry kind="lib" path="lib/redis-binding-0.1.4.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Fractal"/>
+	<classpathentry kind="lib" path="lib/fractal.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
