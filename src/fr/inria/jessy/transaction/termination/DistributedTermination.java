@@ -332,6 +332,7 @@ public class DistributedTermination implements Learner, Runnable {
 			votingQuorums.put(executionHistory.getTransactionHandler(),
 					new VotingQuorum(executionHistory.getTransactionHandler(),
 							destGroups));
+			VotingQuorum vq = votingQuorums.get(executionHistory.getTransactionHandler());
 
 			/*
 			 * Atomic multicast the transaction.
@@ -344,9 +345,8 @@ public class DistributedTermination implements Learner, Runnable {
 			 * Wait here until the result of the transaction is known. While is
 			 * for preventing <i>spurious wakeup</i>
 			 */
-
-			return votingQuorums.get(executionHistory.getTransactionHandler())
-					.waitVoteResult();
+			
+			return vq.waitVoteResult();
 
 		}
 	}
@@ -409,8 +409,7 @@ public class DistributedTermination implements Learner, Runnable {
 
 				msg.getExecutionHistory().changeState(state);
 				handleTerminationResult(msg.getExecutionHistory());
-				garbageCollect(msg.getExecutionHistory()
-						.getTransactionHandler());
+				garbageCollect(msg.getExecutionHistory().getTransactionHandler());
 
 			} catch (Exception e) {
 				e.printStackTrace();
