@@ -477,9 +477,9 @@ public abstract class Jessy {
 	 * @param transactionHandler
 	 *            handler of a committed transaction.
 	 */
-	public void applyModifiedEntities(TransactionHandler transactionHandler) {
-		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
+	public void applyModifiedEntities(ExecutionHistory executionHistory) {
+//		ExecutionHistory executionHistory = handler2executionHistory
+//				.get(transactionHandler);
 
 		Iterator<? extends JessyEntity> itr;
 
