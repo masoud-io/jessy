@@ -74,7 +74,7 @@ public class LocalJessy extends Jessy {
 		if (consistency.certify(handler2executionHistory.get(transactionHandler))) {
 
 			// certification test has returned true. we can commit.
-			applyModifiedEntities(transactionHandler);
+			applyModifiedEntities(result);
 			result.changeState(TransactionState.COMMITTED);
 
 		} else {
