@@ -30,6 +30,7 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
+import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -40,8 +41,15 @@ import fr.inria.jessy.transaction.termination.message.VoteMessage;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
 
-//TODO COMMENT ME
-//TODO Clean these ConcurrentMaps
+/**
+ * This class is responsible for sending transactions to remote replicas,
+ * receiving the certification votes from remote replicas, deciding the outcome
+ * of the transaction, and finally applying the transaction changes to the local
+ * store.
+ * 
+ * @author Masoud Saeida Ardeknai
+ * 
+ */
 public class DistributedTermination implements Learner, Runnable {
 
 	private static Logger logger = Logger
@@ -60,12 +68,31 @@ public class DistributedTermination implements Learner, Runnable {
 	private Group group;
 
 	private Map<UUID, TransactionHandler> terminationRequests;
+
+	/**
+	 * VotingQuorums for processing transactions.
+	 */
 	private ConcurrentHashMap<TransactionHandler, VotingQuorum> votingQuorums;
 
+	/**
+	 * Atomically delivered but not processed transactions
+	 */
 	private LinkedBlockingQueue<TerminateTransactionRequestMessage> atomicDeliveredMessages;
+
+	/**
+	 * Atomically delivered and processing transactions
+	 */
 	private Map<TransactionHandler, TerminateTransactionRequestMessage> processingMessages;
 
+	/**
+	 * Terminated transactions
+	 */
 	private Map<TransactionHandler, Integer> terminated;
+
+	/**
+	 * Local thread for executing waiting transactions in
+	 * {@link atomicDeliveredMessages}
+	 */
 	private Thread thread;
 
 	static {
@@ -110,6 +137,14 @@ public class DistributedTermination implements Learner, Runnable {
 		thread.start();
 	}
 
+	/**
+	 * Called by distributed jessy for submitting a new transaction for
+	 * termination.
+	 * 
+	 * @param ex
+	 *            ExecutionHistory of the transaction for termination.
+	 * @return
+	 */
 	public Future<TransactionState> terminateTransaction(ExecutionHistory ex) {
 
 		logger.debug("terminate transaction "
@@ -122,6 +157,10 @@ public class DistributedTermination implements Learner, Runnable {
 		return reply;
 	}
 
+	/**
+	 * Call back by Fractal upon receiving atomically delivered
+	 * {@link TerminateTransactionRequestMessage} or {@link Vote}.
+	 */
 	@Deprecated
 	public void learn(Stream s, Serializable v) {
 
@@ -151,7 +190,7 @@ public class DistributedTermination implements Learner, Runnable {
 	}
 
 	/**
-	 * Continuesly, checks {@code atomicDeliveredMessages} queue, and if the
+	 * Continuously, checks {@code atomicDeliveredMessages} queue, and if the
 	 * message in the head of the queue does not conflict with already
 	 * committing transactions, creates a new {@code CertifyAndVoteTask} for
 	 * processing it. Otherwise, waits until one message in processingMessages
@@ -243,19 +282,10 @@ public class DistributedTermination implements Learner, Runnable {
 	}
 
 	/**
-	 * If this method is called at the transaction's coordinator, we should
-	 * notify the pending future of the coordinator. Otherwise, the method is
-	 * called at a remote replica. If the transaction is not going to be
-	 * certified at the coordinator (coordinator does not replicate an object
-	 * concerned by the transaction), the {@code terminationCode} should be send
-	 * to the coordinator.
-	 * 
-	 * PIERRE null for executionHistory indicates that we are at the coordinator
-	 * and the coordinator is not in the replica set
-	 * 
-	 * FIXME change this
-	 * 
-	 * TODO should it be synchronized? NO
+	 * This mehod is called one a replica has received the votes. If the
+	 * transaction is able to commit, first it is prepared through
+	 * {@code Consistency#prepareToCommit(ExecutionHistory)} then its modified
+	 * entities are applied.
 	 */
 	private void handleTerminationResult(ExecutionHistory executionHistory)
 			throws Exception {
@@ -277,7 +307,6 @@ public class DistributedTermination implements Learner, Runnable {
 	 * Garbage collect all concurrent hash maps entries for the given
 	 * {@code transactionHandler}
 	 * 
-	 * TODO is it necessary to be synchronized?
 	 * 
 	 * @param transactionHandler
 	 *            The transactionHandler to be garbage collected.
@@ -332,7 +361,14 @@ public class DistributedTermination implements Learner, Runnable {
 			votingQuorums.put(executionHistory.getTransactionHandler(),
 					new VotingQuorum(executionHistory.getTransactionHandler(),
 							destGroups));
-			VotingQuorum vq = votingQuorums.get(executionHistory.getTransactionHandler());
+
+			/*
+			 * gets the pointer for the transaction's VotingQuorum because the
+			 * votingQuorums might be garbage collected by another thread after
+			 * multicasting this transaction.
+			 */
+			VotingQuorum vq = votingQuorums.get(executionHistory
+					.getTransactionHandler());
 
 			/*
 			 * Atomic multicast the transaction.
@@ -342,10 +378,12 @@ public class DistributedTermination implements Learner, Runnable {
 							.myId()));
 
 			/*
-			 * Wait here until the result of the transaction is known. While is
-			 * for preventing <i>spurious wakeup</i>
+			 * Wait here until the result of the transaction is known.
+			 * 
+			 * 
+			 * TODO While is for preventing <i>spurious wakeup</i>
 			 */
-			
+
 			return vq.waitVoteResult();
 
 		}
@@ -409,7 +447,8 @@ public class DistributedTermination implements Learner, Runnable {
 
 				msg.getExecutionHistory().changeState(state);
 				handleTerminationResult(msg.getExecutionHistory());
-				garbageCollect(msg.getExecutionHistory().getTransactionHandler());
+				garbageCollect(msg.getExecutionHistory()
+						.getTransactionHandler());
 
 			} catch (Exception e) {
 				e.printStackTrace();
