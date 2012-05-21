@@ -34,10 +34,10 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ transactionType.toString());
-		// logger.debug("ReadSet Vector"
-		// + executionHistory.getReadSet().getCompactVector().toString());
-		// logger.debug("WriteSet Vectors"
-		// + executionHistory.getWriteSet().getCompactVector().toString());
+		 logger.debug("ReadSet Vector"
+		 + executionHistory.getReadSet().getCompactVector().toString());
+		 logger.debug("WriteSet Vectors"
+		 + executionHistory.getWriteSet().getCompactVector().toString());
 
 		/*
 		 * if the transaction is a read-only transaction, it commits right away.

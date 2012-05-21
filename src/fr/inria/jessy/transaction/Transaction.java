@@ -28,7 +28,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	private TransactionHandler transactionHandler;
 
 	// TODO read from config file
-	private boolean retryCommitOnAbort = true;
+	private boolean retryCommitOnAbort = false;
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;

@@ -1,5 +1,6 @@
 package fr.inria.jessy.consistency;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,13 +14,13 @@ import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 
 //TODO COMMENT ME
 public class SnapshotIsolation extends Consistency{
+	
+	private Map<AtomicInteger, EntitySet> committedWritesets;
 
 	public SnapshotIsolation(DataStore store) {
 		super(store);
+		committedWritesets= new HashMap<AtomicInteger, EntitySet>();
 	}
-
-	private Map<AtomicInteger, EntitySet> committedWritesets;
-
 
 	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
@@ -91,8 +92,16 @@ public class SnapshotIsolation extends Consistency{
 		return result;
 	}
 
+	/**
+	 * update 
+	 * (1) the {@link lastCommittedTransactionSeqNumber}: incremented by 1
+	 * (2) the {@link committedWritesets} with the new 
+	 * {@link lastCommittedTransactionSeqNumber} and {@link committedWritesets}
+	 * (3) the scalar vector of all updated or created entities
+	 */
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
+		
 		Jessy.lastCommittedTransactionSeqNumber.incrementAndGet();
 		committedWritesets.put(Jessy.lastCommittedTransactionSeqNumber, executionHistory.getWriteSet());
 		

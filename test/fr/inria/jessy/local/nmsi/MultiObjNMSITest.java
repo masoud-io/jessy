@@ -66,7 +66,8 @@ public class MultiObjNMSITest extends TestCase {
 		// transaction
 		jessy.addEntity(SampleEntityClass.class);
 		jessy.addEntity(Sample2EntityClass.class);
-
+		
+		
 	}
 
 	/**

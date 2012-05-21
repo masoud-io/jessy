@@ -1,6 +1,11 @@
 package fr.inria.jessy.vector;
 
 import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import com.sleepycat.persist.model.Persistent;
 
 import fr.inria.jessy.Jessy;
 
@@ -12,8 +17,13 @@ import fr.inria.jessy.Jessy;
  * @param <K>
  */
 
+@Persistent
 public class ScalarVector<K> extends Vector<K> implements Externalizable{
-
+	
+	public ScalarVector() {
+		super();
+	}
+			
 	public ScalarVector(K selfKey) {
 		super(selfKey);
 		super.setValue(selfKey, 0);
@@ -60,5 +70,18 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public ScalarVector<K> clone() {
+		return (ScalarVector<K>) super.clone();
+	}
+	
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		super.readExternal(in);
+	}
+
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
 	}
 }

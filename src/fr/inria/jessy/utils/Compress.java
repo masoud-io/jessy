@@ -10,7 +10,7 @@ public class Compress {
 	 * 
 	 */
 	public static String compressClassName(String className) { 
-		return "";
+		return className;
 	}
 
 }
