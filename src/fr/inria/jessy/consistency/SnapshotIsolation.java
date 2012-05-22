@@ -3,7 +3,6 @@ package fr.inria.jessy.consistency;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
@@ -109,12 +108,12 @@ public class SnapshotIsolation extends Consistency{
 		boolean stop = false;
 
 		EntitySet result= new EntitySet();
-		int actualTransactionSeqNumber = transactionSequenceNumber;
+		int actualTransactionSeqNumber = transactionSequenceNumber+1;
 		
-//		handle special case of concurrent transactions on version 0
-		if(actualTransactionSeqNumber==0){
-			actualTransactionSeqNumber=1;
-		}
+////		handle special case of concurrent transactions on version 0
+//		if(actualTransactionSeqNumber==0){
+//			actualTransactionSeqNumber=1;
+//		}
 		
 		while(!stop){
 			EntitySet eh = committedWritesets.get(actualTransactionSeqNumber);
