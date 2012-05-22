@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
@@ -16,11 +15,11 @@ public class TransactionHandler implements Externalizable{
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 	
 	private  UUID id;
-	private AtomicInteger transactionSeqNumber;
+	private int transactionSeqNumber;
 	
 	public TransactionHandler(){
 		this.id = CustomUUID.getNextUUID();
-		this.transactionSeqNumber=Jessy.lastCommittedTransactionSeqNumber; 
+		this.transactionSeqNumber=Jessy.lastCommittedTransactionSeqNumber.get(); 
 	}
 
 	public UUID getId() {
@@ -41,7 +40,13 @@ public class TransactionHandler implements Externalizable{
 	
 	@Override
 	public String toString(){
-		return id.toString();
+		if(transactionSeqNumber>=0){
+			return id.toString()+" t.seq.# "+transactionSeqNumber;
+		}
+		else{
+			return id.toString();
+		}
+		
 	}
 
 	@Override
@@ -55,12 +60,7 @@ public class TransactionHandler implements Externalizable{
 		out.writeObject(id);
 	}
 	
-	public AtomicInteger getTransactionSeqNumber() {
+	public int getTransactionSeqNumber() {
 		return transactionSeqNumber;
 	}
-
-	public void incrementTransactionSeqNumber() {
-		transactionSeqNumber.incrementAndGet();
-	}
-	
 }
