@@ -2,9 +2,7 @@ package fr.inria.jessy.benchmark.tpcc;
 
 import junit.framework.TestCase;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.LocalJessy;
@@ -17,36 +15,24 @@ import fr.inria.jessy.benchmark.tpcc.entities.Order;
 import fr.inria.jessy.benchmark.tpcc.entities.Order_line;
 import fr.inria.jessy.benchmark.tpcc.entities.Stock;
 import fr.inria.jessy.benchmark.tpcc.entities.Warehouse;
-import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.TransactionState;
 
 /**
- * @author WANG Haiyun & ZHAO Guang
+ * This class tests whether {@code InsertData#execute()} has been executed
+ * properly and all data are permanent or not.
+ * 
+ * TODO finish this test case.
+ * 
+ * @author Masoud Saeida Ardekani
  * 
  */
-public class TpccTestInsertData extends TestCase{
+public class TestInsertDataIntegrity extends TestCase {
 
 	LocalJessy jessy;
-	InsertData id;
-	Warehouse wh;
-	District di;
-	Item it;
-	Customer cu;
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		PropertyConfigurator.configure("log4j.properties");
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
 		jessy = LocalJessy.getInstance();
+
 		jessy.registerClient(this);
 
 		jessy.addEntity(Warehouse.class);
@@ -58,24 +44,26 @@ public class TpccTestInsertData extends TestCase{
 		jessy.addEntity(Order.class);
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
-		id = new InsertData(jessy,1);
-
 	}
 
 	/**
-	 * Test method for {@link fr.inria.jessy.BenchmarkTpcc.InsertData}.
-	 * 
+	 *  
 	 * @throws Exception
 	 */
 	@Test
-	public void testInsertData() throws Exception {
+	public void testInsertDataIntegrity() throws Exception {
 
-		ExecutionHistory result = id.execute();
-		/* test execution */
-		assertEquals("Result", TransactionState.COMMITTED,
-				result.getTransactionState());
+		Warehouse wh = jessy.read(Warehouse.class, "W_1");
+		assertNotNull(wh);
+
+		for (int i = 1; i <= 10; i++) {
+			District dis = jessy.read(District.class, "D_W_1_D_" + i);
+
+			System.out.println(dis.getLocalVector().getSelfKey());
+			assertNotNull(dis);
+		}
 
 		jessy.close(this);
 	}
-	
+
 }

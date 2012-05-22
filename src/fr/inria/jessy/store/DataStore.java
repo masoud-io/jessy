@@ -142,7 +142,8 @@ public class DataStore {
 
 		// pindex.getDatabase().preload(preloadConfig);
 
-		primaryIndexes.put(Compress.compressClassName(entityClass.getName()), pindex);
+		primaryIndexes.put(Compress.compressClassName(entityClass.getName()),
+				pindex);
 	}
 
 	/**
@@ -168,7 +169,7 @@ public class DataStore {
 	public <E extends JessyEntity, SK> void addSecondaryIndex(
 			Class<E> entityClass, Class<SK> secondaryKeyClass,
 			String secondaryKeyName) throws Exception {
-		
+
 		try {
 			PrimaryIndex<Long, ? extends JessyEntity> pindex = primaryIndexes
 					.get(Compress.compressClassName(entityClass.getName()));
@@ -176,8 +177,9 @@ public class DataStore {
 			SecondaryIndex<SK, Long, ? extends JessyEntity> sindex = entityStore
 					.getSecondaryIndex(pindex, secondaryKeyClass,
 							secondaryKeyName);
-			secondaryIndexes.put(Compress.compressClassName(entityClass.getName()) + secondaryKeyName,
-					sindex);
+			secondaryIndexes.put(
+					Compress.compressClassName(entityClass.getName())
+							+ secondaryKeyName, sindex);
 		} catch (Exception ex) {
 			throw new Exception(
 					"StoreName or PrimaryIndex does not exists. Otherwise, entity field is not annottated properly.");
@@ -198,7 +200,8 @@ public class DataStore {
 		try {
 			@SuppressWarnings("unchecked")
 			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
-					.get(Compress.compressClassName(entity.getClass().getName()));
+					.get(Compress
+							.compressClassName(entity.getClass().getName()));
 			pindex.put(entity);
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("PrimaryIndex cannot be found");
@@ -237,40 +240,20 @@ public class DataStore {
 	private <E extends JessyEntity, SK> E get(String entityClassName,
 			String secondaryKeyName, SK keyValue, CompactVector<String> readSet)
 			throws NullPointerException {
-
 		curTime.start();
 		try {
 			@SuppressWarnings("unchecked")
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
 					.get(entityClassName + secondaryKeyName);
 
-			// E entity2=sindex.get(keyValue);
-			// if(entity2!=null){
-			// curTime.stop();
-			// return entity2;
-			// }
-
-			// EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
-			// E entity = cur.first();
-			// curTime.stop();
-			//
-			// if (readSet == null) {
-			// cur.close();
-			// return entity;
-			// }
-			//
-			// while (entity != null) {
-			// if (entity.getLocalVector().isCompatible(readSet)) {
-			// cur.close();
-			// return entity;
-			// } else {
-			// entity = cur.prev();
-			// }
-			// }
-
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
-			E entity = cur.prevNoDup();
+			E entity = cur.last();
 			curTime.stop();
+
+			if (entity.getLocalVector().getSelfKey().equals(""))
+				System.out.println("============================== "
+						+ entity.getKey() + " : "
+						+ entity.getLocalVector().getSelfKey().toString());
 
 			if (readSet == null) {
 				cur.close();
@@ -282,7 +265,10 @@ public class DataStore {
 					cur.close();
 					return entity;
 				} else {
-					entity = cur.prevDup();
+//					System.out.println("ReadSet:" + readSet);
+//					System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<,"
+//							+ entity.getLocalVector().getSelfKey());
+					entity = cur.prev();
 				}
 			}
 
@@ -447,6 +433,5 @@ public class DataStore {
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}
 	}
-
 
 }

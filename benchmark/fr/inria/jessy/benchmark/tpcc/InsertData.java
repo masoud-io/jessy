@@ -192,7 +192,6 @@ public class InsertData extends Transaction {
 						cus.setC_DATA(NString.generate(300, 500));
 						
 						create(cus);
-						System.out.println(cus.getC_W_ID() + ":" + cus.getC_D_ID() + ":" + cus.getC_LAST());
 						//each customer has 1 history
 						hi = new History("H_C_W_"+wh.getW_ID()+"_H_C_D_"+dis.getD_ID()+"_H_C_"+cus.getC_ID());
 						hi.setH_C_W_ID(wh.getW_ID());

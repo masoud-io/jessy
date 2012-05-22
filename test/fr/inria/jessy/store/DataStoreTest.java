@@ -9,6 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.entity.SampleEntityClass;
+import fr.inria.jessy.utils.Compress;
 
 /**
  * @author Masoud Saeida Ardekani
@@ -71,13 +72,13 @@ public class DataStoreTest extends TestCase {
 		dsPut.put(ec);
 
 		assertEquals("Result", 2, dsPut.getEntityCounts(
-				SampleEntityClass.class.getName(), "secondaryKey", "1"));
+				Compress.compressClassName(SampleEntityClass.class.getName()), "secondaryKey", "1"));
 
 		ec = new SampleEntityClass("2", "ver1");
 		dsPut.put(ec);
 
 		assertEquals("Result", 1, dsPut.getEntityCounts(
-				SampleEntityClass.class.getName(), "secondaryKey", "2"));
+				Compress.compressClassName(SampleEntityClass.class.getName()), "secondaryKey", "2"));
 	}
 
 	/**
@@ -107,7 +108,7 @@ public class DataStoreTest extends TestCase {
 		ReadReply<SampleEntityClass> reply = dsGet.get(readRequest);
 		assertEquals("Result", "0", reply.getEntity().iterator().next().getKey());
 
-		boolean deleteResult = dsGet.delete(SampleEntityClass.class.getName(),
+		boolean deleteResult = dsGet.delete(Compress.compressClassName(SampleEntityClass.class.getName()),
 				"secondaryKey", "" + 0);
 
 		assertFalse(!deleteResult);

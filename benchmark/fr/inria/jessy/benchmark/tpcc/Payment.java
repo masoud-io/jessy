@@ -20,12 +20,10 @@ public class Payment extends Transaction {
 	private String C_ID;
 	private String C_LAST;
 	private double H_AMOUNT;
-	
-	private int warhouseNumber;
 
 	public Payment(Jessy jessy, int warhouseNumber) throws Exception {
 		super(jessy);
-		this.warhouseNumber = warhouseNumber;
+		this.W_ID = "" + warhouseNumber;
 	}
 
 	@Override
@@ -33,7 +31,7 @@ public class Payment extends Transaction {
 
 		try {
 			Warehouse warehouse;
-			District district;
+//			District district;
 			Customer customer;
 			History history;
 			NURand nur;
@@ -43,47 +41,44 @@ public class Payment extends Transaction {
 					"ESE", "ANTI", "CALLY", "ATION", "EING" };
 
 			Random rand = new Random(System.currentTimeMillis());
-			int x = rand.nextInt(100) + 1; /*
-												 * x determines local or remote
-												 * warehouse
-												 */
-			int y = rand.nextInt(100) + 1; /*
-												 * y determines by C_LAST or by
-												 * C_ID
-												 */
 
-			W_ID = Integer.toString(this.warhouseNumber); /* warehouse number (W_ID) is constant */
-			H_AMOUNT = (float) (((float) rand.nextInt(500000 - 1) + 100) / 100.00); /* Clause 2.5.1.3(H_AMOUNT)is random within[1.00.. 5,000.00* ]*/
+			/*
+			 * x determines local or remote warehouse
+			 */
+			int x = rand.nextInt(100) + 1;
+
+			/*
+			 * y determines by C_LAST or by C_ID
+			 */
+			int y = rand.nextInt(100) + 1;
+
+			/*
+			 * Clause 2.5 .1 .3 ( H_AMOUNT ) is random within [ 1.00 . . 5 ,
+			 * 000.00 * ]
+			 */
+			H_AMOUNT = (float) (((float) rand.nextInt(500000 - 1) + 100) / 100.00);
 
 			/* Selection in the Warehouse table */
 			warehouse = read(Warehouse.class, "W_" + W_ID);
-			warehouse.setW_YTD(warehouse.getW_YTD() + this.H_AMOUNT); /*
-																	 * increase
-																	 * warehouse
-																	 * 's
-																	 * year-to
-																	 * -date by
-																	 * H_AMOUNT
-																	 */
+			/*
+			 * increase warehouse 's year-to -date by H_AMOUNT
+			 */
+			warehouse.setW_YTD(warehouse.getW_YTD() + this.H_AMOUNT);
 			/* Update Warehouse */
 			write(warehouse);
 
-			D_ID = Integer.toString(rand.nextInt(10) + 1); /*
-																 * The district
-																 * number (D_ID)
-																 * is randomly
-																 * selected
-																 * within [1
-																 * ..10]
-																 */
+			/*
+			 * The district number (D_ID) is randomly selected within [1 ..10]
+			 */
+			D_ID = Integer.toString(rand.nextInt(10) + 1);
+
 			/* Selection in the District table */
-			district = read(District.class, "D_W_" + W_ID + "_" + "D_" + D_ID);
-			district.setD_YTD(district.getD_YTD() + this.H_AMOUNT); /*
-																	 * increase
-																	 * district's
-																	 * year-to-date by
-																	 * H_AMOUNT
-																	 */
+			District district = read(District.class, "D_W_" + W_ID + "_" + "D_" + D_ID);
+
+			/*
+			 * increase district 's year-to -date by H_AMOUNT
+			 */
+			district.setD_YTD(district.getD_YTD() + this.H_AMOUNT);
 			/* Update District */
 			write(district);
 
@@ -91,19 +86,26 @@ public class Payment extends Transaction {
 				C_D_ID = this.D_ID;
 				C_W_ID = this.W_ID;
 			} else { /* remote warehouse */
-			
-				C_D_ID = Integer.toString(rand.nextInt(10) + 1); /* C_D_ID is randomly selected within [1.. 10] */
+
+				/*
+				 * C_D_ID is randomly selected within [1.. 10]
+				 */
+				C_D_ID = Integer.toString(rand.nextInt(10) + 1);
+
 				while (true) {
-					C_W_ID = Integer.toString(rand.nextInt(10) + 1); /* not sure ! */
-					if (C_W_ID != this.W_ID) /* different to local warehouse ID 1 */
+					/*
+					 * not sure !
+					 */
+					C_W_ID = Integer.toString(rand.nextInt(10) + 1);
+					/* different to local warehouse ID 1 */
+					if (C_W_ID != this.W_ID)
 						break;
 				}
-				
+
 				System.out.println("Remote Warhouse \n");
 				return commitTransaction();
 
 			}
-
 
 			/* Selection Customer */
 			if (y > 60) { /* by C_ID */
@@ -144,7 +146,7 @@ public class Payment extends Transaction {
 							+ request_C_D_ID.getKeyValue() + ":"
 							+ request_C_LAST.getKeyValue());
 					System.exit(0);
-				} 
+				}
 
 				// int resultSize = collection.size();
 
@@ -173,7 +175,7 @@ public class Payment extends Transaction {
 				}
 
 				/* the row at position n/2 of the results set is selected */
-				customer = list.get(list.size()/ 2);
+				customer = list.get(list.size() / 2);
 
 				customer.setC_BALANCE(customer.getC_BALANCE() - this.H_AMOUNT);
 				customer.setC_YTD_PAYMENT(customer.getC_YTD_PAYMENT()
@@ -185,13 +187,13 @@ public class Payment extends Transaction {
 				String data = "C_" + customer.getC_ID() + "_" + "C_D_"
 						+ customer.getC_D_ID() + "_" + "C_W_"
 						+ customer.getC_W_ID() + "_" + "D_"
-						+ district.getD_ID() + "_" + "W_" + warehouse.getW_ID()
-						+ "_" + this.H_AMOUNT + "_" + customer.getC_DATA();
+						+ district.getD_ID() + "_" + "W_" + W_ID + "_"
+						+ this.H_AMOUNT + "_" + customer.getC_DATA();
 				if (data.length() > 500) {
-					data = data.substring(0, 499); /*
-													 * C_DATA field never
-													 * exceeds 500 characters
-													 */
+					/*
+					 * C_DATA field never exceeds 500 characters
+					 */
+					data = data.substring(0, 499);
 				}
 				customer.setC_DATA(data);
 			}

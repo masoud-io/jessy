@@ -26,15 +26,9 @@ public class TpccClient {
 
 	LocalJessy jessy;
 
-	NewOrder neworder;
-	Payment payment;
-	OrderStatus orderstatus;
-	Delivery delivery;
-	StockLevel stocklevel;
-    
-	int numberTransaction;     /* number of Transactions to execute */
-	int warehouseNumber;       
-	
+	int numberTransaction; /* number of Transactions to execute */
+	int warehouseNumber;
+
 	int quotient = 0; /* for the number of NewOrder and Payment Transactions */
 	int rest = 0;
 	int i, j;
@@ -43,7 +37,7 @@ public class TpccClient {
 
 	public TpccClient(int numberTransaction, int warehouseNumber) {
 		PropertyConfigurator.configure("log4j.properties");
-		
+
 		this.numberTransaction = numberTransaction;
 		this.warehouseNumber = warehouseNumber;
 
@@ -71,25 +65,24 @@ public class TpccClient {
 	}
 
 	public void execute() {
-        
+
 		/*
-		System.out.print("Input the number of transactions : ");
-		Scanner reader = new Scanner(System.in);
-		String s = reader.nextLine();
-		int number = (int) Integer.valueOf(s);
-        */
-		
+		 * System.out.print("Input the number of transactions : "); Scanner
+		 * reader = new Scanner(System.in); String s = reader.nextLine(); int
+		 * number = (int) Integer.valueOf(s);
+		 */
+
 		quotient = 10 * (numberTransaction / 23);
 		rest = numberTransaction % 23;
 
 		try {
-			if(this.numberTransaction<23) {
-				
+			if (this.numberTransaction < 23) {
+
 				/* for the rest */
 				for (i = 1; i <= rest / 2; i++) {
-                    
+
 					logger.debug(i);
-					
+
 					neworder();
 					logger.debug("NewOrder transaction committed");
 
@@ -98,13 +91,13 @@ public class TpccClient {
 				}
 
 				if (rest % 2 == 1) {
-					
+
 					neworder();
 					logger.debug("NewOrder transaction committed");
 				}
-				
+
 			} else {
-				
+
 				for (i = 1; i <= quotient; i++) {
 
 					logger.debug(i);
@@ -128,9 +121,8 @@ public class TpccClient {
 						logger.debug("StockLevel transaction committed");
 					}
 
-					
 				}
-				
+
 				/* for the rest */
 				for (j = 0; j < rest / 2; j++) {
 
@@ -142,13 +134,12 @@ public class TpccClient {
 				}
 
 				if (rest % 2 == 1) {
-					
+
 					neworder();
 					logger.debug("NewOrder transaction committed");
 				}
 			}
-			
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -157,31 +148,31 @@ public class TpccClient {
 
 	public void neworder() throws Exception {
 
-		neworder = new NewOrder(jessy, this.warehouseNumber);
+		NewOrder neworder = new NewOrder(jessy, this.warehouseNumber);
 		neworder.execute();
 	}
 
 	public void payment() throws Exception {
 
-		payment = new Payment(jessy, this.warehouseNumber);
+		Payment payment = new Payment(jessy, this.warehouseNumber);
 		payment.execute();
 	}
 
 	public void orderstatus() throws Exception {
 
-		orderstatus = new OrderStatus(jessy, this.warehouseNumber);
+		OrderStatus orderstatus = new OrderStatus(jessy, this.warehouseNumber);
 		orderstatus.execute();
 	}
 
 	public void delivery() throws Exception {
 
-		delivery = new Delivery(jessy, this.warehouseNumber);
+		Delivery delivery = new Delivery(jessy, this.warehouseNumber);
 		delivery.execute();
 	}
 
 	public void stocklevel() throws Exception {
 
-		stocklevel = new StockLevel(jessy, this.warehouseNumber);
+		StockLevel stocklevel = new StockLevel(jessy, this.warehouseNumber);
 		stocklevel.execute();
 	}
 
