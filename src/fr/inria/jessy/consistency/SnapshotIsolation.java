@@ -149,6 +149,10 @@ public class SnapshotIsolation extends Consistency{
 			je.getLocalVector().update(null, null);
 		}
 		
+//		for(JessyEntity je:executionHistory.getCreateSet().getEntities()){
+//			je.getLocalVector().update(null, null);
+//		}
+		
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ "COMMITED, lastCommittedTransactionSeqNumber:"+Jessy.lastCommittedTransactionSeqNumber.get());
 	}

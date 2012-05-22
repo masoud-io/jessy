@@ -24,10 +24,10 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 		super();
 	}
 			
-	public ScalarVector(K selfKey) {
-		super(selfKey);
-		super.setValue(selfKey, 0);
-	}
+//	public ScalarVector(K selfKey) {
+//		super(selfKey);
+//		super.setValue(selfKey, 0);
+//	}
 
 	/**
 	 * Checks if the input vector is compatible with this vector. WARNING: it is correct only if is called from the very last version 
@@ -62,10 +62,13 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 			throw new NullPointerException("Input Vector is Null");
 		}
 
-		Integer selfValueOnSelfKey = getSelfValue();
+		Integer selfValueOnSelfKey = getValue(selfKey);
 		Integer otherValueOnSelfKey = (Integer) other.getValue(selfKey);
 		
-		if(otherValueOnSelfKey<=selfValueOnSelfKey){
+//		K otherKey = (K) ((ScalarVector)other).getSelfKey();
+//		Integer otherValueOnSelfKey = (Integer) other.getValue(otherKey);
+		
+		if(selfValueOnSelfKey<=otherValueOnSelfKey){ 
 			return true;
 		}
 		

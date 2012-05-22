@@ -16,10 +16,8 @@ import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.local.si.transaction.*;
-import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
-import fr.inria.jessy.vector.ScalarVector;
 
 
 /**
