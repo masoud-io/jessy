@@ -54,10 +54,6 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 		return selfKey;
 	}
 
-	public void setSelfKey(K selfKey) {
-		this.selfKey = selfKey;
-	}
-
 	public Integer getSelfValue() {
 		return super.getValue(selfKey);
 	}
