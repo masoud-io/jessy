@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.inria.jessy.Jessy;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
@@ -89,8 +88,8 @@ public class SiMonotonicSnapshotTest {
 		future3 = pool.submit(new T3(jessy));
 	
 	
-		ExecutionHistory result2 = future2.get();
-		ExecutionHistory result3 = future3.get();
+		future2.get();
+		future3.get();
 		
 		ExecutionHistory result1 = future1.get();
 		ExecutionHistory result4 = future4.get();
