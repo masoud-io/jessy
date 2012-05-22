@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.log4j.Logger;
+
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import com.sleepycat.je.DatabaseException;
@@ -25,6 +27,7 @@ import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.vector.CompactVector;
@@ -37,6 +40,8 @@ import fr.inria.jessy.vector.CompactVector;
  */
 public abstract class Jessy {
 
+	private static Logger logger = Logger.getLogger(Jessy.class);
+	
 	//	
 	//	CONSTANTS
 	//	
@@ -517,6 +522,7 @@ public abstract class Jessy {
 
 	public void close(Object object) throws DatabaseException {
 		dataStore.close();
+		logger.info("Jessy DataStore is closed. The data should be permanent by now.");
 	}
 
 	// TODO
