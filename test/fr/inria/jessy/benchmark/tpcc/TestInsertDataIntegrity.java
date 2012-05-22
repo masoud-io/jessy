@@ -15,6 +15,9 @@ import fr.inria.jessy.benchmark.tpcc.entities.Order;
 import fr.inria.jessy.benchmark.tpcc.entities.Order_line;
 import fr.inria.jessy.benchmark.tpcc.entities.Stock;
 import fr.inria.jessy.benchmark.tpcc.entities.Warehouse;
+import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.Transaction;
 
 /**
  * This class tests whether {@code InsertData#execute()} has been executed
@@ -47,22 +50,38 @@ public class TestInsertDataIntegrity extends TestCase {
 	}
 
 	/**
-	 *  
+	 * 
 	 * @throws Exception
 	 */
 	@Test
 	public void testInsertDataIntegrity() throws Exception {
+		Transaction myTran = new Transaction(jessy) {
 
-		Warehouse wh = jessy.read(Warehouse.class, "W_1");
-		assertNotNull(wh);
+			@Override
+			public ExecutionHistory execute() {
+				Warehouse wh;
+				try {
+					wh = read(Warehouse.class, "W_1");
+					assertNotNull(wh);
+					
+					for (int i = 1; i <= 10; i++) {
+						District dis = read(District.class, "D_W_1_D_"
+								+ i);
+						assertNotNull(dis);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return commitTransaction();
+			}
 
-		for (int i = 1; i <= 10; i++) {
-			District dis = jessy.read(District.class, "D_W_1_D_" + i);
+		};
 
-			System.out.println(dis.getLocalVector().getSelfKey());
-			assertNotNull(dis);
+		ExecutionHistory eh=myTran.execute();
+		for(JessyEntity je:eh.getReadSet().getEntities()){
+			System.out.println(je.getLocalVector().getSelfKey());
 		}
-
+		assertTrue(true);
 		jessy.close(this);
 	}
 

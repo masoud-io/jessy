@@ -30,10 +30,7 @@ public class Payment extends Transaction {
 	public ExecutionHistory execute() {
 
 		try {
-			Warehouse warehouse;
-//			District district;
 			Customer customer;
-			History history;
 			NURand nur;
 			int random;
 
@@ -59,7 +56,7 @@ public class Payment extends Transaction {
 			H_AMOUNT = (float) (((float) rand.nextInt(500000 - 1) + 100) / 100.00);
 
 			/* Selection in the Warehouse table */
-			warehouse = read(Warehouse.class, "W_" + W_ID);
+			Warehouse warehouse = read(Warehouse.class, "W_" + W_ID);
 			/*
 			 * increase warehouse 's year-to -date by H_AMOUNT
 			 */
@@ -203,7 +200,7 @@ public class Payment extends Transaction {
 
 			String key = "H_C_W_" + this.C_W_ID + "_" + "H_C_D_" + this.C_D_ID
 					+ "_" + "H_C_" + this.C_ID;
-			history = new History(key);
+			History history = new History(key);
 			history.setH_D_ID("H_D_" + this.D_ID);
 			history.setH_W_ID("H_W_" + this.W_ID);
 			history.setH_AMOUNT(this.H_AMOUNT);
