@@ -43,7 +43,7 @@ public class TpccTestStockLevel {
 		jessy.addEntity(Order.class);
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
-		sl = new StockLevel(jessy, 1);
+		sl = new StockLevel(jessy, 1, 1);
 	}
 	
 	/**

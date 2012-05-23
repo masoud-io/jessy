@@ -28,6 +28,7 @@ public class TpccClient {
 
 	int numberTransaction; /* number of Transactions to execute */
 	int warehouseNumber;
+	int districtNumber;
 
 	int quotient = 0; /* for the number of NewOrder and Payment Transactions */
 	int rest = 0;
@@ -35,11 +36,12 @@ public class TpccClient {
 
 	private static Logger logger = Logger.getLogger(TpccClient.class);
 
-	public TpccClient(int numberTransaction, int warehouseNumber) {
+	public TpccClient(int numberTransaction, int warehouseNumber, int districtNumber) {
 		PropertyConfigurator.configure("log4j.properties");
 
 		this.numberTransaction = numberTransaction;
 		this.warehouseNumber = warehouseNumber;
+		this.districtNumber = districtNumber;
 
 		try {
 			jessy = LocalJessy.getInstance();
@@ -168,13 +170,13 @@ public class TpccClient {
 
 	public void stocklevel() throws Exception {
 
-		StockLevel stocklevel = new StockLevel(jessy, this.warehouseNumber);
+		StockLevel stocklevel = new StockLevel(jessy, this.warehouseNumber, this.districtNumber);
 		stocklevel.execute();
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		TpccClient client = new TpccClient(46, 1);
+		TpccClient client = new TpccClient(46, 1, 1);
 		client.execute();
 
 	}

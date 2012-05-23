@@ -18,9 +18,10 @@ public class StockLevel extends Transaction {
 	private String W_ID;
 	private String D_ID;
 
-	public StockLevel(Jessy jessy, int warhouseNumber) throws Exception {
+	public StockLevel(Jessy jessy, int warhouseNumber, int districtNumber) throws Exception {
 		super(jessy);
 		W_ID = "" + warhouseNumber;
+		D_ID = "" + districtNumber;
 	}
 
 	@Override
@@ -34,9 +35,6 @@ public class StockLevel extends Transaction {
 			int threshold;
 			int low_stock = 0;
 			int i, j;
-
-			/* value of (W_ID, D_ID) is constant */
-			D_ID = "1";
 
 			/* Selection District */
 			district = read(District.class, "D_W_" + W_ID + "_" + "D_" + D_ID);
