@@ -117,8 +117,7 @@ public class JessyDBClient extends DB {
 	@Override
 	public int insert(String table, String key, HashMap<String, String> values) {
 		try {
-			YCSBEntity en = new YCSBEntity(YCSBEntity.class.toString(), key,
-					values);
+			YCSBEntity en = new YCSBEntity(key,values);
 			jessy.write(en);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -238,9 +237,7 @@ public class JessyDBClient extends DB {
 				@Override
 				public ExecutionHistory execute() {
 
-					YCSBEntity en = new YCSBEntity(Compress.compressClassName(YCSBEntity.class.toString()),
-							 createRequest.key,
-							createRequest.values);
+					YCSBEntity en = new YCSBEntity(createRequest.key,createRequest.values);
 
 					create(en);
 					return commitTransaction();

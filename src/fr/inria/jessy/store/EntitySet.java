@@ -51,14 +51,12 @@ public class EntitySet implements Messageable{
 	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> E getEntity(Class<E> entityClass,
 			String keyValue) {
-		return (E) entities.get(
-				Compress.compressClassName(entityClass.getName()) + keyValue);
+		return (E) entities.get(keyValue);
 	}
 
 	public <E extends JessyEntity> void addEntity(E entity) {
 		compactVector.update(entity.getLocalVector());
-		entities.put(
-				Compress.compressClassName(entity.getClass().getName())	+ entity.getKey(), entity);
+		entities.put(entity.getKey(), entity);
 	}
 
 	public <E extends JessyEntity> void addEntity(Collection<E> entityCol) {
@@ -87,9 +85,7 @@ public class EntitySet implements Messageable{
 
 	public <E extends JessyEntity> boolean contains(
 			Class<E> entityClass, String keyValue) {
-
-		return entities.containsKey(Compress.compressClassName(entityClass
-				.getName() + keyValue));
+		return entities.containsKey(keyValue);
 
 	}
 

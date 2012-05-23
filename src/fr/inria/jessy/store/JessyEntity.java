@@ -43,7 +43,7 @@ public abstract class JessyEntity implements Externalizable {
 
 	public JessyEntity(String entityId) {
 		this.secondaryKey = entityId;
-		localVector = VectorFactory.getVector(this.getClass().getName() + entityId);
+		localVector = VectorFactory.getVector(entityId);
 	}
 
 	public boolean isRemovoed() {

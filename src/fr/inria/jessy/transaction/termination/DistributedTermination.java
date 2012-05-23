@@ -30,16 +30,12 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
-import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
-import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.message.VoteMessage;
-import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.VectorFactory;
 
 /**
  * This class is responsible for sending transactions to remote replicas,

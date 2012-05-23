@@ -8,19 +8,17 @@ import java.util.HashMap;
 import java.util.Set;
 
 import com.sleepycat.persist.model.Entity;
-import com.yahoo.ycsb.workloads.CoreWorkload;
 
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.Keyspace.Distribution;
-import fr.inria.jessy.utils.Compress;
 
 @Entity
 public class YCSBEntity extends JessyEntity implements Externalizable {
 
 	private static final long serialVersionUID = 1L;
 
-	public static Keyspace keyspace = new Keyspace("user########",
+	public static Keyspace keyspace = new Keyspace("user#####",
 			Distribution.UNIFORM);
 
 	/**
@@ -39,16 +37,13 @@ public class YCSBEntity extends JessyEntity implements Externalizable {
 	}
 
 	/* Constructor */
-	public YCSBEntity(String entityClassName, String entityId) {
+	public YCSBEntity(String entityId) {
 		super(entityId);
 	}
 
 	/* Constructor Using a hashmap already Definded */
-	public YCSBEntity(String entityClassName, String entityId,
-			HashMap<String, String> insFields) {
-
-		this(entityClassName, entityId);
-
+	public YCSBEntity(String entityId, HashMap<String, String> insFields) {
+		this(entityId);
 		this.fields = insFields;
 	}
 

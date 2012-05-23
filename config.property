@@ -6,5 +6,3 @@
 vector_type = dependencevector
 consistency_type = nmsi
 fractal_file=myfractal.xml
-execution_mode=server
-pool_size=40
