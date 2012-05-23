@@ -33,7 +33,6 @@ public class NewOrder extends Transaction {
 	public ExecutionHistory execute() {
 		try {
 			Random rand = new Random(System.currentTimeMillis());
-			Warehouse wh;
 			District dis;
 			Customer cus;
 			New_order no;
@@ -48,7 +47,7 @@ public class NewOrder extends Transaction {
 			int O_OL_CNT = rand.nextInt(15 - 5 + 1) + 5;
 			int OL_QUANTITY;
 
-			// TODO maosud: what is x? use it or remote it.
+			// TODO maosud: what is x? 
 			int x;/*
 				 * we have only 1 warehouse, so x won't be used to make a
 				 * difference between home and remote warehouse for the moment

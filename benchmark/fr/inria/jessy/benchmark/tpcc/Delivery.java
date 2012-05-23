@@ -19,11 +19,9 @@ public class Delivery extends Transaction {
 
 	private int noNumber;
 
-	private int warhouseNumber;
-
 	public Delivery(Jessy jessy, int warhouseNumber) throws Exception {
 		super(jessy);
-		this.warhouseNumber = warhouseNumber;
+		W_ID= ""+warhouseNumber;
 	}
 
 	@Override
@@ -41,10 +39,6 @@ public class Delivery extends Transaction {
 			 * File log = new File("log file"); FileWriter fw = new
 			 * FileWriter(log);
 			 */
-			W_ID = Integer.toString(this.warhouseNumber); /*
-														 * warehouse number
-														 * (W_ID) is constant
-														 */
 
 			Random rand = new Random(System.currentTimeMillis());
 
