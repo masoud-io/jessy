@@ -17,29 +17,31 @@ import fr.inria.jessy.Jessy;
  * @param <K>
  */
 
+
 @Persistent
 public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	
+	@SuppressWarnings("unchecked")
+	private K key=(K) "k";
+	
 	public ScalarVector() {
-		super();
+		super(null);
 	}
-			
-//	public ScalarVector(K selfKey) {
-//		super(selfKey);
-//		super.setValue(selfKey, 0);
-//	}
 
 	/**
 	 * Checks if the input vector is compatible with this vector. WARNING: it is correct only if is called from the very last version 
 	 * up to the first
 	 */
-	
 	@Override
 	public boolean isCompatible(Vector<K> other) throws NullPointerException {
 		
 		return check(other);
 	}
 
+	/**
+	 * Checks if the input vector is compatible with this vector. WARNING: it is correct only if is called from the very last version 
+	 * up to the first
+	 */
 	@Override
 	public boolean isCompatible(CompactVector<K> other)
 			throws NullPointerException {
@@ -51,8 +53,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
 		
-//		new Exception("ScalarVector update can't be called using read set end write set. It has to be called with the new version scalar ");
-		super.setValue(selfKey, Jessy.lastCommittedTransactionSeqNumber.get());
+		super.setValue(key, Jessy.lastCommittedTransactionSeqNumber.get());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -62,13 +63,10 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 			throw new NullPointerException("Input Vector is Null");
 		}
 
-		Integer selfValueOnSelfKey = getValue(selfKey);
-		Integer otherValueOnSelfKey = (Integer) other.getValue(selfKey);
+		Integer selfValue = getValue(key);
+		Integer otherValue = (Integer) other.getValue(key);
 		
-//		K otherKey = (K) ((ScalarVector)other).getSelfKey();
-//		Integer otherValueOnSelfKey = (Integer) other.getValue(otherKey);
-		
-		if(selfValueOnSelfKey<=otherValueOnSelfKey){ 
+		if(selfValue<=otherValue){ 
 			return true;
 		}
 		
@@ -86,5 +84,9 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
+	}
+	
+	public K getKey(){
+		return key;
 	}
 }
