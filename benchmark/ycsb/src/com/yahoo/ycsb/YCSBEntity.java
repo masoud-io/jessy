@@ -20,12 +20,15 @@ public class YCSBEntity extends JessyEntity implements Externalizable {
 
 	private static final long serialVersionUID = 1L;
 
-	public static Keyspace keyspace = new Keyspace(
-			"user########",
+	public static Keyspace keyspace = new Keyspace("user########",
 			Distribution.UNIFORM);
 
+	/**
+	 * Needed by berkeleyDB
+	 */
+	@Deprecated
 	public YCSBEntity() {
-		super("", "");
+		super("");
 	}
 
 	/* Fields of the entity */
@@ -37,7 +40,7 @@ public class YCSBEntity extends JessyEntity implements Externalizable {
 
 	/* Constructor */
 	public YCSBEntity(String entityClassName, String entityId) {
-		super(Compress.compressClassName(entityClassName), entityId);
+		super(entityId);
 	}
 
 	/* Constructor Using a hashmap already Definded */

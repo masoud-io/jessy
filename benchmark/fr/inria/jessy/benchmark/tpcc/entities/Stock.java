@@ -1,14 +1,8 @@
 package fr.inria.jessy.benchmark.tpcc.entities;
 
 import com.sleepycat.persist.model.Entity;
-import com.sleepycat.persist.model.PrimaryKey;
-import static com.sleepycat.persist.model.Relationship.*;
-
-import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.vector.DependenceVector;
-import fr.inria.jessy.vector.Vector;
 
 /**
  * @author Wang Haiyun & ZHAO Guang
@@ -25,11 +19,11 @@ public class Stock extends JessyEntity {
 	private static final long serialVersionUID = 1L;
 
 	public Stock(String entityID) {
-		super(Stock.class.toString(), entityID);
+		super(entityID);
 	}
 	
 	public Stock() {
-		super("","");
+		super("");
 	}
 
 	private String S_I_ID;

@@ -14,7 +14,7 @@ public class Compress {
 	 * 
 	 */
 	public static String compressClassName(String className) {
-		return className.substring(className.lastIndexOf("."));
+		return className.substring(className.lastIndexOf(".")+1);
 	}
 
 }

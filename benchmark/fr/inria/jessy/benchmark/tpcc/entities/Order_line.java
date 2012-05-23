@@ -3,14 +3,8 @@ package fr.inria.jessy.benchmark.tpcc.entities;
 import java.util.Date;
 
 import com.sleepycat.persist.model.Entity;
-import com.sleepycat.persist.model.PrimaryKey;
-import static com.sleepycat.persist.model.Relationship.*;
-
-import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.vector.DependenceVector;
-import fr.inria.jessy.vector.Vector;
 
 /**
  * @author Wang Haiyun & ZHAO Guang
@@ -27,11 +21,11 @@ public class Order_line extends JessyEntity {
 	private static final long serialVersionUID = 1L;
 
 	public Order_line(String entityID) {
-		super(Order.class.toString(), entityID);
+		super(entityID);
 	}
 	
 	public Order_line() {
-		super("","");
+		super("");
 	}
 
 	private int OL_O_ID;

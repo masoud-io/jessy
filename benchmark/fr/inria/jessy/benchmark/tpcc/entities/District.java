@@ -26,11 +26,11 @@ public class District extends JessyEntity {
 	 */
 	private static final long serialVersionUID = 1L;
 	public District(String entityID) {
-		super(District.class.toString(), entityID);
+		super(entityID);
 	}
 	
 	public District() {
-		super("","");
+		super("");
 	}
 
 

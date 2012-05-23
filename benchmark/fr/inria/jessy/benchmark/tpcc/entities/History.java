@@ -29,11 +29,11 @@ public class History extends JessyEntity {
 
 	
 	public History(String entityID) {
-		super(History.class.toString(), entityID);
+		super(entityID);
 	}
 	
 	public History() {
-		super("","");
+		super("");
 	}
 
 

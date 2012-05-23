@@ -6,19 +6,13 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.Serializable;
-
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.SecondaryKey;
-import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
-import fr.inria.jessy.utils.Compress;
-import fr.inria.jessy.vector.NullVector;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
 
@@ -35,8 +29,6 @@ import fr.inria.jessy.vector.VectorFactory;
 @Persistent
 public abstract class JessyEntity implements Externalizable {
 
-	private static TimeRecorder unpackTime = new TimeRecorder(
-			"JessyEntity#unpackTime");
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
@@ -44,10 +36,20 @@ public abstract class JessyEntity implements Externalizable {
 	private Vector<String> localVector;
 	private boolean removed = true;
 
+
+	@SuppressWarnings("unused")
+	private JessyEntity() {
+	}
+
+	public JessyEntity(String entityId) {
+		this.secondaryKey = entityId;
+		localVector = VectorFactory.getVector(this.getClass().getName() + entityId);
+	}
+
 	public boolean isRemovoed() {
 		return removed;
 	}
-
+	
 	/**
 	 * Set the entity to be removed by the garbage collector. TODO set
 	 * localVector to null to save memory! (safety might be broken)
@@ -56,16 +58,7 @@ public abstract class JessyEntity implements Externalizable {
 	public void removoe() {
 		this.removed = true;
 	}
-
-	@SuppressWarnings("unused")
-	private JessyEntity() {
-	}
-
-	public JessyEntity(String entityClassName, String entityId) {
-		this.secondaryKey = entityId;
-		localVector = VectorFactory.getVector(entityClassName + entityId);
-	}
-
+	
 	@PrimaryKey(sequence = "Jessy_Sequence")
 	private Long primaryKey;
 

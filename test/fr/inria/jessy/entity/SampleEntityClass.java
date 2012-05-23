@@ -12,15 +12,15 @@ import fr.inria.jessy.store.JessyEntity;
 
 @Entity
 public class SampleEntityClass extends JessyEntity {
-	
+
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	public SampleEntityClass() {
-		super("", "");
+		super("");
 	}
 
 	public SampleEntityClass(String entityID, String data) {
-		super(SampleEntityClass.class.toString(), entityID);
+		super(entityID);
 		this.data = data;
 	}
 
@@ -41,5 +41,4 @@ public class SampleEntityClass extends JessyEntity {
 		this.data = data;
 	}
 
- 
 }

@@ -1,6 +1,7 @@
 package fr.inria.jessy.benchmark.tpcc.entities;
 
 import com.sleepycat.persist.model.Entity;
+
 import fr.inria.jessy.store.JessyEntity;
 
 @Entity
@@ -13,11 +14,11 @@ public class Warehouse extends JessyEntity {
 	private static final long serialVersionUID = 1L;
 
 	public Warehouse(String entityID) {
-		super(Warehouse.class.toString(), entityID);
+		super(entityID);
 	}
 	
 	public Warehouse() {
-		super("", "");
+		super("");
 	}
 
 	private String W_ID;
