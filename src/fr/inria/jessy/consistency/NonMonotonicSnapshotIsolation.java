@@ -127,8 +127,9 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
 
-		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
-			entity.setLocalVector(updatedVector);
+		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {		
+			updatedVector.setSelfKey(entity.getLocalVector().getSelfKey());
+			entity.setLocalVector(updatedVector.clone());
 		}
 
 	}

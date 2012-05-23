@@ -250,11 +250,6 @@ public class DataStore {
 			E entity = cur.last();
 			curTime.stop();
 
-			if (entity.getLocalVector().getSelfKey().equals(""))
-				System.out.println("============================== "
-						+ entity.getKey() + " : "
-						+ entity.getLocalVector().getSelfKey().toString());
-
 			if (readSet == null) {
 				cur.close();
 				return entity;
@@ -265,9 +260,6 @@ public class DataStore {
 					cur.close();
 					return entity;
 				} else {
-//					System.out.println("ReadSet:" + readSet);
-//					System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<,"
-//							+ entity.getLocalVector().getSelfKey());
 					entity = cur.prev();
 				}
 			}

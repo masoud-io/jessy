@@ -1,12 +1,18 @@
 package fr.inria.jessy.benchmark.tpcc;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
+
 import fr.inria.jessy.Jessy;
-import fr.inria.jessy.benchmark.tpcc.entities.*;
+import fr.inria.jessy.benchmark.tpcc.entities.Customer;
+import fr.inria.jessy.benchmark.tpcc.entities.District;
+import fr.inria.jessy.benchmark.tpcc.entities.Order;
+import fr.inria.jessy.benchmark.tpcc.entities.Order_line;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
-
-import java.util.*;
 
 public class OrderStatus extends Transaction {
 	
@@ -72,7 +78,7 @@ public class OrderStatus extends Transaction {
         		request.add(request_C_LAST);
         		collection = read(Customer.class, request); 
         		if (collection.size() == 0) {
-					System.out.println("OPSSSSS: ***  "
+					System.out.println("COLLECTION SIZE IS ZERO: ***  "
 							+ request_C_W_ID.getKeyValue() + ":"
 							+ request_C_D_ID.getKeyValue() + ":"
 							+ request_C_LAST.getKeyValue());
@@ -110,13 +116,11 @@ public class OrderStatus extends Transaction {
 			int tmp = 0;			
 			district = read(District.class, "D_W_"+ W_ID + "_" + "D_"+ D_ID);
 			
-			//System.out.println(district.getD_NEXT_O());
 			for(j=1;j<district.getD_NEXT_O();j++) {
 				order = read(Order.class, "O_W_"+ C_W_ID + "_" + "O_D_"+ C_D_ID + "_" + "O_"+ j);
 				if(order.getO_C_ID().equals(customer.getC_ID())) 
 					tmp = j;
 			}
-			//System.out.println(tmp);
 			/* Selection of the most recent order */
 			order = read(Order.class, "O_W_"+ C_W_ID + "_" + "O_D_"+ C_D_ID + "_" + "O_"+ tmp);
 			

@@ -11,6 +11,7 @@ import com.sleepycat.persist.model.Persistent;
 public abstract class Vector<K> extends ValueVector<K, Integer> implements
 		Externalizable {
 
+
 	K selfKey;
 	private final static Integer _bydefault = -1;
 
@@ -53,6 +54,10 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 
 	public abstract void update(CompactVector<K> readSet,
 			CompactVector<K> writeSet);
+	
+	public void setSelfKey(K selfKey) {
+		this.selfKey = selfKey;
+	}
 	
 	public K getSelfKey() {
 		return selfKey;

@@ -99,7 +99,6 @@ public class Payment extends Transaction {
 						break;
 				}
 
-				System.out.println("Remote Warhouse \n");
 				return commitTransaction();
 
 			}
@@ -138,7 +137,7 @@ public class Payment extends Transaction {
 				request.add(request_C_LAST);
 				collection = read(Customer.class, request);
 				if (collection.size() == 0) {
-					System.out.println("OPSSSSS: ***  "
+					System.out.println("COLLECTION SIZE IS ZERO: ***  "
 							+ request_C_W_ID.getKeyValue() + ":"
 							+ request_C_D_ID.getKeyValue() + ":"
 							+ request_C_LAST.getKeyValue());

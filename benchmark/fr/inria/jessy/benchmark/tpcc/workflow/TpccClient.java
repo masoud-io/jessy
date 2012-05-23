@@ -81,44 +81,40 @@ public class TpccClient {
 				/* for the rest */
 				for (i = 1; i <= rest / 2; i++) {
 
-					logger.debug(i);
-
 					neworder();
-					logger.debug("NewOrder transaction committed");
+					logger.debug("NewOrder transaction committed in round: " + i );
 
 					payment();
-					logger.debug("Payment transaction committed");
+					logger.debug("Payment transaction committed in round: " + i );
 				}
 
 				if (rest % 2 == 1) {
 
 					neworder();
-					logger.debug("NewOrder transaction committed");
+					logger.debug("NewOrder transaction committed in round: " + i );
 				}
 
 			} else {
 
 				for (i = 1; i <= quotient; i++) {
 
-					logger.debug(i);
-
 					neworder();
-					logger.debug("NewOrder transaction committed");
+					logger.debug("NewOrder transaction committed in round: " + i );
 
 					payment();
-					logger.debug("Payment transaction committed");
+					logger.debug("Payment transaction committed in round: " + i );
 
 					/* for decks */
 					if (i != 0 && i % 10 == 0) {
 
 						orderstatus();
-						logger.debug("OrderStatus transaction committed");
+						logger.debug("OrderStatus transaction committed in round: " + i );
 
 						delivery();
-						logger.debug("Delivery transaction committed");
+						logger.debug("Delivery transaction committed in round: " + i );
 
 						stocklevel();
-						logger.debug("StockLevel transaction committed");
+						logger.debug("StockLevel transaction committed in round: " + i );
 					}
 
 				}
@@ -127,16 +123,16 @@ public class TpccClient {
 				for (j = 0; j < rest / 2; j++) {
 
 					neworder();
-					logger.debug("NewOrder transaction committed");
+					logger.debug("NewOrder transaction committed in round: " + i );
 
 					payment();
-					logger.debug("Payment transaction committed");
+					logger.debug("Payment transaction committed in round: " + i );
 				}
 
 				if (rest % 2 == 1) {
 
 					neworder();
-					logger.debug("NewOrder transaction committed");
+					logger.debug("NewOrder transaction committed in round: " + i );
 				}
 			}
 
