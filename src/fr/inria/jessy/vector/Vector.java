@@ -14,6 +14,10 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 	K selfKey;
 	private final static Integer _bydefault = -1;
 
+	/**
+	 * needed by BerkleyDB 
+	 */
+	@Deprecated
 	public Vector() {
 		super(_bydefault);
 	}
