@@ -9,6 +9,7 @@ public class T3 extends Transaction{
 
 	public T3(Jessy jessy) throws Exception{
 		super(jessy);
+		setRetryCommitOnAbort(false);
 	}
 
 	@Override

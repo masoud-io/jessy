@@ -9,6 +9,7 @@ public class T5x extends Transaction{
 	
 	public T5x(Jessy jessy) throws Exception {
 		super(jessy);
+		setRetryCommitOnAbort(false);
 	}
 
 	@Override
