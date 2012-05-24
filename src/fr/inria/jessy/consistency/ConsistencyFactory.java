@@ -3,6 +3,8 @@ package fr.inria.jessy.consistency;
 import java.io.FileInputStream;
 import java.util.Properties;
 
+import com.sun.org.apache.bcel.internal.classfile.ConstantPool;
+
 import fr.inria.jessy.store.DataStore;
 
 //TODO comment me
@@ -23,19 +25,18 @@ public class ConsistencyFactory {
 	}
 
 	private static String readConfig() {
-		String vectorType = "";
 		try {
 			Properties myProps = new Properties();
 			FileInputStream MyInputStream = new FileInputStream(
-					"config.property");
+					fr.inria.jessy.ConstantPool.CONFIG_PROPERTY);
 			myProps.load(MyInputStream);
-			vectorType = myProps.getProperty("consistency_type");
+			return myProps
+					.getProperty(fr.inria.jessy.ConstantPool.CONSISTENCY_TYPE);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 
-		return vectorType;
-
+		return "";
 	}
 
 }

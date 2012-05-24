@@ -3,6 +3,9 @@ package fr.inria.jessy.vector;
 import java.io.FileInputStream;
 import java.util.Properties;
 
+import fr.inria.jessy.ConstantPool;
+
+
 public class VectorFactory {
 
 	private static String vectorType = readConfig();
@@ -33,9 +36,9 @@ public class VectorFactory {
 		try {
 			Properties myProps = new Properties();
 			FileInputStream MyInputStream = new FileInputStream(
-					"config.property");
+					ConstantPool.CONFIG_PROPERTY);
 			myProps.load(MyInputStream);
-			vectorType = myProps.getProperty("vector_type");
+			vectorType = myProps.getProperty(ConstantPool.VECTOR_TYPE);
 			MyInputStream.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -73,13 +73,11 @@ public class DistributedJessy extends Jessy {
 
 			PerformanceProbe.setOutput("/dev/stdout");
 
-			// FIXME move this.
-			// Merge it in a PropertyHandler class (use Jean-Michel's work).
 			Properties myProps = new Properties();
 			FileInputStream MyInputStream = new FileInputStream(
-					"config.property");
+					ConstantPool.CONFIG_PROPERTY);
 			myProps.load(MyInputStream);
-			String fractalFile = myProps.getProperty("fractal_file");
+			String fractalFile = myProps.getProperty(ConstantPool.FRACTAL_FILE);
 			MyInputStream.close();
 
 			// Initialize Fractal: create server groups, initialize this node

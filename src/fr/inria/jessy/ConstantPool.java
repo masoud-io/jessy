@@ -21,5 +21,12 @@ public class ConstantPool {
 	public static final String JESSY_SERVER_GROUP = "JSERV";
 	public static final int JESSY_SERVER_PORT = 4480;
 	static final int GROUP_SIZE = 1;
+
+	public static final String CONFIG_PROPERTY="config.property";
+	public static final String VECTOR_TYPE="vector_type";
+	public static final String CONSISTENCY_TYPE="consistency_type";
+	public static final String RETRY_COMMIT="retry_commit";
+	public static final String FRACTAL_FILE="fractal_file";
+	
 	
 }

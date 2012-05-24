@@ -1,8 +1,15 @@
 #config.properties
+#the hooks are defined in ConstantPool.java!!!
 
 #vector_type: "dependencevector" | "nullvector" | "lightscalarvector" | "scalarvector"
-#consistency_type: "nmsi" | "si" | "ser"
-
 vector_type = dependencevector
+
+#consistency_type: "nmsi" | "si" | "ser"
 consistency_type = nmsi
+
+#retry to re-execute and commit the transaction upon its abort.
+#re-execution happens only if the transaction is aborted by the certification and not by the client.
+# retry_commit = "true" | "false"
+retry_commit=true
+
 fractal_file=myfractal.xml
