@@ -33,6 +33,7 @@ public class NewOrder extends Transaction {
 	public ExecutionHistory execute() {
 		try {
 			Random rand = new Random(System.currentTimeMillis());
+			Warehouse wh;
 			District dis;
 			Customer cus;
 			New_order no;
@@ -46,12 +47,10 @@ public class NewOrder extends Transaction {
 
 			int O_OL_CNT = rand.nextInt(15 - 5 + 1) + 5;
 			int OL_QUANTITY;
-
-			// TODO maosud: what is x? 
-			int x;/*
-				 * we have only 1 warehouse, so x won't be used to make a
-				 * difference between home and remote warehouse for the moment
-				 */
+			int warehouse_count, remote_warehouse_number;
+			// we have 1% chance(when x == 1) that the ol_supply_warehouse is a remote warehouse
+			int x;
+			x = rand.nextInt(100);
 
 			/* generate how many items we have in this new order, [5..15] */
 			int ol_cnt = rand.nextInt(15 - 5 + 1) + 5;
@@ -98,6 +97,7 @@ public class NewOrder extends Transaction {
 			o.setO_ENTRY_D(new Date());
 			o.setO_ALL_LOCAL(1);
 			o.setO_OL_CNT(O_OL_CNT);
+
 			write(o);
 
 			dis.setD_NEXT_O(dis.getD_NEXT_O() + 1);
@@ -165,6 +165,27 @@ public class NewOrder extends Transaction {
 				ol.setOL_QUANTITY(OL_QUANTITY);
 				ol.setOL_W_ID(warhouseNumber);
 				ol.setOL_D_ID(dis.getD_ID());
+				if(x == 1){//1% chance is a remote supply warehouse
+					warehouse_count = 1;
+					while(true){//calculate how many warehouses do we have in the DB
+						wh = read(Warehouse.class, "W_"+warehouse_count);
+						if(wh != null)
+							warehouse_count++;
+						else
+							break;
+					}
+					while(true){//randomly choose 1 remote warehouses from the DB
+						remote_warehouse_number = rand.nextInt(warehouse_count)+1;
+						//make sure this is not the home warehouse
+						if(remote_warehouse_number != Integer.parseInt(warhouseNumber)) 
+							break;
+							
+					}
+					ol.setOL_SUPPLY_W_ID(Integer.toString(remote_warehouse_number));					
+				}
+				else{//99% chance home supply warehouse
+					ol.setOL_SUPPLY_W_ID(warhouseNumber);
+				}
 				write(ol);
 
 				/*
