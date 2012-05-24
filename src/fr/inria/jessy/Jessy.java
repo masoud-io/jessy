@@ -6,16 +6,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
-
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+
+import org.apache.log4j.Logger;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.persist.model.SecondaryKey;
@@ -23,11 +22,9 @@ import com.sleepycat.persist.model.SecondaryKey;
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.DataStore;
-import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.vector.CompactVector;
@@ -334,16 +331,18 @@ public abstract class Jessy {
 		if (executionHistory == null) {
 			throw new NullPointerException("Transaction has not been started");
 		} else {
-			
+
 			// First checks if we have already read an entity with the same key!
 			// TODO make this conditional according to user definition! (if
 			// disabled, performance gain)
 			JessyEntity tmp = executionHistory.getReadEntity(entity.getKey());
 			if (tmp == null) {
-				// the operation is a blind write! First issue a read operation.
+				/*
+				 * the operation is a blind write! First issue a read operation.
+				 */
 				try {
-					tmp=read(transactionHandler, entity.getClass(), entity.getKey());
-//					tmp=read(entity.getClass(), entity.getKey());
+					tmp = read(transactionHandler, entity.getClass(),
+							entity.getKey());
 				} catch (Exception e) {
 					/*
 					 * Nothing to do. if this is a first write operation, then
