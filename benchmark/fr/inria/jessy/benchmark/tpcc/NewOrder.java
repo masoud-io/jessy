@@ -47,7 +47,7 @@ public class NewOrder extends Transaction {
 
 			int O_OL_CNT = rand.nextInt(15 - 5 + 1) + 5;
 			int OL_QUANTITY;
-			int warehouse_count, remote_warehouse_number;
+			int warehouse_count, remote_warehouse_number, i;
 			// we have 1% chance(when x == 1) that the ol_supply_warehouse is a remote warehouse
 			int x;
 			x = rand.nextInt(100);
@@ -104,7 +104,7 @@ public class NewOrder extends Transaction {
 			write(dis);
 
 			/* for each item in this new order, insert an entity in Order_line */
-			for (int i = 0; i < ol_cnt; i++) {
+			for (i = 0; i < ol_cnt; i++) {
 				int OL_I_ID;
 				/*
 				 * A fixed 1% of the NewOrder transactions are chosen at random
@@ -167,21 +167,27 @@ public class NewOrder extends Transaction {
 				ol.setOL_D_ID(dis.getD_ID());
 				if(x == 1){//1% chance is a remote supply warehouse
 					warehouse_count = 1;
-					while(true){//calculate how many warehouses do we have in the DB
+					i = 0;
+					while(i == 0){//calculate how many warehouses do we have in the DB
 						wh = read(Warehouse.class, "W_"+warehouse_count);
 						if(wh != null)
 							warehouse_count++;
 						else
-							break;
+							i = 1;
 					}
-					while(true){//randomly choose 1 remote warehouses from the DB
+					i = 0;
+					//randomly choose 1 remote warehouses from the DB and assuming we have more than one warehouse
+					while(warehouse_count > 1 && i == 0){
 						remote_warehouse_number = rand.nextInt(warehouse_count)+1;
 						//make sure this is not the home warehouse
-						if(remote_warehouse_number != Integer.parseInt(warhouseNumber)) 
+						if(remote_warehouse_number != Integer.parseInt(warhouseNumber)){ 
+							i = 1;
+							ol.setOL_SUPPLY_W_ID(Integer.toString(remote_warehouse_number));
 							break;
-							
+						}
 					}
-					ol.setOL_SUPPLY_W_ID(Integer.toString(remote_warehouse_number));					
+					ol.setOL_SUPPLY_W_ID(warhouseNumber);//if we have only 1 warehouse, we have no remote warehouse
+										
 				}
 				else{//99% chance home supply warehouse
 					ol.setOL_SUPPLY_W_ID(warhouseNumber);
