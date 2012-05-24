@@ -176,7 +176,7 @@ public class NewOrder extends Transaction {
 							i = 1;
 					}
 					i = 0;
-					//randomly choose 1 remote warehouses from the DB and assuming we have more than one warehouse
+					//randomly choose 1 remote warehouses from the DB by checking we have more than one warehouse
 					while(warehouse_count > 1 && i == 0){
 						remote_warehouse_number = rand.nextInt(warehouse_count)+1;
 						//make sure this is not the home warehouse
