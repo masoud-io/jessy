@@ -1,7 +1,6 @@
 package fr.inria.jessy.consistency;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -34,10 +33,10 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ transactionType.toString());
-		 logger.debug("ReadSet Vector"
-		 + executionHistory.getReadSet().getCompactVector().toString());
-		 logger.debug("WriteSet Vectors"
-		 + executionHistory.getWriteSet().getCompactVector().toString());
+		logger.debug("ReadSet Vector"
+				+ executionHistory.getReadSet().getCompactVector().toString());
+		logger.debug("WriteSet Vectors"
+				+ executionHistory.getWriteSet().getCompactVector().toString());
 
 		/*
 		 * if the transaction is a read-only transaction, it commits right away.
@@ -75,7 +74,6 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 		 */
 		executionHistory.getWriteSet().addEntity(
 				executionHistory.getCreateSet());
-
 
 		JessyEntity lastComittedEntity;
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
@@ -127,10 +125,19 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
 
-		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {		
+		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
 			updatedVector.setSelfKey(entity.getLocalVector().getSelfKey());
 			entity.setLocalVector(updatedVector.clone());
 		}
 
 	}
+
+	@Override
+	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
+		Set<String> keys = new HashSet<String>();
+		keys.addAll(executionHistory.getWriteSet().getKeys());
+		keys.addAll(executionHistory.getCreateSet().getKeys());
+		return keys;
+	}
+
 }

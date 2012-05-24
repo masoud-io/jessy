@@ -30,7 +30,6 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
-import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
@@ -333,8 +332,7 @@ public class DistributedTermination implements Learner, Runnable {
 
 		public TransactionState call() throws Exception {
 			HashSet<String> destGroups = new HashSet<String>();
-			Set<String> concernedKeys = ConsistencyFactory
-					.getConcerningKeys(executionHistory);
+			Set<String> concernedKeys = jessy.getConsistency().getConcerningKeys(executionHistory); 
 
 			/*
 			 * If there is no concerning key, it means that the transaction can

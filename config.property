@@ -1,7 +1,7 @@
 #config.properties
 
 #vector_type: "dependencevector" | "nullvector" | "lightscalarvector" | "scalarvector"
-#consistency_type: "nmsi" | "si"
+#consistency_type: "nmsi" | "si" | "ser"
 
 vector_type = dependencevector
 consistency_type = nmsi

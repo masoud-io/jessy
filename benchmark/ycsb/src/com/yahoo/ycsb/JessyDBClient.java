@@ -18,7 +18,6 @@ import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;
-import fr.inria.jessy.utils.Compress;
 
 public class JessyDBClient extends DB {
 

@@ -1,7 +1,6 @@
 package fr.inria.jessy.consistency;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -11,8 +10,6 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
-import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.VectorFactory;
 
 public class Serializability extends Consistency {
 
@@ -135,6 +132,15 @@ public class Serializability extends Consistency {
 			entity.getLocalVector().update(null, null);
 		}
 
+	}
+	
+	@Override
+	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
+		Set<String> keys = new HashSet<String>();
+		keys.addAll(executionHistory.getReadSet().getKeys());
+		keys.addAll(executionHistory.getWriteSet().getKeys());
+		keys.addAll(executionHistory.getCreateSet().getKeys());
+		return keys;
 	}
 
 }

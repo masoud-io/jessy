@@ -18,24 +18,27 @@ import fr.inria.jessy.store.ReadRequestKey;
  */
 public abstract class Transaction implements Callable<ExecutionHistory> {
 
-	private static TimeRecorder transactionTotalTime= new TimeRecorder("Jessy#TransactionTotalTime");
-	private static TimeRecorder transactionExecutionTime= new TimeRecorder("Jessy#TransactionExecutionTime");
-	private static TimeRecorder transactionTerminationTime= new TimeRecorder("Jessy#TransactionTerminationTime");
-	
+	private static TimeRecorder transactionTotalTime = new TimeRecorder(
+			"Jessy#TransactionTotalTime");
+	private static TimeRecorder transactionExecutionTime = new TimeRecorder(
+			"Jessy#TransactionExecutionTime");
+	private static TimeRecorder transactionTerminationTime = new TimeRecorder(
+			"Jessy#TransactionTerminationTime");
+
 	private static Logger logger = Logger.getLogger(Transaction.class);
 
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
 
 	// TODO read from config file
-	private boolean retryCommitOnAbort = false;
+	private boolean retryCommitOnAbort = true;
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;
-		
+
 		transactionTotalTime.start();
 		transactionExecutionTime.start();
-		
+
 		this.transactionHandler = jessy.startTransaction();
 
 	}
@@ -60,8 +63,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
 			throws Exception {
 		E entity = jessy.read(transactionHandler, entityClass, keyValue);
-//		if (entity != null)
-//			entity.setPrimaryKey(null);
+		// if (entity != null)
+		// entity.setPrimaryKey(null);
 		return entity;
 	}
 
@@ -73,7 +76,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public <E extends JessyEntity> void write(E entity)
 			throws NullPointerException {
 		entity.setPrimaryKey(null);
-		
+
 		jessy.write(transactionHandler, entity);
 	}
 
@@ -122,7 +125,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 		}
 		transactionTerminationTime.stop();
-		jessy.garbageCollectTransaction(transactionHandler);		
+		jessy.garbageCollectTransaction(transactionHandler);
 		transactionTotalTime.stop();
 		return executionHistory;
 	}
@@ -140,7 +143,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	}
 
 	public void setRetryCommitOnAbort(boolean retryCommitOnAbort) {
-		// this.retryCommitOnAbort = retryCommitOnAbort;
+		this.retryCommitOnAbort = retryCommitOnAbort;
 	}
 
 }

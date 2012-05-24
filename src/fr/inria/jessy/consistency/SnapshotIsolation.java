@@ -1,8 +1,10 @@
 package fr.inria.jessy.consistency;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -157,4 +159,11 @@ public class SnapshotIsolation extends Consistency{
 				+ "COMMITED, lastCommittedTransactionSeqNumber:"+Jessy.lastCommittedTransactionSeqNumber.get());
 	}
 
+	@Override
+	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
+		Set<String> keys = new HashSet<String>();
+		keys.addAll(executionHistory.getWriteSet().getKeys());
+		keys.addAll(executionHistory.getCreateSet().getKeys());
+		return keys;
+	}
 }
