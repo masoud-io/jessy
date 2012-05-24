@@ -167,7 +167,12 @@ public class DistributedTermination implements Learner, Runnable {
 					+ terminateRequestMessage.getExecutionHistory()
 							.getTransactionHandler().getId());
 
-			atomicDeliveredMessages.add(terminateRequestMessage);
+			try {
+				atomicDeliveredMessages.put(terminateRequestMessage);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 		} else { // VoteMessage
 
@@ -295,6 +300,8 @@ public class DistributedTermination implements Learner, Runnable {
 			jessy.getConsistency().prepareToCommit(executionHistory);
 			jessy.applyModifiedEntities(executionHistory);
 		}
+		
+		jessy.garbageCollectTransaction(executionHistory.getTransactionHandler());
 
 	}
 
@@ -318,7 +325,7 @@ public class DistributedTermination implements Learner, Runnable {
 
 		concurrentCollectionsSize.add(terminationRequests.size()
 				+ votingQuorums.size() + atomicDeliveredMessages.size()
-				+ processingMessages.size() + terminated.size());
+				+ processingMessages.size() + terminated.size() + processingMessages.size());
 
 	}
 
@@ -373,17 +380,17 @@ public class DistributedTermination implements Learner, Runnable {
 
 			/*
 			 * Wait here until the result of the transaction is known.
-			 * 
-			 * 
-			 * TODO While is for preventing <i>spurious wakeup</i>
-			 */
+			*/
+			TransactionState result =  vq.waitVoteResult();
+			
+			if( !executionHistory.isCertifyAtCoordinator() )
+				garbageCollect(executionHistory.getTransactionHandler());
 
-			return vq.waitVoteResult();
-
+			return result;
 		}
 	}
 
-	private class CertifyAndVoteTask implements Callable<Boolean> {
+	private class CertifyAndVoteTask implements Runnable {
 
 		private TerminateTransactionRequestMessage msg;
 
@@ -391,7 +398,7 @@ public class DistributedTermination implements Learner, Runnable {
 			this.msg = msg;
 		}
 
-		public Boolean call() throws Exception {
+		public void run() {
 
 			try {
 
@@ -447,7 +454,6 @@ public class DistributedTermination implements Learner, Runnable {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return true;
 
 		}
 	}

@@ -234,6 +234,8 @@ public class DistributedJessy extends Jessy {
 		Future<TransactionState> result = distributedTermination
 				.terminateTransaction(executionHistory);
 		result.get();
+		
+		garbageCollectTransaction(transactionHandler);
 
 		NonTransactionalWriteRequestTime.stop();
 	}
