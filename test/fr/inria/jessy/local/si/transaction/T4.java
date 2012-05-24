@@ -17,7 +17,7 @@ public class T4 extends Transaction{
 
 		try {
 			
-			read(Sample2EntityClass.class, "1");
+			read(Sample2EntityClass.class, "2");
 			
 			Thread.sleep(2000);
 			

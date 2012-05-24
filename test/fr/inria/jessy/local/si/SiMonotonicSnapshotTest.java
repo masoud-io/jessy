@@ -97,11 +97,11 @@ public class SiMonotonicSnapshotTest {
 		Iterator<JessyEntity> rs1iterator = result1.getReadSet().getEntities().iterator();
 		Iterator<JessyEntity> rs4iterator = result4.getReadSet().getEntities().iterator();
 		
-		assertEquals("Value", "0x", ((SampleEntityClass)rs1iterator.next()).getData());
 		assertEquals("Value", "0y", ((Sample2EntityClass)rs1iterator.next()).getData());
-		
-		assertEquals("Value", "0x", ((SampleEntityClass)rs4iterator.next()).getData());
+		assertEquals("Value", "0x", ((SampleEntityClass)rs1iterator.next()).getData());
+
 		assertEquals("Value", "0y", ((Sample2EntityClass)rs4iterator.next()).getData());
+		assertEquals("Value", "0x", ((SampleEntityClass)rs4iterator.next()).getData());
 	}
 	
 	

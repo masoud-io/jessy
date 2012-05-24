@@ -18,7 +18,7 @@ public class T4y extends Transaction{
 			
 			Thread.sleep(500);
 			
-			Sample2EntityClass se=read(Sample2EntityClass.class, "1");			
+			Sample2EntityClass se=read(Sample2EntityClass.class, "2");			
 			se.setData("4y");
 			write(se);
 			

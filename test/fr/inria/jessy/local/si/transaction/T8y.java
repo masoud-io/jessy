@@ -18,7 +18,7 @@ public class T8y extends Transaction{
 			
 			Thread.sleep(1000);
 			
-			Sample2EntityClass se=read(Sample2EntityClass.class, "1");			
+			Sample2EntityClass se=read(Sample2EntityClass.class, "2");			
 			se.setData("8y");
 			write(se);
 			

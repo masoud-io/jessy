@@ -22,7 +22,7 @@ public class SampleTransactionMultiObj4 extends Transaction {
 			
 			Thread.sleep(4000);
 			
-			Sample2EntityClass se2=read(Sample2EntityClass.class, "1");
+			Sample2EntityClass se2=read(Sample2EntityClass.class, "2");
 			
 			
 			return commitTransaction();			

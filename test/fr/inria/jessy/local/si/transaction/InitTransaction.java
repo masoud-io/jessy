@@ -21,7 +21,7 @@ public class InitTransaction extends Transaction{
 			SampleEntityClass x=new SampleEntityClass("1", "0x");			
 			create(x);
 
-			Sample2EntityClass y=new Sample2EntityClass("1", "0y");			
+			Sample2EntityClass y=new Sample2EntityClass("2", "0y");			
 			create(y);
 
 			return commitTransaction();			

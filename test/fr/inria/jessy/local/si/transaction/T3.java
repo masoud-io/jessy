@@ -18,7 +18,7 @@ public class T3 extends Transaction{
 			
 			Thread.sleep(1000);
 			
-			Sample2EntityClass se=new Sample2EntityClass("1", "1y");
+			Sample2EntityClass se=new Sample2EntityClass("2", "1y");
 //			se.setData("1y");
 			write(se);
 			

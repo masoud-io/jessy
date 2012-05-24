@@ -21,7 +21,7 @@ public class T1 extends Transaction{
 			
 			Thread.sleep(2000);
 			
-			read(Sample2EntityClass.class, "1");
+			read(Sample2EntityClass.class, "2");
 			
 			return commitTransaction();	
 			
