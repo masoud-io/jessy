@@ -37,7 +37,8 @@ public class StockLevel extends Transaction {
 			int i, j;
 
 			/* Selection District */
-			district = read(District.class, "D_W_" + W_ID + "_" + "D_" + D_ID);
+			//this is where causes the null pointer problem, I have to use parser to make it right, or it returns null
+			district = read(District.class, "D_W_"+Integer.parseInt(W_ID)+"_D_"+Integer.parseInt(D_ID));
 
 			Random rand = new Random(System.currentTimeMillis());
 
@@ -61,13 +62,6 @@ public class StockLevel extends Transaction {
 							+ D_ID + "_" + "OL_O_" + order.getO_ID() + "_"
 							+ "OL_" + j);
 
-					/*
-					 * the following if is written to prevent exception.
-					 * TODO can ol be null sometimes? if not, the source of the problem should be discovered.
-					 */
-					if (ol==null){
-						continue;
-					}
 					/* Stocks must be counted only for distinct items */
 					if (!listItems.contains(ol.getOL_I_ID())) {
 
