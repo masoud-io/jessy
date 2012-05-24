@@ -63,7 +63,7 @@ public class StockLevel extends Transaction {
 							+ "OL_" + j);
 
 					/* Stocks must be counted only for distinct items */
-					if(ol.getOL_I_ID() != null)
+					if(ol != null)
 						if (!listItems.contains(ol.getOL_I_ID())) {
 	
 							/* add into the item list */
