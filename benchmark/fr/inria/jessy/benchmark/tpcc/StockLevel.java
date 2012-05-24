@@ -63,17 +63,18 @@ public class StockLevel extends Transaction {
 							+ "OL_" + j);
 
 					/* Stocks must be counted only for distinct items */
-					if (!listItems.contains(ol.getOL_I_ID())) {
-
-						/* add into the item list */
-						listItems.add(ol.getOL_I_ID());
-
-						/* Selection Stock */
-						stock = read(Stock.class, "S_W_" + W_ID + "_" + "S_I_"
-								+ ol.getOL_I_ID());
-						if (stock.getS_QUANTITY() < threshold)
-							low_stock++;
-					}
+					if(ol.getOL_I_ID() != null)
+						if (!listItems.contains(ol.getOL_I_ID())) {
+	
+							/* add into the item list */
+							listItems.add(ol.getOL_I_ID());
+	
+							/* Selection Stock */
+							stock = read(Stock.class, "S_W_" + W_ID + "_" + "S_I_"
+									+ ol.getOL_I_ID());
+							if (stock.getS_QUANTITY() < threshold)
+								low_stock++;
+						}
 
 				}
 

@@ -126,7 +126,7 @@ public class OrderStatus extends Transaction {
 			
 			/* Selection Order_line */
 			for(i=1;i<=order.getO_OL_CNT();i++) {
-				ol = read(Order_line.class, "OL_W_"+C_W_ID + "_" + "OL_D_"+C_D_ID + "_" + "OL_O_"+O_ID + "_" + "OL_"+i);
+				ol = read(Order_line.class, "OL_W_"+C_W_ID + "_" + "OL_D_"+C_D_ID + "_" + "OL_O_"+order.getO_ID() + "_" + "OL_"+i);
 			}
 			
 			return commitTransaction();	
