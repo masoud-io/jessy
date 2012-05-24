@@ -16,9 +16,10 @@ import fr.inria.jessy.store.JessyEntity;
 public class ExecutionHistory implements Messageable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
-	
-	private static TimeRecorder packingTime = new TimeRecorder("ExecutioNHistory#packingTime");
-	
+
+	private static TimeRecorder packingTime = new TimeRecorder(
+			"ExecutioNHistory#packingTime");
+
 	public static enum TransactionType {
 		/**
 		 * the execution history is for a read only transaction
@@ -37,14 +38,13 @@ public class ExecutionHistory implements Messageable {
 		 */
 		INIT_TRANSACTION
 	};
-	
 
 	private TransactionHandler transactionHandler;
 
 	/**
-	 * if true, the coordinator will perform a certification, thus does not need to
-	 * receive the result from other processes. Otherwise, the proxy will only
-	 * atomic multicast the transaction for certification, thus it needs to
+	 * if true, the coordinator will perform a certification, thus does not need
+	 * to receive the result from other processes. Otherwise, the proxy will
+	 * only atomic multicast the transaction for certification, thus it needs to
 	 * receive back the {@link TerminationResult}.
 	 */
 	private boolean certifyAtCoordinator;
@@ -58,30 +58,20 @@ public class ExecutionHistory implements Messageable {
 	private EntitySet createSet;
 	private EntitySet writeSet;
 	private EntitySet readSet;
-	private int coordinator;		
+	private int coordinator;
 
 	// for fractal
 	@Deprecated
-	public ExecutionHistory(){}
-	
-	public ExecutionHistory(TransactionHandler transactionHandler){
-		readSet = new EntitySet();
-		writeSet = new EntitySet();
-		createSet = new EntitySet();
-		this.transactionHandler = transactionHandler;
+	public ExecutionHistory() {
 	}
-	
-	public ExecutionHistory(
-			List<Class<? extends JessyEntity>> entityClasses,
-			TransactionHandler transactionHandler) {
-		
-		readSet = new EntitySet();
-		writeSet = new EntitySet();
-		createSet = new EntitySet();
 
+	public ExecutionHistory(TransactionHandler transactionHandler) {
+		readSet = new EntitySet();
+		writeSet = new EntitySet();
+		createSet = new EntitySet();
 		this.transactionHandler = transactionHandler;
-		
 	}
+
 
 	public EntitySet getReadSet() {
 		return readSet;
@@ -95,19 +85,16 @@ public class ExecutionHistory implements Messageable {
 		return createSet;
 	}
 
-	public <E extends JessyEntity> E getReadEntity(Class<E> entityClass,
-			String keyValue) {
-		return readSet.getEntity(entityClass, keyValue);
+	public <E extends JessyEntity> E getReadEntity(String keyValue) {
+		return readSet.getEntity(keyValue);
 	}
 
-	public <E extends JessyEntity> E getWriteEntity(Class<E> entityClass,
-			String keyValue) {
-		return writeSet.getEntity(entityClass, keyValue);
+	public <E extends JessyEntity> E getWriteEntity(String keyValue) {
+		return writeSet.getEntity(keyValue);
 	}
 
-	public <E extends JessyEntity> E getCreateEntity(Class<E> entityClass,
-			String keyValue) {
-		return createSet.getEntity(entityClass, keyValue);
+	public <E extends JessyEntity> E getCreateEntity(String keyValue) {
+		return createSet.getEntity(keyValue);
 	}
 
 	public <E extends JessyEntity> void addReadEntity(E entity) {
@@ -165,25 +152,26 @@ public class ExecutionHistory implements Messageable {
 		this.certifyAtCoordinator = certifyAtCoordinator;
 	}
 
-	public void setCoordinator(int coordinator){
-		this.coordinator=coordinator;
+	public void setCoordinator(int coordinator) {
+		this.coordinator = coordinator;
 	}
-	
-	public int getCoordinator(){
+
+	public int getCoordinator() {
 		return coordinator;
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+
 		transactionHandler = (TransactionHandler) in.readObject();
 		certifyAtCoordinator = in.readBoolean();
 		transactionState = (TransactionState) in.readObject();
-		
+
 		createSet = (EntitySet) in.readObject();
 		writeSet = (EntitySet) in.readObject();
 		readSet = (EntitySet) in.readObject();
-		
+
 		coordinator = in.readInt();
 	}
 
@@ -192,12 +180,12 @@ public class ExecutionHistory implements Messageable {
 		out.writeObject(transactionHandler);
 		out.writeBoolean(certifyAtCoordinator);
 		out.writeObject(transactionState);
-		
+
 		out.writeObject(createSet);
 		out.writeObject(writeSet);
 		out.writeObject(readSet);
 
 		out.writeInt(coordinator);
-		
+
 	}
 }

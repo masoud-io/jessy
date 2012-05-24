@@ -28,7 +28,7 @@ import fr.inria.jessy.vector.CompactVector;
  *         thread.
  * 
  */
-public class EntitySet implements Messageable{
+public class EntitySet implements Messageable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
@@ -49,8 +49,7 @@ public class EntitySet implements Messageable{
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> E getEntity(Class<E> entityClass,
-			String keyValue) {
+	public <E extends JessyEntity> E getEntity(String keyValue) {
 		return (E) entities.get(keyValue);
 	}
 
@@ -83,8 +82,7 @@ public class EntitySet implements Messageable{
 		return compactVector.size();
 	}
 
-	public <E extends JessyEntity> boolean contains(
-			Class<E> entityClass, String keyValue) {
+	public <E extends JessyEntity> boolean contains(String keyValue) {
 		return entities.containsKey(keyValue);
 
 	}

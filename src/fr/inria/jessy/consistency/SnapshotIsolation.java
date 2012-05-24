@@ -75,7 +75,7 @@ public class SnapshotIsolation extends Consistency{
 			JessyEntity nextEntity = WSiterator.next();
 
 //						TODO check contains mathod
-			if(concurrentWS.contains(nextEntity.getClass(), nextEntity.getKey())){
+			if(concurrentWS.contains(nextEntity.getKey())){
 				//				ws intersection
 				
 				logger.debug(executionHistory.getTransactionHandler() + " ws intersection >> "

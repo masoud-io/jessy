@@ -18,11 +18,11 @@ public class T1 extends Transaction{
 
 		try {
 			
-			read(SampleEntityClass.class, "1");			
+			SampleEntityClass en=read(SampleEntityClass.class, "1");
 			
 			Thread.sleep(2000);
 			
-			read(Sample2EntityClass.class, "2");
+			Sample2EntityClass en2=read(Sample2EntityClass.class, "2");
 			
 			return commitTransaction();	
 			

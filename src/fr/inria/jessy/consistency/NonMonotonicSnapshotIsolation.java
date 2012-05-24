@@ -35,6 +35,8 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 				+ transactionType.toString());
 		logger.debug("ReadSet Vector"
 				+ executionHistory.getReadSet().getCompactVector().toString());
+		logger.debug("CreateSet Vectors"
+				+ executionHistory.getCreateSet().getCompactVector().toString());
 		logger.debug("WriteSet Vectors"
 				+ executionHistory.getWriteSet().getCompactVector().toString());
 
