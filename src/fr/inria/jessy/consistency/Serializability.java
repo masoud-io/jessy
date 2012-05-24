@@ -25,6 +25,12 @@ public class Serializability extends Consistency {
 
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ transactionType.toString());
+		logger.debug("ReadSet Vector"
+				+ executionHistory.getReadSet().getCompactVector().toString());
+		logger.debug("CreateSet Vectors"
+				+ executionHistory.getCreateSet().getCompactVector().toString());
+		logger.debug("WriteSet Vectors"
+				+ executionHistory.getWriteSet().getCompactVector().toString());
 
 		/*
 		 * if the transaction is an initalization transaction, it first
@@ -130,6 +136,7 @@ public class Serializability extends Consistency {
 
 		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
 			entity.getLocalVector().update(null, null);
+			System.out.println(entity.getLocalVector());
 		}
 
 	}

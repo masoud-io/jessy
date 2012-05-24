@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import com.sleepycat.persist.model.Persistent;
+
 /**
  * This is a simple ScalarVector implementation. It will be used for
  * implementing p-store like data store. I.e., during execution, read the most
@@ -21,10 +23,15 @@ import java.io.ObjectOutput;
  * 
  * @param <K>
  */
+@Persistent
 public class LightScalarVector<K> extends Vector<K> implements Externalizable {
 
 	int version = 0;
 
+	/**
+	 * Needed for BerkeleyDB
+	 */
+	@Deprecated
 	public LightScalarVector() {
 	}
 
