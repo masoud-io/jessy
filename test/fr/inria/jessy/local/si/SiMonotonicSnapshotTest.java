@@ -73,9 +73,6 @@ public class SiMonotonicSnapshotTest {
 		assertEquals(0, result0.getTransactionHandler()
 				.getTransactionSeqNumber());
 
-		result0 = null;
-		futureInit = null;
-
 		Future<ExecutionHistory> future1;
 		Future<ExecutionHistory> future2;
 		Future<ExecutionHistory> future3;
