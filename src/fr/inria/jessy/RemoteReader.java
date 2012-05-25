@@ -95,8 +95,7 @@ public class RemoteReader implements Learner {
 		readRequestRecipientCounts = new ConcurrentHashMap<Integer, AtomicInteger>();
 		
 		queue = new LinkedBlockingDeque<RemoteReadRequestMessage>();
-		Thread thread = new Thread(new RemoteReadReplyTask());
-		thread.start();
+		pool.submitMultiple(new RemoteReadReplyTask());
 		
 	}
 
@@ -216,13 +215,13 @@ public class RemoteReader implements Learner {
 					serverAnsweringTime.start();
 					for(Integer dest : pendingRequests.keySet()){
 						remoteReadStream.unicast(
-								new RemoteReadReplyMessage<E>(jessy.getDataStore().get(pendingRequests.get(dest))),dest);
+								new RemoteReadReplyMessage<E>(
+										jessy.getDataStore().get(pendingRequests.get(dest))),dest);
 								
 					}
 					serverAnsweringTime.stop();
 					
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
