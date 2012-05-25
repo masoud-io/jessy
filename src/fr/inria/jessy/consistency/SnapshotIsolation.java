@@ -91,7 +91,7 @@ public class SnapshotIsolation extends Consistency{
 	}
 
 	@Override
-	public boolean hasConflict(ExecutionHistory history1,
+	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
 		new Exception("ERROR: hasConflict(ExecutionHistory history1, ExecutionHistory history2) " +

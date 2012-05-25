@@ -323,7 +323,7 @@ public class DistributedTermination implements Learner{
 								isConflicting = false;
 								break;
 							}
-							if( jessy.getConsistency().hasConflict(
+							if( jessy.getConsistency().certificationCommute(
 									n.getExecutionHistory(),
 									msg.getExecutionHistory()) )
 								break;

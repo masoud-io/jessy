@@ -105,7 +105,7 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 	}
 
 	@Override
-	public boolean hasConflict(ExecutionHistory history1,
+	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
 		Set<String> history2Keys = history2.getWriteSet().getKeys();

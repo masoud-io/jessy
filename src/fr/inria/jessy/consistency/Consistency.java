@@ -23,17 +23,16 @@ public abstract class Consistency {
 	public abstract boolean certify(ExecutionHistory executionHistory);
 
 	/**
-	 * Returns true if history1 has a conflict with history2 according to the
-	 * consistency criterion peropertis.
-	 * <p>
-	 * For example, under Snapshot Isolation, history1 has conflict with
-	 * history2 if their writeset intersection is not empty.
+	 * Returns true iff the certification of history1 
+	 * and the ccertification of history2 commute
+	 * according to the consistency criteria.
+	 * That is cert(hist1).cert(hist2) return the same value as cert(hist2).cert(hist1).
 	 * 
 	 * @param history1
 	 * @param history2
 	 * @return
 	 */
-	public abstract boolean hasConflict(ExecutionHistory history1,
+	public abstract boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2);
 
 	/**

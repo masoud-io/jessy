@@ -3,6 +3,8 @@ package fr.inria.jessy.consistency;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.sourceforge.fractal.utils.CollectionUtils;
+
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.store.DataStore;
@@ -113,22 +115,16 @@ public class Serializability extends Consistency {
 	}
 
 	@Override
-	public boolean hasConflict(ExecutionHistory history1,
-			ExecutionHistory history2) {
-
-		Set<String> history1Keys = history1.getWriteSet().getKeys();
-		history1Keys.addAll(history1.getReadSet().getKeys());
-
-		Set<String> history2Keys = history2.getWriteSet().getKeys();
-		history2Keys.addAll(history2.getReadSet().getKeys());
-
-		for (String key : history1Keys) {
-			if (history2Keys.contains(key)) {
-				return true;
-			}
-		}
-		return false;
-
+	public boolean certificationCommute(ExecutionHistory history1, ExecutionHistory history2) {
+		
+		return ! CollectionUtils.isIntersectingWith(
+					history1.getWriteSet().getKeys(),
+					history2.getReadSet().getKeys())
+			   &&
+			   ! CollectionUtils.isIntersectingWith(
+						history2.getWriteSet().getKeys(),
+						history1.getReadSet().getKeys());
+		
 	}
 
 	@Override
