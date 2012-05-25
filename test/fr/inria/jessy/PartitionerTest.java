@@ -1,13 +1,12 @@
 package fr.inria.jessy;
 
+import static fr.inria.jessy.store.Keyspace.Distribution.UNIFORM;
+import net.sourceforge.fractal.membership.Membership;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.store.Keyspace;
-
-import net.sourceforge.fractal.membership.Membership;
-
-import static fr.inria.jessy.store.Keyspace.Distribution.UNIFORM;
 
 public class PartitionerTest {
 

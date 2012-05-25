@@ -3,8 +3,6 @@ package fr.inria.jessy.consistency;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import com.sun.org.apache.bcel.internal.classfile.ConstantPool;
-
 import fr.inria.jessy.store.DataStore;
 
 //TODO comment me

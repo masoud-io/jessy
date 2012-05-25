@@ -12,7 +12,6 @@ import java.util.Set;
 import net.sourceforge.fractal.Messageable;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.CompactVector;
 
 /**

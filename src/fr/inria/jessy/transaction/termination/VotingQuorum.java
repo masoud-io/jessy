@@ -3,7 +3,6 @@ package fr.inria.jessy.transaction.termination;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.apache.log4j.Logger;
 

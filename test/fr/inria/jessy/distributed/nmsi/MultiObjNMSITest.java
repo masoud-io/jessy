@@ -15,7 +15,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.DistributedJessy;
-import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.distributed.nmsi.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.distributed.nmsi.transaction.SampleTransactionMultiObj1;
 import fr.inria.jessy.distributed.nmsi.transaction.SampleTransactionMultiObj2;

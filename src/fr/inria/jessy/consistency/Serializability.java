@@ -136,9 +136,7 @@ public class Serializability extends Consistency {
 
 		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
 			entity.getLocalVector().update(null, null);
-			System.out.println(entity.getLocalVector());
 		}
-
 	}
 	
 	@Override

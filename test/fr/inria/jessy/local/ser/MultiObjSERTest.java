@@ -83,6 +83,9 @@ public class MultiObjSERTest extends TestCase {
 
 		Future<ExecutionHistory> futureInit1;
 		futureInit1 = pool.submit(new SampleEntityInitTransaction(jessy));
+		ExecutionHistory resultInit1 = futureInit1.get();
+		assertEquals("Result", TransactionState.COMMITTED,
+				resultInit1.getTransactionState());
 
 		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransactionMultiObj1(jessy));
@@ -96,9 +99,7 @@ public class MultiObjSERTest extends TestCase {
 		Future<ExecutionHistory> future4;
 		future4 = pool.submit(new SampleTransactionMultiObj4(jessy));
 
-		ExecutionHistory resultInit1 = futureInit1.get();
-		assertEquals("Result", TransactionState.COMMITTED,
-				resultInit1.getTransactionState());
+
 
 		ExecutionHistory result1 = future1.get();
 		assertEquals("Result", TransactionState.COMMITTED,
@@ -113,7 +114,7 @@ public class MultiObjSERTest extends TestCase {
 				result3.getTransactionState());
 
 		ExecutionHistory result4 = future4.get();
-		assertEquals("Result", TransactionState.COMMITTED,
+		assertEquals("Result", TransactionState.ABORTED_BY_CERTIFICATION,
 				result4.getTransactionState());
 
 	}

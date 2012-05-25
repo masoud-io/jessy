@@ -1,13 +1,23 @@
 package fr.inria.jessy.benchmark.tpcc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import fr.inria.jessy.LocalJessy;
-import fr.inria.jessy.benchmark.tpcc.entities.*;
-import fr.inria.jessy.transaction.*;
+import fr.inria.jessy.benchmark.tpcc.entities.Customer;
+import fr.inria.jessy.benchmark.tpcc.entities.District;
+import fr.inria.jessy.benchmark.tpcc.entities.History;
+import fr.inria.jessy.benchmark.tpcc.entities.Item;
+import fr.inria.jessy.benchmark.tpcc.entities.New_order;
+import fr.inria.jessy.benchmark.tpcc.entities.Order;
+import fr.inria.jessy.benchmark.tpcc.entities.Order_line;
+import fr.inria.jessy.benchmark.tpcc.entities.Stock;
+import fr.inria.jessy.benchmark.tpcc.entities.Warehouse;
+import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionState;
 
 /**
  * @author WANG Haiyun & ZHAO Guang

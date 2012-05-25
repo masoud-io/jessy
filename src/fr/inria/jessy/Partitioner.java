@@ -14,8 +14,8 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
-import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.Keyspace.Distribution;
+import fr.inria.jessy.store.ReadRequest;
 
 /**
  * This class implements a partitioner, that is a function that maps objects

@@ -33,7 +33,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
 
-	private boolean retryCommitOnAbort = readConfig();
+	private static boolean retryCommitOnAbort = readConfig();
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;

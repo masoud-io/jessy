@@ -14,8 +14,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
-
 import com.sleepycat.persist.model.Persistent;
 
 /**

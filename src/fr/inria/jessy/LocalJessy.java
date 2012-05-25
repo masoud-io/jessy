@@ -1,7 +1,6 @@
 package fr.inria.jessy;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -65,7 +64,7 @@ public class LocalJessy extends Jessy {
 	}
 
 	@Override
-	public ExecutionHistory commitTransaction(
+	public synchronized ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
 		ExecutionHistory result = handler2executionHistory
 				.get(transactionHandler);

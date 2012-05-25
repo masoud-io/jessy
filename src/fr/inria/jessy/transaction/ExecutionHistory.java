@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collection;
-import java.util.List;
 
 import net.sourceforge.fractal.Messageable;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;

@@ -1,6 +1,6 @@
 package fr.inria.jessy.local.si;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,7 +15,15 @@ import fr.inria.jessy.Jessy;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
-import fr.inria.jessy.local.si.transaction.*;
+import fr.inria.jessy.local.si.transaction.InitTransaction;
+import fr.inria.jessy.local.si.transaction.T1x;
+import fr.inria.jessy.local.si.transaction.T2x;
+import fr.inria.jessy.local.si.transaction.T3x;
+import fr.inria.jessy.local.si.transaction.T4y;
+import fr.inria.jessy.local.si.transaction.T5x;
+import fr.inria.jessy.local.si.transaction.T6x;
+import fr.inria.jessy.local.si.transaction.T7x;
+import fr.inria.jessy.local.si.transaction.T8y;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
 

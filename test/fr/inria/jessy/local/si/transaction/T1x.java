@@ -1,10 +1,9 @@
 package fr.inria.jessy.local.si.transaction;
 
+import fr.inria.jessy.Jessy;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
-
-import fr.inria.jessy.Jessy;
 
 public class T1x extends Transaction{
 

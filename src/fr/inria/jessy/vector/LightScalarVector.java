@@ -26,8 +26,6 @@ import com.sleepycat.persist.model.Persistent;
 @Persistent
 public class LightScalarVector<K> extends Vector<K> implements Externalizable {
 
-	int version = 0;
-
 	/**
 	 * Needed for BerkeleyDB
 	 */
@@ -35,9 +33,15 @@ public class LightScalarVector<K> extends Vector<K> implements Externalizable {
 	public LightScalarVector() {
 	}
 
+	public LightScalarVector(K selfKey) {
+		super(selfKey);
+		super.setValue(selfKey, 0);
+	}
+
 	@Override
 	public boolean isCompatible(Vector<K> other) throws NullPointerException {
-		if (version == ((LightScalarVector<K>) other).version)
+
+		if (getSelfValue().equals(other.getSelfValue()))
 			return true;
 		else
 			return false;
@@ -56,16 +60,21 @@ public class LightScalarVector<K> extends Vector<K> implements Externalizable {
 
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
-		version++;
+		setValue(getSelfKey(), getSelfValue() + 1);
 	}
 
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		version = in.readInt();
+		super.readExternal(in);
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeInt(version);
+		super.writeExternal(out);
+	}
+
+	@Override
+	public String toString() {
+		return selfKey + " : " + getSelfValue();
 	}
 
 }

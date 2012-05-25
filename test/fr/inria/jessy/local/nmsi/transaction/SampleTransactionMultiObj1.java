@@ -9,6 +9,7 @@ public class SampleTransactionMultiObj1 extends Transaction {
 
 	public SampleTransactionMultiObj1(Jessy jessy) throws Exception{
 		super(jessy);
+		setRetryCommitOnAbort(false);
 	}
 
 	@Override

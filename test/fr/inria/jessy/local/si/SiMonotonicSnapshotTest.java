@@ -15,7 +15,11 @@ import org.junit.Test;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
-import fr.inria.jessy.local.si.transaction.*;
+import fr.inria.jessy.local.si.transaction.InitTransaction;
+import fr.inria.jessy.local.si.transaction.T1;
+import fr.inria.jessy.local.si.transaction.T2;
+import fr.inria.jessy.local.si.transaction.T3;
+import fr.inria.jessy.local.si.transaction.T4;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
@@ -43,7 +47,7 @@ public class SiMonotonicSnapshotTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-
+		
 	}
 
 	/**
@@ -90,7 +94,10 @@ public class SiMonotonicSnapshotTest {
 		assertEquals(result3.getTransactionState(), TransactionState.COMMITTED);
 
 		ExecutionHistory result1 = future1.get();
+		assertEquals(result1.getTransactionState(), TransactionState.COMMITTED);
+		
 		ExecutionHistory result4 = future4.get();
+		assertEquals(result4.getTransactionState(), TransactionState.COMMITTED);
 
 		Iterator<JessyEntity> rs1iterator = result1.getReadSet().getEntities()
 				.iterator();
