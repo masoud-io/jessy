@@ -183,7 +183,6 @@ public class NewOrder extends Transaction {
 						if(remote_warehouse_number != Integer.parseInt(warhouseNumber)){ 
 							i = 1;
 							ol.setOL_SUPPLY_W_ID(Integer.toString(remote_warehouse_number));
-							break;
 						}
 					}
 					ol.setOL_SUPPLY_W_ID(warhouseNumber);//if we have only 1 warehouse, we have no remote warehouse
