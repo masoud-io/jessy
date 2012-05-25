@@ -4,8 +4,10 @@ import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_
 import static fr.inria.jessy.transaction.TransactionState.COMMITTED;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -199,9 +201,12 @@ public class DistributedTermination implements Learner, Runnable {
 	 */
 	@Override
 	public void run() {
-		TerminateTransactionRequestMessage terminateRequestMessage;
-		TerminateTransactionRequestMessage processingMessage;
-
+		
+		List<TerminateTransactionRequestMessage> l 
+			= new ArrayList<TerminateTransactionRequestMessage>(); 	
+		
+		List<TerminateTransactionRequestMessage> toProcess;
+		
 		while (true) {
 
 			/*
@@ -212,48 +217,56 @@ public class DistributedTermination implements Learner, Runnable {
 			 * transaction finishes its termination.
 			 */
 			try {
-				terminateRequestMessage = atomicDeliveredMessages.take();
-
-				logger.debug("atomic deliver a TerminateTransactionRequestMessage for "
-						+ terminateRequestMessage.getExecutionHistory()
-								.getTransactionHandler().getId());
-
-				Iterator<TerminateTransactionRequestMessage> itr = processingMessages
-						.values().iterator();
-				while (itr.hasNext()) {
-					processingMessage = itr.next();
+				
+				l.clear();
+				toProcess = new ArrayList<TerminateTransactionRequestMessage>();
+				l.add(atomicDeliveredMessages.take());
+				atomicDeliveredMessages.drainTo(l);
+				
+				for(TerminateTransactionRequestMessage terminateRequestMessage : l){
+				
+					logger.debug("atomic deliver a TerminateTransactionRequestMessage for "
+							+ terminateRequestMessage.getExecutionHistory()
+							.getTransactionHandler().getId());
 
 					// FIXME this is false....
-					// if (ConsistencyFactory.getConsistency().hasConflict(
-					// terminateRequestMessage.getExecutionHistory(),
-					// processingMessage.getExecutionHistory())) {
-					// synchronized (processingMessage) {
-					// logger.debug("waiting termination of "
-					// +
-					// processingMessage.getExecutionHistory().getTransactionHandler().getId());
-					// processingMessage.wait();
-					// logger.debug("having termination of "
-					// +
-					// processingMessage.getExecutionHistory().getTransactionHandler().getId());
-					// }
-					// itr = processingMessages.values().iterator();
-					// continue;
-					// }
+						// if (ConsistencyFactory.getConsistency().hasConflict(
+						// terminateRequestMessage.getExecutionHistory(),
+						// processingMessage.getExecutionHistory())) {
+						// synchronized (processingMessage) {
+						// logger.debug("waiting termination of "
+						// +
+						// processingMessage.getExecutionHistory().getTransactionHandler().getId());
+						// processingMessage.wait();
+						// logger.debug("having termination of "
+						// +
+						// processingMessage.getExecutionHistory().getTransactionHandler().getId());
+						// }
+						// itr = processingMessages.values().iterator();
+						// continue;
+						// }
+				
+					processingMessages.put(terminateRequestMessage
+							.getExecutionHistory().getTransactionHandler(),
+							terminateRequestMessage);
+
+					toProcess.add(terminateRequestMessage);
+					
+					/*
+					 * There is no conflict with already processing messages in
+					 * {@code processingMessages}, thus a new {@code
+					 * CertifyAndVoteTask} is created for handling this messages.
+					 */
+//					logger.debug("create a CertifyAndVoteTask for "
+//							+ terminateRequestMessage.getExecutionHistory()
+//							.getTransactionHandler().getId());
+
+					
+					
 				}
-				processingMessages.put(terminateRequestMessage
-						.getExecutionHistory().getTransactionHandler(),
-						terminateRequestMessage);
-
-				/*
-				 * There is no conflict with already processing messages in
-				 * {@code processingMessages}, thus a new {@code
-				 * CertifyAndVoteTask} is created for handling this messages.
-				 */
-				logger.debug("create a CertifyAndVoteTask for "
-						+ terminateRequestMessage.getExecutionHistory()
-								.getTransactionHandler().getId());
-
-				pool.submit(new CertifyAndVoteTask(terminateRequestMessage));
+				
+				pool.submit(new CertifyAndVoteTask(toProcess));
+					
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
@@ -392,64 +405,72 @@ public class DistributedTermination implements Learner, Runnable {
 
 	private class CertifyAndVoteTask implements Runnable {
 
-		private TerminateTransactionRequestMessage msg;
+		private List<TerminateTransactionRequestMessage> l;
 
-		private CertifyAndVoteTask(TerminateTransactionRequestMessage msg) {
-			this.msg = msg;
+		private CertifyAndVoteTask(List<TerminateTransactionRequestMessage> l) {
+			this.l = l;
 		}
 
 		public void run() {
 
 			try {
 
-				/*
-				 * First, it needs to run the certification test on the received
-				 * execution history. A blind write always succeeds.
-				 */
-				boolean isAborted = msg.getExecutionHistory()
-						.getTransactionType() == BLIND_WRITE
-						|| jessy.getConsistency().certify(
-								msg.getExecutionHistory());
+				for(TerminateTransactionRequestMessage msg : l){
 
-				jessy.setExecutionHistory(msg.getExecutionHistory());
+					/*
+					 * First, it needs to run the certification test on the received
+					 * execution history. A blind write always succeeds.
+					 */
+					boolean isAborted = msg.getExecutionHistory()
+					.getTransactionType() == BLIND_WRITE
+					|| jessy.getConsistency().certify(
+							msg.getExecutionHistory());
 
-				/*
-				 * Compute a set of destinations for the votes, and sends out
-				 * the votes to all replicas <i>that replicate objects modified
-				 * inside the transaction</i>. The group this node belongs to is
-				 * ommitted.
-				 */
+					jessy.setExecutionHistory(msg.getExecutionHistory());
 
-				Vote vote = new Vote(msg.getExecutionHistory()
-						.getTransactionHandler(), isAborted, group.name(),
-						msg.dest);
+					/*
+					 * Compute a set of destinations for the votes, and sends out
+					 * the votes to all replicas <i>that replicate objects modified
+					 * inside the transaction</i>. The group this node belongs to is
+					 * ommitted.
+					 */
 
-				Set<String> dest = jessy.partitioner.resolveNames(msg
-						.getExecutionHistory().getWriteSet().getKeys());
-				dest.remove(group.name());
-				VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),
-						membership.myId());
+					Vote vote = new Vote(msg.getExecutionHistory()
+							.getTransactionHandler(), isAborted, group.name(),
+							msg.dest);
 
-				voteStream.multicast(voteMsg);
+					Set<String> dest = jessy.partitioner.resolveNames(msg
+							.getExecutionHistory().getWriteSet().getKeys());
+					dest.remove(group.name());
+					VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),
+							membership.myId());
 
-				if (!msg.getExecutionHistory().isCertifyAtCoordinator())
-					terminationNotificationStream.unicast(voteMsg, msg
-							.getExecutionHistory().getCoordinator());
+					voteStream.multicast(voteMsg);
 
-				addVote(vote);
+					if (!msg.getExecutionHistory().isCertifyAtCoordinator())
+						terminationNotificationStream.unicast(voteMsg, msg
+								.getExecutionHistory().getCoordinator());
 
-				TransactionState state = votingQuorums.get(
-						msg.getExecutionHistory().getTransactionHandler())
-						.waitVoteResult();
+					addVote(vote);
+					
+				}
+				
+				for(TerminateTransactionRequestMessage msg : l){ // could be done in //
 
-				logger.debug("got voting quorum for "
-						+ msg.getExecutionHistory().getTransactionHandler()
-						+ " , result is " + state);
+					TransactionState state = votingQuorums.get(
+							msg.getExecutionHistory().getTransactionHandler())
+							.waitVoteResult();
 
-				msg.getExecutionHistory().changeState(state);
-				handleTerminationResult(msg.getExecutionHistory());
-				garbageCollect(msg.getExecutionHistory()
-						.getTransactionHandler());
+					logger.debug("got voting quorum for "
+							+ msg.getExecutionHistory().getTransactionHandler()
+							+ " , result is " + state);
+
+					msg.getExecutionHistory().changeState(state);
+					handleTerminationResult(msg.getExecutionHistory());
+					garbageCollect(msg.getExecutionHistory()
+							.getTransactionHandler());
+				
+				}
 
 			} catch (Exception e) {
 				e.printStackTrace();

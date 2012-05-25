@@ -130,7 +130,6 @@ public class DistributedJessy extends Jessy {
 			MessageStream.addClass(VoteMessage.class.getName());
 			MessageStream.addClass(Vote.class.getName());
 			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
-			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
 			MessageStream.addClass(ExecutionHistory.class.getName());
 			MessageStream.addClass(TransactionHandler.class.getName());
 			

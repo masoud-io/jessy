@@ -83,6 +83,7 @@ public class YCSBEntity extends JessyEntity implements Externalizable {
 		out.writeObject(fields);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
