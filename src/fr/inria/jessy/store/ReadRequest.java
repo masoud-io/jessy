@@ -150,5 +150,9 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 			multiKeys = (List<ReadRequestKey<?>>) in.readObject();
 		}
 	}
+	
+	public boolean isOneKeyRequest(){
+		return isOneKeyRequest;
+	}
 
 }

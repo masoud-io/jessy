@@ -14,8 +14,9 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
-import fr.inria.jessy.store.Keyspace.Distribution;
 import fr.inria.jessy.store.ReadRequest;
+import fr.inria.jessy.store.ReadRequestKey;
+import fr.inria.jessy.store.Keyspace.Distribution;
 
 /**
  * This class implements a partitioner, that is a function that maps objects
@@ -158,8 +159,16 @@ public class Partitioner {
 
 
 	public <E extends JessyEntity> Set<Group> resolve(ReadRequest<E> readRequest) {		
+		
 		Set<Group> ret = new HashSet<Group>();
-		ret.add(rk2g.get(closestRootkeyOf(readRequest.getPartitioningKey())));
+		
+		if( readRequest.isOneKeyRequest() ){
+			ret.add(rk2g.get(closestRootkeyOf(readRequest.getOneKey().getKeyName())));
+		}else{
+			for(ReadRequestKey key : readRequest.getMultiKeys())
+				ret.add(rk2g.get(closestRootkeyOf(key.getKeyName())));
+		}
+		
 		return ret;
 	}
 

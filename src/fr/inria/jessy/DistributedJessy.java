@@ -125,8 +125,8 @@ public class DistributedJessy extends Jessy {
 			MessageStream.addClass(NullVector.class.getName());
 			MessageStream.addClass(ReadReply.class.getName());
 			MessageStream.addClass(ReadRequest.class.getName());
-			MessageStream.addClass(RemoteReadRequestMessage.class.getName());
-			MessageStream.addClass(RemoteReadReplyMessage.class.getName());
+			MessageStream.addClass(ReadRequestMessage.class.getName());
+			MessageStream.addClass(ReadReplyMessage.class.getName());
 			MessageStream.addClass(VoteMessage.class.getName());
 			MessageStream.addClass(Vote.class.getName());
 			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
@@ -158,7 +158,7 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 		ReadReply<E> readReply;
-		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
+		if(partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keyValue
 					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);
@@ -193,7 +193,7 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
 		ReadReply<E> readReply;
-		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
+		if(partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keys + " for request "
 					+ readRequest);
 			readReply = getDataStore().get(readRequest);

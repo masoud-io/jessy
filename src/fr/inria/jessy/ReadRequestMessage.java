@@ -3,28 +3,29 @@ package fr.inria.jessy;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.List;
 
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 
-public class RemoteReadRequestMessage<E extends JessyEntity> extends MulticastMessage {
+public class ReadRequestMessage extends MulticastMessage {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-	private ReadRequest<E> request;
+	private List<ReadRequest<JessyEntity>> requests;
 	
 	// For Fractal
-	public RemoteReadRequestMessage() {
+	public ReadRequestMessage() {
 	}
 
-	public RemoteReadRequestMessage(ReadRequest<E> r) {
+	public ReadRequestMessage(List<ReadRequest<JessyEntity>> r) {
 		super();
-		request = r;
+		requests = r;
 	}
 
-	public ReadRequest<E> getReadRequest() {
-		return request;
+	public List<ReadRequest<JessyEntity>> getReadRequests() {
+		return requests;
 	}
 	
 	
@@ -32,18 +33,18 @@ public class RemoteReadRequestMessage<E extends JessyEntity> extends MulticastMe
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws ClassNotFoundException, IOException{
 		super.readExternal(in);
-		request = (ReadRequest<E>) in.readObject();
+		requests = (List<ReadRequest<JessyEntity>>) in.readObject();
 	}
 	
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException{
 		super.writeExternal(out);
-		out.writeObject(request);
+		out.writeObject(requests);
 	}
 	
 	@Override
 	public String toString(){
-		return request.toString();
+		return requests.toString();
 	}
 	
 }

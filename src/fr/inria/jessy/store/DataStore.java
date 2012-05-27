@@ -365,37 +365,37 @@ public class DataStore {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity, SK> List<ReadReply<E>> get(
-			List<ReadRequest<E>> readRequests) throws NullPointerException {
+	public <SK> List<ReadReply<JessyEntity>> getAll(
+			List<ReadRequest<JessyEntity>> readRequests) throws NullPointerException {
 		
 		if(readRequests.isEmpty())
 			return java.util.Collections.EMPTY_LIST;
 		
-		List<ReadReply<E>> ret = new ArrayList<ReadReply<E>>(readRequests.size());		
-		EntityCursor<E> cur=null;
+		List<ReadReply<JessyEntity>> ret = new ArrayList<ReadReply<JessyEntity>>(readRequests.size());		
+		EntityCursor<JessyEntity> cur=null;
 		String kindex = "";
-		SecondaryIndex<SK, Long, E> sindex;
+		SecondaryIndex<SK, Long, JessyEntity> sindex;
 
-		for(ReadRequest<E> rr : readRequests){
+		for(ReadRequest<JessyEntity> rr : readRequests){
 
 			if( !rr.isOneKeyRequest ) throw new RuntimeException("NYI");
 
 			ReadRequestKey rk = rr.getOneKey();
 			kindex =  rr.getEntityClassName() + rk.getKeyName();
-			sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes.get(kindex);
+			sindex = (SecondaryIndex<SK, Long, JessyEntity>) secondaryIndexes.get(kindex);
 			cur = sindex.subIndex((SK) rk.getKeyValue()).entities();
 			
-			E entity = cur.last();
+			JessyEntity entity = cur.last();
 			
 			if (rr.getReadSet() == null) {
-				ret.add(new ReadReply<E>((E)entity, rr.getReadRequestId()));
+				ret.add(new ReadReply<JessyEntity>((JessyEntity)entity, rr.getReadRequestId()));
 				cur.close();
 				continue;
 			}
 
 			while (entity != null) {
 				if (entity.getLocalVector().isCompatible(rr.getReadSet())) {
-					ret.add(new ReadReply<E>(entity, rr.getReadRequestId()));
+					ret.add(new ReadReply<JessyEntity>(entity, rr.getReadRequestId()));
 					break;
 				} else {
 					entity = cur.prev();
@@ -403,7 +403,7 @@ public class DataStore {
 			}
 			
 			if(entity==null)
-				ret.add(new ReadReply<E>((E)null, rr.getReadRequestId()));
+				ret.add(new ReadReply<JessyEntity>((JessyEntity)null, rr.getReadRequestId()));
 			
 			cur.close();
 		}

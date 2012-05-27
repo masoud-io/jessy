@@ -10,17 +10,17 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 
 
-public class RemoteReadReplyMessage<E extends JessyEntity> extends MulticastMessage {
+public class ReadReplyMessage<E extends JessyEntity> extends MulticastMessage {
 
 	static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	private List<ReadReply<E>> replies;
 	
 	// For Fractal
-	public RemoteReadReplyMessage(){
+	public ReadReplyMessage(){
 	}
 	
-	public RemoteReadReplyMessage(List<ReadReply<E>> r) {
+	public ReadReplyMessage(List<ReadReply<E>> r) {
 		super();
 		replies = r;
 	}

@@ -8,11 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
@@ -51,7 +52,7 @@ import fr.inria.jessy.store.ReadRequest;
 // FIXME fix parametrized types.
 // TODO CAUTION: this implementation is not fault tolerant
 
-public class RemoteReader implements Learner {
+public class  RemoteReader implements Learner {
 
 	private static Logger logger = Logger.getLogger(RemoteReader.class);
 	
@@ -62,145 +63,227 @@ public class RemoteReader implements Learner {
 		batching = new ValueRecorder("RemoteReader#batching)");
 	}
 	
+	private Map<Integer, RemoteRead<JessyEntity>> pendingRemoteReads;
+	private BlockingQueue<RemoteRead<JessyEntity>> remoteReadQ;
 	
-
-	private BlockingQueue<RemoteReadRequestMessage> queue;
+	private BlockingQueue<ReadRequestMessage> requestQ;
 
 	private DistributedJessy jessy;
 	private MulticastStream remoteReadStream;
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
-	private Map<Integer, ReadReply<? extends JessyEntity>> replies;
-
-	/**
-	 * States the number of different recipients for each particular read
-	 * request. ReadRequestTask will be notified to continue when the
-	 * corresponding value in the map becomes zero.
-	 * 
-	 */
-	private Map<Integer, AtomicInteger> readRequestRecipientCounts;
-
-	private Map<Integer, ReadRequest<? extends JessyEntity>> requests;
-
 	public RemoteReader(DistributedJessy j, Group g) {
+		
 		jessy = j;
 		remoteReadStream = FractalManager.getInstance()
 				.getOrCreateMulticastStream(g.name(), g.name());
-		remoteReadStream.registerLearner("RemoteReadRequestMessage", this);
-		remoteReadStream.registerLearner("RemoteReadReplyMessage", this);
+		remoteReadStream.registerLearner("ReadRequestMessage", this);
+		remoteReadStream.registerLearner("ReadReplyMessage", this);
 		remoteReadStream.start();
-
-		replies = new ConcurrentHashMap<Integer, ReadReply<? extends JessyEntity>>();
-		requests = new ConcurrentHashMap<Integer, ReadRequest<? extends JessyEntity>>();
-		readRequestRecipientCounts = new ConcurrentHashMap<Integer, AtomicInteger>();
 		
-		queue = new LinkedBlockingDeque<RemoteReadRequestMessage>();
+		pendingRemoteReads = new ConcurrentHashMap<Integer, RemoteRead<JessyEntity>>();
+		
+		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
 		pool.submitMultiple(
 				new InnerObjectFactory<RemoteReadReplyTask>(RemoteReadReplyTask.class, RemoteReader.class, this));
+		
+		remoteReadQ = new LinkedBlockingDeque<RemoteRead<JessyEntity>>();
+		pool.submitMultiple(
+				new InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class, RemoteReader.class, this));
 		
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
-			ReadRequest<E> readRequest) {
-		requests.put(readRequest.getReadRequestId(), readRequest);
+	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead( ReadRequest<E> readRequest) throws InterruptedException {
 		logger.debug("creating task for "+readRequest);
-		Future<ReadReply<E>> reply = pool.submit(new RemoteReadRequestTask(readRequest));
-		return reply;
+		RemoteRead remoteRead = new RemoteRead(readRequest);
+		remoteReadQ.put(remoteRead);
+		return remoteRead;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void learn(Stream s, Serializable v) {
 
-		if (v instanceof RemoteReadRequestMessage) {
+		if (v instanceof ReadRequestMessage) {
 			
 			try {
-				queue.put((RemoteReadRequestMessage) v);
+				requestQ.put((ReadRequestMessage) v);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 		} else {
-
-			List<ReadReply> list = ((RemoteReadReplyMessage) v).getReadReplies();
+		
+			List<ReadReply> list = ((ReadReplyMessage) v).getReadReplies();
 			batching.add(list.size());
 			
 			for(ReadReply reply : list){
+				
 				logger.debug("reply " + reply.getReadRequestId());
 
-				if( !requests.containsKey(reply.getReadRequestId()) ){
-					logger.info("received an incorrect reply");
+				if( !pendingRemoteReads.containsKey(reply.getReadRequestId()) ){
+					logger.info("received an incorrect reply or request already served");
 					continue;
 				}
 				
-				if (replies.containsKey(reply.getReadRequestId())) {
-					replies.get(reply.getReadRequestId()).mergeReply(reply);
-				} else {
-					replies.put(reply.getReadRequestId(), reply);
-				}
+				if( pendingRemoteReads.get(reply.getReadRequestId()).mergeReply(reply) )
+					pendingRemoteReads.remove(reply.getReadRequestId());
 
-				Integer unAnsweredRequests = readRequestRecipientCounts.get(reply
-						.getReadRequestId()).decrementAndGet();
-
-				if (unAnsweredRequests == 0) {
-					readRequestRecipientCounts.remove(reply.getReadRequestId());
-					synchronized (requests.get(reply.getReadRequestId())) {
-						requests.get(reply.getReadRequestId()).notify();
-					}
-				}	
 			}
 			
 		}
 	}
+	
+	
+	//
+	// INNER CLASSES
+	//
 
-	class RemoteReadRequestTask<E extends JessyEntity> implements
-			Callable<ReadReply<E>> {
+	public class RemoteRead<E extends JessyEntity> implements Future<ReadReply<E>> {
 
-		private ReadRequest<E> request;
+		private Integer state; // 0 => init, 1 => done, -1 => cancelled
+		private ReadReply<E> reply;
+		private ReadRequest<E> readRequest;
+				
+		public RemoteRead(ReadRequest<E> rr){
+			state = new Integer(0);
+			reply = null;
+			readRequest = rr;
+		}
+		
+		public boolean cancel(boolean mayInterruptIfRunning) {
+			synchronized(state){
+				if( state != 0 )
+					return false;
+				state = -1;
+				if(mayInterruptIfRunning) state.notifyAll();
+			}
+			return true;
+		}
 
-		private RemoteReadRequestTask(ReadRequest<E> readRequest) {
-			this.request = readRequest;
+		public ReadReply<E> get() throws InterruptedException, ExecutionException {
+			synchronized(state){
+				if(state == 0) state.wait();
+			}
+			return (state==-1) ? null : reply;
+		}
+
+		public ReadReply<E> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+			if( unit.equals(TimeUnit.MILLISECONDS) ) throw new IllegalArgumentException();
+			synchronized(state){
+				if(state == 0) state.wait(timeout);
+			}
+			return (state==-1) ? null : reply;
+		}
+
+		public boolean isCancelled() {
+			return state == -1;
+		}
+
+		public boolean isDone() {
+			return reply==null;
+		}
+		
+		public boolean mergeReply(ReadReply<E> r){			
+			
+			synchronized(state){
+				
+				if( state == -1 ) return true;
+				
+				if(reply==null){
+					reply=r;
+				}else{
+					reply.mergeReply(r);
+				}
+				
+				if( readRequest.isOneKeyRequest() || reply.getEntity().size()==readRequest.getMultiKeys().size() ){
+					state.notifyAll();
+					return true;
+				}
+				
+				return false;
+			}
+				
+		}
+		
+		public ReadRequest<E> getReadRequest(){
+			return readRequest;
+		}
+		
+	}
+	
+	
+	public class RemoteReadRequestTask implements Runnable {
+
+		private List<RemoteRead<JessyEntity>> list;
+		private Map<Group, List<ReadRequest<JessyEntity>>> toSend;
+		
+		public RemoteReadRequestTask() {
+			list = new ArrayList<RemoteRead<JessyEntity>>();
+			toSend = new HashMap<Group, List<ReadRequest<JessyEntity>>>();
+			
 		}
 
 		@SuppressWarnings("unchecked")
-		public ReadReply<E> call() throws Exception {
-			Set<Group> destGroups = jessy.partitioner.resolve(request);
-			readRequestRecipientCounts.put(request.getReadRequestId(),
-					new AtomicInteger(destGroups.size()));
-			synchronized (requests.get(request.getReadRequestId())) {
-				for (Group dest : destGroups) {
-					logger.debug("asking group" + dest + " for " + request);
-					remoteReadStream.unicast(new RemoteReadRequestMessage<E>(
-							request), dest.members().iterator().next());
-				}
-				requests.get(request.getReadRequestId()).wait();
-			}
-			ReadReply<E> reply = (ReadReply<E>) replies.get(request
-					.getReadRequestId());
-
-			// FIXME modify this pattern for fault tolerance
-			requests.remove(request.getReadRequestId()); 
-			replies.remove(request.getReadRequestId());
-			readRequestRecipientCounts.remove(request.getReadRequestId());
+		@Override
+		public void run() {
 			
-			return reply;
+			try{
+			
+				while(true){
+
+					toSend.clear();
+					list.clear();
+					list.add(remoteReadQ.take());
+					remoteReadQ.drainTo(list);
+
+					// Factorize read requests.
+					for(RemoteRead remoteRead : list ){
+						
+						ReadRequest<JessyEntity> rr = remoteRead.getReadRequest();
+						logger.debug("handling request" + rr.getReadRequestId());
+						
+						pendingRemoteReads.put(rr.getReadRequestId(), remoteRead);
+						
+						Set<Group> dests = jessy.partitioner.resolve(rr);
+						
+						for (Group dest : dests ) {
+							if(toSend.get(dest)==null)
+								toSend.put(dest,new ArrayList<ReadRequest<JessyEntity>>());
+							toSend.get(dest).add(rr);
+						}
+						
+					}
+					
+					// Send them.
+					for(Group dest : toSend.keySet()){
+						int swid = dest.members().iterator().next(); // FIXME improve this.
+						remoteReadStream.unicast(new ReadRequestMessage(toSend.get(dest)),swid);
+					}
+
+				}
+				
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			
 		}
 
 	}
 	
-	public class RemoteReadReplyTask<E extends JessyEntity> implements Runnable{
+	public class RemoteReadReplyTask implements Runnable{
 
-		private Map<Integer, List<ReadRequest<E>>> pendingRequests;
+		private Map<Integer, List<ReadRequest<JessyEntity>>> pendingRequests;
 		
 		public RemoteReadReplyTask(){
-			pendingRequests = new HashMap<Integer, List<ReadRequest<E>>>();
+			pendingRequests = new HashMap<Integer, List<ReadRequest<JessyEntity>>>();
 		}
 		
 		@SuppressWarnings("unchecked")
 		public void run() {
 			
-			Collection<RemoteReadRequestMessage> msgs = new ArrayList<RemoteReadRequestMessage>();
+			Collection<ReadRequestMessage> msgs = new ArrayList<ReadRequestMessage>();
 			
 			while(true){
 				
@@ -209,21 +292,21 @@ public class RemoteReader implements Learner {
 					pendingRequests.clear();
 					msgs.clear();
 					
-					msgs.add(queue.take());
-					queue.drainTo(msgs);	
-					for(RemoteReadRequestMessage m: msgs){
+					msgs.add(requestQ.take());
+					requestQ.drainTo(msgs);	
+					for(ReadRequestMessage m: msgs){
 						if(!pendingRequests.containsKey(m.source)){
-							pendingRequests.put(m.source, new ArrayList<ReadRequest<E>>());
+							pendingRequests.put(m.source, new ArrayList<ReadRequest<JessyEntity>>());
 						}
-						pendingRequests.get(m.source).add(m.getReadRequest());
+						pendingRequests.get(m.source).addAll(m.getReadRequests());
 					}
 					
 					logger.debug("got" + pendingRequests);
 					
 					serverAnsweringTime.start();
 					for(Integer dest : pendingRequests.keySet()){
-						List<ReadReply<E>> replies = jessy.getDataStore().get(pendingRequests.get(dest));
-						remoteReadStream.unicast(new RemoteReadReplyMessage<E>(replies),dest);
+						List<ReadReply<JessyEntity>> replies = jessy.getDataStore().getAll(pendingRequests.get(dest));
+						remoteReadStream.unicast(new ReadReplyMessage(replies),dest);
 					}
 					serverAnsweringTime.stop();
 										
