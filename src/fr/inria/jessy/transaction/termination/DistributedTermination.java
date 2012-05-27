@@ -125,7 +125,6 @@ public class DistributedTermination implements Learner{
 	 * @return
 	 */
 	public Future<TransactionState> terminateTransaction(ExecutionHistory ex) {
-
 		logger.debug("terminate transaction "
 				+ ex.getTransactionHandler().getId());
 		ex.changeState(TransactionState.COMMITTING);

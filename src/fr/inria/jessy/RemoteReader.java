@@ -63,8 +63,8 @@ public class  RemoteReader implements Learner {
 		batching = new ValueRecorder("RemoteReader#batching)");
 	}
 	
-	private Map<Integer, RemoteRead<JessyEntity>> pendingRemoteReads;
-	private BlockingQueue<RemoteRead<JessyEntity>> remoteReadQ;
+	private Map<Integer, RemoteReadFuture<JessyEntity>> pendingRemoteReads;
+	private BlockingQueue<RemoteReadFuture<JessyEntity>> remoteReadQ;
 	
 	private BlockingQueue<ReadRequestMessage> requestQ;
 
@@ -82,22 +82,23 @@ public class  RemoteReader implements Learner {
 		remoteReadStream.registerLearner("ReadReplyMessage", this);
 		remoteReadStream.start();
 		
-		pendingRemoteReads = new ConcurrentHashMap<Integer, RemoteRead<JessyEntity>>();
+		pendingRemoteReads = new ConcurrentHashMap<Integer, RemoteReadFuture<JessyEntity>>();
 		
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
 		pool.submitMultiple(
 				new InnerObjectFactory<RemoteReadReplyTask>(RemoteReadReplyTask.class, RemoteReader.class, this));
 		
-		remoteReadQ = new LinkedBlockingDeque<RemoteRead<JessyEntity>>();
-		pool.submitMultiple(
-				new InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class, RemoteReader.class, this));
+		remoteReadQ = new LinkedBlockingDeque<RemoteReadFuture<JessyEntity>>();
+//		pool.submitMultiple(
+//				new InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class, RemoteReader.class, this));
+		pool.submit(new RemoteReadRequestTask());
 		
 	}
 
 	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead( ReadRequest<E> readRequest) throws InterruptedException {
 		logger.debug("creating task for "+readRequest);
-		RemoteRead remoteRead = new RemoteRead(readRequest);
+		RemoteReadFuture remoteRead = new RemoteReadFuture(readRequest);
 		remoteReadQ.put(remoteRead);
 		return remoteRead;
 	}
@@ -140,13 +141,13 @@ public class  RemoteReader implements Learner {
 	// INNER CLASSES
 	//
 
-	public class RemoteRead<E extends JessyEntity> implements Future<ReadReply<E>> {
+	public class RemoteReadFuture<E extends JessyEntity> implements Future<ReadReply<E>> {
 
 		private Integer state; // 0 => init, 1 => done, -1 => cancelled
 		private ReadReply<E> reply;
 		private ReadRequest<E> readRequest;
 				
-		public RemoteRead(ReadRequest<E> rr){
+		public RemoteReadFuture(ReadRequest<E> rr){
 			state = new Integer(0);
 			reply = null;
 			readRequest = rr;
@@ -216,11 +217,11 @@ public class  RemoteReader implements Learner {
 	
 	public class RemoteReadRequestTask implements Runnable {
 
-		private List<RemoteRead<JessyEntity>> list;
+		private List<RemoteReadFuture<JessyEntity>> list;
 		private Map<Group, List<ReadRequest<JessyEntity>>> toSend;
 		
 		public RemoteReadRequestTask() {
-			list = new ArrayList<RemoteRead<JessyEntity>>();
+			list = new ArrayList<RemoteReadFuture<JessyEntity>>();
 			toSend = new HashMap<Group, List<ReadRequest<JessyEntity>>>();
 			
 		}
@@ -239,7 +240,7 @@ public class  RemoteReader implements Learner {
 					remoteReadQ.drainTo(list);
 
 					// Factorize read requests.
-					for(RemoteRead remoteRead : list ){
+					for(RemoteReadFuture remoteRead : list ){
 						
 						ReadRequest<JessyEntity> rr = remoteRead.getReadRequest();
 						logger.debug("handling request" + rr.getReadRequestId());

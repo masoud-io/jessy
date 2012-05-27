@@ -163,10 +163,10 @@ public class Partitioner {
 		Set<Group> ret = new HashSet<Group>();
 		
 		if( readRequest.isOneKeyRequest() ){
-			ret.add(rk2g.get(closestRootkeyOf(readRequest.getOneKey().getKeyName())));
+			ret.add(rk2g.get(closestRootkeyOf(readRequest.getOneKey().getKeyValue().toString()))); // FIXME !!! what is this parametric type ....
 		}else{
 			for(ReadRequestKey key : readRequest.getMultiKeys())
-				ret.add(rk2g.get(closestRootkeyOf(key.getKeyName())));
+				ret.add(rk2g.get(closestRootkeyOf(key.getKeyValue().toString())));
 		}
 		
 		return ret;
