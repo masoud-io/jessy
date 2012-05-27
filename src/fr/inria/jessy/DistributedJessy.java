@@ -270,6 +270,7 @@ public class DistributedJessy extends Jessy {
 
 	@Override
 	public void open() {
+		super.open();
 		logger.info("Jessy is opened.");
 	}
 

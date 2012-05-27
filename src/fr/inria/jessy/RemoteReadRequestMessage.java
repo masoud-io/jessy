@@ -41,4 +41,9 @@ public class RemoteReadRequestMessage<E extends JessyEntity> extends MulticastMe
 		out.writeObject(request);
 	}
 	
+	@Override
+	public String toString(){
+		return request.toString();
+	}
+	
 }

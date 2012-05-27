@@ -2,6 +2,7 @@ package fr.inria.jessy;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.utils.ExecutorPool;
+import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
@@ -56,8 +58,7 @@ public class RemoteReader implements Learner {
 	private static TimeRecorder serverAnsweringTime;
 	private static ValueRecorder batching;
 	static{
-		serverAnsweringTime = new TimeRecorder("RemoteReader#serverAnsweringTime(us)");
-		
+		serverAnsweringTime = new TimeRecorder("RemoteReader#serverAnsweringTime(us)");	
 		batching = new ValueRecorder("RemoteReader#batching)");
 	}
 	
@@ -95,7 +96,8 @@ public class RemoteReader implements Learner {
 		readRequestRecipientCounts = new ConcurrentHashMap<Integer, AtomicInteger>();
 		
 		queue = new LinkedBlockingDeque<RemoteReadRequestMessage>();
-		pool.submitMultiple(new RemoteReadReplyTask());
+		pool.submitMultiple(
+				new InnerObjectFactory<RemoteReadReplyTask>(RemoteReadReplyTask.class, RemoteReader.class, this));
 		
 	}
 
@@ -115,8 +117,7 @@ public class RemoteReader implements Learner {
 			
 			try {
 				queue.put((RemoteReadRequestMessage) v);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
@@ -188,7 +189,7 @@ public class RemoteReader implements Learner {
 
 	}
 	
-	private class RemoteReadReplyTask<E extends JessyEntity> implements Runnable{
+	public class RemoteReadReplyTask<E extends JessyEntity> implements Runnable{
 
 		private Map<Integer, List<ReadRequest<E>>> pendingRequests;
 		
@@ -199,42 +200,39 @@ public class RemoteReader implements Learner {
 		@SuppressWarnings("unchecked")
 		public void run() {
 			
-			RemoteReadRequestMessage<E> msg;
+			Collection<RemoteReadRequestMessage> msgs = new ArrayList<RemoteReadRequestMessage>();
 			
 			while(true){
 				
 				try {
 					
 					pendingRequests.clear();
-					msg = queue.take();
-					prepare(msg);
-					while((msg=queue.poll())!=null){
-						prepare(msg);
+					msgs.clear();
+					
+					msgs.add(queue.take());
+					queue.drainTo(msgs);	
+					for(RemoteReadRequestMessage m: msgs){
+						if(!pendingRequests.containsKey(m.source)){
+							pendingRequests.put(m.source, new ArrayList<ReadRequest<E>>());
+						}
+						pendingRequests.get(m.source).add(m.getReadRequest());
 					}
+					
+					logger.debug("got" + pendingRequests);
 					
 					serverAnsweringTime.start();
 					for(Integer dest : pendingRequests.keySet()){
-						remoteReadStream.unicast(
-								new RemoteReadReplyMessage<E>(
-										jessy.getDataStore().get(pendingRequests.get(dest))),dest);
-								
+						List<ReadReply<E>> replies = jessy.getDataStore().get(pendingRequests.get(dest));
+						remoteReadStream.unicast(new RemoteReadReplyMessage<E>(replies),dest);
 					}
 					serverAnsweringTime.stop();
-					
-				} catch (InterruptedException e) {
+										
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				
 			}
 		}
-		
-		private void prepare(RemoteReadRequestMessage m){
-			if(!pendingRequests.containsKey(m.source)){
-				pendingRequests.put(m.source, new ArrayList<ReadRequest<E>>());
-			}
-			pendingRequests.get(m.source).add(m.getReadRequest());
-		}
-		
 		
 	}
 

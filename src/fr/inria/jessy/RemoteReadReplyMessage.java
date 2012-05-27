@@ -30,6 +30,10 @@ public class RemoteReadReplyMessage<E extends JessyEntity> extends MulticastMess
 		return replies;
 	}
 	
+	@Override
+	public String toString() {
+		return replies.toString();
+	}
 	
 	@Override
 	@SuppressWarnings("unchecked")

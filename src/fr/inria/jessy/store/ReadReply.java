@@ -42,6 +42,11 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 	public Collection<E> getEntity() {
 		return entities;
 	}
+	
+	@Override
+	public String toString() {
+		return "RReP"+getReadRequestId().toString();
+	}
 
 	public synchronized void mergeReply(ReadReply<E> readReply) {
 		if (this.readRequestId!=readReply.getReadRequestId())

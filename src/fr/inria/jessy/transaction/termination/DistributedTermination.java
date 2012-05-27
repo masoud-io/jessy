@@ -12,7 +12,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
