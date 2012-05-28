@@ -1,12 +1,16 @@
 package fr.inria.jessy.consistency;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.GenuineTerminationCommincation;
+import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -115,16 +119,14 @@ public class Serializability extends Consistency {
 	}
 
 	@Override
-	public boolean certificationCommute(ExecutionHistory history1, ExecutionHistory history2) {
-		
-		return ! CollectionUtils.isIntersectingWith(
-					history1.getWriteSet().getKeys(),
-					history2.getReadSet().getKeys())
-			   &&
-			   ! CollectionUtils.isIntersectingWith(
-						history2.getWriteSet().getKeys(),
-						history1.getReadSet().getKeys());
-		
+	public boolean certificationCommute(ExecutionHistory history1,
+			ExecutionHistory history2) {
+
+		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+				.getKeys(), history2.getReadSet().getKeys())
+				&& !CollectionUtils.isIntersectingWith(history2.getWriteSet()
+						.getKeys(), history1.getReadSet().getKeys());
+
 	}
 
 	@Override
@@ -134,7 +136,7 @@ public class Serializability extends Consistency {
 			entity.getLocalVector().update(null, null);
 		}
 	}
-	
+
 	@Override
 	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
 		Set<String> keys = new HashSet<String>();
@@ -142,6 +144,15 @@ public class Serializability extends Consistency {
 		keys.addAll(executionHistory.getWriteSet().getKeys());
 		keys.addAll(executionHistory.getCreateSet().getKeys());
 		return keys;
+	}
+
+	@Override
+	public TerminationCommunication getOrCreateTerminationCommunication(
+			String groupName, Learner learner,Collection<String> allGroupNames) {
+		if (terminationCommunication == null)
+			terminationCommunication = new GenuineTerminationCommincation(
+					groupName, learner);
+		return terminationCommunication;
 	}
 
 }

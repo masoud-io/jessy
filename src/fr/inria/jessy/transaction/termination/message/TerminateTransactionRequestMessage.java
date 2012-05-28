@@ -2,11 +2,11 @@ package fr.inria.jessy.transaction.termination.message;
 
 import java.util.Set;
 
-import net.sourceforge.fractal.multicast.MulticastMessage;
+import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
-public class TerminateTransactionRequestMessage extends MulticastMessage {
+public class TerminateTransactionRequestMessage extends WanAMCastMessage {
 	
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 

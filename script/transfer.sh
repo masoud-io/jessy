@@ -1,7 +1,7 @@
 
-source ./configuration.sh
+source /Users/saeidaar/workspace/jessy/script/configuration.sh
 
-nodes=("cluster")
+nodes=("msaeida@cluster.lip6.fr")
 
 let e=${#nodes[@]}-1
 for i in `seq 0 $e`
@@ -17,7 +17,7 @@ do
     #scp ./client.sh ${nodes[$i]}:${scriptdir}/client.sh
     #scp ./oarlauncher.sh ${nodes[$i]}:${scriptdir}/oarlauncher.sh
 	#scp ../config/YCSB/workloads/${workloadName} ${nodes[$i]}:${scriptdir}/${workloadName}
-	scp ../../../jessy.jar ${nodes[$i]}:${scriptdir}/jessy.jar
-	#scp ../../../fractal.jar ${nodes[$i]}:${scriptdir}/fractal.jar
+	scp ../jessy.jar ${nodes[$i]}:${scriptdir}/jessy.jar
+	scp ./fractal.jar ${nodes[$i]}:${scriptdir}/fractal.jar
 done
 

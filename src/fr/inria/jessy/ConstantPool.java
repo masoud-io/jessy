@@ -22,6 +22,15 @@ public class ConstantPool {
 	public static final int JESSY_SERVER_PORT = 4480;
 	static final int GROUP_SIZE = 1;
 
+	/**
+	 * Atomic Broadcast Configs
+	 */
+	public static final int MAX_INTERGROUP_MESSAGE_DELAY=3000;
+	public static final int CONSENSUS_LATENCY=2000;
+	
+	/**
+	 * Config.property file constants 
+	 */
 	public static final String CONFIG_PROPERTY="config.property";
 	public static final String VECTOR_TYPE="vector_type";
 	public static final String CONSISTENCY_TYPE="consistency_type";

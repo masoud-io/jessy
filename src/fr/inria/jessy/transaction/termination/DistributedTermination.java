@@ -13,22 +13,19 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
-import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
-import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
-import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 
 import org.apache.log4j.Logger;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
-import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
+import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
@@ -44,7 +41,7 @@ import fr.inria.jessy.transaction.termination.message.VoteMessage;
  * @author Masoud Saeida Ardeknai
  * 
  */
-public class DistributedTermination implements Learner{
+public class DistributedTermination implements Learner {
 
 	private static Logger logger = Logger
 			.getLogger(DistributedTermination.class);
@@ -54,9 +51,7 @@ public class DistributedTermination implements Learner{
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
-	private WanAMCastStream atomicMulticastStream;
-	private MulticastStream voteStream;
-	private MulticastStream terminationNotificationStream;
+	private TerminationCommunication terminationCommunication;
 
 	private Membership membership;
 	private Group group;
@@ -90,22 +85,8 @@ public class DistributedTermination implements Learner{
 		membership = j.membership;
 		group = g;
 
-		terminationNotificationStream = FractalManager.getInstance()
-				.getOrCreateMulticastStream(ConstantPool.JESSY_ALL_GROUP,
-						ConstantPool.JESSY_ALL_GROUP);
-		terminationNotificationStream.registerLearner("VoteMessage", this);
-
-		voteStream = FractalManager.getInstance().getOrCreateMulticastStream(
-				group.name(), group.name());
-		voteStream.registerLearner("VoteMessage", this);
-
-		atomicMulticastStream = FractalManager.getInstance()
-				.getOrCreateWanAMCastStream(group.name(), group.name());
-		voteStream.registerLearner("TerminateTransactionRequestMessage", this);
-
-		terminationNotificationStream.start();
-		voteStream.start();
-		atomicMulticastStream.start();
+		terminationCommunication = jessy.getConsistency()
+				.getOrCreateTerminationCommunication(g.name(), this, jessy.getAllGroupNames());
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
@@ -150,11 +131,11 @@ public class DistributedTermination implements Learner{
 					+ terminateRequestMessage.getExecutionHistory()
 							.getTransactionHandler().getId());
 
-			synchronized(atomicDeliveredMessages){
+			synchronized (atomicDeliveredMessages) {
 				atomicDeliveredMessages.offer(terminateRequestMessage);
 			}
 			pool.submit(new CertifyAndVoteTask(terminateRequestMessage));
-				
+
 		} else { // VoteMessage
 
 			Vote vote = ((VoteMessage) v).getVote();
@@ -208,8 +189,9 @@ public class DistributedTermination implements Learner{
 			jessy.getConsistency().prepareToCommit(executionHistory);
 			jessy.applyModifiedEntities(executionHistory);
 		}
-		
-		jessy.garbageCollectTransaction(executionHistory.getTransactionHandler());
+
+		jessy.garbageCollectTransaction(executionHistory
+				.getTransactionHandler());
 
 	}
 
@@ -232,7 +214,7 @@ public class DistributedTermination implements Learner{
 
 		concurrentCollectionsSize.add(terminationRequests.size()
 				+ votingQuorums.size() + atomicDeliveredMessages.size()
-				+ terminated.size() );
+				+ terminated.size());
 
 	}
 
@@ -246,7 +228,8 @@ public class DistributedTermination implements Learner{
 
 		public TransactionState call() throws Exception {
 			HashSet<String> destGroups = new HashSet<String>();
-			Set<String> concernedKeys = jessy.getConsistency().getConcerningKeys(executionHistory); 
+			Set<String> concernedKeys = jessy.getConsistency()
+					.getConcerningKeys(executionHistory);
 
 			/*
 			 * If there is no concerning key, it means that the transaction can
@@ -259,7 +242,7 @@ public class DistributedTermination implements Learner{
 			}
 
 			executionHistory.setCoordinator(membership.myId());
-			
+
 			destGroups.addAll(jessy.partitioner.resolveNames(concernedKeys));
 			if (destGroups.contains(group.name())) {
 				executionHistory.setCertifyAtCoordinator(true);
@@ -282,16 +265,17 @@ public class DistributedTermination implements Learner{
 			/*
 			 * Atomic multicast the transaction.
 			 */
-			voteStream.multicast(new TerminateTransactionRequestMessage(
-					executionHistory, destGroups, group.name(), membership
-							.myId()));
+			terminationCommunication
+					.sendTerminateTransactionRequestMessage(new TerminateTransactionRequestMessage(
+							executionHistory, destGroups, group.name(),
+							membership.myId()));
 
 			/*
 			 * Wait here until the result of the transaction is known.
-			*/
-			TransactionState result =  vq.waitVoteResult();
-			
-			if( !executionHistory.isCertifyAtCoordinator() )
+			 */
+			TransactionState result = vq.waitVoteResult();
+
+			if (!executionHistory.isCertifyAtCoordinator())
 				garbageCollect(executionHistory.getTransactionHandler());
 
 			return result;
@@ -313,34 +297,34 @@ public class DistributedTermination implements Learner{
 				/*
 				 * First, à la P-Store.
 				 */
-				synchronized(atomicDeliveredMessages){
-					while(true){
+				synchronized (atomicDeliveredMessages) {
+					while (true) {
 						boolean isConflicting = true;
-						for(TerminateTransactionRequestMessage n : atomicDeliveredMessages){
-							if( n.equals(msg) ){
+						for (TerminateTransactionRequestMessage n : atomicDeliveredMessages) {
+							if (n.equals(msg)) {
 								isConflicting = false;
 								break;
 							}
-							if( jessy.getConsistency().certificationCommute(
+							if (jessy.getConsistency().certificationCommute(
 									n.getExecutionHistory(),
-									msg.getExecutionHistory()) )
+									msg.getExecutionHistory()))
 								break;
 						}
-						if(isConflicting)
+						if (isConflicting)
 							atomicDeliveredMessages.wait();
 						else
 							break;
 					}
 				}
-				
+
 				/*
-				 * Second, it needs to run the certification test on the received
-				 * execution history. A blind write always succeeds.
+				 * Second, it needs to run the certification test on the
+				 * received execution history. A blind write always succeeds.
 				 */
 				boolean isAborted = msg.getExecutionHistory()
-				.getTransactionType() == BLIND_WRITE
-				|| jessy.getConsistency().certify(
-						msg.getExecutionHistory());
+						.getTransactionType() == BLIND_WRITE
+						|| jessy.getConsistency().certify(
+								msg.getExecutionHistory());
 
 				jessy.setExecutionHistory(msg.getExecutionHistory());
 
@@ -353,7 +337,7 @@ public class DistributedTermination implements Learner{
 
 				Vote vote = new Vote(msg.getExecutionHistory()
 						.getTransactionHandler(), isAborted, group.name(),
-						msg.dest);
+						msg.gDest);
 
 				Set<String> dest = jessy.partitioner.resolveNames(msg
 						.getExecutionHistory().getWriteSet().getKeys());
@@ -361,14 +345,12 @@ public class DistributedTermination implements Learner{
 				VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),
 						membership.myId());
 
-				voteStream.multicast(voteMsg);
-
-				if (!msg.getExecutionHistory().isCertifyAtCoordinator())
-					terminationNotificationStream.unicast(voteMsg, msg
-							.getExecutionHistory().getCoordinator());
+				terminationCommunication.sendVote(voteMsg, msg
+						.getExecutionHistory().isCertifyAtCoordinator(), msg
+						.getExecutionHistory().getCoordinator());
 
 				addVote(vote);
-				
+
 				TransactionState state = votingQuorums.get(
 						msg.getExecutionHistory().getTransactionHandler())
 						.waitVoteResult();
@@ -378,16 +360,16 @@ public class DistributedTermination implements Learner{
 						+ " , result is " + state);
 
 				msg.getExecutionHistory().changeState(state);
-				
+
 				/*
 				 * Need a hook w.r.t. consistency criterion.
 				 */
-				
+
 				handleTerminationResult(msg.getExecutionHistory());
 				garbageCollect(msg.getExecutionHistory()
 						.getTransactionHandler());
-				
-				synchronized(atomicDeliveredMessages){
+
+				synchronized (atomicDeliveredMessages) {
 					atomicDeliveredMessages.remove(msg);
 					atomicDeliveredMessages.notifyAll();
 				}

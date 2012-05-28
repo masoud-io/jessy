@@ -1,7 +1,10 @@
 package fr.inria.jessy.consistency;
 
+import java.util.Collection;
 import java.util.Set;
 
+import net.sourceforge.fractal.Learner;
+import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
@@ -9,9 +12,19 @@ public abstract class Consistency {
 
 	protected DataStore store;
 
+	protected TerminationCommunication terminationCommunication;
+
 	public Consistency(DataStore store) {
 		this.store = store;
 	}
+
+	/**
+	 * Returns the TerminationCommunication object
+	 * 
+	 * @return
+	 */
+	public abstract TerminationCommunication getOrCreateTerminationCommunication(
+			String groupName, Learner learner, Collection<String> allGroupNames);
 
 	/**
 	 * This method checks whether the transaction with the input
@@ -23,10 +36,9 @@ public abstract class Consistency {
 	public abstract boolean certify(ExecutionHistory executionHistory);
 
 	/**
-	 * Returns true iff the certification of history1 
-	 * and the ccertification of history2 commute
-	 * according to the consistency criteria.
-	 * That is cert(hist1).cert(hist2) return the same value as cert(hist2).cert(hist1).
+	 * Returns true iff the certification of history1 and the ccertification of
+	 * history2 commute according to the consistency criteria. That is
+	 * cert(hist1).cert(hist2) return the same value as cert(hist2).cert(hist1).
 	 * 
 	 * @param history1
 	 * @param history2
@@ -59,4 +71,5 @@ public abstract class Consistency {
 	 */
 	public abstract Set<String> getConcerningKeys(
 			ExecutionHistory executionHistory);
+
 }

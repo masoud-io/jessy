@@ -1,6 +1,7 @@
 package fr.inria.jessy;
 
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -115,7 +116,6 @@ public class DistributedJessy extends Jessy {
 			partitioner.assign(YCSBEntity.keyspace);
 			// TODO for TPCC classes.
 
-			
 			// FIXME MOVE THIS
 			MessageStream.addClass(JessyEntity.class.getName());
 			MessageStream.addClass(EntitySet.class.getName());
@@ -129,10 +129,11 @@ public class DistributedJessy extends Jessy {
 			MessageStream.addClass(ReadReplyMessage.class.getName());
 			MessageStream.addClass(VoteMessage.class.getName());
 			MessageStream.addClass(Vote.class.getName());
-			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
+			MessageStream.addClass(TerminateTransactionRequestMessage.class
+					.getName());
 			MessageStream.addClass(ExecutionHistory.class.getName());
 			MessageStream.addClass(TransactionHandler.class.getName());
-			
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -158,7 +159,7 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 		ReadReply<E> readReply;
-		if(partitioner.isLocal(readRequest.getPartitioningKey())) {
+		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keyValue
 					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);
@@ -169,12 +170,13 @@ public class DistributedJessy extends Jessy {
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
 		}
-		readRequestTime.add(System.nanoTime()-start);
+		readRequestTime.add(System.nanoTime() - start);
 
-		if ( readReply != null
-			 &&	readReply.getEntity() != null 
-			 && readReply.getEntity().iterator().hasNext()
-			 && readReply.getEntity().iterator().next() != null) { // FIXME improve this
+		if (readReply != null && readReply.getEntity() != null
+				&& readReply.getEntity().iterator().hasNext()
+				&& readReply.getEntity().iterator().next() != null) { // FIXME
+																		// improve
+																		// this
 			return readReply.getEntity().iterator().next();
 		} else {
 			logger.debug("request " + readRequest + " failed");
@@ -193,7 +195,7 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
 		ReadReply<E> readReply;
-		if(partitioner.isLocal(readRequest.getPartitioningKey())) {
+		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keys + " for request "
 					+ readRequest);
 			readReply = getDataStore().get(readRequest);
@@ -204,7 +206,7 @@ public class DistributedJessy extends Jessy {
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
 		}
-		readRequestTime.add(System.nanoTime()-start);
+		readRequestTime.add(System.nanoTime() - start);
 
 		if (readReply.getEntity().iterator().hasNext()
 				&& readReply.getEntity().iterator().next() != null) {
@@ -233,7 +235,7 @@ public class DistributedJessy extends Jessy {
 		Future<TransactionState> result = distributedTermination
 				.terminateTransaction(executionHistory);
 		result.get();
-		
+
 		garbageCollectTransaction(transactionHandler);
 
 		NonTransactionalWriteRequestTime.stop();
@@ -245,17 +247,17 @@ public class DistributedJessy extends Jessy {
 	}
 
 	// I think it should only be
-	// syncrhonized during certification. 
+	// syncrhonized during certification.
 	// Thus, it is safe before certification test.
 	@Override
 	public ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
 		logger.debug(transactionHandler + " IS COMMITTING");
 		ExecutionHistory executionHistory = getExecutionHistory(transactionHandler);
-		Future<TransactionState> stateFuture= distributedTermination
+		Future<TransactionState> stateFuture = distributedTermination
 				.terminateTransaction(executionHistory);
 
-		TransactionState stateResult= null;
+		TransactionState stateResult = null;
 		try {
 			stateResult = stateFuture.get();
 		} catch (Exception e) {
@@ -264,8 +266,16 @@ public class DistributedJessy extends Jessy {
 		assert (stateResult != null);
 		executionHistory.changeState(stateResult);
 
-		logger.debug(transactionHandler + " "+ stateResult);
+		logger.debug(transactionHandler + " " + stateResult);
 		return executionHistory;
+	}
+
+	public Collection<String> getAllGroupNames() {
+		Collection<String> result = new ArrayList<String>();
+		for (Group group : membership.allGroups()) {
+			result.add(group.name());
+		}
+		return result;
 	}
 
 	@Override
