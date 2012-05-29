@@ -1,5 +1,7 @@
 package fr.inria.jessy.communication;
 
+import java.util.Collection;
+
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
@@ -31,8 +33,8 @@ public class TrivialTerminationCommunication extends TerminationCommunication{
 
 	@Override
 	public void sendTerminateTransactionRequestMessage(
-			TerminateTransactionRequestMessage msg) {
-//		mCastStream.multicast(msg);
+			TerminateTransactionRequestMessage msg, Collection<String> dest) {
+		mCastStream.multicast(msg, dest);
 		
 	}
 

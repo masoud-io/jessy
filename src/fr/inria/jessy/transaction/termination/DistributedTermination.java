@@ -268,7 +268,7 @@ public class DistributedTermination implements Learner {
 			terminationCommunication
 					.sendTerminateTransactionRequestMessage(new TerminateTransactionRequestMessage(
 							executionHistory, destGroups, group.name(),
-							membership.myId()));
+							membership.myId()), destGroups);
 
 			/*
 			 * Wait here until the result of the transaction is known.

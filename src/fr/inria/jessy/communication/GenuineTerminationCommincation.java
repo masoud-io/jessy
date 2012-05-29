@@ -1,5 +1,7 @@
 package fr.inria.jessy.communication;
 
+import java.util.Collection;
+
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
@@ -24,7 +26,7 @@ public class GenuineTerminationCommincation extends TerminationCommunication{
 
 	@Override
 	public void sendTerminateTransactionRequestMessage(
-			TerminateTransactionRequestMessage msg) {
+			TerminateTransactionRequestMessage msg, Collection<String> dest) {
 		aMCastStream.atomicMulticast(msg);
 	}
 

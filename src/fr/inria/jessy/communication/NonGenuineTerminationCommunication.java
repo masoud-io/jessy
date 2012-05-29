@@ -31,7 +31,7 @@ public class NonGenuineTerminationCommunication extends
 
 	@Override
 	public void sendTerminateTransactionRequestMessage(
-			TerminateTransactionRequestMessage msg) {
+			TerminateTransactionRequestMessage msg, Collection<String> dest) {
 		aBCastStream.atomicBroadcast(msg);
 
 	}

@@ -1,5 +1,7 @@
 package fr.inria.jessy.communication;
 
+import java.util.Collection;
+
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
@@ -43,5 +45,5 @@ public abstract class TerminationCommunication {
 	 * {@code Consistency#getConcerningKeys(fr.inria.jessy.transaction.ExecutionHistory)}
 	 */
 	public abstract void sendTerminateTransactionRequestMessage(
-			TerminateTransactionRequestMessage msg);
+			TerminateTransactionRequestMessage msg, Collection<String> dest);
 }
