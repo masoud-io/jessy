@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.sourceforge.fractal.Learner;
+import net.sourceforge.fractal.membership.Group;
 
 import org.apache.log4j.Logger;
 
@@ -149,10 +150,10 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 
 	@Override
 	public TerminationCommunication getOrCreateTerminationCommunication(
-			String groupName, Learner learner, Collection<String> allGroupNames) {
+			Group group, Group all, Learner learner, Collection<String> allGroupNames) {
 		if (terminationCommunication == null)
 			terminationCommunication = new GenuineTerminationCommincation(
-					groupName, learner);
+					group, all, learner);
 		return terminationCommunication;
 	}
 }

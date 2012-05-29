@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -86,7 +87,8 @@ public class DistributedTermination implements Learner {
 		group = g;
 
 		terminationCommunication = jessy.getConsistency()
-				.getOrCreateTerminationCommunication(g.name(), this, jessy.getAllGroupNames());
+				.getOrCreateTerminationCommunication(g, 
+						j.membership.group(ConstantPool.JESSY_ALL_GROUP), this, jessy.getAllGroupNames());
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();

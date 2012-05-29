@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
+import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 
@@ -22,11 +23,11 @@ public class TrivialTerminationCommunication extends TerminationCommunication{
 	protected MulticastStream mCastTransaction;
 
 	
-	public TrivialTerminationCommunication(String groupName, Learner learner) {
-		super(groupName, learner);
+	public TrivialTerminationCommunication(Group group, Group all, Learner learner) {
+		super(group, all, learner);
 		mCastStream = FractalManager.getInstance().getOrCreateMulticastStream(
-				groupName, groupName);
-		mCastTransaction.registerLearner("TerminateTransactionRequestMessage", learner);
+				group.name(), group.name());
+		mCastTransaction.registerLearner("MulticastMessage", learner);
 		mCastTransaction.start();
 
 	}

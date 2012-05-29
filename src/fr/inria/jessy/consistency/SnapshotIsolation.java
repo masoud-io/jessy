@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sourceforge.fractal.Learner;
+import net.sourceforge.fractal.membership.Group;
 
 import org.apache.log4j.Logger;
 
@@ -188,10 +189,10 @@ public class SnapshotIsolation extends Consistency {
 
 	@Override
 	public TerminationCommunication getOrCreateTerminationCommunication(
-			String groupName, Learner learner, Collection<String> allGroupNames) {
+			Group group, Group all, Learner learner, Collection<String> allGroupNames) {
 		if (terminationCommunication == null)
 			terminationCommunication = new NonGenuineTerminationCommunication(
-					groupName, learner, allGroupNames);
+					group, all, learner, allGroupNames);
 		return terminationCommunication;
 	}
 

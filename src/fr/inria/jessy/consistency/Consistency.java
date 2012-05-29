@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import net.sourceforge.fractal.Learner;
+import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -24,7 +25,7 @@ public abstract class Consistency {
 	 * @return
 	 */
 	public abstract TerminationCommunication getOrCreateTerminationCommunication(
-			String groupName, Learner learner, Collection<String> allGroupNames);
+			Group group, Group all, Learner learner, Collection<String> allGroupNames);
 
 	/**
 	 * This method checks whether the transaction with the input
