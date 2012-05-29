@@ -25,7 +25,7 @@ import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 public class SnapshotIsolation extends Consistency {
 
 	private static Logger logger = Logger
-			.getLogger(NonMonotonicSnapshotIsolation.class);
+			.getLogger(SnapshotIsolation.class);
 
 	private Map<Integer, EntitySet> committedWritesets;
 
@@ -88,7 +88,7 @@ public class SnapshotIsolation extends Consistency {
 
 			JessyEntity nextEntity = WSiterator.next();
 
-			// TODO check contains mathod
+			// TODO check contains method
 			if (concurrentWS.contains(nextEntity.getKey())) {
 				// ws intersection
 
@@ -121,7 +121,7 @@ public class SnapshotIsolation extends Consistency {
 	/**
 	 * 
 	 * @param transactionSequenceNumber
-	 *            the sequence nuber of the transaction
+	 *            the sequence number of the transaction
 	 * @return writesets of transactions with sequence number equal or greater
 	 *         than the LastCommittedTransactionSeqNumber
 	 */
