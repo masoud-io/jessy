@@ -26,7 +26,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	private static TimeRecorder transactionExecutionTime = new TimeRecorder(
 			"Jessy#TransactionExecutionTime");
 	private static TimeRecorder transactionTerminationTime = new TimeRecorder(
-			"Jessy#TransactionTerminationTime");
+			"Jessy#TransactionTerminationTime"); 
 
 	private static Logger logger = Logger.getLogger(Transaction.class);
 

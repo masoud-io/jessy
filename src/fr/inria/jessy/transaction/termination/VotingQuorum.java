@@ -30,12 +30,11 @@ public class VotingQuorum {
 	
 	private TransactionState result = TransactionState.COMMITTING;
 	private TransactionHandler transactionHandler;
-	private Set<String> votingGroups;
+	private Collection<String> voters;
 
-	public VotingQuorum(TransactionHandler th,
-			Collection<String> groups) {
+	public VotingQuorum(TransactionHandler th) {
 		transactionHandler = th;
-		votingGroups = new HashSet<String>(groups);
+		voters = new HashSet<String>();
 	}
 
 	/**
@@ -52,15 +51,10 @@ public class VotingQuorum {
 		logger.debug("adding vote for "+transactionHandler+" for "+vote.getVoterGroupName()+" with result "+vote.isAborted());
 		if (vote.isAborted() == false) {
 			result = TransactionState.ABORTED_BY_VOTING;
-			notify();
-		} else {
-			votingGroups.remove(vote.getVoterGroupName());
-			if (votingGroups.size() == 0) {
-				result = TransactionState.COMMITTED;
-				notify();
-			}
+		} else{
+			voters.add(vote.getVoterGroupName());
 		}
-		logger.debug("state vote for "+transactionHandler+" "+votingGroups+" "+result);
+		notify();
 	}
 
 	/**
@@ -70,17 +64,23 @@ public class VotingQuorum {
 	 * @return either {@link TransactionState.COMMITTED} or
 	 *         {@link TransactionState.ABORTED_BY_VOTING}
 	 */
-	public synchronized TransactionState waitVoteResult() {
+	public synchronized TransactionState waitVoteResult(Collection<String> groups) {
+		
 		logger.debug("waiting vote for "+transactionHandler);
-		if (result == TransactionState.COMMITTING){
+		
+		while( result == TransactionState.COMMITTING
+			   && voters.size() < groups.size() ){
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				// FIXME ignore this ?
 				e.printStackTrace();
 			}
 		}
-		return result;
+		
+		if( result == TransactionState.COMMITTING )
+			return TransactionState.COMMITTED;
+		
+		return TransactionState.ABORTED_BY_VOTING;
 	}
 
 }

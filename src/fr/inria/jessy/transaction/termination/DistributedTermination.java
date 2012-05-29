@@ -4,6 +4,7 @@ import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_
 import static fr.inria.jessy.transaction.TransactionState.COMMITTED;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -162,8 +163,7 @@ public class DistributedTermination implements Learner {
 	private void addVote(Vote vote) {
 		VotingQuorum vq = votingQuorums.putIfAbsent(
 				vote.getTransactionHandler(),
-				new VotingQuorum(vote.getTransactionHandler(), vote
-						.getAllVoterGroups()));
+				new VotingQuorum(vote.getTransactionHandler()));
 		if (vq == null) {
 			logger.debug("creating voting quorum for "
 					+ vote.getTransactionHandler());
@@ -253,8 +253,7 @@ public class DistributedTermination implements Learner {
 			}
 
 			votingQuorums.put(executionHistory.getTransactionHandler(),
-					new VotingQuorum(executionHistory.getTransactionHandler(),
-							destGroups));
+					new VotingQuorum(executionHistory.getTransactionHandler()));
 
 			/*
 			 * gets the pointer for the transaction's VotingQuorum because the
@@ -275,7 +274,7 @@ public class DistributedTermination implements Learner {
 			/*
 			 * Wait here until the result of the transaction is known.
 			 */
-			TransactionState result = vq.waitVoteResult();
+			TransactionState result = vq.waitVoteResult(destGroups);
 
 			if (!executionHistory.isCertifyAtCoordinator())
 				garbageCollect(executionHistory.getTransactionHandler());
@@ -338,8 +337,7 @@ public class DistributedTermination implements Learner {
 				 */
 
 				Vote vote = new Vote(msg.getExecutionHistory()
-						.getTransactionHandler(), isAborted, group.name(),
-						msg.gDest);
+						.getTransactionHandler(), isAborted, group.name());
 
 				Set<String> dest = jessy.partitioner.resolveNames(msg
 						.getExecutionHistory().getWriteSet().getKeys());
@@ -350,12 +348,12 @@ public class DistributedTermination implements Learner {
 				terminationCommunication.sendVote(voteMsg, msg
 						.getExecutionHistory().isCertifyAtCoordinator(), msg
 						.getExecutionHistory().getCoordinator());
-
+				
 				addVote(vote);
 
 				TransactionState state = votingQuorums.get(
 						msg.getExecutionHistory().getTransactionHandler())
-						.waitVoteResult();
+						.waitVoteResult(dest);
 
 				logger.debug("got voting quorum for "
 						+ msg.getExecutionHistory().getTransactionHandler()
