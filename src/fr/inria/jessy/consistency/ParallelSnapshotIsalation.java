@@ -1,18 +1,15 @@
 package fr.inria.jessy.consistency;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
-
-import org.apache.log4j.Logger;
 
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;
-import fr.inria.jessy.Jessy;
+
+import org.apache.log4j.Logger;
+
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
-import fr.inria.jessy.store.EntitySet;
-import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 

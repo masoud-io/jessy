@@ -378,34 +378,40 @@ public class DataStore {
 
 		for(ReadRequest<JessyEntity> rr : readRequests){
 
-			if( !rr.isOneKeyRequest ) throw new RuntimeException("NYI");
+			if( !rr.isOneKeyRequest ){
+				ret.add(
+					new ReadReply<JessyEntity>(
+						get(rr.getEntityClassName(),rr.getMultiKeys(),rr.getReadSet()), rr.getReadRequestId()));
+			}else{
 
-			ReadRequestKey rk = rr.getOneKey();
-			kindex =  rr.getEntityClassName() + rk.getKeyName();
-			sindex = (SecondaryIndex<SK, Long, JessyEntity>) secondaryIndexes.get(kindex);
-			cur = sindex.subIndex((SK) rk.getKeyValue()).entities();
-			
-			JessyEntity entity = cur.last();
-			
-			if (rr.getReadSet() == null) {
-				ret.add(new ReadReply<JessyEntity>((JessyEntity)entity, rr.getReadRequestId()));
-				cur.close();
-				continue;
-			}
+				ReadRequestKey rk = rr.getOneKey();
+				kindex =  rr.getEntityClassName() + rk.getKeyName();
+				sindex = (SecondaryIndex<SK, Long, JessyEntity>) secondaryIndexes.get(kindex);
+				cur = sindex.subIndex((SK) rk.getKeyValue()).entities();
 
-			while (entity != null) {
-				if (entity.getLocalVector().isCompatible(rr.getReadSet())) {
-					ret.add(new ReadReply<JessyEntity>(entity, rr.getReadRequestId()));
-					break;
-				} else {
-					entity = cur.prev();
+				JessyEntity entity = cur.last();
+
+				if (rr.getReadSet() == null) {
+					ret.add(new ReadReply<JessyEntity>((JessyEntity)entity, rr.getReadRequestId()));
+					cur.close();
+					continue;
 				}
+
+				while (entity != null) {
+					if (entity.getLocalVector().isCompatible(rr.getReadSet())) {
+						ret.add(new ReadReply<JessyEntity>(entity, rr.getReadRequestId()));
+						break;
+					} else {
+						entity = cur.prev();
+					}
+				}
+
+				if(entity==null)
+					ret.add(new ReadReply<JessyEntity>((JessyEntity)null, rr.getReadRequestId()));
+
+				cur.close();
+				
 			}
-			
-			if(entity==null)
-				ret.add(new ReadReply<JessyEntity>((JessyEntity)null, rr.getReadRequestId()));
-			
-			cur.close();
 		}
 
 		return ret;
