@@ -2,12 +2,17 @@ package fr.inria.jessy.benchmark.tpcc.entities;
 
 import static com.sleepycat.persist.model.Relationship.MANY_TO_ONE;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Date;
 
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.vector.Vector;
 
 /**
  * @author Wang Haiyun & ZHAO Guang
@@ -15,7 +20,7 @@ import fr.inria.jessy.store.JessyEntity;
  */
 
 @Entity
-public class Customer extends JessyEntity {
+public class Customer extends JessyEntity implements Externalizable{
 
 
 	/**
@@ -236,6 +241,60 @@ public class Customer extends JessyEntity {
 
 	public void setC_DATA(String C_DATA) {
 		this.C_DATA = C_DATA;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		super.readExternal(in);
+
+		C_ID=(String)in.readObject();
+		C_D_ID=(String)in.readObject();
+		C_W_ID=(String)in.readObject();
+		C_FIRST=(String)in.readObject();
+		C_MIDDLE=(String)in.readObject();
+		C_LAST=(String)in.readObject();
+		C_STREET_1=(String)in.readObject();
+		C_STREET_2=(String)in.readObject();
+		C_CITY=(String)in.readObject();
+		C_STATE=(String)in.readObject();
+		C_ZIP=(String)in.readObject();
+		C_PHONE=(String)in.readObject();
+		C_SINCE=(Date)in.readObject();
+		C_Credit=(String)in.readObject();
+		C_CREDIT_LIM=in.readDouble();
+		C_DISCOUNT=in.readDouble();
+		C_BALANCE=in.readDouble();
+		C_YTD_PAYMENT=in.readDouble();
+		C_PAYMENT_CNT=in.readInt();
+		C_DELIVERY_CNT=in.readInt();
+		C_DATA=(String)in.readObject();
+	}
+
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+
+		out.writeObject(C_ID);
+		out.writeObject(C_D_ID);
+		out.writeObject(C_W_ID);
+		out.writeObject(C_FIRST);
+		out.writeObject(C_MIDDLE);
+		out.writeObject(C_LAST);
+		out.writeObject(C_STREET_1);
+		out.writeObject(C_STREET_2);
+		out.writeObject(C_CITY);
+		out.writeObject(C_STATE);
+		out.writeObject(C_ZIP);
+		out.writeObject(C_PHONE);
+		out.writeObject(C_SINCE);
+		out.writeObject(C_Credit);
+		out.writeDouble(C_CREDIT_LIM);
+		out.writeDouble(C_DISCOUNT);
+		out.writeDouble(C_BALANCE);
+		out.writeDouble(C_YTD_PAYMENT);
+		out.writeInt(C_PAYMENT_CNT);
+		out.writeInt(C_DELIVERY_CNT);
+		out.writeObject(C_DATA);
 	}
 
 

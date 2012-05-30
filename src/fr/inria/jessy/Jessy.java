@@ -350,7 +350,8 @@ public abstract class Jessy {
 					 */
 				}
 			}
-			entity.setLocalVector(tmp.getLocalVector());
+			if (tmp != null)
+				entity.setLocalVector(tmp.getLocalVector());
 			executionHistory.addWriteEntity(entity);
 		}
 	}

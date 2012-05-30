@@ -62,7 +62,7 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 			out.writeObject(entities.iterator().next());
 		} else {
 			out.writeBoolean(false);
-			out.writeObject(entities);
+			out.writeObject(new ArrayList(entities));
 		}
 	}
 

@@ -226,17 +226,17 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
 		ReadReply<E> readReply;
-		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
-			logger.debug("performing local read on " + keys + " for request "
-					+ readRequest);
-			readReply = getDataStore().get(readRequest);
-		} else {
+//		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
+//			logger.debug("performing local read on " + keys + " for request "
+//					+ readRequest);
+//			readReply = getDataStore().get(readRequest);
+//		} else {
 			logger.debug("performing remote read on " + keys + " for request "
 					+ readRequest);
 			remoteReads.incr();
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
-		}
+//		}
 		readRequestTime.add(System.nanoTime() - start);
 
 		if (readReply.getEntity().iterator().hasNext()
