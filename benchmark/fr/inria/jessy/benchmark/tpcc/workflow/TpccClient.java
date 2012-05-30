@@ -1,11 +1,10 @@
 package fr.inria.jessy.benchmark.tpcc.workflow;
 
-import java.util.Scanner;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.mortbay.log.Log;
 
+import fr.inria.jessy.DistributedJessy;
+import fr.inria.jessy.Jessy;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.benchmark.tpcc.Delivery;
 import fr.inria.jessy.benchmark.tpcc.NewOrder;
@@ -24,7 +23,7 @@ import fr.inria.jessy.benchmark.tpcc.entities.Warehouse;
 
 public class TpccClient {
 
-	LocalJessy jessy;
+	Jessy jessy;
 
 	int numberTransaction; /* number of Transactions to execute */
 	int warehouseNumber;
@@ -44,7 +43,7 @@ public class TpccClient {
 		this.districtNumber = districtNumber;
 
 		try {
-			jessy = LocalJessy.getInstance();
+			jessy = DistributedJessy.getInstance();
 
 			jessy.addEntity(Warehouse.class);
 			jessy.addEntity(District.class);

@@ -62,12 +62,10 @@ public class JessyDBClient extends DB {
 
 	@Override
 	public void cleanup() {
-		if( !USE_DIST_JESSY ){
-			try {
-				jessy.close(this);
-			} catch (DatabaseException ex) {
-				ex.printStackTrace();
-			}
+		try {
+			jessy.close(this);
+		} catch (DatabaseException ex) {
+			ex.printStackTrace();
 		}
 	}
 
@@ -116,7 +114,7 @@ public class JessyDBClient extends DB {
 	@Override
 	public int insert(String table, String key, HashMap<String, String> values) {
 		try {
-			YCSBEntity en = new YCSBEntity(key,values);
+			YCSBEntity en = new YCSBEntity(key, values);
 			jessy.write(en);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -194,8 +192,7 @@ public class JessyDBClient extends DB {
 
 					for (YCSBTransactionalUpdateRequest request : updateList) {
 						try {
-							YCSBEntity en = read(YCSBEntity.class,
-									 request.key);
+							YCSBEntity en = read(YCSBEntity.class, request.key);
 							if (en == null)
 								return null;
 
@@ -236,7 +233,8 @@ public class JessyDBClient extends DB {
 				@Override
 				public ExecutionHistory execute() {
 
-					YCSBEntity en = new YCSBEntity(createRequest.key,createRequest.values);
+					YCSBEntity en = new YCSBEntity(createRequest.key,
+							createRequest.values);
 
 					create(en);
 					return commitTransaction();
@@ -257,6 +255,5 @@ public class JessyDBClient extends DB {
 			return -1;
 		}
 	}
-
 
 }

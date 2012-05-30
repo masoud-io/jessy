@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.communication.GenuineTerminationCommincation;
 import fr.inria.jessy.communication.TerminationCommunication;
+import fr.inria.jessy.communication.TrivialTerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -122,7 +123,6 @@ public class Serializability extends Consistency {
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
-
 		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
 				.getKeys(), history2.getReadSet().getKeys())
 				&& !CollectionUtils.isIntersectingWith(history2.getWriteSet()
@@ -132,7 +132,6 @@ public class Serializability extends Consistency {
 
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
-
 		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
 			entity.getLocalVector().update(null, null);
 		}

@@ -13,6 +13,7 @@ import net.sourceforge.fractal.MessageStream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.utils.PerformanceProbe;
+import net.sourceforge.fractal.utils.PerformanceProbe.FloatValueRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
@@ -52,6 +53,21 @@ public class DistributedJessy extends Jessy {
 	private static TimeRecorder NonTransactionalWriteRequestTime;
 	private static ValueRecorder readRequestTime;
 
+	private static SimpleCounter executionCount = new SimpleCounter(
+			"Jessy#TotalExecution");
+	private static SimpleCounter abortByVoteCount = new SimpleCounter(
+			"Jessy#abortByVoteCount");
+	private static SimpleCounter abortByCertificationCount = new SimpleCounter(
+			"Jessy#abortByCertificationCount");
+
+	private static FloatValueRecorder totalRatioAbortedTransactions = new FloatValueRecorder(
+			"Jessy#ratioAbortedTransactions");
+	private static FloatValueRecorder voteRatioAbortedTransactions = new FloatValueRecorder(
+			"Jessy#voteRatioAbortedTransactions");
+	private static FloatValueRecorder certificationRatioAbortedTransactions = new FloatValueRecorder(
+			"Jessy#certificationRatioAbortedTransactions");
+
+	private boolean isProxy;
 	public FractalManager fractal;
 	public Membership membership;
 	private Collection<Group> replicaGroups;
@@ -67,6 +83,7 @@ public class DistributedJessy extends Jessy {
 		readRequestTime = new ValueRecorder("Jessy#ReadRequestTime(us)");
 		readRequestTime.setFormat("%a");
 		readRequestTime.setFactor(1000);
+
 	}
 
 	private DistributedJessy() throws Exception {
@@ -94,20 +111,23 @@ public class DistributedJessy extends Jessy {
 			Group replicaGroup = !membership.myGroups().isEmpty() ? membership
 					.myGroups().iterator().next() : null; // this node is a
 															// server ?
-					
+
 			Group allReplicaGroup = fractal.membership.getOrCreateTCPGroup(
-					ConstantPool.JESSY_ALL_REPLICA_GROUP, ConstantPool.JESSY_ALL_REPLICA_PORT);
-			Collection<Integer> replicas = new HashSet<Integer>(fractal.membership.allNodes());
+					ConstantPool.JESSY_ALL_REPLICA_GROUP,
+					ConstantPool.JESSY_ALL_REPLICA_PORT);
+			Collection<Integer> replicas = new HashSet<Integer>(
+					fractal.membership.allNodes());
 			if (replicaGroup == null)
 				replicas.remove(membership.myId());
-			allReplicaGroup.putNodes(replicas);	
-					
+			allReplicaGroup.putNodes(replicas);
+
 			Group allGroup = fractal.membership.getOrCreateTCPDynamicGroup(
 					ConstantPool.JESSY_ALL_GROUP, ConstantPool.JESSY_ALL_PORT);
 			allGroup.putNodes(fractal.membership.allNodes());
-			
+
 			fractal.start();
 
+			isProxy = replicaGroup != null;
 			if (replicaGroup != null) {
 				logger.info("Server mode (" + replicaGroup + ")");
 				distributedTermination = new DistributedTermination(this,
@@ -236,6 +256,11 @@ public class DistributedJessy extends Jessy {
 
 		logger.debug("performing Write to " + entity.getKey());
 
+		// if (partitioner.isLocal(entity.getKey()) && ConstantPool.GROUP_SIZE
+		// == 1) {
+		// performNonTransactionalLocalWrite(entity);
+		// } else {
+
 		// 1 - Create a blind write transaction.
 		TransactionHandler transactionHandler = new TransactionHandler();
 		ExecutionHistory executionHistory = new ExecutionHistory(
@@ -257,9 +282,6 @@ public class DistributedJessy extends Jessy {
 		dataStore.put(entity);
 	}
 
-	// I think it should only be
-	// syncrhonized during certification.
-	// Thus, it is safe before certification test.
 	@Override
 	public ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
@@ -277,6 +299,15 @@ public class DistributedJessy extends Jessy {
 		assert (stateResult != null);
 		executionHistory.changeState(stateResult);
 
+		/*
+		 * Set the probes for calculating the abort rate.
+		 */
+		executionCount.incr();
+		if (stateResult == TransactionState.ABORTED_BY_VOTING)
+			abortByVoteCount.incr();
+		else if (stateResult == TransactionState.ABORTED_BY_CERTIFICATION)
+			abortByCertificationCount.incr();
+
 		logger.debug(transactionHandler + " " + stateResult);
 		return executionHistory;
 	}
@@ -292,8 +323,29 @@ public class DistributedJessy extends Jessy {
 	}
 
 	public void close(Object object) {
-		super.close(this);
-		logger.info("Jessy is closed.");
+
+		activeClients.remove(object);
+		if (activeClients.size() == 0) {
+
+			totalRatioAbortedTransactions.setFormat("%t");
+			totalRatioAbortedTransactions.add((Double.valueOf(abortByVoteCount
+					.toString()) + Double.valueOf(abortByCertificationCount
+					.toString()))
+					/ (Double.valueOf(executionCount.toString())));
+
+			voteRatioAbortedTransactions.setFormat("%t");
+			voteRatioAbortedTransactions.add(Double.valueOf(abortByVoteCount
+					.toString()) / (Double.valueOf(executionCount.toString())));
+
+			certificationRatioAbortedTransactions.setFormat("%t");
+			certificationRatioAbortedTransactions.add(Double
+					.valueOf(abortByCertificationCount.toString())
+					/ (Double.valueOf(executionCount.toString())));
+
+			if (!isProxy)
+				super.close(this);
+			logger.info("Jessy is closed.");
+		}
 	}
 
 	/**
@@ -325,5 +377,5 @@ public class DistributedJessy extends Jessy {
 			System.exit(-1);
 		}
 	}
-	
+
 }

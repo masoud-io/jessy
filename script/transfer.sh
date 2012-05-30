@@ -1,5 +1,5 @@
 
-source /Users/saeidaar/workspace/jessy/script/configuration.sh
+source /data/msaeida/workspace/Implementations/jessy/script/configuration.sh
 
 nodes=("msaeida@cluster.lip6.fr")
 
@@ -17,7 +17,7 @@ do
     #scp ./client.sh ${nodes[$i]}:${scriptdir}/client.sh
     #scp ./oarlauncher.sh ${nodes[$i]}:${scriptdir}/oarlauncher.sh
 	#scp ../config/YCSB/workloads/${workloadName} ${nodes[$i]}:${scriptdir}/${workloadName}
-	scp ../jessy.jar ${nodes[$i]}:${scriptdir}/jessy.jar
-	scp ./fractal.jar ${nodes[$i]}:${scriptdir}/fractal.jar
+	scp ../../../jessy.jar ${nodes[$i]}:${scriptdir}/jessy.jar
+	scp ../../../fractal.jar ${nodes[$i]}:${scriptdir}/fractal.jar
 done
 
