@@ -136,10 +136,11 @@ public class DistributedTermination implements Learner {
 			logger.debug("got a TerminateTransactionRequestMessage for "
 					+ terminateRequestMessage.getExecutionHistory()
 							.getTransactionHandler().getId());
-
+			
 			synchronized (atomicDeliveredMessages) {
 				atomicDeliveredMessages.offer(terminateRequestMessage);
 			}
+			
 			pool.submit(new CertifyAndVoteTask(terminateRequestMessage));
 
 		} else { // VoteMessage
@@ -188,6 +189,7 @@ public class DistributedTermination implements Learner {
 		logger.debug("handling termination result of " + th);
 		assert !terminated.containsKey(th);
 
+		// FIXME HANDLE NON-GENUINESS HERE ....
 		if (executionHistory.getTransactionState() == COMMITTED) {
 			logger.debug("Applying modified entities of committed transaction "
 					+ th.getId());
@@ -344,13 +346,15 @@ public class DistributedTermination implements Learner {
 
 				Set<String> dest = jessy.partitioner.resolveNames(msg
 						.getExecutionHistory().getWriteSet().getKeys());
+
 				dest.remove(group.name());
 				VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),
 						membership.myId());
 
-				terminationCommunication.sendVote(voteMsg, msg
-						.getExecutionHistory().isCertifyAtCoordinator(), msg
-						.getExecutionHistory().getCoordinator());
+				if(dest.contains(group.name())) // FIXME create a votingQuorums anyway, instead of doing this addvote
+					terminationCommunication.sendVote(voteMsg, msg
+							.getExecutionHistory().isCertifyAtCoordinator(), msg
+							.getExecutionHistory().getCoordinator());
 				
 				addVote(vote);
 

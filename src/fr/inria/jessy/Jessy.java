@@ -58,8 +58,6 @@ public abstract class Jessy {
 		UNDEFINED,
 	};
 
-	public static AtomicInteger lastCommittedTransactionSeqNumber = new AtomicInteger();
-
 	//
 	// CLASS FIELDS
 	//
@@ -92,8 +90,7 @@ public abstract class Jessy {
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 
 		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
-
-		lastCommittedTransactionSeqNumber.set(0);
+		
 	}
 
 	protected DataStore getDataStore() {

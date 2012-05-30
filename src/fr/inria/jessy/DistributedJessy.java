@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -107,7 +108,7 @@ public class DistributedJessy extends Jessy {
 			membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP,
 					ConstantPool.JESSY_SERVER_PORT, ConstantPool.GROUP_SIZE);
 			membership.loadIdenitity(null);
-			replicaGroups = new HashSet<Group>(membership.allGroups());
+			replicaGroups = new TreeSet<Group>(membership.allGroups());
 			Group replicaGroup = !membership.myGroups().isEmpty() ? membership
 					.myGroups().iterator().next() : null; // this node is a
 															// server ?

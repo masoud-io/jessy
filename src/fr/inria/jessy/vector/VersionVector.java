@@ -63,7 +63,7 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
 		 
-		super.setValue(selfKey, Jessy.lastCommittedTransactionSeqNumber.get());
+		super.setValue(selfKey, ScalarVector.lastCommittedTransactionSeqNumber.get());
 		
 	}
 	

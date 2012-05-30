@@ -23,6 +23,7 @@ import fr.inria.jessy.local.si.transaction.T4;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.vector.ScalarVector;
 
 /**
  * 
@@ -74,8 +75,7 @@ public class SiMonotonicSnapshotTest {
 
 		ExecutionHistory result0 = futureInit.get();
 		assertEquals(TransactionState.COMMITTED, result0.getTransactionState());
-		assertEquals(0, result0.getTransactionHandler()
-				.getTransactionSeqNumber());
+		assertEquals(0, ScalarVector.lastCommittedTransactionSeqNumber.get());
 
 		Future<ExecutionHistory> future1;
 		Future<ExecutionHistory> future2;

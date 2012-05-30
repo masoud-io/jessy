@@ -4,10 +4,9 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sleepycat.persist.model.Persistent;
-
-import fr.inria.jessy.Jessy;
 
 
 /**
@@ -21,9 +20,8 @@ import fr.inria.jessy.Jessy;
 @Persistent
 public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	
-	@SuppressWarnings("unchecked")
-	private K key=(K) "k";
-	
+	public static AtomicInteger lastCommittedTransactionSeqNumber = new AtomicInteger(0);
+		
 	public ScalarVector() {
 		super(null);
 	}
@@ -33,8 +31,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	 * up to the first
 	 */
 	@Override
-	public boolean isCompatible(Vector<K> other) throws NullPointerException {
-		
+	public boolean isCompatible(Vector<K> other) throws NullPointerException {	
 		return check(other);
 	}
 
@@ -53,7 +50,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
 		
-		super.setValue(key, Jessy.lastCommittedTransactionSeqNumber.get());
+		super.setValue(selfKey, lastCommittedTransactionSeqNumber.get());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -63,8 +60,8 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 			throw new NullPointerException("Input Vector is Null");
 		}
 
-		Integer selfValue = getValue(key);
-		Integer otherValue = (Integer) other.getValue(key);
+		Integer selfValue = getValue(selfKey);
+		Integer otherValue = (Integer) other.getValue(selfKey);
 		
 		if(selfValue<=otherValue){ 
 			return true;
@@ -86,7 +83,4 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 		super.writeExternal(out);
 	}
 	
-	public K getKey(){
-		return key;
-	}
 }

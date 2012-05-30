@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.inria.jessy.Jessy;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
@@ -26,6 +25,7 @@ import fr.inria.jessy.local.si.transaction.T7x;
 import fr.inria.jessy.local.si.transaction.T8y;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.vector.ScalarVector;
 
 
 /**
@@ -76,9 +76,7 @@ public class SiCertificationTest {
 		
 		ExecutionHistory result0 = futureInit.get();
 		assertEquals("Result", TransactionState.COMMITTED, result0.getTransactionState());
-		assertEquals("tr.seq.number", 0, result0.getTransactionHandler().getTransactionSeqNumber());
-		
-		assertEquals("committedTr.seq.number", 1, Jessy.lastCommittedTransactionSeqNumber.get());
+		assertEquals("tr.seq.number", 0, ScalarVector.lastCommittedTransactionSeqNumber.get());
 		result0=null;
 		
 
@@ -92,14 +90,13 @@ public class SiCertificationTest {
 		ExecutionHistory result1 = future1.get();
 		assertEquals("Result", TransactionState.ABORTED_BY_CERTIFICATION, result1.getTransactionState());
 		assertEquals("Value", "1x", ((SampleEntityClass)result1.getReadSet().getEntities().iterator().next()).getData());
-		assertEquals("tr.seq.number", 1, result1.getTransactionHandler().getTransactionSeqNumber());
+		assertEquals("tr.seq.number", 1, ScalarVector.lastCommittedTransactionSeqNumber.get());
 
 		ExecutionHistory result2 = future2.get();
 		assertEquals("Result", TransactionState.COMMITTED, result2.getTransactionState());
 		assertEquals("Value", "2x", ((SampleEntityClass)result2.getReadSet().getEntities().iterator().next()).getData());
-		assertEquals("tr.seq.number", 1, result2.getTransactionHandler().getTransactionSeqNumber());
+		assertEquals("tr.seq.number", 1, ScalarVector.lastCommittedTransactionSeqNumber.get());
 		
-		assertEquals("committedTr.seq.number", 2, Jessy.lastCommittedTransactionSeqNumber.get());
 		result1=null;
 		result2=null;
 		
@@ -116,13 +113,10 @@ public class SiCertificationTest {
 		
 		assertEquals("Result", TransactionState.COMMITTED, result3.getTransactionState());
 		assertEquals("Value", "3x", ((SampleEntityClass)result3.getReadSet().getEntities().iterator().next()).getData());
-		assertEquals("tr.seq.number", 2, result3.getTransactionHandler().getTransactionSeqNumber());
-		
 		assertEquals("Result", TransactionState.COMMITTED, result4.getTransactionState());
 		assertEquals("Value", "4y", ((Sample2EntityClass)result4.getReadSet().getEntities().iterator().next()).getData());
-		assertEquals("tr.seq.number", 2, result4.getTransactionHandler().getTransactionSeqNumber());
-		
-		assertEquals("committedTr.seq.number", 4, Jessy.lastCommittedTransactionSeqNumber.get());		
+		assertEquals("tr.seq.number", 3, ScalarVector.lastCommittedTransactionSeqNumber.get());
+				
 		result3=null;
 		result4=null;
 		
@@ -137,14 +131,13 @@ public class SiCertificationTest {
 		ExecutionHistory result5 = future5.get();
 		assertEquals("Result", TransactionState.COMMITTED, result5.getTransactionState());
 		assertEquals("Value", "5x",  ((SampleEntityClass)result5.getReadSet().getEntities().iterator().next()).getData());
-		assertEquals("tr.seq.number", 4, result5.getTransactionHandler().getTransactionSeqNumber());
+		assertEquals("tr.seq.number", 4, ScalarVector.lastCommittedTransactionSeqNumber.get());
 		
 		ExecutionHistory result6 = future6.get();
 		assertEquals("Result", TransactionState.ABORTED_BY_CERTIFICATION, result6.getTransactionState());
 		assertEquals("Value", "6x",  ((SampleEntityClass)result6.getReadSet().getEntities().iterator().next()).getData());
-		assertEquals("tr.seq.number", 4, result6.getTransactionHandler().getTransactionSeqNumber());
+		assertEquals("tr.seq.number", 4, ScalarVector.lastCommittedTransactionSeqNumber.get());
 		
-		assertEquals("committedTr.seq.number", 5, Jessy.lastCommittedTransactionSeqNumber.get());
 		result5=null;
 		result6=null;
 		
@@ -159,14 +152,11 @@ public class SiCertificationTest {
 		ExecutionHistory result7 = future7.get();
 		assertEquals("Result", TransactionState.COMMITTED, result7.getTransactionState());
 		assertEquals("Value", "7x",  ((SampleEntityClass)result7.getReadSet().getEntities().iterator().next()).getData());
-		assertEquals("tr.seq.number", 5, result7.getTransactionHandler().getTransactionSeqNumber());
 		
 		ExecutionHistory result8 = future8.get();
 		assertEquals("Result", TransactionState.COMMITTED, result8.getTransactionState());
 		assertEquals("Value", "8y",  ((Sample2EntityClass)result8.getReadSet().getEntities().iterator().next()).getData());
-		assertEquals("tr.seq.number", 5, result8.getTransactionHandler().getTransactionSeqNumber());
 		
-		assertEquals("committedTr.seq.number", 7, Jessy.lastCommittedTransactionSeqNumber.get());
 	}
 
 	

@@ -1,10 +1,7 @@
 package fr.inria.jessy.consistency;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import net.sourceforge.fractal.Learner;
@@ -12,95 +9,92 @@ import net.sourceforge.fractal.membership.Group;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.Jessy;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.NonGenuineTerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
-import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.vector.ScalarVector;
 
 //TODO COMMENT ME
 public class SnapshotIsolation extends Consistency {
 
 	private static Logger logger = Logger
 			.getLogger(SnapshotIsolation.class);
-
-	private Map<Integer, EntitySet> committedWritesets;
-
+	
 	public SnapshotIsolation(DataStore store) {
 		super(store);
-		committedWritesets = new HashMap<Integer, EntitySet>();
 	}
 
 	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
 
+		TransactionType transactionType = executionHistory.getTransactionType();
+		
 		// logger.debug(executionHistory.getTransactionHandler() +
-		// " processing >> "
-		// + executionHistory.getTransactionType().toString());
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ executionHistory.getTransactionType().toString());
+				+ transactionType.toString());
 		logger.debug("ReadSet Vector"
 				+ executionHistory.getReadSet().getCompactVector().toString());
+		logger.debug("CreateSet Vectors"
+				+ executionHistory.getCreateSet().getCompactVector().toString());
 		logger.debug("WriteSet Vectors"
 				+ executionHistory.getWriteSet().getCompactVector().toString());
 
-		if (executionHistory.getTransactionType() == TransactionType.INIT_TRANSACTION) {
-
-			// no conflicts can happen
+		/*
+		 * if the transaction is a read-only transaction, it commits right away.
+		 */
+		if (transactionType == TransactionType.READONLY_TRANSACTION) {
 			logger.debug(executionHistory.getTransactionHandler() + " >> "
-					+ "COMMIT");
+					+ transactionType.toString() + " >> COMMITTED");
 			return true;
 		}
 
-		if ((executionHistory.getWriteSet().size() == 0 && executionHistory
-				.getCreateSet().size() == 0)
-				|| executionHistory.getTransactionHandler()
-						.getTransactionSeqNumber() == Jessy.lastCommittedTransactionSeqNumber
-						.get()) {
-
-			// any committed concurrent transactions
-			if (executionHistory.getTransactionHandler()
-					.getTransactionSeqNumber() == Jessy.lastCommittedTransactionSeqNumber
-					.get()) {
-				logger.debug(executionHistory.getTransactionHandler()
-						+ " any committed concurrent transactions >> "
-						+ "COMMIT");
-			} else {
-				logger.debug(executionHistory.getTransactionHandler()
-						+ " empty writeSet and createSet >> " + "COMMIT");
-			}
-
+		/*
+		 * if the transaction is an initalization transaction, it first
+		 * increaments the vectors and then commits.
+		 */
+		if (transactionType == TransactionType.INIT_TRANSACTION) {
 			return true;
 		}
 
-		// executionHistory.getWriteSet().addEntity(
-		// executionHistory.getCreateSet());
+		/*
+		 * If the transaction is not read-only or init, we consider the create
+		 * operations as update operations. Thus, we move them to the writeSet
+		 * List.
+		 */
+		executionHistory.getWriteSet().addEntity(
+				executionHistory.getCreateSet());
 
-		EntitySet concurrentWS = getAllConcurrentWriteSets(executionHistory
-				.getTransactionHandler().getTransactionSeqNumber());
+		JessyEntity lastComittedEntity;
+		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
 
-		Iterator<? extends JessyEntity> WSiterator = executionHistory
-				.getWriteSet().getEntities().iterator();
-		while (WSiterator.hasNext()) {
+			try {
 
-			JessyEntity nextEntity = WSiterator.next();
+				lastComittedEntity = store
+						.get(new ReadRequest<JessyEntity>(
+								(Class<JessyEntity>) tmp.getClass(),
+								"secondaryKey", tmp.getKey(), null))
+						.getEntity().iterator().next();
 
-			// TODO check contains method
-			if (concurrentWS.contains(nextEntity.getKey())) {
-				// ws intersection
+				if (!lastComittedEntity.getLocalVector().isCompatible(
+						tmp.getLocalVector())) {
+					return false;
+				}
 
-				logger.debug(executionHistory.getTransactionHandler()
-						+ " ws intersection >> " + "ABORT");
-
-				return false;
+			} catch (NullPointerException e) {
+				// nothing to do.
+				// the key is simply not there.
 			}
+
 		}
-		// no ws intersection
-		logger.debug(executionHistory.getTransactionHandler()
-				+ " NO ws intersection >> " + "COMMIT");
+		
+		logger.debug(executionHistory.getTransactionHandler() + " >> "
+				+ transactionType.toString() + " >> COMMITTED");
+		
 		return true;
 	}
 
@@ -119,38 +113,6 @@ public class SnapshotIsolation extends Consistency {
 	}
 
 	/**
-	 * 
-	 * @param transactionSequenceNumber
-	 *            the sequence number of the transaction
-	 * @return writesets of transactions with sequence number equal or greater
-	 *         than the LastCommittedTransactionSeqNumber
-	 */
-	private EntitySet getAllConcurrentWriteSets(int transactionSequenceNumber) {
-
-		boolean stop = false;
-
-		EntitySet result = new EntitySet();
-		int actualTransactionSeqNumber = transactionSequenceNumber + 1;
-
-		// // handle special case of concurrent transactions on version 0
-		// if(actualTransactionSeqNumber==0){
-		// actualTransactionSeqNumber=1;
-		// }
-
-		while (!stop) {
-			EntitySet eh = committedWritesets.get(actualTransactionSeqNumber);
-
-			if (eh == null) {
-				stop = true;
-			} else {
-				result.addEntity(eh);
-				actualTransactionSeqNumber++;
-			}
-		}
-		return result;
-	}
-
-	/**
 	 * update (1) the {@link lastCommittedTransactionSeqNumber}: incremented by
 	 * 1 (2) the {@link committedWritesets} with the new
 	 * {@link lastCommittedTransactionSeqNumber} and {@link committedWritesets}
@@ -158,25 +120,17 @@ public class SnapshotIsolation extends Consistency {
 	 */
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
-
-		Jessy.lastCommittedTransactionSeqNumber.incrementAndGet();
-		committedWritesets.put(Jessy.lastCommittedTransactionSeqNumber.get(),
-				executionHistory.getWriteSet());
-
-		// executionHistory.getWriteSet().addEntity(
-		// executionHistory.getCreateSet());
+		
+		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) 
+			ScalarVector.lastCommittedTransactionSeqNumber.incrementAndGet();
 
 		for (JessyEntity je : executionHistory.getWriteSet().getEntities()) {
 			je.getLocalVector().update(null, null);
 		}
 
-		// for(JessyEntity je:executionHistory.getCreateSet().getEntities()){
-		// je.getLocalVector().update(null, null);
-		// }
-
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ "COMMITED, lastCommittedTransactionSeqNumber:"
-				+ Jessy.lastCommittedTransactionSeqNumber.get());
+				+ ScalarVector.lastCommittedTransactionSeqNumber.get());
 	}
 
 	@Override
@@ -190,9 +144,10 @@ public class SnapshotIsolation extends Consistency {
 	@Override
 	public TerminationCommunication getOrCreateTerminationCommunication(
 			Group group, Group all, Collection<Group> replicaGroups, Learner learner){
-		if (terminationCommunication == null)
+		if (terminationCommunication == null){
 			terminationCommunication = new NonGenuineTerminationCommunication(
 					group,all, replicaGroups.iterator().next(),learner);
+		}
 		return terminationCommunication;
 	}
 
