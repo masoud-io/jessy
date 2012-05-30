@@ -1,8 +1,8 @@
 package fr.inria.jessy;
 
 import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -54,6 +54,7 @@ public class DistributedJessy extends Jessy {
 
 	public FractalManager fractal;
 	public Membership membership;
+	private Collection<Group> replicaGroups;
 	public RemoteReader remoteReader;
 	public DistributedTermination distributedTermination;
 	public Partitioner partitioner;
@@ -89,12 +90,22 @@ public class DistributedJessy extends Jessy {
 			membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP,
 					ConstantPool.JESSY_SERVER_PORT, ConstantPool.GROUP_SIZE);
 			membership.loadIdenitity(null);
+			replicaGroups = new HashSet<Group>(membership.allGroups());
 			Group replicaGroup = !membership.myGroups().isEmpty() ? membership
 					.myGroups().iterator().next() : null; // this node is a
 															// server ?
+					
+			Group allReplicaGroup = fractal.membership.getOrCreateTCPGroup(
+					ConstantPool.JESSY_ALL_REPLICA_GROUP, ConstantPool.JESSY_ALL_REPLICA_PORT);
+			Collection<Integer> replicas = new HashSet<Integer>(fractal.membership.allNodes());
+			if (replicaGroup == null)
+				replicas.remove(membership.myId());
+			allReplicaGroup.putNodes(replicas);	
+					
 			Group allGroup = fractal.membership.getOrCreateTCPDynamicGroup(
 					ConstantPool.JESSY_ALL_GROUP, ConstantPool.JESSY_ALL_PORT);
 			allGroup.putNodes(fractal.membership.allNodes());
+			
 			fractal.start();
 
 			if (replicaGroup != null) {
@@ -270,12 +281,8 @@ public class DistributedJessy extends Jessy {
 		return executionHistory;
 	}
 
-	public Collection<String> getAllGroupNames() {
-		Collection<String> result = new ArrayList<String>();
-		for (Group group : membership.allGroups()) {
-			result.add(group.name());
-		}
-		return result;
+	public Collection<Group> getReplicaGroups() {
+		return replicaGroups;
 	}
 
 	@Override
@@ -318,5 +325,5 @@ public class DistributedJessy extends Jessy {
 			System.exit(-1);
 		}
 	}
-
+	
 }

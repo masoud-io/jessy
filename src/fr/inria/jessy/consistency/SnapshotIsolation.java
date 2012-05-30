@@ -189,10 +189,10 @@ public class SnapshotIsolation extends Consistency {
 
 	@Override
 	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Group all, Learner learner, Collection<String> allGroupNames) {
+			Group group, Group all, Collection<Group> replicaGroups, Learner learner){
 		if (terminationCommunication == null)
 			terminationCommunication = new NonGenuineTerminationCommunication(
-					group, all, learner, allGroupNames);
+					group,all, replicaGroups.iterator().next(),learner);
 		return terminationCommunication;
 	}
 

@@ -88,8 +88,11 @@ public class DistributedTermination implements Learner {
 		group = g;
 
 		terminationCommunication = jessy.getConsistency()
-				.getOrCreateTerminationCommunication(g, 
-						j.membership.group(ConstantPool.JESSY_ALL_GROUP), this, jessy.getAllGroupNames());
+				.getOrCreateTerminationCommunication(
+						g, 
+						j.membership.group(ConstantPool.JESSY_ALL_GROUP), 
+						jessy.getReplicaGroups(),
+						this);
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();

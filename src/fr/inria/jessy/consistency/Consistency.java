@@ -25,7 +25,7 @@ public abstract class Consistency {
 	 * @return
 	 */
 	public abstract TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Group all, Learner learner, Collection<String> allGroupNames);
+			Group group, Group all, Collection<Group> replicaGroups, Learner learner);
 
 	/**
 	 * This method checks whether the transaction with the input

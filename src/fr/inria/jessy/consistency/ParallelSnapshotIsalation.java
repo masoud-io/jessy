@@ -114,8 +114,7 @@ public class ParallelSnapshotIsalation extends Consistency{
 
 	@Override
 	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Group all, Learner learner,
-			Collection<String> allGroupNames) {
+			Group group, Group all, Collection<Group> replicaGroups, Learner learner){
 		// TODO Auto-generated method stub
 		return null;
 	}

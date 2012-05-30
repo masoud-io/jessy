@@ -150,7 +150,7 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 
 	@Override
 	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Group all, Learner learner, Collection<String> allGroupNames) {
+			Group group, Group all, Collection<Group> replicaGroups, Learner learner) {
 		if (terminationCommunication == null)
 			terminationCommunication = new GenuineTerminationCommincation(
 					group, all, learner);
