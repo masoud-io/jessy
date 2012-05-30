@@ -127,8 +127,8 @@ public class DistributedJessy extends Jessy {
 
 			fractal.start();
 
-			isProxy = replicaGroup != null;
-			if (replicaGroup != null) {
+			isProxy = replicaGroup == null;
+			if ( !isProxy ) {
 				logger.info("Server mode (" + replicaGroup + ")");
 				distributedTermination = new DistributedTermination(this,
 						replicaGroup);
@@ -190,7 +190,7 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 		ReadReply<E> readReply;
-		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
+		if( partitioner.isLocal(readRequest.getPartitioningKey()) ) {
 			logger.debug("performing local read on " + keyValue
 					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);
@@ -208,6 +208,7 @@ public class DistributedJessy extends Jessy {
 				&& readReply.getEntity().iterator().next() != null) { // FIXME
 																		// improve
 																		// this
+			logger.debug("read "+ readRequest+" is successfull ");
 			return readReply.getEntity().iterator().next();
 		} else {
 			logger.debug("request " + readRequest + " failed");
@@ -226,21 +227,25 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
 		ReadReply<E> readReply;
-//		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
-//			logger.debug("performing local read on " + keys + " for request "
-//					+ readRequest);
-//			readReply = getDataStore().get(readRequest);
-//		} else {
+		if( partitioner.isLocal(readRequest.getPartitioningKey()) ) {
+			logger.debug("performing local read on " + keys + " for request "
+					+ readRequest);
+			readReply = getDataStore().get(readRequest);
+		} else {
 			logger.debug("performing remote read on " + keys + " for request "
 					+ readRequest);
 			remoteReads.incr();
 			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
 			readReply = future.get();
-//		}
+		}
 		readRequestTime.add(System.nanoTime() - start);
 
-		if (readReply.getEntity().iterator().hasNext()
-				&& readReply.getEntity().iterator().next() != null) {
+		if (readReply != null && readReply.getEntity() != null
+				&& readReply.getEntity().iterator().hasNext()
+				&& readReply.getEntity().iterator().next() != null) { // FIXME
+																		// improve
+																		// this
+			logger.debug("read "+ readRequest+" is successfull ");
 			return readReply.getEntity();
 		} else {
 			logger.debug("request " + readRequest + " failed");

@@ -33,7 +33,7 @@ public class NonGenuineTerminationCommunication extends
 				acceptorGroup.name(), 
 				ConstantPool.JESSY_ALL_REPLICA_GROUP,
 				"net.sourceforge.fractal.consensus.gpaxos.cstruct.CSched", 
-				false, RECOVERY.DEFAULT, 10000000, 5000);
+				false, RECOVERY.DEFAULT, 10000000, 1000);
 		gpaxosStream.registerLearner("*", this);
 		gpaxosStream.start();
 		realLearner = learner;
