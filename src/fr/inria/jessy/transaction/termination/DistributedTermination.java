@@ -88,11 +88,9 @@ public class DistributedTermination implements Learner {
 		group = g;
 
 		terminationCommunication = jessy.getConsistency()
-				.getOrCreateTerminationCommunication(
-						g, 
-						j.membership.group(ConstantPool.JESSY_ALL_GROUP), 
-						jessy.getReplicaGroups(),
-						this);
+				.getOrCreateTerminationCommunication(g,
+						j.membership.group(ConstantPool.JESSY_ALL_GROUP),
+						jessy.getReplicaGroups(), this);
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
@@ -136,11 +134,11 @@ public class DistributedTermination implements Learner {
 			logger.debug("got a TerminateTransactionRequestMessage for "
 					+ terminateRequestMessage.getExecutionHistory()
 							.getTransactionHandler().getId());
-			
+
 			synchronized (atomicDeliveredMessages) {
 				atomicDeliveredMessages.offer(terminateRequestMessage);
 			}
-			
+
 			pool.submit(new CertifyAndVoteTask(terminateRequestMessage));
 
 		} else { // VoteMessage
@@ -271,10 +269,10 @@ public class DistributedTermination implements Learner {
 			/*
 			 * Atomic multicast the transaction.
 			 */
-			terminationCommunication
-					.sendTerminateTransactionRequestMessage(new TerminateTransactionRequestMessage(
-							executionHistory, destGroups, group.name(),
-							membership.myId()), destGroups);
+			terminationCommunication.sendTerminateTransactionRequestMessage(
+					new TerminateTransactionRequestMessage(executionHistory,
+							destGroups, group.name(), membership.myId()),
+					destGroups);
 
 			/*
 			 * Wait here until the result of the transaction is known.
@@ -346,16 +344,20 @@ public class DistributedTermination implements Learner {
 
 				Set<String> dest = jessy.partitioner.resolveNames(msg
 						.getExecutionHistory().getWriteSet().getKeys());
+				dest.addAll(jessy.partitioner.resolveNames(msg
+						.getExecutionHistory().getCreateSet().getKeys()));
 
 				dest.remove(group.name());
 				VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),
 						membership.myId());
 
-				if(dest.contains(group.name())) // FIXME create a votingQuorums anyway, instead of doing this addvote
+				if (dest.contains(group.name())) // FIXME create a votingQuorums
+													// anyway, instead of doing
+													// this addvote
 					terminationCommunication.sendVote(voteMsg, msg
-							.getExecutionHistory().isCertifyAtCoordinator(), msg
-							.getExecutionHistory().getCoordinator());
-				
+							.getExecutionHistory().isCertifyAtCoordinator(),
+							msg.getExecutionHistory().getCoordinator());
+
 				addVote(vote);
 
 				TransactionState state = votingQuorums.get(

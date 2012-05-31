@@ -7,6 +7,10 @@ import java.util.Set;
 
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.membership.Membership;
+
+import org.apache.log4j.Logger;
+
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 
@@ -23,6 +27,8 @@ import fr.inria.jessy.store.ReadRequest;
 // TODO InComplete!!!
 public class ModuloPartitioner extends Partitioner {
 
+	private static Logger logger = Logger.getLogger(ModuloPartitioner.class);
+
 	// TODO should be defined by the user
 	private String nonNumerical = "user";
 
@@ -30,7 +36,13 @@ public class ModuloPartitioner extends Partitioner {
 
 	public ModuloPartitioner(Membership m) {
 		super(m);
-		allGroups = new ArrayList<Group>(m.allGroups());
+
+		allGroups = new ArrayList<Group>();
+
+		for (Group g : membership.allGroups(ConstantPool.JESSY_SERVER_GROUP)) {
+			allGroups.add(g);
+		}
+
 	}
 
 	@Override
@@ -53,12 +65,18 @@ public class ModuloPartitioner extends Partitioner {
 
 	@Override
 	public Set<String> resolveNames(Set<String> keys) {
-		Set<String> result=new HashSet<String>();
-		
-		for (String key:keys){
+		Set<String> result = new HashSet<String>();
+	
+		/*
+		 * return if there is no key!
+		 */
+		if (keys.size() == 0)
+			return result;
+
+		for (String key : keys) {
 			result.add(resolve(key).name());
 		}
-		
+		logger.debug("keys " + keys + " are resolved to" + result);
 		return result;
 	}
 
@@ -73,6 +91,5 @@ public class ModuloPartitioner extends Partitioner {
 		int numericKey = Integer.valueOf(key.replaceAll(nonNumerical, ""));
 		return allGroups.get(numericKey % allGroups.size());
 	}
- 
 
 }

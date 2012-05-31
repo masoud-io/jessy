@@ -158,7 +158,6 @@ public class KeySpacePartitioner  extends Partitioner{
 			for(ReadRequestKey key : readRequest.getMultiKeys())
 				ret.add(rk2g.get(closestRootkeyOf(key.getKeyValue().toString())));
 		}
-		
 		return ret;
 	}
 
@@ -168,6 +167,7 @@ public class KeySpacePartitioner  extends Partitioner{
 		for (String key : keys) {
 			results.add(rk2g.get(closestRootkeyOf(key)).name());
 		}
+		logger.debug("keys " + keys + " are resolved to" + results);
 		return results;
 	}
 
@@ -175,7 +175,7 @@ public class KeySpacePartitioner  extends Partitioner{
 	public boolean isLocal(String k) {
 		resolveTime.start();
 		boolean ret = membership.myGroups().contains(resolve(k));
-		logger.debug("is local "+k+" ? "+ret);
+//		logger.debug("is local "+k+" ? "+ret);
 		resolveTime.stop();
 		return ret;
 	}
@@ -214,7 +214,7 @@ public class KeySpacePartitioner  extends Partitioner{
 			}
 		}
 		assert closest != null;
-		logger.debug("closest key to "+k+" is "+closest+" ("+rk2g.get(closest)+")");
+//		logger.debug("closest key to "+k+" is "+closest+" ("+rk2g.get(closest)+")");
 		return closest;
 	}
 
