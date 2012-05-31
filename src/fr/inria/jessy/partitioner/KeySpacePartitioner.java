@@ -1,4 +1,4 @@
-package fr.inria.jessy;
+package fr.inria.jessy.partitioner;
 
 import java.math.BigInteger;
 import java.util.HashSet;
@@ -12,11 +12,12 @@ import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
+import fr.inria.jessy.store.Keyspace.Distribution;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
-import fr.inria.jessy.store.Keyspace.Distribution;
 
 /**
  * This class implements a partitioner, that is a function that maps objects
@@ -31,12 +32,11 @@ import fr.inria.jessy.store.Keyspace.Distribution;
  * 
  */
 
-public class Partitioner {
+public class KeySpacePartitioner  extends Partitioner{
 	
-	private static Logger logger = Logger.getLogger(Partitioner.class);
+	private static Logger logger = Logger.getLogger(KeySpacePartitioner.class);
 	private static TimeRecorder resolveTime;
 	
-	private Membership membership;
 	private HashSet<Keyspace> keyspaces; // TODO check intersection
 	private TreeMap<Group, Set<String>> g2rk; // groups to rootkeys
 	private TreeMap<String, Group> rk2g; // rootkeys to groups
@@ -45,14 +45,16 @@ public class Partitioner {
 		resolveTime = new TimeRecorder("Partitioner#resolveTime");
 	}
 	
-	public Partitioner(Membership m) {
-		membership = m;
+	public KeySpacePartitioner(Membership m,Keyspace keyspace) {
+		super(m);
 		g2rk = new TreeMap<Group, Set<String>>();
 		for (Group g : membership.allGroups(ConstantPool.JESSY_SERVER_GROUP)){
 			g2rk.put(g, new HashSet<String>());
 		}
 		rk2g = new TreeMap<String, Group>();
 		keyspaces = new HashSet<Keyspace>();
+		
+		assign(keyspace);
 	}
 
 	/**
@@ -81,7 +83,7 @@ public class Partitioner {
 	 */
 	public <E extends JessyEntity> void assign(Keyspace keyspace)
 			throws IllegalArgumentException {
-		
+
 		if(keyspace==null)
 			throw new IllegalArgumentException("null keyspace");
 		
@@ -144,20 +146,7 @@ public class Partitioner {
 
 	}
 
-	/**
-	 * This methods returns the group of a key.
-	 * 
-	 * @param k a key
-	 * @return the replica group of <i>k</i>.
-	 */
-	public Group resolve(String k) {
-		String closest = closestRootkeyOf(k);
-		Group ret = rk2g.get(closest);
-		assert ret!=null;
-		return ret;
-	}
-
-
+	@Override
 	public <E extends JessyEntity> Set<Group> resolve(ReadRequest<E> readRequest) {		
 		
 		Set<Group> ret = new HashSet<Group>();
@@ -165,6 +154,7 @@ public class Partitioner {
 		if( readRequest.isOneKeyRequest() ){
 			ret.add(rk2g.get(closestRootkeyOf(readRequest.getOneKey().getKeyValue().toString()))); // FIXME !!! what is this parametric type ....
 		}else{
+			//FIXME Incorrect implementation
 			for(ReadRequestKey key : readRequest.getMultiKeys())
 				ret.add(rk2g.get(closestRootkeyOf(key.getKeyValue().toString())));
 		}
@@ -172,14 +162,7 @@ public class Partitioner {
 		return ret;
 	}
 
-	public Set<Group> resolve(Set<String> keys){
-		Set<Group> ret = new HashSet<Group>();
-		for(String key : keys){
-			ret.add(resolve(key));
-		}
-		return ret;
-	}
-	
+	@Override
 	public Set<String> resolveNames(Set<String> keys) {
 		Set<String> results = new HashSet<String>();
 		for (String key : keys) {
@@ -188,6 +171,7 @@ public class Partitioner {
 		return results;
 	}
 
+	@Override
 	public boolean isLocal(String k) {
 		resolveTime.start();
 		boolean ret = membership.myGroups().contains(resolve(k));
@@ -200,6 +184,19 @@ public class Partitioner {
 	// INNER METHODS
 	//
 
+	/**
+	 * This methods returns the group of a key.
+	 * 
+	 * @param k a key
+	 * @return the replica group of <i>k</i>.
+	 */
+	private Group resolve(String k) {
+		String closest = closestRootkeyOf(k);
+		Group ret = rk2g.get(closest);
+		assert ret!=null;
+		return ret;
+	}
+	
 	/**
 	 * @param k a key 
 	 * @return the closest rootkey.

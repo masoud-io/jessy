@@ -27,6 +27,8 @@ import sun.misc.SignalHandler;
 
 import com.yahoo.ycsb.YCSBEntity;
 
+import fr.inria.jessy.partitioner.Partitioner;
+import fr.inria.jessy.partitioner.PartitionerFactory;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
@@ -140,12 +142,12 @@ public class DistributedJessy extends Jessy {
 			}
 
 			remoteReader = new RemoteReader(this, allGroup);
-			partitioner = new Partitioner(membership);
 
 			// FIXME
 			MessageStream.addClass(YCSBEntity.class.getName());
 			super.addEntity(YCSBEntity.class);
-			partitioner.assign(YCSBEntity.keyspace);
+
+			partitioner = PartitionerFactory.getPartitioner(membership,YCSBEntity.keyspace);
 			// TODO for TPCC classes.
 
 			// FIXME MOVE THIS

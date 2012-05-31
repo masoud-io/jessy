@@ -3,12 +3,14 @@ package fr.inria.jessy.consistency;
 import java.io.FileInputStream;
 import java.util.Properties;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.DataStore;
+import fr.inria.jessy.utils.Configuration;
 
 //TODO comment me
 public class ConsistencyFactory {
 
-	private static String ConsistencyType = readConfig();
+	private static String ConsistencyType = Configuration.readConfig(ConstantPool.CONSISTENCY_TYPE);
 
 	public static Consistency getConsistency(DataStore dataStore) {
 
@@ -20,21 +22,6 @@ public class ConsistencyFactory {
 			return new Serializability(dataStore);
 		}
 		return null;
-	}
-
-	private static String readConfig() {
-		try {
-			Properties myProps = new Properties();
-			FileInputStream MyInputStream = new FileInputStream(
-					fr.inria.jessy.ConstantPool.CONFIG_PROPERTY);
-			myProps.load(MyInputStream);
-			return myProps
-					.getProperty(fr.inria.jessy.ConstantPool.CONSISTENCY_TYPE);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return "";
 	}
 
 }
