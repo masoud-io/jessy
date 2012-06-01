@@ -77,9 +77,12 @@ public class VotingQuorum {
 			}
 		}
 		
-		if( result == TransactionState.COMMITTING )
+		if( result == TransactionState.COMMITTING ){
+			logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed");
 			return TransactionState.COMMITTED;
+		}
 		
+		logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting");
 		return TransactionState.ABORTED_BY_VOTING;
 	}
 

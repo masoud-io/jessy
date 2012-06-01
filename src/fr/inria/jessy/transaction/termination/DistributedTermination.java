@@ -83,6 +83,8 @@ public class DistributedTermination implements Learner {
 
 	public DistributedTermination(DistributedJessy j, Group g) {
 
+		logger.info("Distributed Termination is initialized. Its group is : "
+				+ g.name());
 		jessy = j;
 		membership = j.membership;
 		group = g;
@@ -344,19 +346,22 @@ public class DistributedTermination implements Learner {
 
 				Set<String> dest = jessy.partitioner.resolveNames(msg
 						.getExecutionHistory().getWriteSet().getKeys());
-				dest.addAll(jessy.partitioner.resolveNames(msg
-						.getExecutionHistory().getCreateSet().getKeys()));
+				// dest.addAll(jessy.partitioner.resolveNames(msg
+				// .getExecutionHistory().getCreateSet().getKeys()));
 
 				dest.remove(group.name());
 				VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),
 						membership.myId());
 
-				if (dest.contains(group.name())) // FIXME create a votingQuorums
-													// anyway, instead of doing
-													// this addvote
-					terminationCommunication.sendVote(voteMsg, msg
-							.getExecutionHistory().isCertifyAtCoordinator(),
-							msg.getExecutionHistory().getCoordinator());
+				// MASOUD: WHAT IS THIS?
+				// // FIXME create a votingQuorums
+				// // anyway, instead of doing
+				// // this addvote
+				// if (dest.contains(group.name()))
+
+				terminationCommunication.sendVote(voteMsg, msg
+						.getExecutionHistory().isCertifyAtCoordinator(), msg
+						.getExecutionHistory().getCoordinator());
 
 				addVote(vote);
 

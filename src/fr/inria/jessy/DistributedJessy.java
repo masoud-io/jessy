@@ -350,9 +350,10 @@ public class DistributedJessy extends Jessy {
 					.valueOf(abortByCertificationCount.toString())
 					/ (Double.valueOf(executionCount.toString())));
 
-			if (!isProxy)
+			if (!isProxy){		
 				super.close(this);
-			logger.info("Jessy is closed.");
+				logger.info("Jessy is closed.");
+			}
 		}
 	}
 

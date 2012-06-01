@@ -9,14 +9,14 @@ import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 
 
-public class GenuineTerminationCommincation extends TerminationCommunication{
+public class GenuineTerminationCommunication extends TerminationCommunication{
 
 	/**
 	 * Stream used for atomic multicast messages
 	 */
 	protected WanAMCastStream aMCastStream;
 	
-	public GenuineTerminationCommincation(Group group, Group all, Learner learner) {
+	public GenuineTerminationCommunication(Group group, Group all, Learner learner) {
 		super(group, all, learner);
 		
 		aMCastStream = FractalManager.getInstance()
