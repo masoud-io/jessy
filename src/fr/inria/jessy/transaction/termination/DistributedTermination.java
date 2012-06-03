@@ -173,11 +173,21 @@ public class DistributedTermination implements Learner {
 					+ vote.getTransactionHandler());
 			vq = votingQuorums.get(vote.getTransactionHandler());
 		}
-		vq.addVote(vote);
+
+		try {
+			vq.addVote(vote);
+
+		} catch (Exception ex) {
+			/*
+			 * If here is reached, it means that a concurrent thread has already
+			 * garbage collected the vq. Thus it has become null. <p> No special
+			 * task is needed to be performed.
+			 */
+		}
 	}
 
 	/**
-	 * This mehod is called one a replica has received the votes. If the
+	 * This method is called one a replica has received the votes. If the
 	 * transaction is able to commit, first it is prepared through
 	 * {@code Consistency#prepareToCommit(ExecutionHistory)} then its modified
 	 * entities are applied.
@@ -268,6 +278,10 @@ public class DistributedTermination implements Learner {
 			VotingQuorum vq = votingQuorums.get(executionHistory
 					.getTransactionHandler());
 
+			logger.debug("A node in Group " + group
+					+ " is Atomic Multicasting "
+					+ executionHistory.getTransactionHandler().getId() + " to "
+					+ destGroups);
 			/*
 			 * Atomic multicast the transaction.
 			 */

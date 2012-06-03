@@ -78,11 +78,11 @@ public class VotingQuorum {
 		}
 		
 		if( result == TransactionState.COMMITTING ){
-			logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed");
+			logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed. Groups are: " + groups + " . voterssize is: " + voters.size());
 			return TransactionState.COMMITTED;
 		}
 		
-		logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting");
+		logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting. Groups are: " + groups + " . voterssize is: " + voters.size());
 		return TransactionState.ABORTED_BY_VOTING;
 	}
 

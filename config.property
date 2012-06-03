@@ -8,7 +8,7 @@ vector_type = lightscalarvector
 consistency_type = ser
 
 #partitioner_type: "keyspace" | "modulo"
-partitioner_type = keyspace
+partitioner_type = modulo
 
 #retry to re-execute and commit the transaction upon its abort.
 #re-execution happens only if the transaction is aborted by the certification and not by the client.
