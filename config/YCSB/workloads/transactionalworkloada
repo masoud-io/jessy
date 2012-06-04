@@ -24,16 +24,17 @@
 
 fieldcount=1
 fieldlength=1000
-recordcount=1000
-operationcount=20000
+recordcount=100000
+operationcount=50000
 workload=com.yahoo.ycsb.workloads.TransactionalWorkload
 
+insertorder=linear
 readallfields=true
 
-readproportion=1
-updateproportion=0
+readproportion=0.8
+updateproportion=0.2
 scanproportion=0
 insertproportion=0
 
-requestdistribution=zipfian
+requestdistribution=uniform
 
