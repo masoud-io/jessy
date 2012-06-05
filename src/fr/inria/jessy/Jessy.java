@@ -4,13 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
@@ -90,7 +88,7 @@ public abstract class Jessy {
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 
 		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
-		
+
 	}
 
 	protected DataStore getDataStore() {
@@ -476,30 +474,36 @@ public abstract class Jessy {
 	 * @param transactionHandler
 	 *            handler of a committed transaction.
 	 */
-	public void applyModifiedEntities(ExecutionHistory executionHistory) {
-		// ExecutionHistory executionHistory = handler2executionHistory
-		// .get(transactionHandler);
+	// public void applyModifiedEntities(ExecutionHistory executionHistory) {
+	// // ExecutionHistory executionHistory = handler2executionHistory
+	// // .get(transactionHandler);
+	//
+	// Iterator<? extends JessyEntity> itr;
+	//
+	// if (executionHistory.getWriteSet().size() > 0) {
+	// itr = executionHistory.getWriteSet().getEntities().iterator();
+	// while (itr.hasNext()) {
+	// JessyEntity tmp = itr.next();
+	//
+	// // Send the entity to the datastore to be saved
+	// dataStore.put(tmp);
+	// }
+	// }
+	//
+	// if (executionHistory.getCreateSet().size() > 0) {
+	// itr = executionHistory.getCreateSet().getEntities().iterator();
+	// while (itr.hasNext()) {
+	// JessyEntity tmp = itr.next();
+	//
+	// // Send the entity to the datastore to be saved
+	// dataStore.put(tmp);
+	// }
+	// }
+	// }
 
-		Iterator<? extends JessyEntity> itr;
-
-		if (executionHistory.getWriteSet().size() > 0) {
-			itr = executionHistory.getWriteSet().getEntities().iterator();
-			while (itr.hasNext()) {
-				JessyEntity tmp = itr.next();
-
-				// Send the entity to the datastore to be saved
-				dataStore.put(tmp);
-			}
-		}
-
-		if (executionHistory.getCreateSet().size() > 0) {
-			itr = executionHistory.getCreateSet().getEntities().iterator();
-			while (itr.hasNext()) {
-				JessyEntity tmp = itr.next();
-
-				// Send the entity to the datastore to be saved
-				dataStore.put(tmp);
-			}
+	public void applyModifiedEntities(Collection<JessyEntity> writeSet) {
+		for (JessyEntity entity : writeSet) {
+			dataStore.put(entity);
 		}
 	}
 

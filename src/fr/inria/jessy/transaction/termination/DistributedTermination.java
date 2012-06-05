@@ -1,9 +1,9 @@
 package fr.inria.jessy.transaction.termination;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
-import static fr.inria.jessy.transaction.TransactionState.COMMITTED;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,6 +28,7 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.TerminationCommunication;
+import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
@@ -199,12 +200,36 @@ public class DistributedTermination implements Learner {
 		logger.debug("handling termination result of " + th);
 		assert !terminated.containsKey(th);
 
-		// FIXME HANDLE NON-GENUINESS HERE ....
-		if (executionHistory.getTransactionState() == COMMITTED) {
+		if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
 			logger.debug("Applying modified entities of committed transaction "
 					+ th.getId());
+
+			/*
+			 * Prepare the transaction. I.e., update the vectors of modified
+			 * entities.
+			 */
 			jessy.getConsistency().prepareToCommit(executionHistory);
-			jessy.applyModifiedEntities(executionHistory);
+
+			Collection<JessyEntity> writeSet = new ArrayList<JessyEntity>();
+
+			/*
+			 * update the writeSet with the modified entities from the read and
+			 * write set.
+			 */
+			{
+				for (JessyEntity entity : executionHistory.getWriteSet()
+						.getEntities()) {
+					if (jessy.partitioner.isLocal(entity.getKey()))
+						writeSet.add(entity);
+				}
+				for (JessyEntity entity : executionHistory.getCreateSet()
+						.getEntities()) {
+					if (jessy.partitioner.isLocal(entity.getKey()))
+						writeSet.add(entity);
+				}
+			}
+
+			jessy.applyModifiedEntities(writeSet);
 		}
 
 		jessy.garbageCollectTransaction(executionHistory
@@ -358,20 +383,26 @@ public class DistributedTermination implements Learner {
 				Vote vote = new Vote(msg.getExecutionHistory()
 						.getTransactionHandler(), isAborted, group.name());
 
-				Set<String> dest = jessy.partitioner.resolveNames(msg
-						.getExecutionHistory().getWriteSet().getKeys());
+				// Set<String> dest = jessy.partitioner.resolveNames(msg
+				// .getExecutionHistory().getWriteSet().getKeys());
 				// dest.addAll(jessy.partitioner.resolveNames(msg
 				// .getExecutionHistory().getCreateSet().getKeys()));
+				/*
+				 * The votes will be sent to all concerned keys. Note that the
+				 * optimization to only send the votes to the nodes replicating
+				 * objects in the writeset is not included. Thus, for example,
+				 * under serializability, a node may wait to receive the votes
+				 * from all nodes replicating the concerned keys, and then
+				 * returns without performing anything.
+				 */
+				Set<String> dest = new HashSet<String>();
+				dest.addAll(jessy.partitioner.resolveNames(jessy
+						.getConsistency().getConcerningKeys(
+								msg.getExecutionHistory())));
 
 				dest.remove(group.name());
 				VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),
 						membership.myId());
-
-				// MASOUD: WHAT IS THIS?
-				// // FIXME create a votingQuorums
-				// // anyway, instead of doing
-				// // this addvote
-				// if (dest.contains(group.name()))
 
 				terminationCommunication.sendVote(voteMsg, msg
 						.getExecutionHistory().isCertifyAtCoordinator(), msg
@@ -388,10 +419,6 @@ public class DistributedTermination implements Learner {
 						+ " , result is " + state);
 
 				msg.getExecutionHistory().changeState(state);
-
-				/*
-				 * Need a hook w.r.t. consistency criterion.
-				 */
 
 				handleTerminationResult(msg.getExecutionHistory());
 				garbageCollect(msg.getExecutionHistory()

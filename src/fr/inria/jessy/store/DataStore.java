@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import com.sleepycat.je.DatabaseException;
@@ -20,6 +22,7 @@ import com.sleepycat.persist.ForwardCursor;
 import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
+import com.yahoo.ycsb.JessyDBClient;
 
 import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.CompactVector;
@@ -33,6 +36,8 @@ import fr.inria.jessy.vector.Vector;
  */
 
 public class DataStore {
+	private static Logger logger = Logger.getLogger(DataStore.class);
+	
 	private Environment env;
 
 	protected static TimeRecorder curTime = new TimeRecorder(
@@ -200,6 +205,8 @@ public class DataStore {
 	public <E extends JessyEntity> void put(E entity)
 			throws NullPointerException {
 		try {
+			logger.warn("putting" + entity.getLocalVector());
+			
 			@SuppressWarnings("unchecked")
 			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
 					.get(Compress

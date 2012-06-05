@@ -74,7 +74,8 @@ public class LocalJessy extends Jessy {
 
 			// certification test has returned true. we can commit.
 			consistency.prepareToCommit(result);
-			applyModifiedEntities(result);
+			applyModifiedEntities(result.getWriteSet().getEntities());
+			applyModifiedEntities(result.getCreateSet().getEntities());
 			result.changeState(TransactionState.COMMITTED);
 
 		} else {
