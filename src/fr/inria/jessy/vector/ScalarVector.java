@@ -60,7 +60,11 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
 		
-		super.setValue(selfKey, lastCommittedTransactionSeqNumber.get());
+		new Exception("update(CompactVector<K> readSet, CompactVector<K> writeSet) called in ScalarVector, system will exit");
+	}
+	
+	public void update(int newValue){
+		super.setValue(selfKey, newValue);
 	}
 	
 	@SuppressWarnings("unchecked")

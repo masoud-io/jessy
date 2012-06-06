@@ -65,7 +65,7 @@ public class SnapshotIsolation extends Consistency {
 				 * set the selfkey of the created vector and put it back in the
 				 * entity
 				 */
-				tmp.getLocalVector().update(null, null);
+				((ScalarVector)tmp.getLocalVector()).update(0);
 			}
 			
 			return true;
@@ -128,22 +128,24 @@ public class SnapshotIsolation extends Consistency {
 	 * {@link lastCommittedTransactionSeqNumber} and {@link committedWritesets}
 	 * (3) the scalar vector of all updated or created entities
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
 		
 
-//		TODO: change
+		int newVersion=0;
+//		WARNING: there is a cast to ScalarVector
 		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION){
-			ScalarVector.lastCommittedTransactionSeqNumber.incrementAndGet();
+			newVersion=ScalarVector.lastCommittedTransactionSeqNumber.incrementAndGet();
 		}
 		else{
 			for (JessyEntity je : executionHistory.getCreateSet().getEntities()) {
-				je.getLocalVector().update(null, null);
+				((ScalarVector)je.getLocalVector()).update(newVersion);
 			}
 		}
 		
 		for (JessyEntity je : executionHistory.getWriteSet().getEntities()) {
-			je.getLocalVector().update(null, null);
+			((ScalarVector)je.getLocalVector()).update(newVersion);
 		}
 
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
