@@ -1,16 +1,13 @@
 package fr.inria.jessy.consistency;
 
-import java.io.FileInputStream;
-import java.util.Properties;
-
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.utils.Configuration;
 
-//TODO comment me
 public class ConsistencyFactory {
 
-	private static String ConsistencyType = Configuration.readConfig(ConstantPool.CONSISTENCY_TYPE);
+	private static String ConsistencyType = Configuration
+			.readConfig(ConstantPool.CONSISTENCY_TYPE);
 
 	public static Consistency getConsistency(DataStore dataStore) {
 
@@ -20,6 +17,8 @@ public class ConsistencyFactory {
 			return new SnapshotIsolation(dataStore);
 		} else if (ConsistencyType.equals("ser")) {
 			return new Serializability(dataStore);
+		} else if (ConsistencyType.equals("rc")) {
+			return new ReadComitted(dataStore);
 		}
 		return null;
 	}

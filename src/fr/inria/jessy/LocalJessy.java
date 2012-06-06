@@ -1,6 +1,7 @@
 package fr.inria.jessy;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -64,6 +65,32 @@ public class LocalJessy extends Jessy {
 	}
 
 	@Override
+	public void applyModifiedEntities(ExecutionHistory executionHistory) {
+		Iterator<? extends JessyEntity> itr;
+
+		if (executionHistory.getWriteSet().size() > 0) {
+			itr = executionHistory.getWriteSet().getEntities().iterator();
+			while (itr.hasNext()) {
+				JessyEntity tmp = itr.next();
+
+				// Send the entity to the datastore to be saved
+				dataStore.put(tmp);
+			}
+		}
+
+		if (executionHistory.getCreateSet().size() > 0) {
+			itr = executionHistory.getCreateSet().getEntities().iterator();
+			while (itr.hasNext()) {
+				JessyEntity tmp = itr.next();
+
+				// Send the entity to the datastore to be saved
+				dataStore.put(tmp);
+			}
+		}
+	}
+
+	
+	@Override
 	public synchronized ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
 		ExecutionHistory result = handler2executionHistory
@@ -74,8 +101,8 @@ public class LocalJessy extends Jessy {
 
 			// certification test has returned true. we can commit.
 			consistency.prepareToCommit(result);
-			applyModifiedEntities(result.getWriteSet().getEntities());
-			applyModifiedEntities(result.getCreateSet().getEntities());
+			applyModifiedEntities(result);
+			applyModifiedEntities(result);
 			result.changeState(TransactionState.COMMITTED);
 
 		} else {

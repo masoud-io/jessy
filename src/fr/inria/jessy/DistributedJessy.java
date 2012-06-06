@@ -3,6 +3,7 @@ package fr.inria.jessy;
 import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -131,7 +132,7 @@ public class DistributedJessy extends Jessy {
 			fractal.start();
 
 			isProxy = replicaGroup == null;
-			if ( !isProxy ) {
+			if (!isProxy) {
 				logger.info("Server mode (" + replicaGroup + ")");
 				distributedTermination = new DistributedTermination(this,
 						replicaGroup);
@@ -147,7 +148,8 @@ public class DistributedJessy extends Jessy {
 			MessageStream.addClass(YCSBEntity.class.getName());
 			super.addEntity(YCSBEntity.class);
 
-			partitioner = PartitionerFactory.getPartitioner(membership,YCSBEntity.keyspace);
+			partitioner = PartitionerFactory.getPartitioner(membership,
+					YCSBEntity.keyspace);
 			// TODO for TPCC classes.
 
 			// FIXME MOVE THIS
@@ -193,7 +195,7 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 		ReadReply<E> readReply;
-		if(partitioner.isLocal(readRequest.getPartitioningKey()) ) {
+		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keyValue
 					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);
@@ -211,7 +213,7 @@ public class DistributedJessy extends Jessy {
 				&& readReply.getEntity().iterator().next() != null) { // FIXME
 																		// improve
 																		// this
-			logger.debug("read "+ readRequest+" is successfull ");
+			logger.debug("read " + readRequest + " is successfull ");
 			return readReply.getEntity().iterator().next();
 		} else {
 			logger.debug("request " + readRequest + " failed");
@@ -230,7 +232,7 @@ public class DistributedJessy extends Jessy {
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
 		ReadReply<E> readReply;
-		if( partitioner.isLocal(readRequest.getPartitioningKey()) ) {
+		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keys + " for request "
 					+ readRequest);
 			readReply = getDataStore().get(readRequest);
@@ -248,7 +250,7 @@ public class DistributedJessy extends Jessy {
 				&& readReply.getEntity().iterator().next() != null) { // FIXME
 																		// improve
 																		// this
-			logger.debug("read "+ readRequest+" is successfull ");
+			logger.debug("read " + readRequest + " is successfull ");
 			return readReply.getEntity();
 		} else {
 			logger.debug("request " + readRequest + " failed");
@@ -288,6 +290,36 @@ public class DistributedJessy extends Jessy {
 	public <E extends JessyEntity> void performNonTransactionalLocalWrite(
 			E entity) throws InterruptedException, ExecutionException {
 		dataStore.put(entity);
+	}
+
+	@Override
+	public void applyModifiedEntities(ExecutionHistory executionHistory) {
+		// ExecutionHistory executionHistory = handler2executionHistory
+		// .get(transactionHandler);
+
+		Iterator<? extends JessyEntity> itr;
+
+		if (executionHistory.getWriteSet().size() > 0) {
+			itr = executionHistory.getWriteSet().getEntities().iterator();
+			while (itr.hasNext()) {
+				JessyEntity tmp = itr.next();
+
+				// Send the entity to the datastore to be saved if it is local
+				if (partitioner.isLocal(tmp.getKey()))
+					dataStore.put(tmp);
+			}
+		}
+
+		if (executionHistory.getCreateSet().size() > 0) {
+			itr = executionHistory.getCreateSet().getEntities().iterator();
+			while (itr.hasNext()) {
+				JessyEntity tmp = itr.next();
+
+				// Send the entity to the datastore to be saved if it is local
+				if (partitioner.isLocal(tmp.getKey()))
+					dataStore.put(tmp);
+			}
+		}
 	}
 
 	@Override
@@ -350,7 +382,7 @@ public class DistributedJessy extends Jessy {
 					.valueOf(abortByCertificationCount.toString())
 					/ (Double.valueOf(executionCount.toString())));
 
-			if (!isProxy){		
+			if (!isProxy) {
 				super.close(this);
 				logger.info("Jessy is closed.");
 			}

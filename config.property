@@ -1,11 +1,11 @@
 #config.properties
 #the hooks are defined in ConstantPool.java!!!
 
-#vector_type: "nullvector" | "dependencevector" | "scalarvector" | "lightscalarvector"
-vector_type = lightscalarvector
+#vector_type: "dependencevector" | "scalarvector" | "lightscalarvector" | "nullvector"
+vector_type = nullvector
 
-#consistency_type: "nmsi" | "si" | "ser"
-consistency_type = ser
+#consistency_type: "nmsi" | "si" | "ser" | "rc"
+consistency_type = rc
 
 #partitioner_type: "keyspace" | "modulo"
 partitioner_type = modulo

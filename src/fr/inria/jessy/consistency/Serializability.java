@@ -10,8 +10,8 @@ import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunication;
-import fr.inria.jessy.communication.TrivialTerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -84,8 +84,10 @@ public class Serializability extends Consistency {
 					logger.warn("Certification fails for transaction "
 							+ executionHistory.getTransactionHandler().getId()
 							+ " because it has written " + tmp.getKey()
-							+ " with version " + tmp.getLocalVector() + " but the last committed version is : " + lastComittedEntity.getLocalVector());
-					return false; 
+							+ " with version " + tmp.getLocalVector()
+							+ " but the last committed version is : "
+							+ lastComittedEntity.getLocalVector());
+					return false;
 				}
 
 			} catch (NullPointerException e) {
@@ -112,7 +114,9 @@ public class Serializability extends Consistency {
 					logger.warn("Certification fails for transaction "
 							+ executionHistory.getTransactionHandler().getId()
 							+ " because it has written " + tmp.getKey()
-							+ " with version " + tmp.getLocalVector() + " but the last committed version is : " + lastComittedEntity.getLocalVector());
+							+ " with version " + tmp.getLocalVector()
+							+ " but the last committed version is : "
+							+ lastComittedEntity.getLocalVector());
 
 					return false;
 				}
@@ -160,7 +164,11 @@ public class Serializability extends Consistency {
 			Group group, Group all, Collection<Group> replicaGroups,
 			Learner learner) {
 		if (terminationCommunication == null)
-			terminationCommunication = new TrivialTerminationCommunication(
+			/*
+			 * Do not return {@code TrivialTerminationCommunication} instance
+			 * because it may lead to <i>deadlock</i>.
+			 */
+			terminationCommunication = new GenuineTerminationCommunication(
 					group, all, learner);
 		return terminationCommunication;
 	}
