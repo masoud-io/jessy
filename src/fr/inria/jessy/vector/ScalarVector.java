@@ -21,9 +21,14 @@ import com.sleepycat.persist.model.Persistent;
 public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	
 	public static AtomicInteger lastCommittedTransactionSeqNumber = new AtomicInteger(0);
-		
+	
+	/**
+	 * needed by BerkleyDB 
+	 */
+	@SuppressWarnings("unchecked")
 	public ScalarVector() {
-		super(null);
+		super((K) "k");
+		super.setValue(selfKey, lastCommittedTransactionSeqNumber.get());
 	}
 
 	/**
@@ -43,7 +48,12 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	public boolean isCompatible(CompactVector<K> other)
 			throws NullPointerException {
 
-		return check(other);
+		if (other.size()==0){
+			return true;
+		}
+		else{
+			return check(other);
+		}
 
 	}
 

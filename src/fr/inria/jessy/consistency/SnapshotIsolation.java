@@ -9,7 +9,6 @@ import net.sourceforge.fractal.membership.Group;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.NonGenuineTerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
@@ -29,6 +28,7 @@ public class SnapshotIsolation extends Consistency {
 		super(store);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
 
@@ -58,6 +58,16 @@ public class SnapshotIsolation extends Consistency {
 		 * increaments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
+			
+			for (JessyEntity tmp : executionHistory.getCreateSet()
+					.getEntities()) {
+				/*
+				 * set the selfkey of the created vector and put it back in the
+				 * entity
+				 */
+				tmp.getLocalVector().update(null, null);
+			}
+			
 			return true;
 		}
 
@@ -121,9 +131,17 @@ public class SnapshotIsolation extends Consistency {
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
 		
-		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) 
-			ScalarVector.lastCommittedTransactionSeqNumber.incrementAndGet();
 
+//		TODO: change
+		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION){
+			ScalarVector.lastCommittedTransactionSeqNumber.incrementAndGet();
+		}
+		else{
+			for (JessyEntity je : executionHistory.getCreateSet().getEntities()) {
+				je.getLocalVector().update(null, null);
+			}
+		}
+		
 		for (JessyEntity je : executionHistory.getWriteSet().getEntities()) {
 			je.getLocalVector().update(null, null);
 		}
