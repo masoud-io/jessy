@@ -19,6 +19,8 @@ public class ConsistencyFactory {
 			return new Serializability(dataStore);
 		} else if (ConsistencyType.equals("rc")) {
 			return new ReadComitted(dataStore);
+		} else if (ConsistencyType.equals("psi")) {
+			return new ParallelSnapshotIsalation(dataStore);
 		}
 		return null;
 	}

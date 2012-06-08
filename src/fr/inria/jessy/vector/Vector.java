@@ -11,12 +11,11 @@ import com.sleepycat.persist.model.Persistent;
 public abstract class Vector<K> extends ValueVector<K, Integer> implements
 		Externalizable {
 
-
 	K selfKey;
 	private final static Integer _bydefault = -1;
 
 	/**
-	 * needed by BerkleyDB 
+	 * needed by BerkleyDB
 	 */
 	@Deprecated
 	public Vector() {
@@ -29,7 +28,9 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 	}
 
 	/**
-	 * This method is called inside {@code Consistency#certify} method.
+	 * This method is called inside {@code Consistency#certify} method. It
+	 * returns true if the modified entity with the {@link other} Vector is
+	 * compatible with this vector (i.e., the last committed entity).
 	 * 
 	 * @param other
 	 * @return
@@ -54,11 +55,11 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 
 	public abstract void update(CompactVector<K> readSet,
 			CompactVector<K> writeSet);
-	
+
 	public void setSelfKey(K selfKey) {
 		this.selfKey = selfKey;
 	}
-	
+
 	public K getSelfKey() {
 		return selfKey;
 	}

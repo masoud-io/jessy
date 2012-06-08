@@ -3,6 +3,8 @@ package fr.inria.jessy.vector;
 import java.io.FileInputStream;
 import java.util.Properties;
 
+import net.sourceforge.fractal.FractalManager;
+
 import fr.inria.jessy.ConstantPool;
 
 
@@ -22,6 +24,9 @@ public class VectorFactory {
 		}
 		if(vectorType.equals("scalarvector")){
 			return new ScalarVector<K>();
+		}
+		if(vectorType.equals("versionvector")){
+			return new VersionVector<K>((K)FractalManager.getInstance().membership.myGroups());
 		}
 		
 		return null;
