@@ -49,12 +49,20 @@ public abstract class Consistency {
 			ExecutionHistory history2);
 
 	/**
-	 * This method is called after the transaction certification outcome is
+	 * Is called after the transaction certification outcome is
 	 * true, and before changes of the transaction become permanent.
 	 * 
 	 * @param executionHistory
 	 */
 	public abstract void prepareToCommit(ExecutionHistory executionHistory);
+	
+	/**
+	 * Is called after the transaction modifications have been applied to the local data store.
+	 * @param executionHistory
+	 */
+	public void postCommit(ExecutionHistory executionHistory){
+		
+	}
 
 	/**
 	 * Returns the set of keys that are concerned by the transaction. Concerning

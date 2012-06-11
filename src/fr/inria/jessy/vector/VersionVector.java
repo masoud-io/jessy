@@ -5,6 +5,8 @@ import java.util.Map;
 
 import com.sleepycat.persist.model.Persistent;
 
+import fr.inria.jessy.utils.JessyGroupManager;
+
 /**
  * A classical version vector. To be used by PSI.
  * 
@@ -24,7 +26,8 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	 * this Vector plays the role of a vector assigned to each jessy server in
 	 * the system.
 	 */
-	public static ValueVector<String, Integer> observedCommittedTransactions = new ValueVector<String, Integer>();
+	public static VersionVector<String> observedCommittedTransactions = new VersionVector<String>(
+			JessyGroupManager.getInstance().getMyGroup().name());
 
 	public VersionVector(K selfKey) {
 		super(selfKey);

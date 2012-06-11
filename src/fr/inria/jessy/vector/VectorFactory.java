@@ -6,6 +6,7 @@ import java.util.Properties;
 import net.sourceforge.fractal.FractalManager;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.utils.JessyGroupManager;
 
 
 public class VectorFactory {
@@ -26,7 +27,7 @@ public class VectorFactory {
 			return new ScalarVector<K>();
 		}
 		if(vectorType.equals("versionvector")){
-			return new VersionVector<K>((K)FractalManager.getInstance().membership.myGroups());
+			return new VersionVector<K>((K)JessyGroupManager.getInstance().getMyGroup().name());
 		}
 		
 		return null;

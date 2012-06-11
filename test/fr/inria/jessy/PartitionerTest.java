@@ -24,7 +24,7 @@ public class PartitionerTest {
 				ConstantPool.JESSY_SERVER_GROUP,
 				ConstantPool.JESSY_SERVER_PORT,
 				ConstantPool.GROUP_SIZE);
-		partitioner = new KeySpacePartitioner(membership,new Keyspace("test#for###the######fun",UNIFORM));
+		partitioner = new KeySpacePartitioner(new Keyspace("test#for###the######fun",UNIFORM));
 	}
 	
 	@Test

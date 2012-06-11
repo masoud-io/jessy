@@ -31,6 +31,7 @@ import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.message.VoteMessage;
+import fr.inria.jessy.utils.JessyGroupManager;
 
 /**
  * This class is responsible for sending transactions to remote replicas,
@@ -53,7 +54,6 @@ public class DistributedTermination implements Learner {
 
 	private TerminationCommunication terminationCommunication;
 
-	private Membership membership;
 	private Group group;
 
 	private Map<UUID, TransactionHandler> terminationRequests;
@@ -79,18 +79,17 @@ public class DistributedTermination implements Learner {
 		concurrentCollectionsSize.setFormat("%M");
 	}
 
-	public DistributedTermination(DistributedJessy j, Group g) {
+	public DistributedTermination(DistributedJessy j) {
+		jessy = j;
+		group = JessyGroupManager.getInstance().getMyGroup();
 
 		logger.info("Distributed Termination is initialized. Its group is : "
-				+ g.name());
-		jessy = j;
-		membership = j.membership;
-		group = g;
+				+ group.name());
 
 		terminationCommunication = jessy.getConsistency()
-				.getOrCreateTerminationCommunication(g,
-						j.membership.group(ConstantPool.JESSY_ALL_GROUP),
-						jessy.getReplicaGroups(), this);
+				.getOrCreateTerminationCommunication(group,
+						JessyGroupManager.getInstance().getGroupOfAllInstances(),
+						JessyGroupManager.getInstance().getAllGroups(), this);
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
@@ -206,7 +205,17 @@ public class DistributedTermination implements Learner {
 			 * entities.
 			 */
 			jessy.getConsistency().prepareToCommit(executionHistory);
+
+			/*
+			 * Apply the modified entities.
+			 */
 			jessy.applyModifiedEntities(executionHistory);
+
+			/*
+			 * calls the postCommit method of the consistency criterion for post
+			 * commit actions. (e.g., propagating vectors)
+			 */
+			jessy.getConsistency().postCommit(executionHistory);
 		}
 
 		jessy.garbageCollectTransaction(executionHistory
@@ -260,7 +269,7 @@ public class DistributedTermination implements Learner {
 				return TransactionState.COMMITTED;
 			}
 
-			executionHistory.setCoordinator(membership.myId());
+			executionHistory.setCoordinator(JessyGroupManager.getInstance().getSourceId());
 
 			destGroups.addAll(jessy.partitioner.resolveNames(concernedKeys));
 			if (destGroups.contains(group.name())) {
@@ -289,7 +298,7 @@ public class DistributedTermination implements Learner {
 			 */
 			terminationCommunication.sendTerminateTransactionRequestMessage(
 					new TerminateTransactionRequestMessage(executionHistory,
-							destGroups, group.name(), membership.myId()),
+							destGroups, group.name(), JessyGroupManager.getInstance().getSourceId()),
 					destGroups);
 
 			/*
@@ -379,7 +388,7 @@ public class DistributedTermination implements Learner {
 
 				dest.remove(group.name());
 				VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),
-						membership.myId());
+						JessyGroupManager.getInstance().getSourceId());
 
 				terminationCommunication.sendVote(voteMsg, msg
 						.getExecutionHistory().isCertifyAtCoordinator(), msg

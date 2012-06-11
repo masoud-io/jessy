@@ -28,7 +28,7 @@ public class ConstantPool {
 	public static final String JESSY_ALL_REPLICA_GROUP = "JALLR";
 	public static final int JESSY_ALL_REPLICA_PORT = 4481;
 
-	static final int GROUP_SIZE = 1;
+	public static final int GROUP_SIZE = 1;
 
 	/**
 	 * Atomic Broadcast Configs

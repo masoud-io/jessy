@@ -14,9 +14,9 @@ public abstract class TerminationCommunication {
 	/**
 	 * Stream used for multicast messages
 	 */
-	protected MulticastStream mCastStream;
-	protected Group myGroup;
-	protected Group allGroup;
+	private MulticastStream mCastStream;
+	private Group myGroup;
+	private Group allGroup;
 
 	public TerminationCommunication(Group group, Group all, Learner learner) {
 		myGroup = group;

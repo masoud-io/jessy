@@ -65,12 +65,15 @@ public abstract class Jessy {
 	protected DataStore dataStore;
 	Consistency consistency;
 
+	protected Set<Object> activeClients = new HashSet<Object>();
+
 	//
 	// OBJECT FIELDS
 	//
 
 	private ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
+	
 	// Map<AtomicInteger, EntitySet> committedWritesets;
 
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
@@ -91,7 +94,7 @@ public abstract class Jessy {
 		
 	}
 
-	protected DataStore getDataStore() {
+	public DataStore getDataStore() {
 		return dataStore;
 	}
 
@@ -481,7 +484,7 @@ public abstract class Jessy {
 		handler2executionHistory.remove(transactionHandler);
 	}
 
-	protected Set<Object> activeClients = new HashSet<Object>();
+
 
 	public synchronized void registerClient(Object object) {
 		if (!activeClients.contains(object))

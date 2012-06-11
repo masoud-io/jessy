@@ -7,13 +7,12 @@ import java.util.List;
 import java.util.Set;
 
 import net.sourceforge.fractal.membership.Group;
-import net.sourceforge.fractal.membership.Membership;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
+import fr.inria.jessy.utils.JessyGroupManager;
 
 /**
  * This class implements a simple uniform partitioner as follows:
@@ -33,18 +32,9 @@ public class ModuloPartitioner extends Partitioner {
 	// TODO should be defined by the user
 	private String nonNumerical = "user";
 
-	private List<Group> allGroups;
+	public ModuloPartitioner() {
+		super();
 
-	public ModuloPartitioner(Membership m) {
-		super(m);
-
-		allGroups = new ArrayList<Group>();
-
-		for (Group g : membership.allGroups(ConstantPool.JESSY_SERVER_GROUP)) {
-			allGroups.add(g);
-		}
-
-		Collections.sort(allGroups);
 	}
 
 	@Override
@@ -62,13 +52,14 @@ public class ModuloPartitioner extends Partitioner {
 
 	@Override
 	public boolean isLocal(String k) {
-		return membership.myGroups().contains(resolve(k));
+		return JessyGroupManager.getInstance().getMyGroups()
+				.contains(resolve(k));
 	}
 
 	@Override
 	public Set<String> resolveNames(Set<String> keys) {
 		Set<String> result = new HashSet<String>();
-	
+
 		/*
 		 * return if there is no key!
 		 */
@@ -91,7 +82,12 @@ public class ModuloPartitioner extends Partitioner {
 	 */
 	private Group resolve(String key) {
 		int numericKey = Integer.valueOf(key.replaceAll(nonNumerical, ""));
-		return allGroups.get(numericKey % allGroups.size());
+		return JessyGroupManager
+				.getInstance()
+				.getReplicaGroups()
+				.get(numericKey
+						% JessyGroupManager.getInstance().getReplicaGroups()
+								.size());
 	}
 
 }

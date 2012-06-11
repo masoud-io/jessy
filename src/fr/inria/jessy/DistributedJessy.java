@@ -1,19 +1,13 @@
 package fr.inria.jessy;
 
-import java.io.FileInputStream;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
-import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.MessageStream;
-import net.sourceforge.fractal.membership.Group;
-import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.utils.PerformanceProbe;
 import net.sourceforge.fractal.utils.PerformanceProbe.FloatValueRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
@@ -29,7 +23,6 @@ import sun.misc.SignalHandler;
 import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.partitioner.Partitioner;
-import fr.inria.jessy.partitioner.PartitionerFactory;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
@@ -42,6 +35,7 @@ import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.message.VoteMessage;
+import fr.inria.jessy.utils.JessyGroupManager;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.DependenceVector;
 import fr.inria.jessy.vector.NullVector;
@@ -73,8 +67,6 @@ public class DistributedJessy extends Jessy {
 
 	private boolean isProxy;
 	public FractalManager fractal;
-	public Membership membership;
-	private Collection<Group> replicaGroups;
 	public RemoteReader remoteReader;
 	public DistributedTermination distributedTermination;
 	public Partitioner partitioner;
@@ -96,61 +88,15 @@ public class DistributedJessy extends Jessy {
 
 			PerformanceProbe.setOutput("/dev/stdout");
 
-			Properties myProps = new Properties();
-			FileInputStream MyInputStream = new FileInputStream(
-					ConstantPool.CONFIG_PROPERTY);
-			myProps.load(MyInputStream);
-			String fractalFile = myProps.getProperty(ConstantPool.FRACTAL_FILE);
-			MyInputStream.close();
+			distributedTermination = new DistributedTermination(this);
 
-			// Initialize Fractal: create server groups, initialize this node
-			// and create the global group.
-			fractal = FractalManager.getInstance();
-			fractal.loadFile(fractalFile);
-			membership = fractal.membership;
-			membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP,
-					ConstantPool.JESSY_SERVER_PORT, ConstantPool.GROUP_SIZE);
-			membership.loadIdenitity(null);
-			replicaGroups = new TreeSet<Group>(membership.allGroups());
-			Group replicaGroup = !membership.myGroups().isEmpty() ? membership
-					.myGroups().iterator().next() : null; // this node is a
-															// server ?
-
-			Group allReplicaGroup = fractal.membership.getOrCreateTCPGroup(
-					ConstantPool.JESSY_ALL_REPLICA_GROUP,
-					ConstantPool.JESSY_ALL_REPLICA_PORT);
-			Collection<Integer> replicas = new HashSet<Integer>(
-					fractal.membership.allNodes());
-			if (replicaGroup == null)
-				replicas.remove(membership.myId());
-			allReplicaGroup.putNodes(replicas);
-
-			Group allGroup = fractal.membership.getOrCreateTCPDynamicGroup(
-					ConstantPool.JESSY_ALL_GROUP, ConstantPool.JESSY_ALL_PORT);
-			allGroup.putNodes(fractal.membership.allNodes());
-
-			fractal.start();
-
-			isProxy = replicaGroup == null;
-			if (!isProxy) {
-				logger.info("Server mode (" + replicaGroup + ")");
-				distributedTermination = new DistributedTermination(this,
-						replicaGroup);
-			} else {
-				logger.info("Proxy mode");
-				distributedTermination = new DistributedTermination(this,
-						allGroup);
-			}
-
-			remoteReader = new RemoteReader(this, allGroup);
+			remoteReader = new RemoteReader(this, JessyGroupManager.getInstance().getGroupOfAllInstances());
 
 			// FIXME
 			MessageStream.addClass(YCSBEntity.class.getName());
 			super.addEntity(YCSBEntity.class);
 
-			partitioner = PartitionerFactory.getPartitioner(membership,
-					YCSBEntity.keyspace);
-			// TODO for TPCC classes.
+			partitioner = JessyGroupManager.getInstance().getPartitioner();
 
 			// FIXME MOVE THIS
 			MessageStream.addClass(JessyEntity.class.getName());
@@ -350,10 +296,6 @@ public class DistributedJessy extends Jessy {
 
 		logger.debug(transactionHandler + " " + stateResult);
 		return executionHistory;
-	}
-
-	public Collection<Group> getReplicaGroups() {
-		return replicaGroups;
 	}
 
 	@Override

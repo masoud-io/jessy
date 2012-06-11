@@ -6,18 +6,17 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import net.sourceforge.fractal.membership.Group;
-import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.Keyspace.Distribution;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
+import fr.inria.jessy.utils.JessyGroupManager;
 
 /**
  * This class implements a partitioner, that is a function that maps objects
@@ -45,10 +44,10 @@ public class KeySpacePartitioner  extends Partitioner{
 		resolveTime = new TimeRecorder("Partitioner#resolveTime");
 	}
 	
-	public KeySpacePartitioner(Membership m,Keyspace keyspace) {
-		super(m);
+	public KeySpacePartitioner(Keyspace keyspace) {
+		super();
 		g2rk = new TreeMap<Group, Set<String>>();
-		for (Group g : membership.allGroups(ConstantPool.JESSY_SERVER_GROUP)){
+		for (Group g : JessyGroupManager.getInstance().getReplicaGroups()){
 			g2rk.put(g, new HashSet<String>());
 		}
 		rk2g = new TreeMap<String, Group>();
@@ -174,7 +173,7 @@ public class KeySpacePartitioner  extends Partitioner{
 	@Override
 	public boolean isLocal(String k) {
 		resolveTime.start();
-		boolean ret = membership.myGroups().contains(resolve(k));
+		boolean ret = JessyGroupManager.getInstance().getMyGroups().contains(resolve(k));
 //		logger.debug("is local "+k+" ? "+ret);
 		resolveTime.stop();
 		return ret;
