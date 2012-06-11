@@ -19,15 +19,26 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.partitioner.Partitioner;
 import fr.inria.jessy.partitioner.PartitionerFactory;
 
+/**
+ * This class wrap up the complexity of {@code FractalManager} by simplifying
+ * and uniforming the access for different groups needed inside Jessy.
+ * <p>
+ * Note: any need for any Fractal group should be made through this class.
+ * 
+ * @author Masoud Saeida Ardekani
+ * 
+ */
 public class JessyGroupManager {
 
 	private static Logger logger = Logger.getLogger(JessyGroupManager.class);
 
 	private static JessyGroupManager instance;
 
-	private int sourceId;
+	private FractalManager fractal;
 
 	private Partitioner partitioner;
+
+	private int sourceId;
 
 	/**
 	 * Dependeing on whether this jessy instance is a proxy or a replica,
@@ -42,6 +53,8 @@ public class JessyGroupManager {
 
 	/**
 	 * The collection of different groups that this jessy instance is member of.
+	 * This collection is used in the {@code Partitioner#isLocal(String)} in
+	 * order to check whether a group of a key isLocal or not.
 	 */
 	private Collection<Group> myGroups;
 
@@ -52,13 +65,19 @@ public class JessyGroupManager {
 	private List<Group> replicaGroups;
 
 	/**
-	 * All groups created by fractal membership are in allGroups.
+	 * All groups created by fractal membership are in allGroups. This
+	 * collection is only used for defining the acceptors needed to perform
+	 * AtomcBroadcast in {@code NonGenuineTerminationCommunication}.
+	 * 
 	 */
 	private Collection<Group> allGroups;
 
+	/**
+	 * Shows whether the Jessy instance is proxy or not. A jessy instance is
+	 * proxy, if it is only being used for forwarding the transactions to the
+	 * entity replicas
+	 */
 	private boolean isProxy;
-
-	private FractalManager fractal;
 
 	private JessyGroupManager() {
 
@@ -71,24 +90,29 @@ public class JessyGroupManager {
 			 * Initialize Fractal: create server groups, initialize this node
 			 * and create the global group.
 			 */
-			fractal = FractalManager.getInstance();
-			fractal.loadFile(fractalFile);
+			{
+				fractal = FractalManager.getInstance();
+				fractal.loadFile(fractalFile);
+				fractal.membership
+						.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP,
+								ConstantPool.JESSY_SERVER_PORT,
+								ConstantPool.GROUP_SIZE);
 
-			fractal.membership.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP,
-					ConstantPool.JESSY_SERVER_PORT, ConstantPool.GROUP_SIZE);
+				fractal.membership.loadIdenitity(null);
+			}
 
-			fractal.membership.loadIdenitity(null);
-
+			/*
+			 * Initialize allGroups. Is used as the acceptors for
+			 * AtomicBroadcast
+			 */
 			allGroups = new TreeSet<Group>(fractal.membership.allGroups());
 
 			myGroups = fractal.membership.myGroups();
-
 			logger.debug("myGroups are: " + myGroups);
 
 			Group myReplicaGroup = !fractal.membership.myGroups().isEmpty() ? fractal.membership
 					.myGroups().iterator().next()
-					: null; // this node is a
-							// server ?
+					: null;
 
 			Group allReplicaGroup = fractal.membership.getOrCreateTCPGroup(
 					ConstantPool.JESSY_ALL_REPLICA_GROUP,
@@ -100,7 +124,7 @@ public class JessyGroupManager {
 				replicas.remove(fractal.membership.myId());
 			allReplicaGroup.putNodes(replicas);
 
-			Group groupOfAllInstances = fractal.membership
+			groupOfAllInstances = fractal.membership
 					.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_ALL_GROUP,
 							ConstantPool.JESSY_ALL_PORT);
 			groupOfAllInstances.putNodes(fractal.membership.allNodes());
@@ -135,8 +159,10 @@ public class JessyGroupManager {
 
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			System.exit(0);
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			System.exit(0);
 		}
 	}
 

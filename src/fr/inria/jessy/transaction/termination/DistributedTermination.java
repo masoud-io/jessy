@@ -15,7 +15,6 @@ import java.util.concurrent.Future;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
-import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
@@ -23,7 +22,6 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
-import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.transaction.ExecutionHistory;

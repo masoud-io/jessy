@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.MessageStream;
 import net.sourceforge.fractal.utils.PerformanceProbe;
 import net.sourceforge.fractal.utils.PerformanceProbe.FloatValueRecorder;
@@ -65,8 +64,6 @@ public class DistributedJessy extends Jessy {
 	private static FloatValueRecorder certificationRatioAbortedTransactions = new FloatValueRecorder(
 			"Jessy#certificationRatioAbortedTransactions");
 
-	private boolean isProxy;
-	public FractalManager fractal;
 	public RemoteReader remoteReader;
 	public DistributedTermination distributedTermination;
 	public Partitioner partitioner;
@@ -90,7 +87,7 @@ public class DistributedJessy extends Jessy {
 
 			distributedTermination = new DistributedTermination(this);
 
-			remoteReader = new RemoteReader(this, JessyGroupManager.getInstance().getGroupOfAllInstances());
+			remoteReader = new RemoteReader(this);
 
 			// FIXME
 			MessageStream.addClass(YCSBEntity.class.getName());
@@ -324,7 +321,7 @@ public class DistributedJessy extends Jessy {
 					.valueOf(abortByCertificationCount.toString())
 					/ (Double.valueOf(executionCount.toString())));
 
-			if (!isProxy) {
+			if (!JessyGroupManager.getInstance().isProxy()) {
 				super.close(this);
 				logger.info("Jessy is closed.");
 			}
