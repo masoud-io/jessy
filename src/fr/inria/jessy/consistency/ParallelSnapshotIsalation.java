@@ -184,12 +184,10 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	}
 
 	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Group all, Collection<Group> replicaGroups,
-			Learner learner) {
+	public TerminationCommunication getOrCreateTerminationCommunication(Group group, Learner learner) {
 		if (terminationCommunication == null)
 			terminationCommunication = new GenuineTerminationCommunication(
-					group, all, learner);
+					group, manager.getEverybodyGroup(), learner);
 		return terminationCommunication;
 	}
 

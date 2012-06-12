@@ -81,9 +81,9 @@ public class RemoteReader implements Learner {
 		remoteReadStream = FractalManager.getInstance()
 				.getOrCreateMulticastStream(
 						JessyGroupManager.getInstance()
-								.getGroupOfAllInstances().name(),
+								.getEverybodyGroup().name(),
 						JessyGroupManager.getInstance()
-								.getGroupOfAllInstances().name());
+								.getEverybodyGroup().name());
 		remoteReadStream.registerLearner("ReadRequestMessage", this);
 		remoteReadStream.registerLearner("ReadReplyMessage", this);
 		remoteReadStream.start();

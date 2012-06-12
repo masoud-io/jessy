@@ -20,6 +20,7 @@ import fr.inria.jessy.local.si.transaction.T1;
 import fr.inria.jessy.local.si.transaction.T2;
 import fr.inria.jessy.local.si.transaction.T3;
 import fr.inria.jessy.local.si.transaction.T4;
+import fr.inria.jessy.local.si.transaction.T5;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
@@ -109,6 +110,15 @@ public class SiMonotonicSnapshotTest {
 
 		assertEquals("0y", ((Sample2EntityClass) rs4iterator.next()).getData());
 		assertEquals("0x", ((SampleEntityClass) rs4iterator.next()).getData());
+		
+		Future<ExecutionHistory> future5;
+		future5 = pool.submit(new T5(jessy));
+		
+		ExecutionHistory result5 = future5.get();
+		Iterator<JessyEntity> rs5iterator = result5.getReadSet().getEntities().iterator();
+		
+		assertEquals("1y", ((Sample2EntityClass) rs5iterator.next()).getData());
+		assertEquals("1x", ((SampleEntityClass) rs5iterator.next()).getData());
 	}
 
 }

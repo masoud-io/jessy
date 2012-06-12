@@ -80,14 +80,10 @@ public class DistributedTermination implements Learner {
 	public DistributedTermination(DistributedJessy j) {
 		jessy = j;
 		group = JessyGroupManager.getInstance().getMyGroup();
-
+		terminationCommunication = jessy.getConsistency()
+				.getOrCreateTerminationCommunication(group, this);
 		logger.info("Distributed Termination is initialized. Its group is : "
 				+ group.name());
-
-		terminationCommunication = jessy.getConsistency()
-				.getOrCreateTerminationCommunication(group,
-						JessyGroupManager.getInstance().getGroupOfAllInstances(),
-						JessyGroupManager.getInstance().getAllGroups(), this);
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();

@@ -1,6 +1,5 @@
 package fr.inria.jessy.consistency;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,16 +17,13 @@ public class ReadComitted extends Consistency {
 	}
 
 	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Group all, Collection<Group> replicaGroups,
-			Learner learner) {
+	public TerminationCommunication getOrCreateTerminationCommunication(Group group, Learner learner) {
 		if (terminationCommunication == null)
 			/*
 			 * Do not return {@code TrivialTerminationCommunication} instance
 			 * because it may lead to <i>deadlock</i>.
 			 */
-			terminationCommunication = new TrivialTerminationCommunication(
-					group, all, learner);
+			terminationCommunication = new TrivialTerminationCommunication(group, learner);
 		return terminationCommunication;
 	}
 

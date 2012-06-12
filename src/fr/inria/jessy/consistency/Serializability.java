@@ -161,15 +161,14 @@ public class Serializability extends Consistency {
 
 	@Override
 	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Group all, Collection<Group> replicaGroups,
-			Learner learner) {
+			Group group, Learner learner) {
 		if (terminationCommunication == null)
 			/*
 			 * Do not return {@code TrivialTerminationCommunication} instance
 			 * because it may lead to <i>deadlock</i>.
 			 */
 			terminationCommunication = new GenuineTerminationCommunication(
-					group, all, learner);
+					group, manager.getEverybodyGroup(), learner);
 		return terminationCommunication;
 	}
 

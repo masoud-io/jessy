@@ -25,13 +25,13 @@ public class NonGenuineTerminationCommunication extends
 	protected GPaxosStream gpaxosStream;
 	private Learner realLearner;
 
-	public NonGenuineTerminationCommunication(Group group, Group all, Group acceptorGroup, Learner learner) {
-		super(group, all, learner);
+	public NonGenuineTerminationCommunication(Group group, Learner learner) {
+		super(group, learner);
 		gpaxosStream = FractalManager.getInstance().getOrCreateGPaxosStream(
 				"gpaxosStream",
-				all.name(),
-				acceptorGroup.name(), 
-				ConstantPool.JESSY_ALL_REPLICA_GROUP,
+				manager.getEverybodyGroup().name(), // the proposers are all the nodes in the system. 
+				manager.getReplicaGroups().iterator().next().name(), // pick a random group as the acceptors for GPaxos. 
+				manager.getAllReplicaGroup().name(), // the learners are all the replicas.
 				"net.sourceforge.fractal.consensus.gpaxos.cstruct.CSched", 
 				false, RECOVERY.DEFAULT, 10000000, 1000);
 		gpaxosStream.registerLearner("*", this);

@@ -17,7 +17,7 @@ public class GenuineTerminationCommunication extends TerminationCommunication{
 	protected WanAMCastStream aMCastStream;
 	
 	public GenuineTerminationCommunication(Group group, Group all, Learner learner) {
-		super(group, all, learner);
+		super(group, learner);
 		
 		aMCastStream = FractalManager.getInstance()
 				.getOrCreateWanAMCastStream(group.name(), group.name());

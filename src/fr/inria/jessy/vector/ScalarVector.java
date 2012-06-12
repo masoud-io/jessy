@@ -49,6 +49,13 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 			throws NullPointerException {
 
 		if (other.size()==0){
+			/**
+			 * In order to have a snapshot we must know the committedTransactionSeqNumber at witch a transaction start (its snapshot).
+			 * Previously this information was keeped on the {@link TransactionHandler}. After Pierre have remove 
+			 * it we take lastCommittedTransactionSeqNumber from the first read. For this reason we promote the vector 
+			 * of the first read to the lastCommittedTransactionSeqNumber  
+			 */
+			this.update(lastCommittedTransactionSeqNumber.get());
 			return true;
 		}
 		else{
@@ -74,8 +81,22 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 			throw new NullPointerException("Input Vector is Null");
 		}
 
-		Integer selfValue = getValue(selfKey);
 		Integer otherValue = (Integer) other.getValue(selfKey);
+		
+		/**
+		 * this site has not received yet the required version
+		 */
+		if(otherValue>lastCommittedTransactionSeqNumber.get()){
+			
+//			TODO
+			System.err.println("otherValue("+otherValue+")>lastCommittedTransactionSeqNumber" +
+					"("+lastCommittedTransactionSeqNumber.get()+"), system will exit");
+			System.exit(-1);
+//			return do_not_retry;
+		}
+		
+		Integer selfValue = getValue(selfKey);
+		
 		
 		if(selfValue<=otherValue){ 
 			return true;

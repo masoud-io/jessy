@@ -49,8 +49,13 @@ public class JessyGroupManager {
 	/**
 	 * The group of all running jessy instances in the system
 	 */
-	private Group groupOfAllInstances;
+	private Group everybodyGroup;
 
+	/**
+	 * A group that contains all the replicas.
+	 */
+	private Group allReplicaGroup;
+	
 	/**
 	 * The collection of different groups that this jessy instance is member of.
 	 * This collection is used in the {@code Partitioner#isLocal(String)} in
@@ -63,14 +68,6 @@ public class JessyGroupManager {
 	 * replicate jessy entities are in this list.
 	 */
 	private List<Group> replicaGroups;
-
-	/**
-	 * All groups created by fractal membership are in allGroups. This
-	 * collection is only used for defining the acceptors needed to perform
-	 * AtomcBroadcast in {@code NonGenuineTerminationCommunication}.
-	 * 
-	 */
-	private Collection<Group> allGroups;
 
 	/**
 	 * Shows whether the Jessy instance is proxy or not. A jessy instance is
@@ -88,68 +85,65 @@ public class JessyGroupManager {
 
 			/*
 			 * Initialize Fractal: create server groups, initialize this node
-			 * and create the global group.
+			 * , create the global group, dispatch nodes.
 			 */
-			{
-				fractal = FractalManager.getInstance();
-				fractal.loadFile(fractalFile);
-				fractal.membership
-						.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP,
-								ConstantPool.JESSY_SERVER_PORT,
-								ConstantPool.GROUP_SIZE);
 
-				fractal.membership.loadIdenitity(null);
-			}
+			fractal = FractalManager.getInstance();
+			fractal.loadFile(fractalFile);
+			fractal.membership
+			.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP,
+					ConstantPool.JESSY_SERVER_PORT,
+					ConstantPool.GROUP_SIZE);
+			replicaGroups = new ArrayList<Group>(
+					fractal.membership
+							.allGroups(ConstantPool.JESSY_SERVER_GROUP));
+			Collections.sort(replicaGroups);
+			logger.debug("replicaGroups are : " + replicaGroups);
 
 			/*
-			 * Initialize allGroups. Is used as the acceptors for
-			 * AtomicBroadcast
+			 * Initialize a static group containing all the replicas.
 			 */
-			allGroups = new TreeSet<Group>(fractal.membership.allGroups());
+			Collection<Integer> replicas = new HashSet<Integer>(
+					fractal.membership.allNodes());
+			allReplicaGroup = fractal.membership.getOrCreateTCPGroup(
+					ConstantPool.JESSY_ALL_REPLICA_GROUP,
+					ConstantPool.JESSY_ALL_REPLICA_PORT);
+			allReplicaGroup.putNodes(replicas);
 
+			/*
+			 * Initialize my replica group.
+			 */
+			fractal.membership.loadIdenitity(null);
 			myGroups = fractal.membership.myGroups();
 			logger.debug("myGroups are: " + myGroups);
-
 			Group myReplicaGroup = !fractal.membership.myGroups().isEmpty() ? fractal.membership
 					.myGroups().iterator().next()
 					: null;
 
-			Group allReplicaGroup = fractal.membership.getOrCreateTCPGroup(
-					ConstantPool.JESSY_ALL_REPLICA_GROUP,
-					ConstantPool.JESSY_ALL_REPLICA_PORT);
-			Collection<Integer> replicas = new HashSet<Integer>(
-					fractal.membership.allNodes());
+			/*
+			 * Initialize a group that contains everybody.
+			 */
+			everybodyGroup = fractal.membership
+					.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_EVERYBODY_GROUP,
+							ConstantPool.JESSY_EVERYBODY_PORT);
+			everybodyGroup.putNodes(fractal.membership.allNodes());
+			logger.debug("everybodyGroup is : " + everybodyGroup);
 
-			if (myReplicaGroup == null)
-				replicas.remove(fractal.membership.myId());
-			allReplicaGroup.putNodes(replicas);
-
-			groupOfAllInstances = fractal.membership
-					.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_ALL_GROUP,
-							ConstantPool.JESSY_ALL_PORT);
-			groupOfAllInstances.putNodes(fractal.membership.allNodes());
-
-			logger.debug("groupOfAllInstances is : " + groupOfAllInstances);
-
+			
+			/*
+			 * Start fractal
+			 */
 			fractal.start();
-
-			isProxy = myReplicaGroup == null;
+			isProxy = (myReplicaGroup == null);
 			if (!isProxy) {
 				logger.info("Server mode (" + myReplicaGroup + ")");
 				myGroup = myReplicaGroup;
 			} else {
 				logger.info("Proxy mode");
-				myGroup = groupOfAllInstances;
+				myGroup = everybodyGroup;
 			}
-
+			
 			logger.debug("myGroup is : " + myGroup);
-
-			replicaGroups = new ArrayList<Group>(
-					fractal.membership
-							.allGroups(ConstantPool.JESSY_SERVER_GROUP));
-			Collections.sort(replicaGroups);
-
-			logger.debug("replicaGroups are : " + replicaGroups);
 
 			sourceId = fractal.membership.myId();
 
@@ -190,16 +184,16 @@ public class JessyGroupManager {
 		return replicaGroups;
 	}
 
-	public Collection<Group> getAllGroups() {
-		return allGroups;
-	}
-
 	public Partitioner getPartitioner() {
 		return partitioner;
 	}
 
-	public Group getGroupOfAllInstances() {
-		return groupOfAllInstances;
+	public Group getEverybodyGroup() {
+		return everybodyGroup;
+	}
+	
+	public Group getAllReplicaGroup(){
+		return allReplicaGroup;
 	}
 
 	public boolean isProxy() {

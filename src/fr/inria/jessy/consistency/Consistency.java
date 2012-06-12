@@ -1,6 +1,5 @@
 package fr.inria.jessy.consistency;
 
-import java.util.Collection;
 import java.util.Set;
 
 import net.sourceforge.fractal.Learner;
@@ -8,12 +7,13 @@ import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.utils.JessyGroupManager;
 
 public abstract class Consistency {
 
 	protected DataStore store;
-
 	protected TerminationCommunication terminationCommunication;
+	protected JessyGroupManager manager = JessyGroupManager.getInstance();
 
 	public Consistency(DataStore store) {
 		this.store = store;
@@ -24,8 +24,7 @@ public abstract class Consistency {
 	 * 
 	 * @return
 	 */
-	public abstract TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Group all, Collection<Group> replicaGroups, Learner learner);
+	public abstract TerminationCommunication getOrCreateTerminationCommunication(Group group, Learner learner);
 
 	/**
 	 * This method checks whether the transaction with the input
@@ -49,19 +48,21 @@ public abstract class Consistency {
 			ExecutionHistory history2);
 
 	/**
-	 * Is called after the transaction certification outcome is
-	 * true, and before changes of the transaction become permanent.
+	 * Is called after the transaction certification outcome is true, and before
+	 * changes of the transaction become permanent.
 	 * 
 	 * @param executionHistory
 	 */
 	public abstract void prepareToCommit(ExecutionHistory executionHistory);
-	
+
 	/**
-	 * Is called after the transaction modifications have been applied to the local data store.
+	 * Is called after the transaction modifications have been applied to the
+	 * local data store.
+	 * 
 	 * @param executionHistory
 	 */
-	public void postCommit(ExecutionHistory executionHistory){
-		
+	public void postCommit(ExecutionHistory executionHistory) {
+
 	}
 
 	/**

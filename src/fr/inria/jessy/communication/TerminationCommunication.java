@@ -8,19 +8,22 @@ import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.message.VoteMessage;
+import fr.inria.jessy.utils.JessyGroupManager;
 
 public abstract class TerminationCommunication {
 
+	protected JessyGroupManager manager = JessyGroupManager.getInstance();
+	
 	/**
 	 * Stream used for multicast messages
 	 */
 	private MulticastStream mCastStream;
 	private Group myGroup;
-	private Group allGroup;
+	private Group everybodyGroup;
 
-	public TerminationCommunication(Group group, Group all, Learner learner) {
+	public TerminationCommunication(Group group, Learner learner) {
 		myGroup = group;
-		allGroup = all;
+		everybodyGroup = manager.getEverybodyGroup();
 		mCastStream = FractalManager.getInstance().getOrCreateMulticastStream(
 				myGroup.name(), myGroup.name());
 		mCastStream.registerLearner("VoteMessage", learner);
@@ -41,7 +44,7 @@ public abstract class TerminationCommunication {
 			boolean isCertifyAtCoordinator, int coordinatorId) {
 		mCastStream.multicast(voteMessage);
 		if (!isCertifyAtCoordinator)
-			mCastStream.unicast(voteMessage, coordinatorId, allGroup);
+			mCastStream.unicast(voteMessage, coordinatorId, everybodyGroup);
 	}
 
 	/**

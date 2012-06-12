@@ -24,6 +24,7 @@ public class SnapshotIsolation extends Consistency {
 	private static Logger logger = Logger
 			.getLogger(SnapshotIsolation.class);
 	
+	
 	public SnapshotIsolation(DataStore store) {
 		super(store);
 	}
@@ -92,6 +93,9 @@ public class SnapshotIsolation extends Consistency {
 
 				if (!lastComittedEntity.getLocalVector().isCompatible(
 						tmp.getLocalVector())) {
+					
+					logger.debug("lastCommitted: "+ lastComittedEntity.getLocalVector()+" tmp: "+ tmp.getLocalVector());
+					
 					return false;
 				}
 
@@ -163,10 +167,13 @@ public class SnapshotIsolation extends Consistency {
 
 	@Override
 	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Group all, Collection<Group> replicaGroups, Learner learner){
+			Group group, Learner learner){
 		if (terminationCommunication == null){
-			terminationCommunication = new NonGenuineTerminationCommunication(
-					group,all, replicaGroups.iterator().next(),learner);
+			
+
+			Group acceptorGroup = manager.getReplicaGroups().iterator().next();
+			terminationCommunication = new NonGenuineTerminationCommunication(group, learner);
+			 
 		}
 		return terminationCommunication;
 	}
