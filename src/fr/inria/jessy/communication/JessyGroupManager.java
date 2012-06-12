@@ -1,4 +1,4 @@
-package fr.inria.jessy.utils;
+package fr.inria.jessy.communication;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.TreeSet;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.membership.Group;
@@ -18,6 +17,7 @@ import com.yahoo.ycsb.YCSBEntity;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.partitioner.Partitioner;
 import fr.inria.jessy.partitioner.PartitionerFactory;
+import fr.inria.jessy.utils.Configuration;
 
 /**
  * This class wrap up the complexity of {@code FractalManager} by simplifying
@@ -84,10 +84,8 @@ public class JessyGroupManager {
 					.readConfig(ConstantPool.FRACTAL_FILE);
 
 			/*
-			 * Initialize Fractal: create server groups, initialize this node
-			 * , create the global group, dispatch nodes.
+			 * Initialize Fractal and create the replica groups
 			 */
-
 			fractal = FractalManager.getInstance();
 			fractal.loadFile(fractalFile);
 			fractal.membership
@@ -111,15 +109,21 @@ public class JessyGroupManager {
 			allReplicaGroup.putNodes(replicas);
 
 			/*
-			 * Initialize my replica group.
+			 * Initialize my replica group and myself.
 			 */
 			fractal.membership.loadIdenitity(null);
+			sourceId = fractal.membership.myId();
 			myGroups = fractal.membership.myGroups();
-			logger.debug("myGroups are: " + myGroups);
-			Group myReplicaGroup = !fractal.membership.myGroups().isEmpty() ? fractal.membership
-					.myGroups().iterator().next()
-					: null;
-
+			Group myReplicaGroup = null;
+			isProxy = true;
+			for(Group rgroup: replicaGroups){
+				if(rgroup.contains(sourceId)){
+					myReplicaGroup = rgroup;
+					isProxy = false;
+					break;
+				}
+			}
+			
 			/*
 			 * Initialize a group that contains everybody.
 			 */
@@ -128,13 +132,10 @@ public class JessyGroupManager {
 							ConstantPool.JESSY_EVERYBODY_PORT);
 			everybodyGroup.putNodes(fractal.membership.allNodes());
 			logger.debug("everybodyGroup is : " + everybodyGroup);
-
 			
 			/*
 			 * Start fractal
 			 */
-			fractal.start();
-			isProxy = (myReplicaGroup == null);
 			if (!isProxy) {
 				logger.info("Server mode (" + myReplicaGroup + ")");
 				myGroup = myReplicaGroup;
@@ -144,8 +145,8 @@ public class JessyGroupManager {
 			}
 			
 			logger.debug("myGroup is : " + myGroup);
-
-			sourceId = fractal.membership.myId();
+			
+			fractal.start();
 
 			// TODO generalize this
 			partitioner = PartitionerFactory

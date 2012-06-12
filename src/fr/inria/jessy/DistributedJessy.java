@@ -21,6 +21,7 @@ import sun.misc.SignalHandler;
 
 import com.yahoo.ycsb.YCSBEntity;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.partitioner.Partitioner;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
@@ -34,7 +35,6 @@ import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.message.VoteMessage;
-import fr.inria.jessy.utils.JessyGroupManager;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.DependenceVector;
 import fr.inria.jessy.vector.NullVector;

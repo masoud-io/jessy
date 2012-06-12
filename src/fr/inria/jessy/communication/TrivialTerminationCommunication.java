@@ -30,11 +30,10 @@ public class TrivialTerminationCommunication extends TerminationCommunication im
 	public TrivialTerminationCommunication(Group group, Learner learner) {
 		super(group, learner);
 		mCastTransaction = FractalManager.getInstance().getOrCreateMulticastStream(
-				group.name(), group.name());
+				"", manager.getMyGroup().name());
 		mCastTransaction.registerLearner("MulticastMessage", this);
 		mCastTransaction.start();
 		realLearner = learner;
-
 	}
 
 	

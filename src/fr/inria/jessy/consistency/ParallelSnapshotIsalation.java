@@ -12,6 +12,7 @@ import net.sourceforge.fractal.membership.Group;
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.communication.GenuineTerminationCommunication;
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.VectorPropagation;
 import fr.inria.jessy.store.DataStore;
@@ -20,7 +21,6 @@ import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.termination.message.VectorMessage;
-import fr.inria.jessy.utils.JessyGroupManager;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
 import fr.inria.jessy.vector.VersionVector;
@@ -187,7 +187,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	public TerminationCommunication getOrCreateTerminationCommunication(Group group, Learner learner) {
 		if (terminationCommunication == null)
 			terminationCommunication = new GenuineTerminationCommunication(
-					group, manager.getEverybodyGroup(), learner);
+					group,   learner);
 		return terminationCommunication;
 	}
 

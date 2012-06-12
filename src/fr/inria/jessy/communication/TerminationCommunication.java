@@ -8,7 +8,6 @@ import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.message.VoteMessage;
-import fr.inria.jessy.utils.JessyGroupManager;
 
 public abstract class TerminationCommunication {
 

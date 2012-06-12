@@ -4,7 +4,6 @@ import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.transaction.termination.message.VectorMessage;
-import fr.inria.jessy.utils.JessyGroupManager;
 
 /**
  * In Genuine implementations of protocols such as PSI, and in order to ensure

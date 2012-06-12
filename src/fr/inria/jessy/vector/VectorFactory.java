@@ -6,7 +6,7 @@ import java.util.Properties;
 import net.sourceforge.fractal.FractalManager;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.utils.JessyGroupManager;
+import fr.inria.jessy.communication.JessyGroupManager;
 
 
 public class VectorFactory {

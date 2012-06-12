@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.sleepycat.persist.model.Persistent;
 
-import fr.inria.jessy.utils.JessyGroupManager;
+import fr.inria.jessy.communication.JessyGroupManager;
 
 /**
  * A classical version vector. To be used by PSI.

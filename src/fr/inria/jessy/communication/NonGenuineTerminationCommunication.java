@@ -13,7 +13,6 @@ import net.sourceforge.fractal.consensus.gpaxos.GPaxosStream;
 import net.sourceforge.fractal.consensus.gpaxos.GPaxosStream.RECOVERY;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.replication.Command;
-import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
 
 public class NonGenuineTerminationCommunication extends

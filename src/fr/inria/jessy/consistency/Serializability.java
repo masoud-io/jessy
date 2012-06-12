@@ -168,7 +168,7 @@ public class Serializability extends Consistency {
 			 * because it may lead to <i>deadlock</i>.
 			 */
 			terminationCommunication = new GenuineTerminationCommunication(
-					group, manager.getEverybodyGroup(), learner);
+					group,   learner);
 		return terminationCommunication;
 	}
 

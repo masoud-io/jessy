@@ -1,18 +1,15 @@
 package fr.inria.jessy.partitioner;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import net.sourceforge.fractal.membership.Group;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
-import fr.inria.jessy.utils.JessyGroupManager;
 
 /**
  * This class implements a simple uniform partitioner as follows:

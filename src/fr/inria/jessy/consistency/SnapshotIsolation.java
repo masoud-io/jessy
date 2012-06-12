@@ -1,6 +1,5 @@
 package fr.inria.jessy.consistency;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -172,7 +171,7 @@ public class SnapshotIsolation extends Consistency {
 			
 
 			Group acceptorGroup = manager.getReplicaGroups().iterator().next();
-			terminationCommunication = new NonGenuineTerminationCommunication(group, learner);
+			terminationCommunication = new NonGenuineTerminationCommunication(group,  learner);
 			 
 		}
 		return terminationCommunication;

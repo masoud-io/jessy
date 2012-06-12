@@ -27,10 +27,10 @@ import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
-import fr.inria.jessy.utils.JessyGroupManager;
 
 /**
  * 

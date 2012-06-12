@@ -11,12 +11,12 @@ import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.Keyspace.Distribution;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
-import fr.inria.jessy.utils.JessyGroupManager;
 
 /**
  * This class implements a partitioner, that is a function that maps objects
