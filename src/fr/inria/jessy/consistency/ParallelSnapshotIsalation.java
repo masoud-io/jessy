@@ -1,7 +1,6 @@
 package fr.inria.jessy.consistency;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,15 +37,18 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	}
 
 	/**
-	 * According to the implementatin of VersionVector, commute in certification
-	 * is not allowed.
-	 * <p>
-	 * Assume there are two servers s1 and s2 that replicate objects x and y.
-	 * Also assume there are two transaction t1 and t2 that writes a new value
-	 * on x and y accordingly. Since commutativity may lead to execution of t1
-	 * and t2 in different orders on s1 and s2, and version vector cannot
-	 * distinguish this re-ordering, it can lead to some strange behavior.
-	 * (i.e., reading inconsistent snapshots!)
+	 * @inheritDoc
+	 * 
+	 *             According to the implementatin of VersionVector, commute in
+	 *             certification is not allowed.
+	 *             <p>
+	 *             Assume there are two servers s1 and s2 that replicate objects
+	 *             x and y. Also assume there are two transaction t1 and t2 that
+	 *             writes a new value on x and y accordingly. Since
+	 *             commutativity may lead to execution of t1 and t2 in different
+	 *             orders on s1 and s2, and version vector cannot distinguish
+	 *             this re-ordering, it can lead to some strange behavior.
+	 *             (i.e., reading inconsistent snapshots!)
 	 */
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
@@ -54,6 +56,9 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		return false;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
 		TransactionType transactionType = executionHistory.getTransactionType();
@@ -81,15 +86,18 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		 * increaments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
-			for (JessyEntity tmp : executionHistory.getCreateSet()
-					.getEntities()) {
-				/*
-				 * set the selfkey of the created vector and put it back in the
-				 * entity
-				 */
-				tmp.getLocalVector().increament();
-			}
+//			for (JessyEntity tmp : executionHistory.getCreateSet()
+//					.getEntities()) {
+//				/*
+//				 * set the selfkey of the created vector and put it back in the
+//				 * entity
+//				 */
+//				tmp.getLocalVector().increament();
+//			}			
 
+			executionHistory.getWriteSet().addEntity(
+					executionHistory.getCreateSet());
+			
 			logger.debug(executionHistory.getTransactionHandler() + " >> "
 					+ transactionType.toString()
 					+ " >> INIT_TRANSACTION COMMITTED");
@@ -131,10 +139,17 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		return true;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
-		// updatedVector is a new vector. It will be used as a new
-		// vector for all modified vectors.
+
+
+		/*
+		 * updatedVector is a new vector. It will be used as a new vector for
+		 * all modified vectors.
+		 */
 		Vector<String> updatedVector = VectorFactory.getVector("");
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
@@ -149,6 +164,9 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void postCommit(ExecutionHistory executionHistory) {
 		Set<String> alreadyNotified = new HashSet<String>();
@@ -175,6 +193,9 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		propagation.propagate(msg);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
 		Set<String> keys = new HashSet<String>();
@@ -183,19 +204,25 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		return keys;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(Group group, Learner learner) {
+	public TerminationCommunication getOrCreateTerminationCommunication(
+			Group group, Learner learner) {
 		if (terminationCommunication == null)
 			terminationCommunication = new GenuineTerminationCommunication(
-					group,   learner);
+					group, learner);
 		return terminationCommunication;
 	}
 
 	/**
-	 * Receiving VersionVectors from different jessy instances.
-	 * <p>
-	 * upon receiving a Vector, update the VersionVector associated with each
-	 * jessy instance with the received vector.
+	 * @inheritDoc
+	 * 
+	 *             Receiving VersionVectors from different jessy instances.
+	 *             <p>
+	 *             upon receiving a Vector, update the VersionVector associated
+	 *             with each jessy instance with the received vector.
 	 */
 	@Override
 	public void learn(Stream s, Serializable v) {

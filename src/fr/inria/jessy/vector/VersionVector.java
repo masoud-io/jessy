@@ -1,6 +1,7 @@
 package fr.inria.jessy.vector;
 
 import java.io.Externalizable;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.sleepycat.persist.model.Persistent;
@@ -29,16 +30,20 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	public static VersionVector<String> observedCommittedTransactions = new VersionVector<String>(
 			JessyGroupManager.getInstance().getMyGroup().name());
 
+	@Deprecated
+	public VersionVector() {
+	}
+
 	public VersionVector(K selfKey) {
 		super(selfKey);
 		super.setValue(selfKey, 0);
 	}
 
 	/**
-	 * Checks if the input vector is compatible with this vector.
-	 * <p>
-	 * WARNING: it is correct only if is called from the very last version up to
-	 * the first.
+	 * @inheritDoc
+	 * 
+	 *             WARNING: it is correct only if is called from the very last
+	 *             version up to the first.
 	 */
 	@Override
 	public CompatibleResult isCompatible(Vector<K> other) throws NullPointerException {
@@ -54,8 +59,10 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	}
 
 	/**
-	 * TODO This implementation is not safe. It is only safe when all updated
-	 * messages have been applied to local datastore!
+	 * @inheritDoc
+	 * 
+	 *             TODO This implementation is not safe. It is only safe when
+	 *             all updated messages have been applied to local datastore!
 	 */
 	@Override
 	public CompatibleResult isCompatible(CompactVector<K> other)
@@ -64,15 +71,20 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 		if (other == null)
 			throw new NullPointerException("Input Vector is Null");
 
-		if (other.size() == 0)
+		if (other.size() == 0) {
+			this.setMap((HashMap) observedCommittedTransactions.getMap());
 			return Vector.CompatibleResult.COMPATIBLE;
+		}
 
-		if (getValue(selfKey) < other.getValue(selfKey))
+		if (getValue(selfKey) <= other.getValue(selfKey))
 			return Vector.CompatibleResult.COMPATIBLE;
 		else
 			return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
 		// Readset can be simply applied by using the update method of

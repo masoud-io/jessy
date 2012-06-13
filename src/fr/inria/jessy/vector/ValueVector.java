@@ -34,7 +34,8 @@ import com.sleepycat.persist.model.Persistent;
  *            the type of the values of the vector.
  */
 @Persistent
-public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Externalizable{
+public class ValueVector<K, V extends Comparable<V>> implements Cloneable,
+		Externalizable {
 
 	//
 	// CONSTANTS
@@ -75,14 +76,14 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 	//
 	// CONSTRUCTORS
 	//
-	
+
 	/**
 	 * To be externalizable.
 	 */
-	public ValueVector(){
-		
+	public ValueVector() {
+
 	}
-	
+
 	/**
 	 * Creates a new empty value vector with the specified default value.
 	 * 
@@ -90,7 +91,7 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 	 *            the default associated to a non-existing key.
 	 * 
 	 */
-	
+
 	public ValueVector(V bydefault) {
 		this.map = new HashMap<K, V>();
 		this.bydefault = bydefault;
@@ -100,7 +101,7 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 	 * @inheritDoc
 	 */
 	public String toString() {
-		return (map!=null) ? map.toString() : "";
+		return (map != null) ? map.toString() : "";
 	}
 
 	//
@@ -136,9 +137,17 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 		}
 		return bydefault;
 	}
-	
-	public Set<Map.Entry<K,V>> getEntrySet(){
+
+	public Set<Map.Entry<K, V>> getEntrySet() {
 		return map.entrySet();
+	}
+
+	protected HashMap<K, V> getMap() {
+		return map;
+	}
+
+	protected void setMap(HashMap<K, V> map) {
+		this.map = map;
 	}
 
 	//
@@ -166,10 +175,10 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 	// COMPRESSION
 	//
 	/**
-	 * Compresses the specified vector with respect to this vector and
-	 * supersede this vector with the specified vector. The method returns a
-	 * new vector containing entries of the specified vector that do not exist
-	 * in this vector. It then replaces this vector with the specified vector.
+	 * Compresses the specified vector with respect to this vector and supersede
+	 * this vector with the specified vector. The method returns a new vector
+	 * containing entries of the specified vector that do not exist in this
+	 * vector. It then replaces this vector with the specified vector.
 	 * 
 	 * @param vector
 	 *            the vector to compress.
@@ -209,7 +218,7 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 
 	//
 	// OBJECT COMPARISON
-	// 
+	//
 	/**
 	 * @inheritDoc
 	 */
@@ -264,7 +273,6 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 			return GREATER_THAN;
 		}
 
-
 		// compare values pairs one by one
 		int global = 0;
 		Set<K> remaining = new HashSet<K>(other.map.keySet());
@@ -273,17 +281,17 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 			int local = getValue(key).compareTo(other.getValue(key));
 			if (global == 0 && local != 0) {
 				global = local;
-			} else if (global != 0 && global * local < 0) { 
+			} else if (global != 0 && global * local < 0) {
 				return NOT_COMPARABLE;
 			}
 			remaining.remove(key);
 		}
-		
+
 		for (K key : remaining) {
 			int local = getValue(key).compareTo(other.getValue(key));
 			if (global == 0 && local != 0) {
 				global = local;
-			} else if (global != 0 && global * local < 0) { 
+			} else if (global != 0 && global * local < 0) {
 				return NOT_COMPARABLE;
 			}
 		}
@@ -293,17 +301,18 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 			return EQUAL_TO;
 		}
 		return global < 0 ? LOWER_THAN : GREATER_THAN;
-		
+
 	}
-	
-	public void setBydefault(V bydefault){
-		this.bydefault=bydefault;
+
+	public void setBydefault(V bydefault) {
+		this.bydefault = bydefault;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
 		map = (HashMap<K, V>) in.readObject();
-	} 
+	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(map);
@@ -327,6 +336,4 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,Extern
 		}
 	}
 
-	
 }
-
