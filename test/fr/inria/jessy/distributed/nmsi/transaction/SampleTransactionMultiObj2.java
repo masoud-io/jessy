@@ -20,7 +20,7 @@ public class SampleTransactionMultiObj2 extends Transaction {
 			
 			SampleEntityClass se2=read(SampleEntityClass.class, "1");
 			
-			Sample2EntityClass se=read(Sample2EntityClass.class, "1");			
+			Sample2EntityClass se=read(Sample2EntityClass.class, "2");			
 			
 			se.setData("Second Trans");
 			write(se);

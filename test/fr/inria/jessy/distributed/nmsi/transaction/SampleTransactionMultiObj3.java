@@ -17,7 +17,7 @@ public class SampleTransactionMultiObj3 extends Transaction {
 	
 			Thread.sleep(2000);
 			
-			Sample2EntityClass se=read(Sample2EntityClass.class, "1");			
+			Sample2EntityClass se=read(Sample2EntityClass.class, "2");			
 			se.setData("Second Trans");
 			write(se);
 			

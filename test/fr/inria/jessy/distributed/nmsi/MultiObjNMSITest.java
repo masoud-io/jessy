@@ -33,9 +33,9 @@ import fr.inria.jessy.transaction.TransactionState;
  *         {@link Sample2EntityInitTransaction} initialize two obejcts.
  *         {@link SampleTransactionMultiObj1} reads and writes on the first
  *         object. {@link SampleTransactionMultiObj3} reads and writes on the
- *         second object. {@link SampleTransactionMultiObj3} reads the initial
+ *         second object. {@link SampleTransactionMultiObj2} reads the initial
  *         values of two objects and writes after all transaction has been
- *         committed. Therefore, {@link SampleTransactionMultiObj3} should abort
+ *         committed. Therefore, {@link SampleTransactionMultiObj2} should abort
  *         by the certification test, and the other should commit. There is also
  *         one read only transaction {@link SampleTransactionMultiObj4} that
  *         first reads the initial value for {@link SampleEntityClass} and when
@@ -73,7 +73,8 @@ public class MultiObjNMSITest extends TestCase {
 	 * {@link fr.inria.jessy.transaction.Transaction#Transaction(fr.inria.jessy.Jessy, fr.inria.jessy.transaction.TransactionHandler)}
 	 * .
 	 * 
-	 * It sets {@code retryCommitOnAbort to false. Thus transaction {@code SampleTransactionMultiObj2} must abort}
+	 * It sets {@code retryCommitOnAbort to false. Thus transaction {
+	 * @code SampleTransactionMultiObj2} must abort}
 	 * 
 	 * @throws Exception
 	 */
@@ -84,17 +85,15 @@ public class MultiObjNMSITest extends TestCase {
 		Future<ExecutionHistory> futureInit1;
 		futureInit1 = pool.submit(new SampleEntityInitTransaction(jessy));
 
-//		Future<ExecutionHistory> futureInit2;
-//		futureInit2 = pool.submit(new Sample2EntityInitTransaction(jessy));
-
 		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransactionMultiObj1(jessy));
 
-		SampleTransactionMultiObj2 myTran=new SampleTransactionMultiObj2(jessy);
+		SampleTransactionMultiObj2 myTran = new SampleTransactionMultiObj2(
+				jessy);
 		myTran.setRetryCommitOnAbort(false);
 		Future<ExecutionHistory> future2;
 		future2 = pool.submit(myTran);
-		
+
 		Future<ExecutionHistory> future3;
 		future3 = pool.submit(new SampleTransactionMultiObj3(jessy));
 
@@ -105,17 +104,12 @@ public class MultiObjNMSITest extends TestCase {
 		assertEquals("Result", TransactionState.COMMITTED,
 				resultInit1.getTransactionState());
 
-//		ExecutionHistory resultInit2 = futureInit2.get();
-//		assertEquals("Result", TransactionState.COMMITTED,
-//				resultInit2.getTransactionState());
-
 		ExecutionHistory result1 = future1.get();
 		assertEquals("Result", TransactionState.COMMITTED,
 				result1.getTransactionState());
-		
+
 		ExecutionHistory result2 = future2.get();
-		assertEquals("Result", TransactionState.ABORTED_BY_CERTIFICATION,
-				result2.getTransactionState());
+		assertNotSame(TransactionState.COMMITTED, result2.getTransactionState());
 
 		ExecutionHistory result3 = future3.get();
 		assertEquals("Result", TransactionState.COMMITTED,
@@ -132,7 +126,8 @@ public class MultiObjNMSITest extends TestCase {
 	 * {@link fr.inria.jessy.transaction.Transaction#Transaction(fr.inria.jessy.Jessy, fr.inria.jessy.transaction.TransactionHandler)}
 	 * .
 	 * 
-	 * It sets {@code retryCommitOnAbort to True. Thus transaction {@code SampleTransactionMultiObj2} must Commit}
+	 * It sets {@code retryCommitOnAbort to True. Thus transaction {
+	 * @code SampleTransactionMultiObj2} must Commit}
 	 * 
 	 * @throws Exception
 	 */
@@ -143,17 +138,15 @@ public class MultiObjNMSITest extends TestCase {
 		Future<ExecutionHistory> futureInit1;
 		futureInit1 = pool.submit(new SampleEntityInitTransaction(jessy));
 
-//		Future<ExecutionHistory> futureInit2;
-//		futureInit2 = pool.submit(new Sample2EntityInitTransaction(jessy));
-
 		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransactionMultiObj1(jessy));
 
-		SampleTransactionMultiObj2 myTran=new SampleTransactionMultiObj2(jessy);
+		SampleTransactionMultiObj2 myTran = new SampleTransactionMultiObj2(
+				jessy);
 		myTran.setRetryCommitOnAbort(true);
 		Future<ExecutionHistory> future2;
 		future2 = pool.submit(myTran);
-		
+
 		Future<ExecutionHistory> future3;
 		future3 = pool.submit(new SampleTransactionMultiObj3(jessy));
 
@@ -164,14 +157,10 @@ public class MultiObjNMSITest extends TestCase {
 		assertEquals("Result", TransactionState.COMMITTED,
 				resultInit1.getTransactionState());
 
-//		ExecutionHistory resultInit2 = futureInit2.get();
-//		assertEquals("Result", TransactionState.COMMITTED,
-//				resultInit2.getTransactionState());
-
 		ExecutionHistory result1 = future1.get();
 		assertEquals("Result", TransactionState.COMMITTED,
 				result1.getTransactionState());
-		
+
 		ExecutionHistory result2 = future2.get();
 		assertEquals("Result", TransactionState.COMMITTED,
 				result2.getTransactionState());
