@@ -19,7 +19,7 @@ public class VectorMessage extends MulticastMessage {
 		super(vector, dest, gsource, source);
 	}
 
-	public VersionVector<String> getVote() {
+	public VersionVector<String> getVersionVector() {
 		return (VersionVector) serializable;
 	}
 

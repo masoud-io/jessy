@@ -86,18 +86,18 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		 * increaments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
-//			for (JessyEntity tmp : executionHistory.getCreateSet()
-//					.getEntities()) {
-//				/*
-//				 * set the selfkey of the created vector and put it back in the
-//				 * entity
-//				 */
-//				tmp.getLocalVector().increament();
-//			}			
+			// for (JessyEntity tmp : executionHistory.getCreateSet()
+			// .getEntities()) {
+			// /*
+			// * set the selfkey of the created vector and put it back in the
+			// * entity
+			// */
+			// tmp.getLocalVector().increament();
+			// }
 
 			executionHistory.getWriteSet().addEntity(
 					executionHistory.getCreateSet());
-			
+
 			logger.debug(executionHistory.getTransactionHandler() + " >> "
 					+ transactionType.toString()
 					+ " >> INIT_TRANSACTION COMMITTED");
@@ -124,7 +124,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 						.getEntity().iterator().next();
 
 				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
+						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 					return false;
 				}
 
@@ -144,7 +144,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 */
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
-
 
 		/*
 		 * updatedVector is a new vector. It will be used as a new vector for
@@ -227,8 +226,9 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	@Override
 	public void learn(Stream s, Serializable v) {
 		if (v instanceof VectorMessage) {
-			VersionVector<String> updatedVector = (VersionVector) v;
-			VersionVector.observedCommittedTransactions.update(updatedVector);
+			VectorMessage msg = (VectorMessage) v;
+			VersionVector.observedCommittedTransactions.update(msg
+					.getVersionVector());
 		}
 	}
 

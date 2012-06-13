@@ -27,6 +27,8 @@ public class VectorPropagation {
 	/**
 	 * Multicast the msg
 	 * 
+	 * TODO java.util.ConcurrentModificationException if it is not synchronized
+	 * 
 	 * @param msg
 	 */
 	public void propagate(VectorMessage msg) {
