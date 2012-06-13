@@ -17,6 +17,7 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.vector.Vector;
 
 public class Serializability extends Consistency {
 
@@ -79,8 +80,8 @@ public class Serializability extends Consistency {
 								"secondaryKey", tmp.getKey(), null))
 						.getEntity().iterator().next();
 
-				if (!lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())) {
+				if (lastComittedEntity.getLocalVector().isCompatible(
+						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
 					logger.warn("Certification fails for transaction "
 							+ executionHistory.getTransactionHandler().getId()
 							+ " because it has written " + tmp.getKey()
@@ -108,8 +109,8 @@ public class Serializability extends Consistency {
 								"secondaryKey", tmp.getKey(), null))
 						.getEntity().iterator().next();
 
-				if (!lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())) {
+				if (lastComittedEntity.getLocalVector().isCompatible(
+						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
 
 					logger.warn("Certification fails for transaction "
 							+ executionHistory.getTransactionHandler().getId()

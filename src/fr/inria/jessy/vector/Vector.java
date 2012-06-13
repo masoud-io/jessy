@@ -10,6 +10,21 @@ import com.sleepycat.persist.model.Persistent;
 @Persistent
 public abstract class Vector<K> extends ValueVector<K, Integer> implements
 		Externalizable {
+	
+	public enum CompatibleResult {
+		/**
+		 * The two vectors are compatibles.
+		 */
+		COMPATIBLE,
+		/**
+		 * The two vectors are not compatibles.
+		 */
+		NOT_COMPATIBLE,
+		/**
+		 * The two vectors are not compatibles and any version of this entity can be compatible with this vector
+		 */
+		NEVER_COMPATIBLE,
+	};
 
 	K selfKey;
 	private final static Integer _bydefault = -1;
@@ -36,7 +51,7 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 	 * @return
 	 * @throws NullPointerException
 	 */
-	public abstract boolean isCompatible(Vector<K> other)
+	public abstract CompatibleResult isCompatible(Vector<K> other)
 			throws NullPointerException;
 
 	/**
@@ -50,7 +65,7 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 	 * @return true if the entity can be read, otherwise false.
 	 * @throws NullPointerException
 	 */
-	public abstract boolean isCompatible(CompactVector<K> other)
+	public abstract CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException;
 
 	public abstract void update(CompactVector<K> readSet,

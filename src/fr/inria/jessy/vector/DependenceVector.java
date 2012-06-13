@@ -36,7 +36,7 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 	}
 
 	@Override
-	public boolean isCompatible(Vector<K> other) throws NullPointerException {
+	public CompatibleResult isCompatible(Vector<K> other) throws NullPointerException {
 		// check special values
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
@@ -50,14 +50,14 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 
 		if (selfValueOnSelfKey >= otherValueOnSelfKey
 				&& otherValueOnOtherKey >= selfValueOnOtherKey) {
-			return true;
+			return Vector.CompatibleResult.COMPATIBLE;
 		}
 
-		return false;
+		return Vector.CompatibleResult.NOT_COMPATIBLE;
 	}
 
 	@Override
-	public boolean isCompatible(CompactVector<K> other)
+	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
 		// check special values
 
@@ -66,13 +66,13 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 		}
 
 		if (other.size() == 0)
-			return true;
+			return Vector.CompatibleResult.COMPATIBLE;
 
 		Integer selfValueOnSelfKey = getSelfValue();
 		Integer otherValueOnSelfKey = other.getValue(selfKey);
 
 		if (selfValueOnSelfKey < otherValueOnSelfKey) {
-			return false;
+			return Vector.CompatibleResult.NOT_COMPATIBLE;
 		}
 
 		Integer selfValueOnOtherKey;
@@ -83,12 +83,12 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 			otherValueOnOtherKey = other.getValue(k);
 
 			if (otherValueOnOtherKey < selfValueOnOtherKey) {
-				return false;
+				return Vector.CompatibleResult.NOT_COMPATIBLE;
 			}
 
 		}
 
-		return true;
+		return Vector.CompatibleResult.COMPATIBLE;
 	}
 
 	/**

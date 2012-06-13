@@ -262,11 +262,18 @@ public class DataStore {
 			}
 
 			while (entity != null) {
-				if (entity.getLocalVector().isCompatible(readSet)) {
+				if (entity.getLocalVector().isCompatible(readSet)==Vector.CompatibleResult.COMPATIBLE) {
 					cur.close();
 					return entity;
 				} else {
-					entity = cur.prev();
+					if (entity.getLocalVector().isCompatible(readSet)==Vector.CompatibleResult.NOT_COMPATIBLE) {
+						entity = cur.prev();
+					}
+//					NEVER_COMPATIBLE
+					else {
+						cur.close();
+						break;
+					}
 				}
 			}
 
@@ -323,7 +330,7 @@ public class DataStore {
 				for (E entity : cur) {
 					// FIXME Should the readSet be updated updated upon each
 					// read?!
-					if (entity.getLocalVector().isCompatible(readSet)) {
+					if (entity.getLocalVector().isCompatible(readSet)==Vector.CompatibleResult.COMPATIBLE) {
 						// Always writes the most recent committed version
 						results.put(entity.getKey(), entity);
 					}
@@ -402,7 +409,7 @@ public class DataStore {
 				}
 
 				while (entity != null) {
-					if (entity.getLocalVector().isCompatible(rr.getReadSet())) {
+					if (entity.getLocalVector().isCompatible(rr.getReadSet())==Vector.CompatibleResult.COMPATIBLE) {
 						ret.add(new ReadReply<JessyEntity>(entity, rr.getReadRequestId()));
 						break;
 					} else {

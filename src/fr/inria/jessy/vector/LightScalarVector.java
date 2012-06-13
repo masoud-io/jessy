@@ -39,12 +39,12 @@ public class LightScalarVector<K> extends Vector<K> implements Externalizable {
 	}
 
 	@Override
-	public boolean isCompatible(Vector<K> other) throws NullPointerException {
+	public CompatibleResult isCompatible(Vector<K> other) throws NullPointerException {
 
 		if (getSelfValue().equals(other.getSelfValue()))
-			return true;
+			return Vector.CompatibleResult.COMPATIBLE;
 		else
-			return false;
+			return Vector.CompatibleResult.NOT_COMPATIBLE;
 
 	}
 
@@ -53,9 +53,9 @@ public class LightScalarVector<K> extends Vector<K> implements Externalizable {
 	 * committed entity.
 	 */
 	@Override
-	public boolean isCompatible(CompactVector<K> other)
+	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
-		return true;
+		return Vector.CompatibleResult.COMPATIBLE;
 	}
 
 	@Override

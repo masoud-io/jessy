@@ -93,8 +93,8 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 								"secondaryKey", tmp.getKey(), null))
 						.getEntity().iterator().next();
 
-				if (!lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())) {
+				if (lastComittedEntity.getLocalVector().isCompatible(
+						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
 					return false;
 				}
 

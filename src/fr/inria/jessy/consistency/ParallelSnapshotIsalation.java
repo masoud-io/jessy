@@ -115,8 +115,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 								"secondaryKey", tmp.getKey(), null))
 						.getEntity().iterator().next();
 
-				if (!lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())) {
+				if (lastComittedEntity.getLocalVector().isCompatible(
+						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
 					return false;
 				}
 

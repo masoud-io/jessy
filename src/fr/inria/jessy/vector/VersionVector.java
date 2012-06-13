@@ -41,15 +41,15 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	 * the first.
 	 */
 	@Override
-	public boolean isCompatible(Vector<K> other) throws NullPointerException {
+	public CompatibleResult isCompatible(Vector<K> other) throws NullPointerException {
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
 		}
 
 		if (this.getValue(selfKey).equals(other.getValue(selfKey)))
-			return true;
+			return Vector.CompatibleResult.COMPATIBLE;
 		else
-			return false;
+			return Vector.CompatibleResult.NOT_COMPATIBLE;
 
 	}
 
@@ -58,19 +58,19 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	 * messages have been applied to local datastore!
 	 */
 	@Override
-	public boolean isCompatible(CompactVector<K> other)
+	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
 
 		if (other == null)
 			throw new NullPointerException("Input Vector is Null");
 
 		if (other.size() == 0)
-			return true;
+			return Vector.CompatibleResult.COMPATIBLE;
 
 		if (getValue(selfKey) < other.getValue(selfKey))
-			return true;
+			return Vector.CompatibleResult.COMPATIBLE;
 		else
-			return false;
+			return Vector.CompatibleResult.NOT_COMPATIBLE;
 	}
 
 	@Override

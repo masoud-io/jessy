@@ -24,14 +24,14 @@ public class NullVector<K> extends Vector<K> implements Externalizable{
 
 	
 	@Override
-	public boolean isCompatible(Vector<K> other) throws NullPointerException {
-		return true;
+	public CompatibleResult isCompatible(Vector<K> other) throws NullPointerException {
+		return Vector.CompatibleResult.COMPATIBLE;
 	}
 
 	@Override
-	public boolean isCompatible(CompactVector<K> other)
+	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
-		return true;
+		return Vector.CompatibleResult.COMPATIBLE;
 	}
 
 	@Override

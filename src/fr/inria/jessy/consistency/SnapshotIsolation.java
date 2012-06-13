@@ -16,6 +16,7 @@ import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.ScalarVector;
+import fr.inria.jessy.vector.Vector;
 
 //TODO COMMENT ME
 public class SnapshotIsolation extends Consistency {
@@ -90,14 +91,13 @@ public class SnapshotIsolation extends Consistency {
 								"secondaryKey", tmp.getKey(), null))
 						.getEntity().iterator().next();
 
-				if (!lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())) {
+				if (lastComittedEntity.getLocalVector().isCompatible(
+						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
 					
 					logger.debug("lastCommitted: "+ lastComittedEntity.getLocalVector()+" tmp: "+ tmp.getLocalVector());
 					
 					return false;
 				}
-
 			} catch (NullPointerException e) {
 				// nothing to do.
 				// the key is simply not there.

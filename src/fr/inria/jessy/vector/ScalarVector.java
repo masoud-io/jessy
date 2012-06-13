@@ -36,7 +36,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	 * up to the first
 	 */
 	@Override
-	public boolean isCompatible(Vector<K> other) throws NullPointerException {	
+	public CompatibleResult isCompatible(Vector<K> other) throws NullPointerException {	
 		return check(other);
 	}
 
@@ -45,7 +45,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	 * up to the first
 	 */
 	@Override
-	public boolean isCompatible(CompactVector<K> other)
+	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
 
 		if (other.size()==0){
@@ -56,7 +56,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 			 * of the first read to the lastCommittedTransactionSeqNumber  
 			 */
 			this.update(lastCommittedTransactionSeqNumber.get());
-			return true;
+			return CompatibleResult.COMPATIBLE;
 		}
 		else{
 			return check(other);
@@ -75,7 +75,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 	}
 	
 	@SuppressWarnings("unchecked")
-	private boolean check(ValueVector other) {
+	private CompatibleResult check(ValueVector other) {
 		
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
@@ -87,22 +87,17 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 		 * this site has not received yet the required version
 		 */
 		if(otherValue>lastCommittedTransactionSeqNumber.get()){
-			
-//			TODO
-			System.err.println("otherValue("+otherValue+")>lastCommittedTransactionSeqNumber" +
-					"("+lastCommittedTransactionSeqNumber.get()+"), system will exit");
-			System.exit(-1);
-//			return do_not_retry;
+			return CompatibleResult.NEVER_COMPATIBLE;
 		}
 		
 		Integer selfValue = getValue(selfKey);
 		
 		
 		if(selfValue<=otherValue){ 
-			return true;
+			return CompatibleResult.COMPATIBLE;
 		}
 		
-		return false;
+		return CompatibleResult.NOT_COMPATIBLE;
 	}
 	
 	@Override
