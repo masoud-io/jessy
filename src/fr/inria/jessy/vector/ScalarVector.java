@@ -97,7 +97,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable{
 			return CompatibleResult.COMPATIBLE;
 		}
 		
-		return CompatibleResult.NOT_COMPATIBLE;
+		return CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 	}
 	
 	@Override

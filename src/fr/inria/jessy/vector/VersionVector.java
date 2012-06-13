@@ -49,7 +49,7 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 		if (this.getValue(selfKey).equals(other.getValue(selfKey)))
 			return Vector.CompatibleResult.COMPATIBLE;
 		else
-			return Vector.CompatibleResult.NOT_COMPATIBLE;
+			return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 
 	}
 
@@ -70,7 +70,7 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 		if (getValue(selfKey) < other.getValue(selfKey))
 			return Vector.CompatibleResult.COMPATIBLE;
 		else
-			return Vector.CompatibleResult.NOT_COMPATIBLE;
+			return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 	}
 
 	@Override

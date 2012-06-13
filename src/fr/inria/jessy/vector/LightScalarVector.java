@@ -44,7 +44,7 @@ public class LightScalarVector<K> extends Vector<K> implements Externalizable {
 		if (getSelfValue().equals(other.getSelfValue()))
 			return Vector.CompatibleResult.COMPATIBLE;
 		else
-			return Vector.CompatibleResult.NOT_COMPATIBLE;
+			return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 
 	}
 

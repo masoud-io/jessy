@@ -266,7 +266,7 @@ public class DataStore {
 					cur.close();
 					return entity;
 				} else {
-					if (entity.getLocalVector().isCompatible(readSet)==Vector.CompatibleResult.NOT_COMPATIBLE) {
+					if (entity.getLocalVector().isCompatible(readSet)==Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
 						entity = cur.prev();
 					}
 //					NEVER_COMPATIBLE

@@ -19,7 +19,7 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 		/**
 		 * The two vectors are not compatibles.
 		 */
-		NOT_COMPATIBLE,
+		NOT_COMPATIBLE_TRY_NEXT,
 		/**
 		 * The two vectors are not compatibles and any version of this entity can be compatible with this vector
 		 */

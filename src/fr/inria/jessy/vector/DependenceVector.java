@@ -53,7 +53,7 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 			return Vector.CompatibleResult.COMPATIBLE;
 		}
 
-		return Vector.CompatibleResult.NOT_COMPATIBLE;
+		return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 		Integer otherValueOnSelfKey = other.getValue(selfKey);
 
 		if (selfValueOnSelfKey < otherValueOnSelfKey) {
-			return Vector.CompatibleResult.NOT_COMPATIBLE;
+			return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 		}
 
 		Integer selfValueOnOtherKey;
@@ -83,7 +83,7 @@ public class DependenceVector<K> extends Vector<K> implements Externalizable {
 			otherValueOnOtherKey = other.getValue(k);
 
 			if (otherValueOnOtherKey < selfValueOnOtherKey) {
-				return Vector.CompatibleResult.NOT_COMPATIBLE;
+				return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 			}
 
 		}
