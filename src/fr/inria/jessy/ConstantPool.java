@@ -25,13 +25,20 @@ public class ConstantPool {
 	public static final String JESSY_SERVER_GROUP = "JSERV";
 	public static final int JESSY_SERVER_PORT = 4480;
 
-	public static final String JESSY_ALL_REPLICA_GROUP = "JALLR";
-	public static final int JESSY_ALL_REPLICA_PORT = 4481;
+	public static final String JESSY_ALL_SERVERS_GROUP = "JALLSERVERS";
+	public static final int JESSY_ALL_SERVERS_PORT = 4481;
 
 	public static final int GROUP_SIZE = 1;
 
 	/**
-	 * Atomic Broadcast Configs
+	 * Communication layer related constants
+	 */
+	public static final String JESSY_TERMINATION_STREAM = "JSTERM";
+	public static final String JESSY_VOTE_STREAM = "JVOTE";
+	public static final String JESSY_READER_STREAM = "JREADER";
+	
+	/**
+	 * GPaxos Configs
 	 */
 	public static final int MAX_INTERGROUP_MESSAGE_DELAY = 3000;
 	public static final int CONSENSUS_LATENCY = 2000;

@@ -335,11 +335,7 @@ public class DistributedJessy extends Jessy {
 	 */
 	public static void main(String args[]) {
 		try {
-
-			// Logging.
-			PerformanceProbe.setOutput("/dev/stdout");
 			PropertyConfigurator.configure("log4j.properties");
-
 			final DistributedJessy j = DistributedJessy.getInstance();
 			j.open();
 			SignalHandler sh = new SignalHandler() {

@@ -82,8 +82,7 @@ public class DistributedTermination implements Learner {
 		group = JessyGroupManager.getInstance().getMyGroup();
 		terminationCommunication = jessy.getConsistency()
 				.getOrCreateTerminationCommunication(group, this);
-		logger.info("Distributed Termination is initialized. Its group is : "
-				+ group.name());
+		logger.info("initialized");
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
@@ -284,7 +283,7 @@ public class DistributedTermination implements Learner {
 					.getTransactionHandler());
 
 			logger.debug("A node in Group " + group
-					+ " is Atomic Multicasting "
+					+ " send a termination message "
 					+ executionHistory.getTransactionHandler().getId() + " to "
 					+ destGroups);
 			/*
@@ -363,10 +362,6 @@ public class DistributedTermination implements Learner {
 				Vote vote = new Vote(msg.getExecutionHistory()
 						.getTransactionHandler(), isAborted, group.name());
 
-				// Set<String> dest1 = jessy.partitioner.resolveNames(msg
-				// .getExecutionHistory().getWriteSet().getKeys());
-				// dest1.addAll(jessy.partitioner.resolveNames(msg
-				// .getExecutionHistory().getCreateSet().getKeys()));
 				/*
 				 * The votes will be sent to all concerned keys. Note that the
 				 * optimization to only send the votes to the nodes replicating

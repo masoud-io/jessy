@@ -104,8 +104,8 @@ public class JessyGroupManager {
 			Collection<Integer> replicas = new HashSet<Integer>(
 					fractal.membership.allNodes());
 			allReplicaGroup = fractal.membership.getOrCreateTCPGroup(
-					ConstantPool.JESSY_ALL_REPLICA_GROUP,
-					ConstantPool.JESSY_ALL_REPLICA_PORT);
+					ConstantPool.JESSY_ALL_SERVERS_GROUP,
+					ConstantPool.JESSY_ALL_SERVERS_PORT);
 			allReplicaGroup.putNodes(replicas);
 
 			/*
@@ -137,10 +137,10 @@ public class JessyGroupManager {
 			 * Start fractal
 			 */
 			if (!isProxy) {
-				logger.info("Server mode (" + myReplicaGroup + ")");
+				logger.info("Server mode");
 				myGroup = myReplicaGroup;
 			} else {
-				logger.info("Proxy mode");
+				logger.info("proxy mode");
 				myGroup = everybodyGroup;
 			}
 			

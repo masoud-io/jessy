@@ -168,9 +168,6 @@ public class SnapshotIsolation extends Consistency {
 	public TerminationCommunication getOrCreateTerminationCommunication(
 			Group group, Learner learner){
 		if (terminationCommunication == null){
-			
-
-			Group acceptorGroup = manager.getReplicaGroups().iterator().next();
 			terminationCommunication = new NonGenuineTerminationCommunication(group,  learner);
 			 
 		}

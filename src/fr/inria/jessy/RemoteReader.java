@@ -80,10 +80,8 @@ public class RemoteReader implements Learner {
 		jessy = j;
 		remoteReadStream = FractalManager.getInstance()
 				.getOrCreateMulticastStream(
-						JessyGroupManager.getInstance()
-								.getEverybodyGroup().name(),
-						JessyGroupManager.getInstance()
-								.getEverybodyGroup().name());
+						ConstantPool.JESSY_READER_STREAM,
+						JessyGroupManager.getInstance().getEverybodyGroup().name());
 		remoteReadStream.registerLearner("ReadRequestMessage", this);
 		remoteReadStream.registerLearner("ReadReplyMessage", this);
 		remoteReadStream.start();
@@ -337,8 +335,10 @@ public class RemoteReader implements Learner {
 						List<ReadReply<JessyEntity>> replies = jessy
 								.getDataStore().getAll(
 										pendingRequests.get(dest));
-						remoteReadStream.unicast(new ReadReplyMessage(replies),
-								dest);
+						if(replies.isEmpty()){
+							logger.warn("read requests " + pendingRequests +" failed");
+						}
+						remoteReadStream.unicast(new ReadReplyMessage(replies), dest);
 					}
 					serverAnsweringTime.stop();
 
