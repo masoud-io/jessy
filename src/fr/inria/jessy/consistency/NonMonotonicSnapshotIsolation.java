@@ -1,6 +1,5 @@
 package fr.inria.jessy.consistency;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 

@@ -31,8 +31,8 @@ workload=com.yahoo.ycsb.workloads.TransactionalWorkload
 insertorder=linear
 readallfields=true
 
-readproportion=0.8
-updateproportion=0.2
+readproportion=0.9
+updateproportion=0.1
 scanproportion=0
 insertproportion=0
 

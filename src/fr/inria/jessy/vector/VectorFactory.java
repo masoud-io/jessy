@@ -3,38 +3,32 @@ package fr.inria.jessy.vector;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import net.sourceforge.fractal.FractalManager;
-
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 
 
 public class VectorFactory {
 
-	private static String vectorType = readConfig();
+	private static String consType = readConfig();
 
 	public static <K> Vector<K> getVector(K selfKey) {
-		if (vectorType.equals("dependencevector")) {
+		if (consType.equals("nmsi")) {
 			return new DependenceVector<K>(selfKey);
 		}
-		if(vectorType.equals("nullvector")){
+		if(consType.equals("rc")){
 			return new NullVector<K>(selfKey);
 		}
-		if(vectorType.equals("lightscalarvector")){
+		if(consType.equals("ser")){
 			return new LightScalarVector<K>(selfKey);
 		}
-		if(vectorType.equals("scalarvector")){
+		if(consType.equals("si")){
 			return new ScalarVector<K>();
 		}
-		if(vectorType.equals("versionvector")){
+		if(consType.equals("psi")){
 			return new VersionVector<K>((K)JessyGroupManager.getInstance().getMyGroup().name());
 		}
 		
 		return null;
-	}
-	
-	public static void changeConfig(String t){
-		vectorType=t;
 	}
 	
 	private static String readConfig() {
@@ -44,7 +38,7 @@ public class VectorFactory {
 			FileInputStream MyInputStream = new FileInputStream(
 					ConstantPool.CONFIG_PROPERTY);
 			myProps.load(MyInputStream);
-			vectorType = myProps.getProperty(ConstantPool.VECTOR_TYPE);
+			vectorType = myProps.getProperty(ConstantPool.CONSISTENCY_TYPE);
 			MyInputStream.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();

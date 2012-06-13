@@ -1,25 +1,34 @@
 package fr.inria.jessy.consistency;
 
+import org.apache.log4j.Logger;
+
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.utils.Configuration;
 
 public class ConsistencyFactory {
 
-	private static String ConsistencyType = Configuration
-			.readConfig(ConstantPool.CONSISTENCY_TYPE);
+	private static Logger logger = Logger.getLogger(ConsistencyFactory.class);
+
+	private static String consistencyType;
+
+	static {
+		consistencyType = Configuration
+				.readConfig(ConstantPool.CONSISTENCY_TYPE);
+		logger.warn("Consistency is " + consistencyType);
+	}
 
 	public static Consistency getConsistency(DataStore dataStore) {
 
-		if (ConsistencyType.equals("nmsi")) {
+		if (consistencyType.equals("nmsi")) {
 			return new NonMonotonicSnapshotIsolation(dataStore);
-		} else if (ConsistencyType.equals("si")) {
+		} else if (consistencyType.equals("si")) {
 			return new SnapshotIsolation(dataStore);
-		} else if (ConsistencyType.equals("ser")) {
+		} else if (consistencyType.equals("ser")) {
 			return new Serializability(dataStore);
-		} else if (ConsistencyType.equals("rc")) {
+		} else if (consistencyType.equals("rc")) {
 			return new ReadComitted(dataStore);
-		} else if (ConsistencyType.equals("psi")) {
+		} else if (consistencyType.equals("psi")) {
 			return new ParallelSnapshotIsalation(dataStore);
 		}
 		return null;
