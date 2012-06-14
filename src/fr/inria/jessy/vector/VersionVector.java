@@ -27,8 +27,7 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	 * this Vector plays the role of a vector assigned to each jessy server in
 	 * the system.
 	 */
-	public static VersionVector<String> observedCommittedTransactions = new VersionVector<String>(
-			JessyGroupManager.getInstance().getMyGroup().name());
+	public static ConcurrentVersionVector<String> observedCommittedTransactions = new ConcurrentVersionVector<String>();
 
 	@Deprecated
 	public VersionVector() {
@@ -46,7 +45,8 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	 *             version up to the first.
 	 */
 	@Override
-	public CompatibleResult isCompatible(Vector<K> other) throws NullPointerException {
+	public CompatibleResult isCompatible(Vector<K> other)
+			throws NullPointerException {
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
 		}
@@ -72,7 +72,8 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 			throw new NullPointerException("Input Vector is Null");
 
 		if (other.size() == 0) {
-			this.setMap((HashMap) observedCommittedTransactions.getMap());
+			this.setMap(new HashMap<K, Integer>(
+					(Map) observedCommittedTransactions.getMap()));
 			return Vector.CompatibleResult.COMPATIBLE;
 		}
 

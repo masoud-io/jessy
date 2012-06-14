@@ -153,8 +153,9 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
 
-		VersionVector.observedCommittedTransactions = (VersionVector<String>) updatedVector
-				.clone();
+		VersionVector.observedCommittedTransactions
+				.update(((VersionVector<String>) updatedVector.clone())
+						.getEntrySet());
 
 		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
 			updatedVector.setSelfKey(entity.getLocalVector().getSelfKey());
@@ -168,6 +169,13 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 */
 	@Override
 	public void postCommit(ExecutionHistory executionHistory) {
+
+		/*
+		 * Read-only transaction does not propagate
+		 */
+		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
+			return;
+
 		Set<String> alreadyNotified = new HashSet<String>();
 		Set<String> dest = new HashSet<String>();
 
@@ -175,7 +183,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 				.resolveNames(getConcerningKeys(executionHistory)));
 
 		/*
-		 * Compute the set of jessy groups that will not receive the vector.
+		 * Compute the set of jessy groups that have not receive the vector.
 		 * I.e., those groups that are not concerned by the transaction.
 		 */
 		for (Group group : JessyGroupManager.getInstance().getReplicaGroups()) {
@@ -184,12 +192,13 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			}
 		}
 
-		VectorMessage msg = new VectorMessage(
-				VersionVector.observedCommittedTransactions, dest,
-				JessyGroupManager.getInstance().getMyGroup().name(),
-				JessyGroupManager.getInstance().getSourceId());
-
-		propagation.propagate(msg);
+		if (dest.size() > 0) {
+			VectorMessage msg = new VectorMessage(
+					VersionVector.observedCommittedTransactions, dest,
+					JessyGroupManager.getInstance().getMyGroup().name(),
+					JessyGroupManager.getInstance().getSourceId());
+			propagation.propagate(msg);
+		}
 	}
 
 	/**
@@ -228,7 +237,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		if (v instanceof VectorMessage) {
 			VectorMessage msg = (VectorMessage) v;
 			VersionVector.observedCommittedTransactions.update(msg
-					.getVersionVector());
+					.getConcurrentVersionVector().getMap().entrySet());
 		}
 	}
 

@@ -4,6 +4,7 @@ import java.util.Set;
 
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.vector.ConcurrentVersionVector;
 import fr.inria.jessy.vector.VersionVector;
 
 public class VectorMessage extends MulticastMessage {
@@ -14,13 +15,13 @@ public class VectorMessage extends MulticastMessage {
 	public VectorMessage() {
 	}
 
-	public VectorMessage(VersionVector<String> vector, Set<String> dest,
+	public VectorMessage(ConcurrentVersionVector<String> vector, Set<String> dest,
 			String gsource, int source) {
 		super(vector, dest, gsource, source);
 	}
 
-	public VersionVector<String> getVersionVector() {
-		return (VersionVector) serializable;
+	public ConcurrentVersionVector<String> getConcurrentVersionVector() {
+		return (ConcurrentVersionVector) serializable;
 	}
 
 }
