@@ -73,7 +73,6 @@ public abstract class Jessy {
 
 	private ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
-	
 	// Map<AtomicInteger, EntitySet> committedWritesets;
 
 	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
@@ -91,7 +90,7 @@ public abstract class Jessy {
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 
 		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
-		
+
 	}
 
 	public DataStore getDataStore() {
@@ -357,13 +356,15 @@ public abstract class Jessy {
 	/**
 	 * Add the entity into the createSet.
 	 * <p>
-	 * TODO It should be checked whether this entity has been put or not. If the
-	 * above rule is ensured by the client, then create is much faster. (only
-	 * one write)
+	 * Upon create, all previous versions are removed from the store.
+	 * 
 	 */
 	public <E extends JessyEntity> void create(
 			TransactionHandler transactionHandler, E entity)
 			throws NullPointerException {
+
+//		dataStore.delete(entity.getClass().toString(), "secondaryKey",
+//				entity.getKey());
 
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);
@@ -477,14 +478,11 @@ public abstract class Jessy {
 	 * @param transactionHandler
 	 *            handler of a committed transaction.
 	 */
-	public abstract void applyModifiedEntities(ExecutionHistory executionHistory) ;
-
+	public abstract void applyModifiedEntities(ExecutionHistory executionHistory);
 
 	public void garbageCollectTransaction(TransactionHandler transactionHandler) {
 		handler2executionHistory.remove(transactionHandler);
 	}
-
-
 
 	public synchronized void registerClient(Object object) {
 		if (!activeClients.contains(object))

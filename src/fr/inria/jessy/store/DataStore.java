@@ -9,8 +9,6 @@ import java.util.Map;
 
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
-import org.apache.log4j.Logger;
-
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
@@ -35,8 +33,6 @@ import fr.inria.jessy.vector.Vector;
  */
 
 public class DataStore {
-	private static Logger logger = Logger.getLogger(DataStore.class);
-	
 	private Environment env;
 
 	protected static TimeRecorder curTime = new TimeRecorder(
@@ -87,7 +83,7 @@ public class DataStore {
 		// TODO database should be clean manually. EFFECT THE PERFORMANCE
 		// SUBSTANTIALLY
 		envConfig = envConfig.setLocking(true); // The cleaner becomes disable
-													// here!
+												// here!
 		// Influence the performance tremendously!
 		envConfig.setSharedCache(true); // Does not effect the prformance much!
 		// TODO subject to change for optimization
@@ -200,7 +196,8 @@ public class DataStore {
 	 * @param entity
 	 *            entity to put inside the store
 	 */
-	// FIXME need to GC old versions (there are some articles about this saying that 5 is a good number).
+	// FIXME need to GC old versions (there are some articles about this saying
+	// that 5 is a good number).
 	public <E extends JessyEntity> void put(E entity)
 			throws NullPointerException {
 		try {
@@ -262,14 +259,14 @@ public class DataStore {
 			}
 
 			while (entity != null) {
-				if (entity.getLocalVector().isCompatible(readSet)==Vector.CompatibleResult.COMPATIBLE) {
+				if (entity.getLocalVector().isCompatible(readSet) == Vector.CompatibleResult.COMPATIBLE) {
 					cur.close();
 					return entity;
 				} else {
-					if (entity.getLocalVector().isCompatible(readSet)==Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
+					if (entity.getLocalVector().isCompatible(readSet) == Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
 						entity = cur.prev();
 					}
-//					NEVER_COMPATIBLE
+					// NEVER_COMPATIBLE
 					else {
 						cur.close();
 						break;
@@ -330,7 +327,7 @@ public class DataStore {
 				for (E entity : cur) {
 					// FIXME Should the readSet be updated updated upon each
 					// read?!
-					if (entity.getLocalVector().isCompatible(readSet)==Vector.CompatibleResult.COMPATIBLE) {
+					if (entity.getLocalVector().isCompatible(readSet) == Vector.CompatibleResult.COMPATIBLE) {
 						// Always writes the most recent committed version
 						results.put(entity.getKey(), entity);
 					}
@@ -374,61 +371,67 @@ public class DataStore {
 		}
 
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <SK> List<ReadReply<JessyEntity>> getAll(
-			List<ReadRequest<JessyEntity>> readRequests) throws NullPointerException {
-		
-		if(readRequests.isEmpty())
+			List<ReadRequest<JessyEntity>> readRequests)
+			throws NullPointerException {
+
+		if (readRequests.isEmpty())
 			return java.util.Collections.EMPTY_LIST;
-		
-		List<ReadReply<JessyEntity>> ret = new ArrayList<ReadReply<JessyEntity>>(readRequests.size());		
-		EntityCursor<JessyEntity> cur=null;
+
+		List<ReadReply<JessyEntity>> ret = new ArrayList<ReadReply<JessyEntity>>(
+				readRequests.size());
+		EntityCursor<JessyEntity> cur = null;
 		String kindex = "";
 		SecondaryIndex<SK, Long, JessyEntity> sindex;
 
-		for(ReadRequest<JessyEntity> rr : readRequests){
+		for (ReadRequest<JessyEntity> rr : readRequests) {
 
-			if( !rr.isOneKeyRequest ){
-				ret.add(
-					new ReadReply<JessyEntity>(
-						get(rr.getEntityClassName(),rr.getMultiKeys(),rr.getReadSet()), rr.getReadRequestId()));
-			}else{
+			if (!rr.isOneKeyRequest) {
+				ret.add(new ReadReply<JessyEntity>(get(rr.getEntityClassName(),
+						rr.getMultiKeys(), rr.getReadSet()), rr
+						.getReadRequestId()));
+			} else {
 
 				ReadRequestKey rk = rr.getOneKey();
-				kindex =  rr.getEntityClassName() + rk.getKeyName();
-				sindex = (SecondaryIndex<SK, Long, JessyEntity>) secondaryIndexes.get(kindex);
+				kindex = rr.getEntityClassName() + rk.getKeyName();
+				sindex = (SecondaryIndex<SK, Long, JessyEntity>) secondaryIndexes
+						.get(kindex);
 				cur = sindex.subIndex((SK) rk.getKeyValue()).entities();
 
 				JessyEntity entity = cur.last();
 
 				if (rr.getReadSet() == null) {
-					ret.add(new ReadReply<JessyEntity>((JessyEntity)entity, rr.getReadRequestId()));
+					ret.add(new ReadReply<JessyEntity>((JessyEntity) entity, rr
+							.getReadRequestId()));
 					cur.close();
 					continue;
 				}
 
 				while (entity != null) {
-					if (entity.getLocalVector().isCompatible(rr.getReadSet())==Vector.CompatibleResult.COMPATIBLE) {
-						ret.add(new ReadReply<JessyEntity>(entity, rr.getReadRequestId()));
+					if (entity.getLocalVector().isCompatible(rr.getReadSet()) == Vector.CompatibleResult.COMPATIBLE) {
+						ret.add(new ReadReply<JessyEntity>(entity, rr
+								.getReadRequestId()));
 						break;
 					} else {
 						entity = cur.prev();
 					}
 				}
 
-				if(entity==null)
-					ret.add(new ReadReply<JessyEntity>((JessyEntity)null, rr.getReadRequestId()));
+				if (entity == null)
+					ret.add(new ReadReply<JessyEntity>((JessyEntity) null, rr
+							.getReadRequestId()));
 
 				cur.close();
-				
+
 			}
 		}
 
 		return ret;
-		
+
 	}
-	
+
 	/**
 	 * Delete an entity with the provided secondary key from the berkeyley DB.
 	 * 
@@ -447,10 +450,12 @@ public class DataStore {
 			String secondaryKeyName, SK keyValue) throws NullPointerException {
 		try {
 			@SuppressWarnings("unchecked")
-			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
-					.get(entityClassName + secondaryKeyName);
+			String compressedName=Compress.compressClassName(entityClassName);
 
-			return sindex.delete(keyValue);
+			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
+					.get(compressedName + secondaryKeyName);
+
+				return sindex.delete(keyValue);
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}
