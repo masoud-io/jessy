@@ -27,7 +27,8 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	 * this Vector plays the role of a vector assigned to each jessy server in
 	 * the system.
 	 */
-	public static ConcurrentVersionVector<String> observedCommittedTransactions = new ConcurrentVersionVector<String>();
+	public static ConcurrentVersionVector<String> observedCommittedTransactions = new ConcurrentVersionVector<String>(
+			JessyGroupManager.getInstance().getMyGroup().name());
 
 	@Deprecated
 	public VersionVector() {
@@ -93,18 +94,6 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 		if (readSet.size() > 0)
 			super.update(readSet);
 
-		// Write set is more involved.
-		Integer value;
-
-		for (Map.Entry<K, Integer> entry : writeSet.getEntrySet()) {
-			K key = entry.getKey();
-			value = entry.getValue();
-			if (writeSet.getKeys().contains(key))
-				value++;
-			if (getValue(key).compareTo(value) < 0) {
-				setValue(key, value);
-			}
-		}
 	}
 
 }

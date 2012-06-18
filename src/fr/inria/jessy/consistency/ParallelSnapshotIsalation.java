@@ -86,14 +86,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		 * increaments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
-			// for (JessyEntity tmp : executionHistory.getCreateSet()
-			// .getEntities()) {
-			// /*
-			// * set the selfkey of the created vector and put it back in the
-			// * entity
-			// */
-			// tmp.getLocalVector().increament();
-			// }
 
 			executionHistory.getWriteSet().addEntity(
 					executionHistory.getCreateSet());
@@ -148,18 +140,45 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		/*
 		 * updatedVector is a new vector. It will be used as a new vector for
 		 * all modified vectors.
+		 * 
+		 * <p> The update takes place according to Walter [Serrano2011]
 		 */
 		Vector<String> updatedVector = VectorFactory.getVector("");
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
-				executionHistory.getWriteSet().getCompactVector());
+				null);
+
+		/*
+		 * The key of the very first read (that is the group which first read
+		 * was handled by) is increamented by one.
+		 * 
+		 * If it is an INIT transaction, then no value has been read before.
+		 * Thus, selfKey is used.
+		 */
+		if (executionHistory.getReadSet().size() == 0) {
+			updatedVector.setValue(updatedVector.getSelfKey(),
+					updatedVector.getSelfValue() + 1);
+		} else {
+			String groupOfFirstRead = executionHistory.getReadSet()
+					.getCompactVector().getKeys().get(0);
+			updatedVector.setValue(groupOfFirstRead,
+					updatedVector.getValue(groupOfFirstRead) + 1);
+		}
 
 		VersionVector.observedCommittedTransactions
 				.update(((VersionVector<String>) updatedVector.clone())
 						.getEntrySet());
+		logger.info(executionHistory.getTransactionHandler().getId());
+		logger.info("Prepared to commit set observedCommittedTransactions to "
+				+ VersionVector.observedCommittedTransactions.getMap()
+						.toString());
 
 		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
 			updatedVector.setSelfKey(entity.getLocalVector().getSelfKey());
 			entity.setLocalVector(updatedVector.clone());
+
+			logger.info("Prepared to commit set local vector of  "
+					+ entity.getKey() + " to " + updatedVector.toString());
+
 		}
 
 	}
@@ -236,9 +255,12 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	public void learn(Stream s, Serializable v) {
 		if (v instanceof VectorMessage) {
 			VectorMessage msg = (VectorMessage) v;
-			VersionVector.observedCommittedTransactions.update(msg
-					.getConcurrentVersionVector().getMap().entrySet());
+			VersionVector.observedCommittedTransactions.getMap()
+					.put(msg.getConcurrentVersionVector().getSelfKey(),
+							msg.getConcurrentVersionVector()
+									.getMap()
+									.get(msg.getConcurrentVersionVector()
+											.getSelfKey()));
 		}
 	}
-
 }
