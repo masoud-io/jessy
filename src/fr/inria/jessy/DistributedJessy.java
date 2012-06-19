@@ -22,6 +22,8 @@ import sun.misc.SignalHandler;
 import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.communication.message.ReadReplyMessage;
+import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.partitioner.Partitioner;

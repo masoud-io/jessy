@@ -1,4 +1,4 @@
-package fr.inria.jessy;
+package fr.inria.jessy.communication.message;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -6,6 +6,7 @@ import java.io.ObjectOutput;
 import java.util.List;
 
 import net.sourceforge.fractal.multicast.MulticastMessage;
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 
