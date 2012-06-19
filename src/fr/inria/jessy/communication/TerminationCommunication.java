@@ -6,8 +6,8 @@ import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
-import fr.inria.jessy.transaction.termination.message.VoteMessage;
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.communication.message.VoteMessage;
 
 public abstract class TerminationCommunication {
 

@@ -1,4 +1,4 @@
-package fr.inria.jessy.transaction.termination.message;
+package fr.inria.jessy.communication.message;
 
 import java.util.Set;
 

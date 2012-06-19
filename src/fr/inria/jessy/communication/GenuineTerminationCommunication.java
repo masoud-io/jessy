@@ -6,7 +6,7 @@ import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
-import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 
 
 public class GenuineTerminationCommunication extends TerminationCommunication{

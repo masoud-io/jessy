@@ -9,7 +9,7 @@ import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import net.sourceforge.fractal.multicast.MulticastStream;
-import fr.inria.jessy.transaction.termination.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 
 /**
  * This class implements a trivial termination protocol. I.e., multicast the
