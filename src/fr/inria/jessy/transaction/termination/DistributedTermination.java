@@ -262,7 +262,8 @@ public class DistributedTermination implements Learner {
 				return TransactionState.COMMITTED;
 			}
 
-			executionHistory.setCoordinator(JessyGroupManager.getInstance().getSourceId());
+			executionHistory.setCoordinator(JessyGroupManager.getInstance()
+					.getSourceId());
 
 			destGroups.addAll(jessy.partitioner.resolveNames(concernedKeys));
 			if (destGroups.contains(group.name())) {
@@ -291,8 +292,8 @@ public class DistributedTermination implements Learner {
 			 */
 			terminationCommunication.sendTerminateTransactionRequestMessage(
 					new TerminateTransactionRequestMessage(executionHistory,
-							destGroups, group.name(), JessyGroupManager.getInstance().getSourceId()),
-					destGroups);
+							destGroups, group.name(), JessyGroupManager
+									.getInstance().getSourceId()), destGroups);
 
 			/*
 			 * Wait here until the result of the transaction is known.
@@ -341,28 +342,19 @@ public class DistributedTermination implements Learner {
 					}
 				}
 
-				/*
-				 * Second, it needs to run the certification test on the
-				 * received execution history. A blind write always succeeds.
-				 */
-				boolean isAborted = msg.getExecutionHistory()
-						.getTransactionType() == BLIND_WRITE
-						|| jessy.getConsistency().certify(
-								msg.getExecutionHistory());
-
 				jessy.setExecutionHistory(msg.getExecutionHistory());
+
+				Vote vote = jessy.getConsistency().createCertificationVote(
+						msg.getExecutionHistory());
 
 				/*
 				 * Computes a set of destinations for the votes, and sends out
 				 * the votes to all replicas <i>that replicate objects modified
 				 * inside the transaction</i>. The group this node belongs to is
 				 * ommitted.
-				 */
-
-				Vote vote = new Vote(msg.getExecutionHistory()
-						.getTransactionHandler(), isAborted, group.name());
-
-				/*
+				 * 
+				 * <p>
+				 * 
 				 * The votes will be sent to all concerned keys. Note that the
 				 * optimization to only send the votes to the nodes replicating
 				 * objects in the writeset is not included. Thus, for example,

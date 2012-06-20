@@ -85,7 +85,7 @@ public abstract class Jessy {
 		String storeName = "store";
 
 		dataStore = new DataStore(environmentHome, readOnly, storeName);
-		consistency = ConsistencyFactory.getConsistency(dataStore);
+		consistency = ConsistencyFactory.initConsistency(dataStore);
 
 		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
 

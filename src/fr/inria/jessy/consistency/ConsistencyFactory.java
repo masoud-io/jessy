@@ -10,6 +10,8 @@ public class ConsistencyFactory {
 
 	private static Logger logger = Logger.getLogger(ConsistencyFactory.class);
 
+	private static Consistency _instance;
+
 	private static String consistencyType;
 
 	static {
@@ -18,20 +20,25 @@ public class ConsistencyFactory {
 		logger.warn("Consistency is " + consistencyType);
 	}
 
-	public static Consistency getConsistency(DataStore dataStore) {
+	public static Consistency initConsistency(DataStore dataStore) {
+		if (_instance != null)
+			return _instance;
 
 		if (consistencyType.equals("nmsi")) {
-			return new NonMonotonicSnapshotIsolation(dataStore);
+			_instance = new NonMonotonicSnapshotIsolation(dataStore);
 		} else if (consistencyType.equals("si")) {
-			return new SnapshotIsolation(dataStore);
+			_instance = new SnapshotIsolation(dataStore);
 		} else if (consistencyType.equals("ser")) {
-			return new Serializability(dataStore);
+			_instance = new Serializability(dataStore);
 		} else if (consistencyType.equals("rc")) {
-			return new ReadComitted(dataStore);
+			_instance = new ReadComitted(dataStore);
 		} else if (consistencyType.equals("psi")) {
-			return new ParallelSnapshotIsalation(dataStore);
+			_instance = new ParallelSnapshotIsalation(dataStore);
 		}
-		return null;
+		return _instance;
 	}
 
+	public static Consistency getConsistencyInstance() {
+		return _instance;
+	}
 }

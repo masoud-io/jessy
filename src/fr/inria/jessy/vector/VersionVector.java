@@ -13,8 +13,10 @@ import fr.inria.jessy.communication.JessyGroupManager;
  * 
  * Each object version holds a Vector. Moreover, there exists a static
  * ValueVector called {@code observedCommittedTransactions}. SelfKey will be
- * used in this class as the index of the server. In other words,
- * Valueof(SelfKey) returns the number of committed transactions in this server.
+ * used in this class as the index of the group of jessy instances that plays
+ * the role of the transaction coordinator. E.g., Consider jessy instances p1
+ * and p2 replicate entity x, and belongs to group g1. If transaction T1
+ * modifies entity x, the the selfkey of committed version of entity x is g1.
  * 
  * @author Masoud Saeida Ardekani
  * 
@@ -27,16 +29,16 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	 * this Vector plays the role of a vector assigned to each jessy server in
 	 * the system.
 	 */
-	public static ConcurrentVersionVector<String> observedCommittedTransactions = new ConcurrentVersionVector<String>(
+	public static ConcurrentVersionVector<String> committedVTS = new ConcurrentVersionVector<String>(
 			JessyGroupManager.getInstance().getMyGroup().name());
 
 	@Deprecated
 	public VersionVector() {
 	}
 
-	public VersionVector(K selfKey) {
+	public VersionVector(K selfKey, Integer selfValue) {
 		super(selfKey);
-		super.setValue(selfKey, 0);
+		super.setValue(selfKey, selfValue);
 	}
 
 	/**
@@ -74,7 +76,7 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 
 		if (other.size() == 0) {
 			this.setMap(new HashMap<K, Integer>(
-					(Map) observedCommittedTransactions.getMap()));
+					(Map) committedVTS.getMap()));
 			return Vector.CompatibleResult.COMPATIBLE;
 		}
 

@@ -22,7 +22,8 @@ import com.sun.org.apache.bcel.internal.generic.Select;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class ConcurrentVersionVector<K> implements Externalizable {
+public class ConcurrentVersionVector<K> implements Externalizable,
+		Comparable<CompactVector<K>> {
 
 	private ConcurrentHashMap<K, Integer> map;
 	private K selfKey;
@@ -54,20 +55,30 @@ public class ConcurrentVersionVector<K> implements Externalizable {
 		return map;
 	}
 
-	public K getSelfKey(){
+	public K getSelfKey() {
 		return selfKey;
 	}
-	
+
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		map = (ConcurrentHashMap) in.readObject();
-		selfKey=(K) in.readObject();
+		selfKey = (K) in.readObject();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(map);
 		out.writeObject(selfKey);
+	}
+
+	@Override
+	public int compareTo(CompactVector<K> o) {
+		for (K k : o.getKeys()) {
+			if (map.contains(k) && map.get(k).compareTo(o.getValue(k)) < 0)
+				return -1;
+		}
+
+		return 1;
 	}
 }
