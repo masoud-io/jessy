@@ -25,7 +25,7 @@ public class VectorFactory {
 			return new ScalarVector<K>();
 		}
 		if(consType.equals("psi")){
-			return new VersionVector<K>();
+			return new VersionVector(JessyGroupManager.getInstance().getMyGroup().name(),0);
 		}
 		
 		return null;

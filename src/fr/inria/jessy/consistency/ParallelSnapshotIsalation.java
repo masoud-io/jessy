@@ -17,12 +17,10 @@ import net.sourceforge.fractal.membership.Group;
 
 import org.apache.log4j.Logger;
 
-import com.kenai.jaffl.annotations.Synchronized;
-
 import fr.inria.jessy.communication.GenuineTerminationCommunication;
+import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.TerminationCommunication;
-import fr.inria.jessy.communication.VectorPropagation;
-import fr.inria.jessy.communication.message.VectorMessage;
+import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -33,7 +31,6 @@ import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.VotePiggyback;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.VectorFactory;
 import fr.inria.jessy.vector.VersionVector;
 
 /**
@@ -47,14 +44,17 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	private static Logger logger = Logger
 			.getLogger(ParallelSnapshotIsalation.class);
 
-	VectorPropagation propagation;
+	static {
+		votePiggybackRequired = true;
+	}
+
+	MessagePropagation propagation;
 
 	private ConcurrentHashMap<TransactionHandler, ParallelSnapshotIsolationPiggyback> receivedPiggybacks;
 
 	public ParallelSnapshotIsalation(DataStore store) {
 		super(store);
-		super.votePiggybackRequired = true;
-		propagation = new VectorPropagation(this);
+		propagation = new MessagePropagation(this);
 	}
 
 	/**
@@ -153,6 +153,56 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	}
 
 	/**
+	 * Waits until the its conditions hold true, and then update the
+	 * committedVTS according to the received sequence number.
+	 * 
+	 * @param pb
+	 *            Received piggyback that contains the group name and its new
+	 *            sequence number
+	 * @param executionHistory
+	 * 
+	 *            TODO waiting on committedVTS might not be SAFE. Talk with
+	 *            Pierre about it!
+	 */
+	private void updateCommittedVTS(ParallelSnapshotIsolationPiggyback pb) {
+		ExecutionHistory executionHistory = pb.executionHistory;
+		/*
+		 * Two conditions should be held before applying the updates. Figure 13
+		 * of [Serrano2011]
+		 * 
+		 * 1) committedVTS should be greater or equal to startVTS (in order to
+		 * ensure causality)
+		 * 
+		 * 2)committedVTS[group]>sequenceNumber (in order to ensure that all
+		 * transactions serially applies)
+		 */
+		CompactVector<String> startVTS = executionHistory.getReadSet()
+				.getCompactVector();
+		while ((VersionVector.committedVTS.compareTo(startVTS) < 0)
+				|| (VersionVector.committedVTS
+						.getValue(pb.wCoordinatorGroupName) < pb.sequenceNumber - 1)) {
+			/*
+			 * We have to wait until committedVTS becomes updated through
+			 * propagation.
+			 */
+			synchronized (VersionVector.committedVTS) {
+				try {
+					VersionVector.committedVTS.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		VersionVector.committedVTS.getVector().put(pb.wCoordinatorGroupName,
+				pb.sequenceNumber);
+		VersionVector.committedVTS.notifyAll();
+
+		logger.info("updateCommittedVTS set observedCommittedTransactions to "
+				+ VersionVector.committedVTS.getVector().toString());
+	}
+
+	/**
 	 * @inheritDoc
 	 */
 	@Override
@@ -170,32 +220,10 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 				.get(executionHistory.getTransactionHandler());
 
 		/*
-		 * Two conditions should be held before applying the updates. Figure 13
-		 * of [Serrano2011]
-		 * 
-		 * 1) committedVTS should be greater or equal to startVTS (in order to
-		 * ensure causality)
-		 * 
-		 * 2)committedVTS[group]>sequenceNumber (in order to ensure that all
-		 * transactions serially applies)
+		 * Wait until its conditions holds true, and then update the
+		 * CommittedVTS
 		 */
-		CompactVector<String> startVTS = executionHistory.getReadSet()
-				.getCompactVector();
-		while ((VersionVector.committedVTS.compareTo(startVTS) < 0)
-				|| (VersionVector.committedVTS.getMap().get(
-						pb.wCoordinatorGroupName) < pb.sequenceNumber - 1)) {
-			/*
-			 * We have to wait until committedVTS becomes updated through
-			 * propagation.
-			 */
-			synchronized (VersionVector.committedVTS) {
-				try {
-					VersionVector.committedVTS.wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+		updateCommittedVTS(pb);
 
 		/*
 		 * updatedVector is a new vector. It will be used as a new vector for
@@ -214,11 +242,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 					+ entity.getKey() + " to " + updatedVector.toString());
 		}
 
-		VersionVector.committedVTS.getMap().put(pb.wCoordinatorGroupName,
-				pb.sequenceNumber);
-
-		logger.info("Prepared to commit set observedCommittedTransactions to "
-				+ VersionVector.committedVTS.getMap().toString());
 	}
 
 	/**
@@ -228,9 +251,12 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	public void postCommit(ExecutionHistory executionHistory) {
 
 		/*
+		 * only the WCoordinator propagate the votes as in [Serrano11]
+		 * 
 		 * Read-only transaction does not propagate
 		 */
-		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
+		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION
+				|| !isWCoordinator(executionHistory))
 			return;
 
 		Set<String> alreadyNotified = new HashSet<String>();
@@ -249,10 +275,34 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			}
 		}
 
+		ParallelSnapshotIsolationPiggyback pb = new ParallelSnapshotIsolationPiggyback(
+				manager.getMyGroup().name(),
+				VersionVector.committedVTS
+						.getValue(manager.getMyGroup().name()),
+				executionHistory);
+
 		if (dest.size() > 0) {
-			VectorMessage msg = new VectorMessage(VersionVector.committedVTS,
-					dest, manager.getMyGroup().name(), manager.getSourceId());
+			ParallelSnapshotIsolationPropagateMessage msg = new ParallelSnapshotIsolationPropagateMessage(
+					pb, dest, manager.getMyGroup().name(),
+					manager.getSourceId());
 			propagation.propagate(msg);
+		}
+	}
+
+	/**
+	 * @inheritDoc
+	 * 
+	 *             Receiving VersionVectors from different jessy instances.
+	 *             <p>
+	 *             upon receiving a Vector, update the VersionVector associated
+	 *             with each jessy instance with the received vector.
+	 */
+	@Override
+	public void learn(Stream s, Serializable v) {
+		if (v instanceof ParallelSnapshotIsolationPropagateMessage) {
+			ParallelSnapshotIsolationPropagateMessage msg = (ParallelSnapshotIsolationPropagateMessage) v;
+			updateCommittedVTS(msg.getParallelSnapshotIsolationPiggyback());
+
 		}
 	}
 
@@ -293,55 +343,63 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		 * the first write is for.
 		 */
 		VotePiggyback vp = null;
-		if (executionHistory.getWriteSet().size() > 0) {
-			String key = executionHistory.getWriteSet().getCompactVector()
-					.getKeys().get(0);
-
-			if (manager.getPartitioner().isLocal(key)) {
-				int sequenceNumber = VersionVector.committedVTS.getMap().get(
-						manager.getMyGroup().name()) + 1;
-				vp = new VotePiggyback((Integer) sequenceNumber);
-			}
+		if (isWCoordinator(executionHistory)) {
+			int sequenceNumber = VersionVector.committedVTS.getValue(manager
+					.getMyGroup().name()) + 1;
+			vp = new VotePiggyback(new ParallelSnapshotIsolationPiggyback(
+					manager.getMyGroup().name(), sequenceNumber,
+					executionHistory));
 		}
 
 		return new Vote(executionHistory.getTransactionHandler(), isAborted,
 				manager.getMyGroup().name(), vp);
 	}
 
+	/**
+	 * Returns if the first write operation of the transaction is on an entity
+	 * replicated by the local jessy instance. If so, this instance is called
+	 * <i>WCoordinator</i> of the transaction, and is responsible for
+	 * piggybacking new sequence number on top of its votes.
+	 * 
+	 * <p>
+	 * Note that the first read cannot play this role because it might not write
+	 * on the same object, thus won't receive the vote request during
+	 * certifiaction.
+	 * 
+	 * @param executionHistory
+	 * @return
+	 */
 	private boolean isWCoordinator(ExecutionHistory executionHistory) {
+
+		String key;
+		if (executionHistory.getWriteSet().size() > 0) {
+			key = executionHistory.getWriteSet().getKeys().iterator().next();
+			System.out.println(key);
+			if (manager.getPartitioner().isLocal(key)) {
+				return true;
+			}
+		}
 		return false;
+
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	public void voteReceived(Vote vote) {
-		receivedPiggybacks.put(vote.getTransactionHandler(),
-				(ParallelSnapshotIsolationPiggyback) vote.getVotePiggyBack()
-						.getPiggyback());
+		if (vote.getVotePiggyBack() != null)
+			receivedPiggybacks.put(vote.getTransactionHandler(),
+					(ParallelSnapshotIsolationPiggyback) vote
+							.getVotePiggyBack().getPiggyback());
 	}
 
 	/**
-	 * @inheritDoc
+	 * Used in the {@code Vote} for sending the new sequence number to the write
+	 * set of the transaction.
 	 * 
-	 *             Receiving VersionVectors from different jessy instances.
-	 *             <p>
-	 *             upon receiving a Vector, update the VersionVector associated
-	 *             with each jessy instance with the received vector.
+	 * @author Masoud Saeida Ardekani
+	 * 
 	 */
-	@Override
-	public void learn(Stream s, Serializable v) {
-		if (v instanceof VectorMessage) {
-			VectorMessage msg = (VectorMessage) v;
-			VersionVector.committedVTS.getMap()
-					.put(msg.getConcurrentVersionVector().getSelfKey(),
-							msg.getConcurrentVersionVector()
-									.getMap()
-									.get(msg.getConcurrentVersionVector()
-											.getSelfKey()));
-		}
-	}
-
 	public class ParallelSnapshotIsolationPiggyback implements Externalizable {
 
 		/**
@@ -356,8 +414,17 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		 */
 		public Integer sequenceNumber;
 
-		public ParallelSnapshotIsolationPiggyback() {
+		public ExecutionHistory executionHistory;
 
+		@Deprecated
+		public ParallelSnapshotIsolationPiggyback() {
+		}
+
+		public ParallelSnapshotIsolationPiggyback(String wCoordinatorGroupName,
+				Integer sequenceNumber, ExecutionHistory executionHistory) {
+			this.wCoordinatorGroupName = wCoordinatorGroupName;
+			this.sequenceNumber = sequenceNumber;
+			this.executionHistory = executionHistory;
 		}
 
 		@Override
@@ -365,12 +432,14 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 				ClassNotFoundException {
 			wCoordinatorGroupName = (String) in.readObject();
 			sequenceNumber = (Integer) in.readObject();
+			executionHistory = (ExecutionHistory) in.readObject();
 		}
 
 		@Override
 		public void writeExternal(ObjectOutput out) throws IOException {
 			out.writeObject(wCoordinatorGroupName);
 			out.writeObject(sequenceNumber);
+			out.writeObject(executionHistory);
 		}
 
 	}

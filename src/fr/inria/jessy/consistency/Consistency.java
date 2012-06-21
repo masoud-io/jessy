@@ -18,7 +18,7 @@ public abstract class Consistency {
 	protected TerminationCommunication terminationCommunication;
 	protected JessyGroupManager manager = JessyGroupManager.getInstance();
 
-	protected boolean votePiggybackRequired = false;
+	protected static boolean votePiggybackRequired = false;
 
 	public Consistency(DataStore store) {
 		this.store = store;
@@ -80,7 +80,8 @@ public abstract class Consistency {
 
 	/**
 	 * Is called after the transaction modifications have been applied to the
-	 * local data store.
+	 * local data store. Can be used for example for propagating information
+	 * after the transaction has been committed (E.g., {@code ParallelSnapshotIsalation}).
 	 * 
 	 * @param executionHistory
 	 */

@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.sun.org.apache.bcel.internal.generic.Select;
-
 /**
  * This class is a concurrent version of {@code VersionVector}. It is needed for
  * storing version vectors associated to each jessy instance in the PSI
@@ -51,9 +49,14 @@ public class ConcurrentVersionVector<K> implements Externalizable,
 
 	}
 
-	public Map<K, Integer> getMap() {
+	public Integer getValue(K key) {
+		return map.get(key);
+	}
+	
+	public Map<K, Integer> getVector() {
 		return map;
 	}
+
 
 	public K getSelfKey() {
 		return selfKey;

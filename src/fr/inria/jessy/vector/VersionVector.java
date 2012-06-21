@@ -70,13 +70,16 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	@Override
 	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
-
+System.out.println(other.toString());
 		if (other == null)
 			throw new NullPointerException("Input Vector is Null");
 
 		if (other.size() == 0) {
-			this.setMap(new HashMap<K, Integer>(
-					(Map) committedVTS.getMap()));
+			/*
+			 * if other vector size is zero, then this is the very first read.
+			 * Thus, we set the StartVTS
+			 */
+			this.setMap(new HashMap<K, Integer>((Map) committedVTS.getVector()));
 			return Vector.CompatibleResult.COMPATIBLE;
 		}
 

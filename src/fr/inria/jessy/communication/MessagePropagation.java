@@ -3,7 +3,7 @@ package fr.inria.jessy.communication;
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
-import fr.inria.jessy.communication.message.VectorMessage;
+import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 
 /**
  * In Genuine implementations of protocols such as PSI, and in order to ensure
@@ -13,10 +13,10 @@ import fr.inria.jessy.communication.message.VectorMessage;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class VectorPropagation {
+public class MessagePropagation {
 	private MulticastStream mCastStream;
 
-	public VectorPropagation(Learner learner) {
+	public MessagePropagation(Learner learner) {
 		mCastStream = FractalManager.getInstance().getOrCreateMulticastStream(
 				JessyGroupManager.getInstance().getMyGroup().name(),
 				JessyGroupManager.getInstance().getMyGroup().name());
@@ -31,7 +31,7 @@ public class VectorPropagation {
 	 * 
 	 * @param msg
 	 */
-	public void propagate(VectorMessage msg) {
+	public void propagate(ParallelSnapshotIsolationPropagateMessage msg) {
 		mCastStream.multicast(msg);
 	}
 
