@@ -9,6 +9,7 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.sourceforge.fractal.Learner;
@@ -50,10 +51,11 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 	MessagePropagation propagation;
 
-	private ConcurrentHashMap<TransactionHandler, ParallelSnapshotIsolationPiggyback> receivedPiggybacks;
+	private ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback> receivedPiggybacks;
 
 	public ParallelSnapshotIsalation(DataStore store) {
 		super(store);
+		receivedPiggybacks = new ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback>();
 		propagation = new MessagePropagation(this);
 	}
 
@@ -196,9 +198,12 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 		VersionVector.committedVTS.getVector().put(pb.wCoordinatorGroupName,
 				pb.sequenceNumber);
-		VersionVector.committedVTS.notifyAll();
 
-		logger.info("updateCommittedVTS set observedCommittedTransactions to "
+		synchronized (VersionVector.committedVTS) {
+			VersionVector.committedVTS.notifyAll();
+		}
+
+		logger.info("updateCommittedVTS set CommittedVTS to "
 				+ VersionVector.committedVTS.getVector().toString());
 	}
 
@@ -210,14 +215,15 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 		/*
 		 * Trying to commit a transaction without receiving the sequence number.
-		 * Something is wrong.
+		 * Something is wrong. Because we should have already received the vote
+		 * from the WCoordinator, and along with the vote, we should have
+		 * received the sequence number.
 		 */
-		if (!receivedPiggybacks.contains(executionHistory
-				.getTransactionHandler())) {
-			System.exit(0);
-		}
+		assert (!receivedPiggybacks.keySet().contains(
+				executionHistory.getTransactionHandler().getId()));
+
 		ParallelSnapshotIsolationPiggyback pb = receivedPiggybacks
-				.get(executionHistory.getTransactionHandler());
+				.get(executionHistory.getTransactionHandler().getId());
 
 		/*
 		 * Wait until its conditions holds true, and then update the
@@ -346,6 +352,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		if (isWCoordinator(executionHistory)) {
 			int sequenceNumber = VersionVector.committedVTS.getValue(manager
 					.getMyGroup().name()) + 1;
+
 			vp = new VotePiggyback(new ParallelSnapshotIsolationPiggyback(
 					manager.getMyGroup().name(), sequenceNumber,
 					executionHistory));
@@ -374,7 +381,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		String key;
 		if (executionHistory.getWriteSet().size() > 0) {
 			key = executionHistory.getWriteSet().getKeys().iterator().next();
-			System.out.println(key);
 			if (manager.getPartitioner().isLocal(key)) {
 				return true;
 			}
@@ -388,7 +394,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 */
 	public void voteReceived(Vote vote) {
 		if (vote.getVotePiggyBack() != null)
-			receivedPiggybacks.put(vote.getTransactionHandler(),
+			receivedPiggybacks.put(vote.getTransactionHandler().getId(),
 					(ParallelSnapshotIsolationPiggyback) vote
 							.getVotePiggyBack().getPiggyback());
 	}

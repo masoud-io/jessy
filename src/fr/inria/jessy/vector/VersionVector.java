@@ -54,7 +54,7 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 			throw new NullPointerException("Input Vector is Null");
 		}
 
-		if (this.getValue(selfKey).equals(other.getValue(selfKey)))
+		if (this.getValue(selfKey).compareTo(other.getValue(selfKey)) <= 0)
 			return Vector.CompatibleResult.COMPATIBLE;
 		else
 			return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
@@ -70,7 +70,6 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	@Override
 	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
-System.out.println(other.toString());
 		if (other == null)
 			throw new NullPointerException("Input Vector is Null");
 

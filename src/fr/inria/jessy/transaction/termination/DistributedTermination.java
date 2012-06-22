@@ -165,6 +165,7 @@ public class DistributedTermination implements Learner {
 		}
 
 		try {
+			jessy.getConsistency().voteReceived(vote);
 			vq.addVote(vote);
 
 		} catch (Exception ex) {
