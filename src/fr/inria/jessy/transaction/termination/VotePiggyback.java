@@ -5,21 +5,34 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-public class VotePiggyback implements Externalizable {
-	Object piggyback;
+import fr.inria.jessy.consistency.ParallelSnapshotIsolationPiggyback;
 
-	public VotePiggyback(Object piggyback) {
+
+/**
+ * 
+ * @author Masoud Saeida Ardekani
+ * 
+ *         TODO Generalize this class
+ * 
+ */
+public class VotePiggyback implements Externalizable {
+	ParallelSnapshotIsolationPiggyback piggyback;
+
+	public VotePiggyback() {
+	}
+
+	public VotePiggyback(ParallelSnapshotIsolationPiggyback piggyback) {
 		this.piggyback = piggyback;
 	}
 
-	public Object getPiggyback() {
+	public ParallelSnapshotIsolationPiggyback getPiggyback() {
 		return piggyback;
 	}
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		piggyback = in.readObject();
+		piggyback = (ParallelSnapshotIsolationPiggyback) in.readObject();
 
 	}
 

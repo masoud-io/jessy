@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import com.sleepycat.je.DatabaseException;
@@ -33,6 +35,9 @@ import fr.inria.jessy.vector.Vector;
  */
 
 public class DataStore {
+
+	private static Logger logger = Logger.getLogger(DataStore.class);
+
 	private Environment env;
 
 	protected static TimeRecorder curTime = new TimeRecorder(
@@ -200,6 +205,7 @@ public class DataStore {
 	// that 5 is a good number).
 	public <E extends JessyEntity> void put(E entity)
 			throws NullPointerException {
+		logger.warn("putting " + entity.getKey());
 		try {
 			@SuppressWarnings("unchecked")
 			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
@@ -450,12 +456,12 @@ public class DataStore {
 			String secondaryKeyName, SK keyValue) throws NullPointerException {
 		try {
 			@SuppressWarnings("unchecked")
-			String compressedName=Compress.compressClassName(entityClassName);
+			String compressedName = Compress.compressClassName(entityClassName);
 
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
 					.get(compressedName + secondaryKeyName);
 
-				return sindex.delete(keyValue);
+			return sindex.delete(keyValue);
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}

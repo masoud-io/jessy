@@ -1,7 +1,5 @@
 package fr.inria.jessy.transaction.termination;
 
-import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
-
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;

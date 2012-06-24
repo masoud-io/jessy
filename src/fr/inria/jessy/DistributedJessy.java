@@ -239,9 +239,6 @@ public class DistributedJessy extends Jessy {
 
 	@Override
 	public void applyModifiedEntities(ExecutionHistory executionHistory) {
-		// ExecutionHistory executionHistory = handler2executionHistory
-		// .get(transactionHandler);
-
 		Iterator<? extends JessyEntity> itr;
 
 		if (executionHistory.getWriteSet().size() > 0) {

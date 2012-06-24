@@ -2,10 +2,6 @@ package fr.inria.jessy.consistency;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +23,6 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
-import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.VotePiggyback;
 import fr.inria.jessy.vector.CompactVector;
@@ -212,7 +207,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 */
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
-
 		/*
 		 * Trying to commit a transaction without receiving the sequence number.
 		 * Something is wrong. Because we should have already received the vote
@@ -222,8 +216,12 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		assert (!receivedPiggybacks.keySet().contains(
 				executionHistory.getTransactionHandler().getId()));
 
+		/*
+		 * Get and remove the piggybacked sequence number. We do not need it
+		 * anymore.
+		 */
 		ParallelSnapshotIsolationPiggyback pb = receivedPiggybacks
-				.get(executionHistory.getTransactionHandler().getId());
+				.remove(executionHistory.getTransactionHandler().getId());
 
 		/*
 		 * Wait until its conditions holds true, and then update the
@@ -293,6 +291,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 					manager.getSourceId());
 			propagation.propagate(msg);
 		}
+
 	}
 
 	/**
@@ -399,54 +398,4 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 							.getVotePiggyBack().getPiggyback());
 	}
 
-	/**
-	 * Used in the {@code Vote} for sending the new sequence number to the write
-	 * set of the transaction.
-	 * 
-	 * @author Masoud Saeida Ardekani
-	 * 
-	 */
-	public class ParallelSnapshotIsolationPiggyback implements Externalizable {
-
-		/**
-		 * The group name of the jessy instances that replicate the first write
-		 * in the transaction
-		 */
-		public String wCoordinatorGroupName;
-
-		/**
-		 * Increamented sequenceNumber of the jessy instance of the group
-		 * {@code wCoordinatorGroupName}
-		 */
-		public Integer sequenceNumber;
-
-		public ExecutionHistory executionHistory;
-
-		@Deprecated
-		public ParallelSnapshotIsolationPiggyback() {
-		}
-
-		public ParallelSnapshotIsolationPiggyback(String wCoordinatorGroupName,
-				Integer sequenceNumber, ExecutionHistory executionHistory) {
-			this.wCoordinatorGroupName = wCoordinatorGroupName;
-			this.sequenceNumber = sequenceNumber;
-			this.executionHistory = executionHistory;
-		}
-
-		@Override
-		public void readExternal(ObjectInput in) throws IOException,
-				ClassNotFoundException {
-			wCoordinatorGroupName = (String) in.readObject();
-			sequenceNumber = (Integer) in.readObject();
-			executionHistory = (ExecutionHistory) in.readObject();
-		}
-
-		@Override
-		public void writeExternal(ObjectOutput out) throws IOException {
-			out.writeObject(wCoordinatorGroupName);
-			out.writeObject(sequenceNumber);
-			out.writeObject(executionHistory);
-		}
-
-	}
 }
