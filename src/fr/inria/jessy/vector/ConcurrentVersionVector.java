@@ -4,8 +4,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -32,35 +30,21 @@ public class ConcurrentVersionVector<K> implements Externalizable,
 		this.selfKey = selfKey;
 	}
 
-	public void update(Set<Entry<K, Integer>> vector) {
-		if (vector == null)
-			return;
-		for (Entry<K, Integer> entry : vector) {
-			K key = entry.getKey();
-			Integer value = entry.getValue();
-			try {
-				if (map.get(key).compareTo(value) < 0) {
-					map.put(key, value);
-				}
-			} catch (Exception ex) {
-				map.put(key, value);
-			}
-
-		}
-
-	}
-
 	public Integer getValue(K key) {
-	
+
 		if (map.keySet().contains(key))
 			return map.get(key);
-		else{
+		else {
 			return bydefault;
 		}
 	}
 
 	public ConcurrentHashMap<K, Integer> getVector() {
 		return map;
+	}
+
+	public void setVector(K k, Integer value) {
+		map.put(k, value);
 	}
 
 	public K getSelfKey() {
@@ -89,4 +73,14 @@ public class ConcurrentVersionVector<K> implements Externalizable,
 
 		return 1;
 	}
+
+	@Override
+	public String toString() {
+		String result = "";
+		for (K k : map.keySet()) {
+			result = result + " " + k + ":" + map.get(k);
+		}
+		return result;
+	}
+
 }

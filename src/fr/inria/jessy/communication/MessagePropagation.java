@@ -20,7 +20,7 @@ public class MessagePropagation {
 		mCastStream = FractalManager.getInstance().getOrCreateMulticastStream(
 				JessyGroupManager.getInstance().getMyGroup().name(),
 				JessyGroupManager.getInstance().getMyGroup().name());
-		mCastStream.registerLearner("VectorMessage", learner);
+		mCastStream.registerLearner("ParallelSnapshotIsolationPropagateMessage", learner);
 		mCastStream.start();
 	}
 

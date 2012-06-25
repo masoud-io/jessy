@@ -2,6 +2,7 @@ package fr.inria.jessy.vector;
 
 import java.io.Externalizable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import com.sleepycat.persist.model.Persistent;
@@ -77,8 +78,18 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 			/*
 			 * if other vector size is zero, then this is the very first read.
 			 * Thus, we set the StartVTS
+			 * 
+			 * Notice that we cannot simply set the committedVTS to local vector
+			 * because we need a clone of it, and ConcurrentHashMap does not
+			 * have a clone implementation.
 			 */
-			this.setMap(new HashMap<K, Integer>((Map) committedVTS.getVector()));
+			Iterator<String> itr = committedVTS.getVector().keySet().iterator();
+			while (itr.hasNext()) {
+				String key = itr.next();
+				int value = committedVTS.getValue(key);
+				this.setValue((K) key, (Integer) value);
+			}
+
 			return Vector.CompatibleResult.COMPATIBLE;
 		}
 

@@ -181,8 +181,10 @@ public class DistributedTermination implements Learner {
 	 * {@code Consistency#prepareToCommit(ExecutionHistory)} then its modified
 	 * entities are applied.
 	 */
-	private void handleTerminationResult(ExecutionHistory executionHistory)
+	private void handleTerminationResult(TerminateTransactionRequestMessage msg)
 			throws Exception {
+
+		ExecutionHistory executionHistory = msg.getExecutionHistory();
 
 		TransactionHandler th = executionHistory.getTransactionHandler();
 		logger.debug("handling termination result of " + th);
@@ -208,6 +210,11 @@ public class DistributedTermination implements Learner {
 			 * commit actions. (e.g., propagating vectors)
 			 */
 			jessy.getConsistency().postCommit(executionHistory);
+		}
+
+		synchronized (atomicDeliveredMessages) {
+			atomicDeliveredMessages.remove(msg);
+			atomicDeliveredMessages.notifyAll();
 		}
 
 		jessy.garbageCollectTransaction(executionHistory
@@ -386,14 +393,14 @@ public class DistributedTermination implements Learner {
 
 				msg.getExecutionHistory().changeState(state);
 
-				handleTerminationResult(msg.getExecutionHistory());
+				handleTerminationResult(msg);
 				garbageCollect(msg.getExecutionHistory()
 						.getTransactionHandler());
 
-				synchronized (atomicDeliveredMessages) {
-					atomicDeliveredMessages.remove(msg);
-					atomicDeliveredMessages.notifyAll();
-				}
+//				synchronized (atomicDeliveredMessages) {
+//					atomicDeliveredMessages.remove(msg);
+//					atomicDeliveredMessages.notifyAll();
+//				}
 
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
+import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.apache.log4j.Logger;
 
@@ -34,8 +35,13 @@ import fr.inria.jessy.vector.VersionVector;
  * 
  * @author Masoud Saeida Ardekani
  * 
+ *         TODO: Implementation is not fault tolerant. I.e., if an instance does
+ *         not receive a sequence number, it will block!
+ * 
  */
 public class ParallelSnapshotIsalation extends Consistency implements Learner {
+
+	private ExecutorPool pool = ExecutorPool.getInstance();
 
 	private static Logger logger = Logger
 			.getLogger(ParallelSnapshotIsalation.class);
@@ -105,8 +111,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
 
-			executionHistory.getWriteSet().addEntity(
-					executionHistory.getCreateSet());
+			// executionHistory.getWriteSet().addEntity(
+			// executionHistory.getCreateSet());
 
 			logger.debug(executionHistory.getTransactionHandler() + " >> "
 					+ transactionType.toString()
@@ -150,100 +156,71 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	}
 
 	/**
-	 * Waits until the its conditions hold true, and then update the
-	 * committedVTS according to the received sequence number.
-	 * 
-	 * @param pb
-	 *            Received piggyback that contains the group name and its new
-	 *            sequence number
-	 * @param executionHistory
-	 * 
-	 *            TODO waiting on committedVTS might not be SAFE. Talk with
-	 *            Pierre about it!
-	 */
-	private void updateCommittedVTS(ParallelSnapshotIsolationPiggyback pb) {
-		ExecutionHistory executionHistory = pb.executionHistory;
-		/*
-		 * Two conditions should be held before applying the updates. Figure 13
-		 * of [Serrano2011]
-		 * 
-		 * 1) committedVTS should be greater or equal to startVTS (in order to
-		 * ensure causality)
-		 * 
-		 * 2)committedVTS[group]>sequenceNumber (in order to ensure that all
-		 * transactions serially applies)
-		 */
-		CompactVector<String> startVTS = executionHistory.getReadSet()
-				.getCompactVector();
-		while ((VersionVector.committedVTS.compareTo(startVTS) < 0)
-				|| (VersionVector.committedVTS
-						.getValue(pb.wCoordinatorGroupName) < pb.sequenceNumber - 1)) {
-			/*
-			 * We have to wait until committedVTS becomes updated through
-			 * propagation.
-			 */
-			synchronized (VersionVector.committedVTS) {
-				try {
-					VersionVector.committedVTS.wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		VersionVector.committedVTS.getVector().put(pb.wCoordinatorGroupName,
-				pb.sequenceNumber);
-
-		synchronized (VersionVector.committedVTS) {
-			VersionVector.committedVTS.notifyAll();
-		}
-
-		logger.info("updateCommittedVTS set CommittedVTS to "
-				+ VersionVector.committedVTS.getVector().toString());
-	}
-
-	/**
 	 * @inheritDoc
 	 */
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
-		/*
-		 * Trying to commit a transaction without receiving the sequence number.
-		 * Something is wrong. Because we should have already received the vote
-		 * from the WCoordinator, and along with the vote, we should have
-		 * received the sequence number.
-		 */
-		assert (!receivedPiggybacks.keySet().contains(
-				executionHistory.getTransactionHandler().getId()));
+		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
+			return;
 
-		/*
-		 * Get and remove the piggybacked sequence number. We do not need it
-		 * anymore.
-		 */
-		ParallelSnapshotIsolationPiggyback pb = receivedPiggybacks
-				.remove(executionHistory.getTransactionHandler().getId());
+		try {
+			ParallelSnapshotIsolationPiggyback pb;
+			if (!receivedPiggybacks.keySet().contains(
+					executionHistory.getTransactionHandler().getId())) {
+				/*
+				 * Trying to commit a transaction without receiving the sequence
+				 * number. Something is wrong. Because we should have already
+				 * received the vote from the WCoordinator, and along with the
+				 * vote, we should have received the sequence number.
+				 */
+				logger.error("Preparing to commit without receiving the piggybacked message from WCoordinator");
+				System.exit(0);
+			}
 
-		/*
-		 * Wait until its conditions holds true, and then update the
-		 * CommittedVTS
-		 */
-		updateCommittedVTS(pb);
+			/*
+			 * Get and remove the piggybacked sequence number. We do not need it
+			 * anymore.
+			 */
+			pb = receivedPiggybacks.remove(executionHistory
+					.getTransactionHandler().getId());
 
-		/*
-		 * updatedVector is a new vector. It will be used as a new vector for
-		 * all modified vectors.
-		 * 
-		 * <p> The update takes place according to Walter [Serrano2011]
-		 */
+			if (executionHistory.getTransactionType() == TransactionType.INIT_TRANSACTION) {
+				executionHistory.getWriteSet().addEntity(
+						executionHistory.getCreateSet());
 
-		VersionVector<String> updatedVector = new VersionVector<String>(
-				pb.wCoordinatorGroupName, pb.sequenceNumber);
+				/*
+				 * Init transaction sequence number always remains zero. Thus,
+				 * all init values are zero.
+				 */
+				pb = new ParallelSnapshotIsolationPiggyback(manager
+						.getMyGroup().name(), 0, executionHistory);
+			}
 
-		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
-			entity.setLocalVector(updatedVector.clone());
+			/*
+			 * Wait until its conditions holds true, and then update the
+			 * CommittedVTS
+			 */
+			updateCommittedVTS(pb);
 
-			logger.info("Prepared to commit set local vector of  "
-					+ entity.getKey() + " to " + updatedVector.toString());
+			/*
+			 * updatedVector is a new vector. It will be used as a new vector
+			 * for all modified vectors.
+			 * 
+			 * <p> The update takes place according to Walter [Serrano2011]
+			 */
+
+			VersionVector<String> updatedVector = new VersionVector<String>(
+					pb.wCoordinatorGroupName, pb.sequenceNumber);
+
+			for (JessyEntity entity : executionHistory.getWriteSet()
+					.getEntities()) {
+				entity.setLocalVector(updatedVector.clone());
+
+				logger.info("Prepared to commit set local vector of  "
+						+ entity.getKey() + " to " + updatedVector.toString());
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 
 	}
@@ -286,12 +263,14 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 				executionHistory);
 
 		if (dest.size() > 0) {
+			logger.warn(executionHistory.getTransactionHandler().getId()
+					+ "Propagating to " + dest + " " + pb.wCoordinatorGroupName
+					+ ":" + pb.sequenceNumber);
 			ParallelSnapshotIsolationPropagateMessage msg = new ParallelSnapshotIsolationPropagateMessage(
 					pb, dest, manager.getMyGroup().name(),
 					manager.getSourceId());
 			propagation.propagate(msg);
 		}
-
 	}
 
 	/**
@@ -306,7 +285,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	public void learn(Stream s, Serializable v) {
 		if (v instanceof ParallelSnapshotIsolationPropagateMessage) {
 			ParallelSnapshotIsolationPropagateMessage msg = (ParallelSnapshotIsolationPropagateMessage) v;
-			updateCommittedVTS(msg.getParallelSnapshotIsolationPiggyback());
+			pool.submit(new updateCommittedVTSTask(msg
+					.getParallelSnapshotIsolationPiggyback()));
 
 		}
 	}
@@ -384,6 +364,14 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 				return true;
 			}
 		}
+
+		if (executionHistory.getCreateSet().size() > 0) {
+			key = executionHistory.getCreateSet().getKeys().iterator().next();
+			if (manager.getPartitioner().isLocal(key)) {
+				return true;
+			}
+		}
+
 		return false;
 
 	}
@@ -398,4 +386,95 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 							.getVotePiggyBack().getPiggyback());
 	}
 
+	/**
+	 * Waits until the its conditions hold true, and then update the
+	 * committedVTS according to the received sequence number.
+	 * 
+	 * @param pb
+	 *            Received piggyback that contains the group name and its new
+	 *            sequence number
+	 * @param executionHistory
+	 * 
+	 *            TODO waiting on committedVTS might not be SAFE. Talk with
+	 *            Pierre about it!
+	 */
+	private void updateCommittedVTS(ParallelSnapshotIsolationPiggyback pb) {
+
+		ExecutionHistory executionHistory = pb.executionHistory;
+		if (!manager.getMyGroup().name().equals(pb.wCoordinatorGroupName))
+			logger.warn("Updating " + pb.wCoordinatorGroupName + ":"
+					+ pb.sequenceNumber);
+		/*
+		 * Two conditions should be held before applying the updates. Figure 13
+		 * of [Serrano2011]
+		 * 
+		 * 1) committedVTS should be greater or equal to startVTS (in order to
+		 * ensure causality)
+		 * 
+		 * 2)committedVTS[group]>sequenceNumber (in order to ensure that all
+		 * transactions are serially applied)
+		 */
+		CompactVector<String> startVTS = executionHistory.getReadSet()
+				.getCompactVector();
+		while ((VersionVector.committedVTS.compareTo(startVTS) < 0)
+				|| (VersionVector.committedVTS
+						.getValue(pb.wCoordinatorGroupName) < pb.sequenceNumber - 1)) {
+			logger.warn(executionHistory.getTransactionHandler().getId()
+					+ " is going to wait " + " CommittedVTS is "
+					+ VersionVector.committedVTS.toString() + " StartVTS is "
+					+ startVTS + " and comparison result is "
+					+ VersionVector.committedVTS.compareTo(startVTS)
+					+ " WCoordinator is " + pb.wCoordinatorGroupName
+					+ " received sequence number is " + pb.sequenceNumber);
+			/*
+			 * We have to wait until committedVTS becomes updated through
+			 * propagation.
+			 */
+			synchronized (VersionVector.committedVTS) {
+				try {
+					VersionVector.committedVTS.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			System.out.println(executionHistory.getTransactionHandler().getId()
+					+ " came out of waiting");
+		}
+
+		logger.warn(executionHistory.getTransactionHandler().getId()
+				+ " Updating CommittedVTS to " + pb.wCoordinatorGroupName + ":"
+				+ pb.sequenceNumber);
+
+		VersionVector.committedVTS.setVector(pb.wCoordinatorGroupName,
+				pb.sequenceNumber);
+
+		logger.warn(" after apllying propagation, committedVTS is "
+				+ VersionVector.committedVTS.toString());
+
+		synchronized (VersionVector.committedVTS) {
+			VersionVector.committedVTS.notifyAll();
+		}
+
+	}
+
+	/**
+	 * Update the committedVTS according to the received piggy backed sequence
+	 * number.
+	 * 
+	 */
+	private class updateCommittedVTSTask implements Runnable {
+
+		private ParallelSnapshotIsolationPiggyback piggyback;
+
+		private updateCommittedVTSTask(
+				ParallelSnapshotIsolationPiggyback piggyback) {
+			this.piggyback = piggyback;
+		}
+
+		@Override
+		public void run() {
+			updateCommittedVTS(piggyback);
+		}
+
+	}
 }

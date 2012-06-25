@@ -205,7 +205,6 @@ public class DataStore {
 	// that 5 is a good number).
 	public <E extends JessyEntity> void put(E entity)
 			throws NullPointerException {
-		logger.warn("putting " + entity.getKey());
 		try {
 			@SuppressWarnings("unchecked")
 			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
