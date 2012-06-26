@@ -181,7 +181,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			 * Get and remove the piggybacked sequence number. We do not need it
 			 * anymore.
 			 */
-			pb = receivedPiggybacks.remove(executionHistory
+			pb = receivedPiggybacks.get(executionHistory
 					.getTransactionHandler().getId());
 
 			if (executionHistory.getTransactionType() == TransactionType.INIT_TRANSACTION) {
@@ -194,6 +194,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 				 */
 				pb = new ParallelSnapshotIsolationPiggyback(manager
 						.getMyGroup().name(), 0, executionHistory);
+				receivedPiggybacks.put(executionHistory.getTransactionHandler()
+						.getId(), pb);
 			}
 
 			/*
@@ -216,8 +218,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 					.getEntities()) {
 				entity.setLocalVector(updatedVector.clone());
 
-				logger.info("Prepared to commit set local vector of  "
-						+ entity.getKey() + " to " + updatedVector.toString());
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -256,16 +256,11 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			}
 		}
 
-		ParallelSnapshotIsolationPiggyback pb = new ParallelSnapshotIsolationPiggyback(
-				manager.getMyGroup().name(),
-				VersionVector.committedVTS
-						.getValue(manager.getMyGroup().name()),
-				executionHistory);
+		ParallelSnapshotIsolationPiggyback pb = receivedPiggybacks
+				.remove(executionHistory.getTransactionHandler().getId());
 
 		if (dest.size() > 0) {
-			logger.warn(executionHistory.getTransactionHandler().getId()
-					+ "Propagating to " + dest + " " + pb.wCoordinatorGroupName
-					+ ":" + pb.sequenceNumber);
+
 			ParallelSnapshotIsolationPropagateMessage msg = new ParallelSnapshotIsolationPropagateMessage(
 					pb, dest, manager.getMyGroup().name(),
 					manager.getSourceId());
@@ -329,8 +324,13 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		 */
 		VotePiggyback vp = null;
 		if (isWCoordinator(executionHistory)) {
+
 			int sequenceNumber = VersionVector.committedVTS.getValue(manager
 					.getMyGroup().name()) + 1;
+
+			logger.warn("Assigning to transaction "
+					+ executionHistory.getTransactionHandler().getId()
+					+ " sequence number " + sequenceNumber);
 
 			vp = new VotePiggyback(new ParallelSnapshotIsolationPiggyback(
 					manager.getMyGroup().name(), sequenceNumber,
@@ -400,10 +400,28 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 */
 	private void updateCommittedVTS(ParallelSnapshotIsolationPiggyback pb) {
 
-		ExecutionHistory executionHistory = pb.executionHistory;
-		if (!manager.getMyGroup().name().equals(pb.wCoordinatorGroupName))
-			logger.warn("Updating " + pb.wCoordinatorGroupName + ":"
+		if (VersionVector.committedVTS.getValue(pb.wCoordinatorGroupName) > pb.sequenceNumber) {
+			/*
+			 * If it has been applied before, ignore this one.
+			 * 
+			 * TODO: in theory, this if must never occur. However, because of
+			 * some bugs somewhere, I introduced this quick fix. I think the
+			 * problem is because two transactions try to commit at the same
+			 * time. Thus, both of the get the same sequence number. (assume
+			 * sequence number 5). What happen is that first 5 is delivered,
+			 * then 6 is delivered, and then again 5 is delivered which screws
+			 * every thing. Commutativity is turned off, but still there is a
+			 * problem!
+			 */
+			logger.error("*********** ERRORR transaction "
+					+ pb.executionHistory.getTransactionHandler().getId()
+					+ " wants to update " + pb.wCoordinatorGroupName + " : "
 					+ pb.sequenceNumber);
+			return;
+		}
+
+		ExecutionHistory executionHistory = pb.executionHistory;
+
 		/*
 		 * Two conditions should be held before applying the updates. Figure 13
 		 * of [Serrano2011]
@@ -419,13 +437,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		while ((VersionVector.committedVTS.compareTo(startVTS) < 0)
 				|| (VersionVector.committedVTS
 						.getValue(pb.wCoordinatorGroupName) < pb.sequenceNumber - 1)) {
-			logger.warn(executionHistory.getTransactionHandler().getId()
-					+ " is going to wait " + " CommittedVTS is "
-					+ VersionVector.committedVTS.toString() + " StartVTS is "
-					+ startVTS + " and comparison result is "
-					+ VersionVector.committedVTS.compareTo(startVTS)
-					+ " WCoordinator is " + pb.wCoordinatorGroupName
-					+ " received sequence number is " + pb.sequenceNumber);
 			/*
 			 * We have to wait until committedVTS becomes updated through
 			 * propagation.
@@ -441,15 +452,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 					+ " came out of waiting");
 		}
 
-		logger.warn(executionHistory.getTransactionHandler().getId()
-				+ " Updating CommittedVTS to " + pb.wCoordinatorGroupName + ":"
-				+ pb.sequenceNumber);
-
 		VersionVector.committedVTS.setVector(pb.wCoordinatorGroupName,
 				pb.sequenceNumber);
-
-		logger.warn(" after apllying propagation, committedVTS is "
-				+ VersionVector.committedVTS.toString());
 
 		synchronized (VersionVector.committedVTS) {
 			VersionVector.committedVTS.notifyAll();

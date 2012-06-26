@@ -330,16 +330,19 @@ public class DistributedTermination implements Learner {
 				 */
 				synchronized (atomicDeliveredMessages) {
 					while (true) {
-						boolean isConflicting = true;
+
+						boolean isConflicting = false;
+
 						for (TerminateTransactionRequestMessage n : atomicDeliveredMessages) {
 							if (n.equals(msg)) {
-								isConflicting = false;
 								break;
 							}
-							if (jessy.getConsistency().certificationCommute(
+							if (!jessy.getConsistency().certificationCommute(
 									n.getExecutionHistory(),
-									msg.getExecutionHistory()))
+									msg.getExecutionHistory())) {
+								isConflicting = true;
 								break;
+							}
 						}
 						if (isConflicting)
 							atomicDeliveredMessages.wait();
@@ -397,10 +400,10 @@ public class DistributedTermination implements Learner {
 				garbageCollect(msg.getExecutionHistory()
 						.getTransactionHandler());
 
-//				synchronized (atomicDeliveredMessages) {
-//					atomicDeliveredMessages.remove(msg);
-//					atomicDeliveredMessages.notifyAll();
-//				}
+				// synchronized (atomicDeliveredMessages) {
+				// atomicDeliveredMessages.remove(msg);
+				// atomicDeliveredMessages.notifyAll();
+				// }
 
 			} catch (Exception e) {
 				e.printStackTrace();
