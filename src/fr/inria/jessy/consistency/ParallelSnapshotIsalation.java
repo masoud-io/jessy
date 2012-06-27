@@ -141,6 +141,12 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 				if (lastComittedEntity.getLocalVector().isCompatible(
 						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
+
+					logger.error("Aborting a transaction because local vector is "
+							+ tmp.getLocalVector()
+							+ " and last committed is "
+							+ lastComittedEntity.getLocalVector());
+
 					return false;
 				}
 
@@ -328,10 +334,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			int sequenceNumber = VersionVector.committedVTS.getValue(manager
 					.getMyGroup().name()) + 1;
 
-			logger.warn("Assigning to transaction "
-					+ executionHistory.getTransactionHandler().getId()
-					+ " sequence number " + sequenceNumber);
-
 			vp = new VotePiggyback(new ParallelSnapshotIsolationPiggyback(
 					manager.getMyGroup().name(), sequenceNumber,
 					executionHistory));
@@ -404,20 +406,13 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			/*
 			 * If it has been applied before, ignore this one.
 			 * 
-			 * TODO: in theory, this if must never occur. However, because of
-			 * some bugs somewhere, I introduced this quick fix. I think the
-			 * problem is because two transactions try to commit at the same
-			 * time. Thus, both of the get the same sequence number. (assume
-			 * sequence number 5). What happen is that first 5 is delivered,
-			 * then 6 is delivered, and then again 5 is delivered which screws
-			 * every thing. Commutativity is turned off, but still there is a
-			 * problem!
+			 * In theory, this if must never occur.
 			 */
-			logger.error("*********** ERRORR transaction "
+			logger.error("Transaction "
 					+ pb.executionHistory.getTransactionHandler().getId()
 					+ " wants to update " + pb.wCoordinatorGroupName + " : "
 					+ pb.sequenceNumber);
-			return;
+			System.exit(0);
 		}
 
 		ExecutionHistory executionHistory = pb.executionHistory;
@@ -448,8 +443,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 					e.printStackTrace();
 				}
 			}
-			System.out.println(executionHistory.getTransactionHandler().getId()
-					+ " came out of waiting");
+
 		}
 
 		VersionVector.committedVTS.setVector(pb.wCoordinatorGroupName,
