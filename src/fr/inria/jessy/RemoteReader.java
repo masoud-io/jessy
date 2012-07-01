@@ -21,13 +21,14 @@ import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.utils.ExecutorPool;
-import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.communication.message.ReadReplyMessage;
+import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
@@ -81,7 +82,8 @@ public class RemoteReader implements Learner {
 		remoteReadStream = FractalManager.getInstance()
 				.getOrCreateMulticastStream(
 						ConstantPool.JESSY_READER_STREAM,
-						JessyGroupManager.getInstance().getEverybodyGroup().name());
+						JessyGroupManager.getInstance().getEverybodyGroup()
+								.name());
 		remoteReadStream.registerLearner("ReadRequestMessage", this);
 		remoteReadStream.registerLearner("ReadReplyMessage", this);
 		remoteReadStream.start();
@@ -89,11 +91,11 @@ public class RemoteReader implements Learner {
 		pendingRemoteReads = new ConcurrentHashMap<Integer, RemoteReadFuture<JessyEntity>>();
 
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
-//		pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
-//				RemoteReadReplyTask.class, RemoteReader.class, this));
+		// pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
+		// RemoteReadReplyTask.class, RemoteReader.class, this));
 
 		pool.submit(new RemoteReadReplyTask());
-		
+
 		remoteReadQ = new LinkedBlockingDeque<RemoteReadFuture<JessyEntity>>();
 		// pool.submitMultiple(
 		// new
@@ -337,10 +339,12 @@ public class RemoteReader implements Learner {
 						List<ReadReply<JessyEntity>> replies = jessy
 								.getDataStore().getAll(
 										pendingRequests.get(dest));
-						if(replies.isEmpty()){
-							logger.warn("read requests " + pendingRequests +" failed");
+						if (replies.isEmpty()) {
+							logger.warn("read requests " + pendingRequests
+									+ " failed");
 						}
-						remoteReadStream.unicast(new ReadReplyMessage(replies), dest);
+						remoteReadStream.unicast(new ReadReplyMessage(replies),
+								dest);
 					}
 					serverAnsweringTime.stop();
 
