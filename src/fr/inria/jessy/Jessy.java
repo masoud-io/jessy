@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.FloatValueRecorder;
+import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import org.apache.log4j.Logger;
@@ -61,6 +63,9 @@ public abstract class Jessy {
 	//
 
 	private static TimeRecorder ReadTime = new TimeRecorder("Jessy#readTime");
+
+	protected static SimpleCounter failedReadCount = new SimpleCounter(
+			"Jessy#failedReadCount");
 
 	protected DataStore dataStore;
 	Consistency consistency;
@@ -212,6 +217,7 @@ public abstract class Jessy {
 			return entity;
 		} else {
 			ReadTime.stop();
+			failedReadCount.incr();
 			return null;
 		}
 	}
@@ -258,6 +264,7 @@ public abstract class Jessy {
 			executionHistory.addReadEntity(entities);
 			return entities;
 		} else {
+			failedReadCount.incr();
 			return null;
 		}
 	}
@@ -363,8 +370,8 @@ public abstract class Jessy {
 			TransactionHandler transactionHandler, E entity)
 			throws NullPointerException {
 
-//		dataStore.delete(entity.getClass().toString(), "secondaryKey",
-//				entity.getKey());
+		// dataStore.delete(entity.getClass().toString(), "secondaryKey",
+		// entity.getKey());
 
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);

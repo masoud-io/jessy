@@ -66,6 +66,9 @@ public class DistributedJessy extends Jessy {
 	private static FloatValueRecorder certificationRatioAbortedTransactions = new FloatValueRecorder(
 			"Jessy#certificationRatioAbortedTransactions");
 
+	private static FloatValueRecorder ratioFailedReads = new FloatValueRecorder(
+			"Jessy#ratioFailedReads");
+
 	public RemoteReader remoteReader;
 	public DistributedTermination distributedTermination;
 	public Partitioner partitioner;
@@ -318,6 +321,10 @@ public class DistributedJessy extends Jessy {
 			certificationRatioAbortedTransactions.setFormat("%t");
 			certificationRatioAbortedTransactions.add(Double
 					.valueOf(abortByCertificationCount.toString())
+					/ (Double.valueOf(executionCount.toString())));
+
+			ratioFailedReads.setFormat("%t");
+			ratioFailedReads.add(Double.valueOf(failedReadCount.toString())
 					/ (Double.valueOf(executionCount.toString())));
 
 			if (!JessyGroupManager.getInstance().isProxy()) {
