@@ -1,7 +1,6 @@
 package fr.inria.jessy;
 
-import java.io.FileInputStream;
-import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 
@@ -36,12 +35,18 @@ public class ConstantPool {
 	public static final String JESSY_TERMINATION_STREAM = "JSTERM";
 	public static final String JESSY_VOTE_STREAM = "JVOTE";
 	public static final String JESSY_READER_STREAM = "JREADER";
-	
+
 	/**
 	 * GPaxos Configs
 	 */
 	public static final int MAX_INTERGROUP_MESSAGE_DELAY = 3000;
 	public static final int CONSENSUS_LATENCY = 2000;
+
+	/**
+	 * Remote Reader
+	 */
+	public static final long JESSY_REMOTE_READER_TIMEOUT = 1000;
+	public static final TimeUnit JESSY_REMOTE_READER_TIMEOUT_TYPE = TimeUnit.MILLISECONDS;
 
 	/**
 	 * Config.property file constants

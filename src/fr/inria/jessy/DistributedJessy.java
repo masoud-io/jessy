@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 
 import net.sourceforge.fractal.MessageStream;
 import net.sourceforge.fractal.utils.PerformanceProbe;
@@ -134,6 +135,9 @@ public class DistributedJessy extends Jessy {
 		return distributedJessy;
 	}
 
+	/**
+	 * TODO this impl is not fault tolerant!
+	 */
 	@Override
 	protected <E extends JessyEntity, SK> E performRead(Class<E> entityClass,
 			String keyName, SK keyValue, CompactVector<String> readSet)
@@ -142,7 +146,7 @@ public class DistributedJessy extends Jessy {
 		long start = System.nanoTime();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
-		ReadReply<E> readReply;
+		ReadReply<E> readReply = null;
 		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keyValue
 					+ " for request " + readRequest);
@@ -151,8 +155,24 @@ public class DistributedJessy extends Jessy {
 			logger.debug("performing remote read on " + keyValue
 					+ " for request " + readRequest);
 			remoteReads.incr();
-			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
-			readReply = future.get();
+
+			Future<ReadReply<E>> future;
+			boolean isDone = false;
+			do {
+				future = remoteReader.remoteRead(readRequest);
+				try {
+					readReply = future.get(
+							ConstantPool.JESSY_REMOTE_READER_TIMEOUT,
+							ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
+					isDone = true;
+				} catch (TimeoutException e) {
+					/*
+					 * Nothing to do. The message should have been lost. Retry
+					 * again.
+					 */
+				}
+			} while (!isDone);
+
 		}
 		readRequestTime.add(System.nanoTime() - start);
 
@@ -179,7 +199,7 @@ public class DistributedJessy extends Jessy {
 		long start = System.nanoTime();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
-		ReadReply<E> readReply;
+		ReadReply<E> readReply = null;
 		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 			logger.debug("performing local read on " + keys + " for request "
 					+ readRequest);
@@ -188,8 +208,24 @@ public class DistributedJessy extends Jessy {
 			logger.debug("performing remote read on " + keys + " for request "
 					+ readRequest);
 			remoteReads.incr();
-			Future<ReadReply<E>> future = remoteReader.remoteRead(readRequest);
-			readReply = future.get();
+
+			Future<ReadReply<E>> future;
+			boolean isDone = false;
+			do {
+				future = remoteReader.remoteRead(readRequest);
+				try {
+					readReply = future.get(
+							ConstantPool.JESSY_REMOTE_READER_TIMEOUT,
+							ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
+					isDone = true;
+				} catch (TimeoutException e) {
+					/*
+					 * Nothing to do. The message should have been lost. Retry
+					 * again.
+					 */
+				}
+			} while (!isDone);
+
 		}
 		readRequestTime.add(System.nanoTime() - start);
 

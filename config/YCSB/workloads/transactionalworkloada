@@ -24,8 +24,8 @@
 
 fieldcount=1
 fieldlength=1000
-recordcount=100000
-operationcount=50000
+recordcount=1000
+operationcount=5000
 workload=com.yahoo.ycsb.workloads.TransactionalWorkload
 
 insertorder=linear

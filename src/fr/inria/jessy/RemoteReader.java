@@ -21,6 +21,7 @@ import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.utils.ExecutorPool;
+import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
@@ -91,10 +92,11 @@ public class RemoteReader implements Learner {
 		pendingRemoteReads = new ConcurrentHashMap<Integer, RemoteReadFuture<JessyEntity>>();
 
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
-		// pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
-		// RemoteReadReplyTask.class, RemoteReader.class, this));
 
-		pool.submit(new RemoteReadReplyTask());
+		pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
+				RemoteReadReplyTask.class, RemoteReader.class, this));
+
+		// pool.submit(new RemoteReadReplyTask());
 
 		remoteReadQ = new LinkedBlockingDeque<RemoteReadFuture<JessyEntity>>();
 		// pool.submitMultiple(
@@ -188,8 +190,7 @@ public class RemoteReader implements Learner {
 		public ReadReply<E> get(long timeout, TimeUnit unit)
 				throws InterruptedException, ExecutionException,
 				TimeoutException {
-			if (unit.equals(TimeUnit.MILLISECONDS))
-				throw new IllegalArgumentException();
+			
 			synchronized (state) {
 				if (state == 0)
 					state.wait(timeout);
