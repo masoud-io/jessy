@@ -15,6 +15,7 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.TerminationCommunication;
@@ -412,7 +413,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 					+ pb.executionHistory.getTransactionHandler().getId()
 					+ " wants to update " + pb.wCoordinatorGroupName + " : "
 					+ pb.sequenceNumber);
-			System.exit(0);
+			// System.exit(0);
+			return;
 		}
 
 		ExecutionHistory executionHistory = pb.executionHistory;
@@ -426,12 +428,21 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		 * 
 		 * 2)committedVTS[group]>sequenceNumber (in order to ensure that all
 		 * transactions are serially applied)
+		 * 
+		 * TODO: if the propagation uses reliable broadcast, the threshold
+		 * condition is useless, but since the propagation is not reliable yet,
+		 * upon one message lost, the whole piggybacks might ends up waiting for
+		 * that lost piggyback before being applied. The above if condition
+		 * ensures that the threshold bypassing is still safe because if later
+		 * an old propagation is received, the execution will be terminated.
 		 */
 		CompactVector<String> startVTS = executionHistory.getReadSet()
 				.getCompactVector();
 		while ((VersionVector.committedVTS.compareTo(startVTS) < 0)
-				|| (VersionVector.committedVTS
-						.getValue(pb.wCoordinatorGroupName) < pb.sequenceNumber - 1)) {
+				|| ((VersionVector.committedVTS
+						.getValue(pb.wCoordinatorGroupName) < pb.sequenceNumber - 1) && (pb.sequenceNumber
+						- VersionVector.committedVTS
+								.getValue(pb.wCoordinatorGroupName) < ConstantPool.JESSY_PSI_PROPAGATION_THRESHOLD))) {
 			/*
 			 * We have to wait until committedVTS becomes updated through
 			 * propagation.

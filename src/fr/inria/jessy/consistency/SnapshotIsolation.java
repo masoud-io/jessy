@@ -18,24 +18,22 @@ import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.Vector;
 
-//TODO COMMENT ME
 public class SnapshotIsolation extends Consistency {
 
-	private static Logger logger = Logger
-			.getLogger(SnapshotIsolation.class);
-	
-	
+	private static Logger logger = Logger.getLogger(SnapshotIsolation.class);
+
 	public SnapshotIsolation(DataStore store) {
 		super(store);
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
 
 		TransactionType transactionType = executionHistory.getTransactionType();
-		
-		// logger.debug(executionHistory.getTransactionHandler() +
+
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ transactionType.toString());
 		logger.debug("ReadSet Vector"
@@ -59,16 +57,7 @@ public class SnapshotIsolation extends Consistency {
 		 * increaments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
-			
-			for (JessyEntity tmp : executionHistory.getCreateSet()
-					.getEntities()) {
-				/*
-				 * set the selfkey of the created vector and put it back in the
-				 * entity
-				 */
-				((ScalarVector)tmp.getLocalVector()).update(0);
-			}
-			
+
 			return true;
 		}
 
@@ -92,10 +81,12 @@ public class SnapshotIsolation extends Consistency {
 						.getEntity().iterator().next();
 
 				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
-					
-					logger.debug("lastCommitted: "+ lastComittedEntity.getLocalVector()+" tmp: "+ tmp.getLocalVector());
-					
+						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
+
+					logger.debug("lastCommitted: "
+							+ lastComittedEntity.getLocalVector() + " tmp: "
+							+ tmp.getLocalVector());
+
 					return false;
 				}
 			} catch (NullPointerException e) {
@@ -104,10 +95,10 @@ public class SnapshotIsolation extends Consistency {
 			}
 
 		}
-		
+
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ transactionType.toString() + " >> COMMITTED");
-		
+
 		return true;
 	}
 
@@ -115,14 +106,16 @@ public class SnapshotIsolation extends Consistency {
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
-		Set<String> history2Keys = history2.getWriteSet().getKeys();
-
-		for (String key : history1.getWriteSet().getKeys()) {
-			if (history2Keys.contains(key)) {
-				return true;
-			}
-		}
 		return false;
+
+		// Set<String> history2Keys = history2.getWriteSet().getKeys();
+		//
+		// for (String key : history1.getWriteSet().getKeys()) {
+		// if (history2Keys.contains(key)) {
+		// return true;
+		// }
+		// }
+		// return false;
 	}
 
 	/**
@@ -134,21 +127,20 @@ public class SnapshotIsolation extends Consistency {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
-		
 
-		int newVersion=0;
-//		WARNING: there is a cast to ScalarVector
-		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION){
-			newVersion=ScalarVector.lastCommittedTransactionSeqNumber.incrementAndGet();
-		}
-		else{
+		int newVersion = 0;
+		// WARNING: there is a cast to ScalarVector
+		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
+			newVersion = ScalarVector.lastCommittedTransactionSeqNumber
+					.incrementAndGet();
+		} else {
 			for (JessyEntity je : executionHistory.getCreateSet().getEntities()) {
-				((ScalarVector)je.getLocalVector()).update(newVersion);
+				((ScalarVector) je.getLocalVector()).update(newVersion);
 			}
 		}
-		
+
 		for (JessyEntity je : executionHistory.getWriteSet().getEntities()) {
-			((ScalarVector)je.getLocalVector()).update(newVersion);
+			((ScalarVector) je.getLocalVector()).update(newVersion);
 		}
 
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
@@ -166,10 +158,11 @@ public class SnapshotIsolation extends Consistency {
 
 	@Override
 	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Learner learner){
-		if (terminationCommunication == null){
-			terminationCommunication = new NonGenuineTerminationCommunication(group,  learner);
-			 
+			Group group, Learner learner) {
+		if (terminationCommunication == null) {
+			terminationCommunication = new NonGenuineTerminationCommunication(
+					group, learner);
+
 		}
 		return terminationCommunication;
 	}

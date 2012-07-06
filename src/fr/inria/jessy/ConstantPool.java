@@ -43,10 +43,19 @@ public class ConstantPool {
 	public static final int CONSENSUS_LATENCY = 2000;
 
 	/**
-	 * Remote Reader
+	 * Specifies the timeout and its type for each remote read request. Since
+	 * the read request might be lost, upon the timeout, a new read request
+	 * should be sent out to a jessy instance replicating the entity.
 	 */
-	public static final long JESSY_REMOTE_READER_TIMEOUT = 1000;
+	public static final long JESSY_REMOTE_READER_TIMEOUT = 5000;
 	public static final TimeUnit JESSY_REMOTE_READER_TIMEOUT_TYPE = TimeUnit.MILLISECONDS;
+
+	/**
+	 * Specifies the threshold for ignoring the condition checks before applying
+	 * the propagation. NOTE: if the propagation is reliable broadcast, this
+	 * constant should be useless.
+	 */
+	public static final int JESSY_PSI_PROPAGATION_THRESHOLD = 20;
 
 	/**
 	 * Config.property file constants
