@@ -6,6 +6,7 @@ import java.util.Set;
 
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
@@ -19,6 +20,10 @@ public abstract class Consistency {
 	protected JessyGroupManager manager = JessyGroupManager.getInstance();
 
 	protected static boolean votePiggybackRequired = false;
+
+	protected static final boolean checkCommutativity = (fr.inria.jessy.utils.Configuration
+			.readConfig(ConstantPool.CHECK_COMMUTAVITY) == "false") ? false
+			: true;
 
 	public Consistency(DataStore store) {
 		this.store = store;
@@ -81,7 +86,8 @@ public abstract class Consistency {
 	/**
 	 * Is called after the transaction modifications have been applied to the
 	 * local data store. Can be used for example for propagating information
-	 * after the transaction has been committed (E.g., {@code ParallelSnapshotIsalation}).
+	 * after the transaction has been committed (E.g.,
+	 * {@code ParallelSnapshotIsalation}).
 	 * 
 	 * @param executionHistory
 	 */

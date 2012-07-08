@@ -17,13 +17,15 @@ public class ReadComitted extends Consistency {
 	}
 
 	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(Group group, Learner learner) {
+	public TerminationCommunication getOrCreateTerminationCommunication(
+			Group group, Learner learner) {
 		if (terminationCommunication == null)
 			/*
 			 * Do not return {@code TrivialTerminationCommunication} instance
 			 * because it may lead to <i>deadlock</i>.
 			 */
-			terminationCommunication = new TrivialTerminationCommunication(group, learner);
+			terminationCommunication = new TrivialTerminationCommunication(
+					group, learner);
 		return terminationCommunication;
 	}
 
@@ -35,7 +37,8 @@ public class ReadComitted extends Consistency {
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
-		return true;
+
+		return checkCommutativity;
 	}
 
 	@Override

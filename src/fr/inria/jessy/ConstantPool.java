@@ -57,6 +57,7 @@ public class ConstantPool {
 	 */
 	public static final int JESSY_PSI_PROPAGATION_THRESHOLD = 20;
 
+	
 	/**
 	 * Config.property file constants
 	 */
@@ -66,5 +67,6 @@ public class ConstantPool {
 	public static final String PARTITIONER_TYPE = "partitioner_type";
 	public static final String RETRY_COMMIT = "retry_commit";
 	public static final String FRACTAL_FILE = "fractal_file";
+	public static final String CHECK_COMMUTAVITY = "check_commutativity";
 
 }

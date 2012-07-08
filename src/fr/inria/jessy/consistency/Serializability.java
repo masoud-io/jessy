@@ -81,7 +81,7 @@ public class Serializability extends Consistency {
 						.getEntity().iterator().next();
 
 				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
+						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 					logger.warn("Certification fails for transaction "
 							+ executionHistory.getTransactionHandler().getId()
 							+ " because it has written " + tmp.getKey()
@@ -110,7 +110,7 @@ public class Serializability extends Consistency {
 						.getEntity().iterator().next();
 
 				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
+						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 
 					logger.warn("Certification fails for transaction "
 							+ executionHistory.getTransactionHandler().getId()
@@ -137,6 +137,9 @@ public class Serializability extends Consistency {
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
+		if (!checkCommutativity)
+			return false;
+
 		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
 				.getKeys(), history2.getReadSet().getKeys())
 				&& !CollectionUtils.isIntersectingWith(history2.getWriteSet()
@@ -169,7 +172,7 @@ public class Serializability extends Consistency {
 			 * because it may lead to <i>deadlock</i>.
 			 */
 			terminationCommunication = new GenuineTerminationCommunication(
-					group,   learner);
+					group, learner);
 		return terminationCommunication;
 	}
 

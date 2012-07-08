@@ -1,10 +1,10 @@
 #config.properties
 #the hooks are defined in ConstantPool.java!!!
 
-#consistency_type: "nmsi" | "si" | "ser" | "rc" | "psi"
+#consistency type: "nmsi" | "si" | "ser" | "rc" | "psi"
 consistency_type = nmsi
 
-#partitioner_type: "keyspace" | "modulo"
+#partitioner type: "keyspace" | "modulo"
 partitioner_type = modulo
 
 #retry to re-execute and commit the transaction upon its abort.
@@ -13,3 +13,6 @@ partitioner_type = modulo
 retry_commit=true
 
 fractal_file=myfractal.xml
+
+#if true, commutative transaction will terminate in parallel.
+check_commutativity=true

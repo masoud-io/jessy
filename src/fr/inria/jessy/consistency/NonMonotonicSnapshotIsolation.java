@@ -94,7 +94,7 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 						.getEntity().iterator().next();
 
 				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE) {
+						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 					return false;
 				}
 
@@ -112,6 +112,8 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
+		if (!checkCommutativity)
+			return false;
 
 		Set<String> history2Keys = history2.getWriteSet().getKeys();
 
@@ -148,9 +150,11 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 	}
 
 	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(Group group, Learner learner) {
+	public TerminationCommunication getOrCreateTerminationCommunication(
+			Group group, Learner learner) {
 		if (terminationCommunication == null)
-			terminationCommunication = new GenuineTerminationCommunication(group,  learner);
+			terminationCommunication = new GenuineTerminationCommunication(
+					group, learner);
 		return terminationCommunication;
 	}
 }
