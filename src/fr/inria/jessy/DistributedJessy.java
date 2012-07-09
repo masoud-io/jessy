@@ -59,6 +59,8 @@ public class DistributedJessy extends Jessy {
 			"Jessy#abortByVoteCount");
 	private static SimpleCounter abortByCertificationCount = new SimpleCounter(
 			"Jessy#abortByCertificationCount");
+	private static SimpleCounter abortByTimeout = new SimpleCounter(
+			"Jessy#abortByTimeout");
 
 	private static FloatValueRecorder totalRatioAbortedTransactions = new FloatValueRecorder(
 			"Jessy#ratioAbortedTransactions");
@@ -66,6 +68,8 @@ public class DistributedJessy extends Jessy {
 			"Jessy#voteRatioAbortedTransactions");
 	private static FloatValueRecorder certificationRatioAbortedTransactions = new FloatValueRecorder(
 			"Jessy#certificationRatioAbortedTransactions");
+	private static FloatValueRecorder timeoutRatioAbortedTransactions = new FloatValueRecorder(
+			"Jessy#timeoutRatioAbortedTransactions");
 
 	private static FloatValueRecorder ratioFailedReads = new FloatValueRecorder(
 			"Jessy#ratioFailedReads");
@@ -313,12 +317,16 @@ public class DistributedJessy extends Jessy {
 
 		TransactionState stateResult = null;
 		try {
-			stateResult = stateFuture.get();
+			stateResult = stateFuture.get(
+					ConstantPool.JESSY_TRANSACTION_TERMINATION_TIMEOUT,
+					ConstantPool.JESSY_TRANSACTION_TERMINATION_TIMEOUT_TYPE);
+			executionHistory.changeState(stateResult);
+		} catch (TimeoutException te) {
+			executionHistory.changeState(TransactionState.ABORTED_BY_TIMEOUT);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		assert (stateResult != null);
-		executionHistory.changeState(stateResult);
 
 		/*
 		 * Set the probes for calculating the abort rate.
@@ -328,6 +336,8 @@ public class DistributedJessy extends Jessy {
 			abortByVoteCount.incr();
 		else if (stateResult == TransactionState.ABORTED_BY_CERTIFICATION)
 			abortByCertificationCount.incr();
+		else if (stateResult == TransactionState.ABORTED_BY_TIMEOUT)
+			abortByTimeout.incr();
 
 		logger.debug(transactionHandler + " " + stateResult);
 		return executionHistory;
@@ -345,10 +355,12 @@ public class DistributedJessy extends Jessy {
 		if (activeClients.size() == 0) {
 
 			totalRatioAbortedTransactions.setFormat("%t");
-			totalRatioAbortedTransactions.add((Double.valueOf(abortByVoteCount
-					.toString()) + Double.valueOf(abortByCertificationCount
-					.toString()))
-					/ (Double.valueOf(executionCount.toString())));
+			totalRatioAbortedTransactions
+					.add((Double.valueOf(abortByVoteCount.toString())
+							+ Double.valueOf(abortByCertificationCount
+									.toString()) + Double
+							.valueOf(abortByTimeout.toString()))
+							/ (Double.valueOf(executionCount.toString())));
 
 			voteRatioAbortedTransactions.setFormat("%t");
 			voteRatioAbortedTransactions.add(Double.valueOf(abortByVoteCount
@@ -358,6 +370,10 @@ public class DistributedJessy extends Jessy {
 			certificationRatioAbortedTransactions.add(Double
 					.valueOf(abortByCertificationCount.toString())
 					/ (Double.valueOf(executionCount.toString())));
+
+			timeoutRatioAbortedTransactions.setFormat("%t");
+			timeoutRatioAbortedTransactions.add(Double.valueOf(abortByTimeout
+					.toString()) / (Double.valueOf(executionCount.toString())));
 
 			ratioFailedReads.setFormat("%t");
 			ratioFailedReads.add(Double.valueOf(failedReadCount.toString())

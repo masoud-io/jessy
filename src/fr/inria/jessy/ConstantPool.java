@@ -51,13 +51,20 @@ public class ConstantPool {
 	public static final TimeUnit JESSY_REMOTE_READER_TIMEOUT_TYPE = TimeUnit.MILLISECONDS;
 
 	/**
+	 * Specifies the timeout and its type for each transaction termination.
+	 * Since a vote request might be lost, upon the timeout, a new transaction
+	 * termination should be initialized.
+	 */
+	public static final long JESSY_TRANSACTION_TERMINATION_TIMEOUT = 10000;
+	public static final TimeUnit JESSY_TRANSACTION_TERMINATION_TIMEOUT_TYPE = TimeUnit.MILLISECONDS;
+
+	/**
 	 * Specifies the threshold for ignoring the condition checks before applying
 	 * the propagation. NOTE: if the propagation is reliable broadcast, this
 	 * constant should be useless.
 	 */
 	public static final int JESSY_PSI_PROPAGATION_THRESHOLD = 20;
 
-	
 	/**
 	 * Config.property file constants
 	 */

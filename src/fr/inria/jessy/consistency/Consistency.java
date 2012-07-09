@@ -22,7 +22,7 @@ public abstract class Consistency {
 	protected static boolean votePiggybackRequired = false;
 
 	protected static final boolean checkCommutativity = (fr.inria.jessy.utils.Configuration
-			.readConfig(ConstantPool.CHECK_COMMUTAVITY) == "false") ? false
+			.readConfig(ConstantPool.CHECK_COMMUTAVITY).equals("false")) ? false
 			: true;
 
 	public Consistency(DataStore store) {

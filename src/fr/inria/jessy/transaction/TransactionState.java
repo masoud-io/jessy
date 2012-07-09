@@ -20,15 +20,21 @@ public enum TransactionState {
 	 */
 	COMMITTED,
 	/**
-	 * the transaction has been aborted because of the certification test {@link Consistency#certify(java.util.concurrent.ConcurrentMap, ExecutionHistory)}
+	 * the transaction has been aborted because of the certification test
+	 * {@link Consistency#certify(java.util.concurrent.ConcurrentMap, ExecutionHistory)}
 	 */
 	ABORTED_BY_CERTIFICATION,
 	/**
-	 * the transaction has been aborted because of the abort vote from a remote site.
+	 * the transaction has been aborted because of the abort vote from a remote
+	 * site.
 	 */
 	ABORTED_BY_VOTING,
 	/**
 	 * the transaction has been aborted by the client.
 	 */
 	ABORTED_BY_CLIENT,
+	/**
+	 * the transaction has been aborted because of a timeout during termination.
+	 */
+	ABORTED_BY_TIMEOUT
 }
