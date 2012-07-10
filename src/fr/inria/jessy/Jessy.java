@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
-import net.sourceforge.fractal.utils.PerformanceProbe.FloatValueRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
@@ -498,7 +497,7 @@ public abstract class Jessy {
 
 	public void close(Object object) throws DatabaseException {
 		dataStore.close();
-		logger.info("Jessy DataStore is closed. The data should be permanent by now.");
+		logger.warn("Jessy DataStore is closed. The data should be permanent by now.");
 	}
 
 	// TODO

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 
@@ -20,15 +20,26 @@ import fr.inria.jessy.store.ReadRequestKey;
  * 
  */
 public abstract class Transaction implements Callable<ExecutionHistory> {
-
-	private static TimeRecorder transactionTotalTime = new TimeRecorder(
-			"Jessy#TransactionTotalTime");
-	private static TimeRecorder transactionExecutionTime = new TimeRecorder(
-			"Jessy#TransactionExecutionTime");
-	private static TimeRecorder transactionTerminationTime = new TimeRecorder(
-			"Jessy#TransactionTerminationTime"); 
-
 	private static Logger logger = Logger.getLogger(Transaction.class);
+
+	private static ValueRecorder transactionExecutionTime;
+	private static ValueRecorder transactionTerminationTime;
+
+	static {
+		// Performance measuring facilities
+
+		transactionExecutionTime = new ValueRecorder(
+				"Transaction#transactionExecutionTime(ms)");
+		transactionExecutionTime.setFormat("%a");
+		transactionExecutionTime.setFactor(1000);
+
+		transactionTerminationTime = new ValueRecorder(
+				"Transaction#transactionTerminationTime(ms)");
+		transactionTerminationTime.setFormat("%a");
+		transactionTerminationTime.setFactor(1000);
+	}
+
+	long executionStartTime;
 
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
@@ -37,12 +48,9 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;
-
-		transactionTotalTime.start();
-		transactionExecutionTime.start();
-
 		this.transactionHandler = jessy.startTransaction();
 
+		executionStartTime = System.nanoTime();
 	}
 
 	/**
@@ -97,8 +105,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 * FIXME Can it happen to abort a transaction indefinitely?
 	 */
 	public ExecutionHistory commitTransaction() {
-		transactionExecutionTime.stop();
-		transactionTerminationTime.start();
+		transactionExecutionTime.add((System.nanoTime() - executionStartTime)/1000);
+		long terminationStartTime = System.nanoTime();
 
 		ExecutionHistory executionHistory = jessy
 				.commitTransaction(transactionHandler);
@@ -126,9 +134,10 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 			}
 
 		}
-		transactionTerminationTime.stop();
+		transactionTerminationTime
+				.add((System.nanoTime() - terminationStartTime)/1000);
+
 		jessy.garbageCollectTransaction(transactionHandler);
-		transactionTotalTime.stop();
 		return executionHistory;
 	}
 

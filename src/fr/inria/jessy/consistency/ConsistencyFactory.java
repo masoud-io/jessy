@@ -34,6 +34,8 @@ public class ConsistencyFactory {
 			_instance = new ReadComitted(dataStore);
 		} else if (consistencyType.equals("psi")) {
 			_instance = new ParallelSnapshotIsalation(dataStore);
+		} else if (consistencyType.equals("us")) {
+			_instance = new UpdateSerializability(dataStore);
 		}
 		return _instance;
 	}

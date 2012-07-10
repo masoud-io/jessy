@@ -139,9 +139,6 @@ public class DistributedJessy extends Jessy {
 		return distributedJessy;
 	}
 
-	/**
-	 * TODO this impl is not fault tolerant!
-	 */
 	@Override
 	protected <E extends JessyEntity, SK> E performRead(Class<E> entityClass,
 			String keyName, SK keyValue, CompactVector<String> readSet)

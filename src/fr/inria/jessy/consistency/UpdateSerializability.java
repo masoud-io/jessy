@@ -17,12 +17,14 @@ import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.vector.VectorFactory;
 
-public class Serializability extends Consistency {
+public class UpdateSerializability extends Consistency {
 
-	private static Logger logger = Logger.getLogger(Serializability.class);
+	private static Logger logger = Logger
+			.getLogger(UpdateSerializability.class);
 
-	public Serializability(DataStore dateStore) {
+	public UpdateSerializability(DataStore dateStore) {
 		super(dateStore);
 	}
 
@@ -38,6 +40,15 @@ public class Serializability extends Consistency {
 				+ executionHistory.getCreateSet().getCompactVector().toString());
 		logger.debug("WriteSet Vectors"
 				+ executionHistory.getWriteSet().getCompactVector().toString());
+
+		/*
+		 * if the transaction is a read-only transaction, it commits right away.
+		 */
+		if (transactionType == TransactionType.READONLY_TRANSACTION) {
+			logger.debug(executionHistory.getTransactionHandler() + " >> "
+					+ transactionType.toString() + " >> COMMITTED");
+			return true;
+		}
 
 		/*
 		 * if the transaction is an initalization transaction, it first
@@ -148,9 +159,17 @@ public class Serializability extends Consistency {
 
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
+		// updatedVector is a new vector. It will be used as a new
+		// vector for all modified vectors.
+		Vector<String> updatedVector = VectorFactory.getVector("");
+		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
+				executionHistory.getWriteSet().getCompactVector());
+
 		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
-			entity.getLocalVector().update(null, null);
+			updatedVector.setSelfKey(entity.getLocalVector().getSelfKey());
+			entity.setLocalVector(updatedVector.clone());
 		}
+		
 	}
 
 	@Override
