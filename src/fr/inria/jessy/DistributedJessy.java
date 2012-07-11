@@ -166,11 +166,15 @@ public class DistributedJessy extends Jessy {
 							ConstantPool.JESSY_REMOTE_READER_TIMEOUT,
 							ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
 					isDone = true;
-				} catch (TimeoutException e) {
+				} catch (TimeoutException te) {
 					/*
 					 * Nothing to do. The message should have been lost. Retry
 					 * again.
 					 */
+				} catch (InterruptedException ie) {
+					logger.error("InterruptedException happened in the remote reader");
+				} catch (ExecutionException ee) {
+					logger.error("ExecutionException happened in the remote reader");
 				}
 			} while (!isDone);
 
@@ -224,6 +228,10 @@ public class DistributedJessy extends Jessy {
 					 * Nothing to do. The message should have been lost. Retry
 					 * again.
 					 */
+				} catch (InterruptedException ie) {
+					logger.error("InterruptedException happened in the remote reader");
+				} catch (ExecutionException ee) {
+					logger.error("ExecutionException happened in the remote reader");
 				}
 			} while (!isDone);
 

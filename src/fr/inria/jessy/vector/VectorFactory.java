@@ -20,7 +20,7 @@ public class VectorFactory {
 		if (consType.equals("ser")) {
 			return new LightScalarVector<K>(selfKey);
 		}
-		if (consType.equals("si")) {
+		if (consType.equals("si") || consType.equals("si2")) {
 			return new ScalarVector<K>();
 		}
 		if (consType.equals("psi")) {

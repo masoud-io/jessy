@@ -28,6 +28,8 @@ public class ConsistencyFactory {
 			_instance = new NonMonotonicSnapshotIsolation(dataStore);
 		} else if (consistencyType.equals("si")) {
 			_instance = new SnapshotIsolation(dataStore);
+		} else if (consistencyType.equals("si2")) {
+			_instance = new SnapshotIsolationWithMulticast(dataStore);
 		} else if (consistencyType.equals("ser")) {
 			_instance = new Serializability(dataStore);
 		} else if (consistencyType.equals("rc")) {

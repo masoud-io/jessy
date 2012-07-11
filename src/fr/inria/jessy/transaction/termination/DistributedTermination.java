@@ -205,16 +205,21 @@ public class DistributedTermination implements Learner {
 			 */
 			jessy.applyModifiedEntities(executionHistory);
 
-			/*
-			 * calls the postCommit method of the consistency criterion for post
-			 * commit actions. (e.g., propagating vectors)
-			 */
-			jessy.getConsistency().postCommit(executionHistory);
 		}
 
 		synchronized (atomicDeliveredMessages) {
 			atomicDeliveredMessages.remove(msg);
 			atomicDeliveredMessages.notifyAll();
+		}
+
+		if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
+			logger.debug("Applying modified entities of committed transaction "
+					+ th.getId());
+			/*
+			 * calls the postCommit method of the consistency criterion for post
+			 * commit actions. (e.g., propagating vectors)
+			 */
+			jessy.getConsistency().postCommit(executionHistory);
 		}
 
 		jessy.garbageCollectTransaction(executionHistory
