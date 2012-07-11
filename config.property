@@ -1,7 +1,7 @@
 #config.properties
 #the hooks are defined in ConstantPool.java!!!
 
-#consistency type: "nmsi" | "si" | "ser" | "rc" | "psi"
+#consistency type: "nmsi" | "si" | "ser" | "rc" | "psi" | "us"
 consistency_type = nmsi
 
 #partitioner type: "keyspace" | "modulo"
