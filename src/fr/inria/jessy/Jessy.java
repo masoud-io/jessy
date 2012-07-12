@@ -65,6 +65,9 @@ public abstract class Jessy {
 
 	protected static SimpleCounter failedReadCount = new SimpleCounter(
 			"Jessy#failedReadCount");
+	
+	protected static SimpleCounter totalReadCount = new SimpleCounter(
+			"Jessy#ReadCount");
 
 	protected DataStore dataStore;
 	Consistency consistency;
@@ -185,6 +188,7 @@ public abstract class Jessy {
 			String keyValue) throws Exception {
 
 		ReadTime.start();
+		totalReadCount.incr();
 
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);

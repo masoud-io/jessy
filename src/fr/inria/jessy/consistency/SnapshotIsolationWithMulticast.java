@@ -129,19 +129,21 @@ public class SnapshotIsolationWithMulticast extends Consistency {
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
 
-		int newVersion = 0;
+		int newVersion;
 		// WARNING: there is a cast to ScalarVector
 		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
 			newVersion = ScalarVector.lastCommittedTransactionSeqNumber
 					.incrementAndGet();
+
+			for (JessyEntity je : executionHistory.getWriteSet().getEntities()) {
+				((ScalarVector) je.getLocalVector()).update(newVersion);
+			}
+
 		} else {
+			newVersion = 0;
 			for (JessyEntity je : executionHistory.getCreateSet().getEntities()) {
 				((ScalarVector) je.getLocalVector()).update(newVersion);
 			}
-		}
-
-		for (JessyEntity je : executionHistory.getWriteSet().getEntities()) {
-			((ScalarVector) je.getLocalVector()).update(newVersion);
 		}
 
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
@@ -169,7 +171,7 @@ public class SnapshotIsolationWithMulticast extends Consistency {
 		// groups.
 		Set<String> keys = new HashSet<String>();
 
-		for (int i = 0; i < manager.getReplicaGroups().size() - 1; i++) {
+		for (int i = 0; i < manager.getReplicaGroups().size() ; i++) {
 			keys.add("" + i);
 		}
 

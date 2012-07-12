@@ -62,8 +62,8 @@ public class DistributedJessy extends Jessy {
 	private static SimpleCounter abortByTimeout = new SimpleCounter(
 			"Jessy#abortByTimeout");
 
-	private static FloatValueRecorder totalRatioAbortedTransactions = new FloatValueRecorder(
-			"Jessy#ratioAbortedTransactions");
+	private static FloatValueRecorder ratioFailedTermination = new FloatValueRecorder(
+			"Jessy#ratioFailedTermination");
 	private static FloatValueRecorder voteRatioAbortedTransactions = new FloatValueRecorder(
 			"Jessy#voteRatioAbortedTransactions");
 	private static FloatValueRecorder certificationRatioAbortedTransactions = new FloatValueRecorder(
@@ -73,7 +73,10 @@ public class DistributedJessy extends Jessy {
 
 	private static FloatValueRecorder ratioFailedReads = new FloatValueRecorder(
 			"Jessy#ratioFailedReads");
+	private static FloatValueRecorder ratioFailedExecution = new FloatValueRecorder(
+			"Jessy#ratioFailedExecution");
 
+	
 	public RemoteReader remoteReader;
 	public DistributedTermination distributedTermination;
 	public Partitioner partitioner;
@@ -359,8 +362,8 @@ public class DistributedJessy extends Jessy {
 		activeClients.remove(object);
 		if (activeClients.size() == 0) {
 
-			totalRatioAbortedTransactions.setFormat("%t");
-			totalRatioAbortedTransactions
+			ratioFailedTermination.setFormat("%t");
+			ratioFailedTermination
 					.add((Double.valueOf(abortByVoteCount.toString())
 							+ Double.valueOf(abortByCertificationCount
 									.toString()) + Double
@@ -382,7 +385,12 @@ public class DistributedJessy extends Jessy {
 
 			ratioFailedReads.setFormat("%t");
 			ratioFailedReads.add(Double.valueOf(failedReadCount.toString())
+					/ (Double.valueOf(totalReadCount.toString())));
+			
+			ratioFailedExecution.setFormat("%t");
+			ratioFailedExecution.add(Double.valueOf(failedReadCount.toString())
 					/ (Double.valueOf(executionCount.toString())));
+
 
 			if (!JessyGroupManager.getInstance().isProxy()) {
 				super.close(this);
