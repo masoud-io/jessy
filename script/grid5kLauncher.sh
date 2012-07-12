@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ ${#} -lt 3 ]
+if [ ${#} -lt 2 ]
 then
-  echo 'grid5kLaucher: usage: this script need at least three parameters: cluster name, number of server and number of clients, ex ./grid5kLauncher.sh nancy 1 1 grenoble 1 2 lille 2 2'
+  echo 'grid5kLaucher: usage: this script need at least two parameters: number of clients and number of servers'
   exit
 fi
 
@@ -36,8 +36,8 @@ reservation="";
 for i in `seq 1 $clustersNumber`;
 	do
 		clusters[$i]=${param[$next]}
-		nodes=$((${param[$next+1]}+${param[$next+2]}))
-		reservation="$reservation ${param[$next]}:rdef=/nodes=$nodes,"
+		nodesNumber=$((${param[$next+1]}+${param[$next+2]}))
+		reservation="$reservation ${param[$next]}:rdef=/nodes=$nodesNumber,"
 
 		next=$(($next+3))
 		i=$(($i+1))
@@ -46,7 +46,7 @@ for i in `seq 1 $clustersNumber`;
 reservation=${reservation#?}
 reservation=${reservation%?}
 
-echo "starting grid5kLaucher..."$nodes
+echo "starting grid5kLaucher..."
 echo ""
 echo "reserving nodes..."
 oargridsub -t allow_classic_ssh -w '0:20:00' $reservation > tmp
@@ -68,16 +68,15 @@ echo '<nodelist>' >> myfractal.xml
 
 echo 'Grid reservation id: ' $RES_ID
 
-nodes='' #'nodes=('
+nodeStr='' #'nodes=('
 servers='' #'servers=('
 clients='' #'clients=('
-
-
+nodes=''
+echo "nodes0:"$nodes
 j=0
 next=0
 for i in `seq 1 $clustersNumber`;
 do
-        nodes=$((${param[$next+1]}+${param[$next+2]}))
         reservation="$reservation ${param[$next]}:rdef=/nodes=$nodes,"
 
 	nodeName=${param[$next]}
@@ -103,6 +102,7 @@ do
 		ip=$(cut tmp -f4 -d ' ')
  
 		nodes="$nodes \"$name\""
+		echo "nodesLoop:"$nodes
 		if [ $k -lt $serverNumber ]
 		then
 			echo 'grid5kLaucher. server: '$name
@@ -118,7 +118,9 @@ do
 done
 echo ""
 
-nodes="nodes=("$nodes")"
+nodeStr="nodes=("$nodes")"
+echo "nodeLast:-"$nodes
+echo "nodeStr:-"$nodeStr
 servers="servers=("$servers")"
 clients="clients=("$clients")"
 
@@ -127,7 +129,7 @@ echo '</BootstrapIdentity>' >> myfractal.xml
 echo '</FRACTAL>' >> myfractal.xml
 echo "fractal configuration file is done"
 
-sed -i "s/nodes=.*/${nodes}/g" configuration.sh
+sed -i "s/nodes=.*/${nodeStr}/g" configuration.sh
 sed -i "s/servers=.*/${servers}/g" configuration.sh
 sed -i "s/clients=.*/${clients}/g" configuration.sh
 echo "configuration.sh file is done"
@@ -163,9 +165,9 @@ done
 #rsync --delete -avz ./* lille.grid5000.fr:./jessy/scripts/
 echo 'grid5kLaucher: done'
 
-#echo "sleeping 600 sec before run experience"
-#sleep 600
-#echo "getUp"
+#echo "sleeping 60 sec before run experience..."
+#sleep 60
+#echo "done."
 
 echo ""
 echo "******************************************************************************"
