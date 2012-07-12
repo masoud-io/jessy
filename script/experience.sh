@@ -30,14 +30,16 @@ function collectStats(){
     updateLatency=0
     readLatency=0
     consistency=${cons[$selectedCons]} #`grep 'consistency_type\ =' config.property | awk -F '=' '{print $2}'`
-    abortRatio=0;
+    failedTerminationRatio=0;
+    failedExecutionRatio=0;
     failedReadsRatio=0;
     timeoutRatio=0;
     executionTime=0;
     terminationTime=0;
 
+
 	if ! [ -s "${scriptdir}/results/${servercount}.txt" ]; then
-	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tThroughput\tupdateLatency\treadLatency\tAborted_Termination_Ratio\tAborted_Execution_Ratio\tTermination_Timeout_Ratio\tTransaction_Execution_Time\tTransaction_Termination_Time"
+	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tThroughput\tupdateLatency\treadLatency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tTransaction_Execution_Time\tTransaction_Termination_Time"
 	fi
 
 
@@ -62,10 +64,16 @@ function collectStats(){
 	    readLatency=`echo "${tmp} + ${readLatency}" | ${bc}`;
 	fi
 	
-	tmp=`grep -a "ratioAbortedTransactions" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
+	tmp=`grep -a "ratioFailedTermination" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
 	if [[ (! ${tmp} =~ '/') && (-n "${tmp}") ]]; then
-	    abortRatio=`echo "${tmp}+${abortRatio}"| sed 's/E/*10^/g'` ;	    
+	    failedTerminationRatio=`echo "${tmp}+${failedTerminationRatio}"| sed 's/E/*10^/g'` ;	    
 	fi
+
+	tmp=`grep -a "ratioFailedExecution" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
+	if [[ (! ${tmp} =~ '/') && (-n "${tmp}") ]]; then
+	    failedExecutionRatio=`echo "${tmp}+${failedExecutionRatio}"| sed 's/E/*10^/g'` ;	    
+	fi
+
 
 	tmp=`grep -a "ratioFailedReads" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
 	if [[ (! ${tmp} =~ '/') && (-n "${tmp}") ]]; then
@@ -94,7 +102,12 @@ function collectStats(){
     readLatency=`echo "scale=2;(${readLatency})/${#clients[@]}" | ${bc}`;
     clientcount=`echo "${#clients[@]}*${t}" | ${bc}`;
 
-    abortRatio=`echo "scale=10;(${abortRatio})/${#clients[@]}" | ${bc}`;
+    echo ${failedTerminationRatio}
+    failedTerminationRatio=`echo "scale=10;(${failedTerminationRatio})/${#clients[@]}" | ${bc}`;
+
+    echo ${failedExecutionRatio}
+    failedExecutionRatio=`echo "scale=10;(${failedExecutionRatio})/${#clients[@]}" | ${bc}`;
+
     failedReadsRatio=`echo "scale=10;(${failedReadsRatio})/${#clients[@]}" | ${bc}`;
     timeoutRatio=`echo "scale=10;(${timeoutRatio})/${#clients[@]}" | ${bc}`;
 
@@ -102,7 +115,7 @@ function collectStats(){
     terminationTime=`echo "scale=10;(${terminationTime})/${#clients[@]}" | ${bc}`;
 
     
-    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${throughput}\t${updateLatency}\t${readLatency}\t${abortRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime}\t${terminationTime}"
+    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${throughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime}\t${terminationTime}"
 
 }
 
@@ -132,13 +145,12 @@ do
 	# 0 - Starting the server
 
 	    echo "Starting servers ..."
+	    sed -i 's/-t/-load/g' configuration.sh
 	    ${scriptdir}/launcher.sh &
 
 
 	# 1 - Loading phase
 	    echo "Loading phase ..."
-	    sed -i 's/-t/-load/g' configuration.sh
-
 	    ${SSHCMD} ${clients[0]} "${scriptdir}/client.sh" > ${scriptdir}/loading
 
 	    sleep 20
