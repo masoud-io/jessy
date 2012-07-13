@@ -102,10 +102,7 @@ function collectStats(){
     readLatency=`echo "scale=2;(${readLatency})/${#clients[@]}" | ${bc}`;
     clientcount=`echo "${#clients[@]}*${t}" | ${bc}`;
 
-    echo ${failedTerminationRatio}
     failedTerminationRatio=`echo "scale=10;(${failedTerminationRatio})/${#clients[@]}" | ${bc}`;
-
-    echo ${failedExecutionRatio}
     failedExecutionRatio=`echo "scale=10;(${failedExecutionRatio})/${#clients[@]}" | ${bc}`;
 
     failedReadsRatio=`echo "scale=10;(${failedReadsRatio})/${#clients[@]}" | ${bc}`;
