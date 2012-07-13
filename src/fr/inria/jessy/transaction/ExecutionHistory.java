@@ -59,6 +59,11 @@ public class ExecutionHistory implements Messageable {
 	private EntitySet readSet;
 	private int coordinator;
 
+	/**
+	 * Start time (in nano) of the transaction upon A-Delivering to a server.
+	 */
+	private long startCertification;
+
 	// for fractal
 	@Deprecated
 	public ExecutionHistory() {
@@ -70,7 +75,6 @@ public class ExecutionHistory implements Messageable {
 		createSet = new EntitySet();
 		this.transactionHandler = transactionHandler;
 	}
-
 
 	public EntitySet getReadSet() {
 		return readSet;
@@ -159,6 +163,14 @@ public class ExecutionHistory implements Messageable {
 		return coordinator;
 	}
 
+	public void setStartCertification(long startCertification) {
+		this.startCertification = startCertification;
+	}
+
+	public long getStartCertification() {
+		return startCertification;
+	}
+
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
@@ -187,4 +199,5 @@ public class ExecutionHistory implements Messageable {
 		out.writeInt(coordinator);
 
 	}
+
 }

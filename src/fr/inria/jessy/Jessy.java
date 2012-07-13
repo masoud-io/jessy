@@ -61,11 +61,9 @@ public abstract class Jessy {
 	// CLASS FIELDS
 	//
 
-	private static TimeRecorder ReadTime = new TimeRecorder("Jessy#readTime");
-
 	protected static SimpleCounter failedReadCount = new SimpleCounter(
 			"Jessy#failedReadCount");
-	
+
 	protected static SimpleCounter totalReadCount = new SimpleCounter(
 			"Jessy#ReadCount");
 
@@ -187,14 +185,12 @@ public abstract class Jessy {
 			TransactionHandler transactionHandler, Class<E> entityClass,
 			String keyValue) throws Exception {
 
-		ReadTime.start();
 		totalReadCount.incr();
 
 		ExecutionHistory executionHistory = handler2executionHistory
 				.get(transactionHandler);
 
 		if (executionHistory == null) {
-			ReadTime.stop();
 			throw new NullPointerException("Transaction has not been started");
 		}
 
@@ -216,10 +212,8 @@ public abstract class Jessy {
 
 		if (entity != null) {
 			executionHistory.addReadEntity(entity);
-			ReadTime.stop();
 			return entity;
 		} else {
-			ReadTime.stop();
 			failedReadCount.incr();
 			return null;
 		}

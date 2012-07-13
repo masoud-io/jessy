@@ -36,11 +36,23 @@ function collectStats(){
     timeoutRatio=0;
     executionTime=0;
     terminationTime=0;
-
+    certificationTime=0;
 
 	if ! [ -s "${scriptdir}/results/${servercount}.txt" ]; then
-	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tThroughput\tupdateLatency\treadLatency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tTransaction_Execution_Time\tTransaction_Termination_Time"
+	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tThroughput\tupdateLatency\treadLatency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tTransaction_Execution_Time\tTransaction_Termination_Time\tCertification_Time"
 	fi
+
+    let scount=${#servers[@]}-1
+    for j in `seq 0 $scount`
+    do
+	server=${servers[$j]}
+
+	tmp=`grep -a "certificationTime" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
+	if [ -n "${tmp}" ]; then
+	    certificationTime=`echo "${tmp}+${certificationTime}"| sed 's/E/*10^/g'`;	    
+	fi
+
+    done
 
 
     let e=${#clients[@]}-1
@@ -110,9 +122,10 @@ function collectStats(){
 
     executionTime=`echo "scale=10;(${executionTime})/${#clients[@]}" | ${bc}`;
     terminationTime=`echo "scale=10;(${terminationTime})/${#clients[@]}" | ${bc}`;
+    certificationTime=`echo "scale=10;(${certificationTime})/${#servers[@]}" | ${bc}`;
 
     
-    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${throughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime}\t${terminationTime}"
+    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${throughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime}\t${terminationTime}\t${certificationTime}"
 
 }
 

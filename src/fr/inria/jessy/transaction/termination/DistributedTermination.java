@@ -42,7 +42,10 @@ public class DistributedTermination implements Learner {
 
 	private static Logger logger = Logger
 			.getLogger(DistributedTermination.class);
+
 	private static ValueRecorder concurrentCollectionsSize;
+
+	private static ValueRecorder certificationTime;
 
 	private DistributedJessy jessy;
 
@@ -73,6 +76,10 @@ public class DistributedTermination implements Learner {
 		concurrentCollectionsSize = new ValueRecorder(
 				"DistributedTermination#concurrentMapSize");
 		concurrentCollectionsSize.setFormat("%M");
+
+		certificationTime = new ValueRecorder("Jessy#certificationTime(ms)");
+		certificationTime.setFormat("%a");
+		certificationTime.setFactor(1000000);
 	}
 
 	public DistributedTermination(DistributedJessy j) {
@@ -125,6 +132,8 @@ public class DistributedTermination implements Learner {
 					+ terminateRequestMessage.getExecutionHistory()
 							.getTransactionHandler().getId());
 
+			terminateRequestMessage.getExecutionHistory()
+					.setStartCertification(System.nanoTime());
 			synchronized (atomicDeliveredMessages) {
 				atomicDeliveredMessages.offer(terminateRequestMessage);
 			}
@@ -394,6 +403,9 @@ public class DistributedTermination implements Learner {
 				TransactionState state = votingQuorums.get(
 						msg.getExecutionHistory().getTransactionHandler())
 						.waitVoteResult(dest);
+
+				certificationTime.add(System.nanoTime()
+						- msg.getExecutionHistory().getStartCertification());
 
 				logger.debug("got voting quorum for "
 						+ msg.getExecutionHistory().getTransactionHandler()

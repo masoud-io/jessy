@@ -12,7 +12,6 @@ import net.sourceforge.fractal.utils.PerformanceProbe;
 import net.sourceforge.fractal.utils.PerformanceProbe.FloatValueRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
-import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -51,7 +50,6 @@ public class DistributedJessy extends Jessy {
 
 	private static SimpleCounter remoteReads;
 	private static TimeRecorder NonTransactionalWriteRequestTime;
-	private static ValueRecorder readRequestTime;
 
 	private static SimpleCounter executionCount = new SimpleCounter(
 			"Jessy#TotalExecution");
@@ -76,7 +74,6 @@ public class DistributedJessy extends Jessy {
 	private static FloatValueRecorder ratioFailedExecution = new FloatValueRecorder(
 			"Jessy#ratioFailedExecution");
 
-	
 	public RemoteReader remoteReader;
 	public DistributedTermination distributedTermination;
 	public Partitioner partitioner;
@@ -86,10 +83,6 @@ public class DistributedJessy extends Jessy {
 		remoteReads = new SimpleCounter("Jessy#RemoteReads");
 		NonTransactionalWriteRequestTime = new TimeRecorder(
 				"Jessy#NonTransactionalWriteRequestTime");
-		readRequestTime = new ValueRecorder("Jessy#ReadRequestTime(us)");
-		readRequestTime.setFormat("%a");
-		readRequestTime.setFactor(1000);
-
 	}
 
 	private DistributedJessy() throws Exception {
@@ -147,7 +140,6 @@ public class DistributedJessy extends Jessy {
 			String keyName, SK keyValue, CompactVector<String> readSet)
 			throws InterruptedException, ExecutionException {
 
-		long start = System.nanoTime();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
 				keyValue, readSet);
 		ReadReply<E> readReply = null;
@@ -182,7 +174,6 @@ public class DistributedJessy extends Jessy {
 			} while (!isDone);
 
 		}
-		readRequestTime.add(System.nanoTime() - start);
 
 		if (readReply != null && readReply.getEntity() != null
 				&& readReply.getEntity().iterator().hasNext()
@@ -204,7 +195,6 @@ public class DistributedJessy extends Jessy {
 			CompactVector<String> readSet) throws InterruptedException,
 			ExecutionException {
 
-		long start = System.nanoTime();
 		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keys,
 				readSet);
 		ReadReply<E> readReply = null;
@@ -239,7 +229,6 @@ public class DistributedJessy extends Jessy {
 			} while (!isDone);
 
 		}
-		readRequestTime.add(System.nanoTime() - start);
 
 		if (readReply != null && readReply.getEntity() != null
 				&& readReply.getEntity().iterator().hasNext()
@@ -386,11 +375,10 @@ public class DistributedJessy extends Jessy {
 			ratioFailedReads.setFormat("%t");
 			ratioFailedReads.add(Double.valueOf(failedReadCount.toString())
 					/ (Double.valueOf(totalReadCount.toString())));
-			
+
 			ratioFailedExecution.setFormat("%t");
 			ratioFailedExecution.add(Double.valueOf(failedReadCount.toString())
 					/ (Double.valueOf(executionCount.toString())));
-
 
 			if (!JessyGroupManager.getInstance().isProxy()) {
 				super.close(this);
