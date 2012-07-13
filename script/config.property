@@ -1,0 +1,18 @@
+#config.properties
+#the hooks are defined in ConstantPool.java!!!
+
+#consistency type: "nmsi" | "si" | "ser" | "rc" | "psi" | "us" | "si2" snapshot isolation with Atomic-Multicast to every group
+consistency_type = si2
+
+#partitioner type: "keyspace" | "modulo"
+partitioner_type = modulo
+
+#retry to execute and commit the transaction upon its abort.
+#re-execution happens only if the transaction is aborted by the certification and not by the client.
+# retry_commit : "true" | "false"
+retry_commit=true
+
+fractal_file=myfractal.xml
+
+#if true, commutative transaction will terminate in parallel.
+check_commutativity=true
