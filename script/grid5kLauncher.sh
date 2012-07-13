@@ -20,6 +20,7 @@ function stopExecution(){
 }
 
 sed -ie "s#^source.*#source $path/configuration.sh#g" clauncher.sh
+sed -ie "s#^source.*#source $path/configuration.sh#g" console.sh
 sed -ie "s#^source.*#source $path/configuration.sh#g" client.sh 
 sed -ie "s#^source.*#source $path/configuration.sh#g" experience.sh
 sed -ie "s#^source.*#source $path/configuration.sh#g" jessy.sh
