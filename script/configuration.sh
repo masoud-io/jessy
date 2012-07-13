@@ -13,7 +13,7 @@ clients=("cluster1u7" "cluster1u8") # "cluster1u9" "cluster1u11")
 
 # Experience.sh settings
 
-cons=("us" "nmsi" "psi" "rc" "ser")
+cons=("si2" "us" "nmsi" "psi" "rc" "ser")
 client_thread_increment="5"
 client_thread_glb="20"
 client_thread_lub="40"
