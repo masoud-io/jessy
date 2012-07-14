@@ -2,7 +2,7 @@
 #the hooks are defined in ConstantPool.java!!!
 
 #consistency type: "nmsi" | "si" | "ser" | "rc" | "psi" | "us" | "si2" snapshot isolation with Atomic-Multicast to every group
-consistency_type = si2
+consistency_type = ser
 
 #partitioner type: "keyspace" | "modulo"
 partitioner_type = modulo

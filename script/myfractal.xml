@@ -3,7 +3,8 @@
 
   <BootstrapIdentity>  
     <nodelist>
-<node id="0" ip="132.227.64.18"/>	
+	    <node id="0" ip="132.227.105.129"/>
+	    <node id="1" ip="132.227.105.130"/>
 <!-- 
 <node id="1" ip="132.227.105.130"/>
 <node id="2" ip="132.227.105.132"/>

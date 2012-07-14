@@ -19,9 +19,9 @@ client_thread_glb="20"
 client_thread_lub="40"
 
 # Client specific settings 
-workloadType="-load"
+workloadType="-t"
 workloadName="transactionalworkloada"
-nthreads=20
+nthreads=40
 
 system=jessy
 
