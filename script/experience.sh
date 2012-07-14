@@ -3,6 +3,14 @@
 source /home/msaeida/jessy_script/configuration.sh
 
 function stopExp(){
+    let sc=${#servers[@]}-1
+    for j in `seq 0 $sc`
+    do
+	nohup ${SSHCMD} ${servers[$j]} "killall -SIGTERM java" 2&>1 > /dev/null &
+    done
+
+    sleep 5
+
     let e=${#nodes[@]}-1
     for i in `seq 0 $e`
     do
@@ -26,7 +34,9 @@ function dump(){
 }
 
 function collectStats(){
-    throughput=0;
+    overallThroughput=0;
+    committedThroughput=0;
+    runtime=0;
     updateLatency=0
     readLatency=0
     consistency=${cons[$selectedCons]} #`grep 'consistency_type\ =' config.property | awk -F '=' '{print $2}'`
@@ -39,7 +49,7 @@ function collectStats(){
     certificationTime=0;
 
 	if ! [ -s "${scriptdir}/results/${servercount}.txt" ]; then
-	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tThroughput\tupdateLatency\treadLatency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tTransaction_Execution_Time\tTransaction_Termination_Time\tCertification_Time"
+	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tOverall_Throughput\tCommitted_Throughput\tupdateLatency\treadLatency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tTransaction_Execution_Time\tTransaction_Termination_Time\tCertification_Time"
 	fi
 
     let scount=${#servers[@]}-1
@@ -63,7 +73,13 @@ function collectStats(){
 
 	tmp=`grep -a Throughput ${scriptdir}/${client} | gawk -F',' '{print $3}'`;
 	if [ -n "${tmp}" ]; then
-	    throughput=`echo "${tmp} + ${throughput}" | ${bc}`;
+	    overallThroughput=`echo "${tmp} + ${overallThroughput}" | ${bc}`;
+	fi
+
+	runtime=`grep -a RunTime ${scriptdir}/${client} | gawk -F',' '{print $3}'`;
+	tmp=`grep -a "Return=0" ${scriptdir}/${client} | awk -F "," '{sum+= $3} END {print sum}'`;
+	if [ -n "${tmp}" ]; then
+	    committedThroughput=`echo "((1000*${tmp})/${runtime}) + ${committedThroughput}" | ${bc}`;
 	fi
 
 	tmp=`grep -a "\[UPDATE\], AverageLatency" ${scriptdir}/${client} | gawk -F',' '{print $3}'`;
@@ -108,8 +124,10 @@ function collectStats(){
 	fi
 
     done
+t=1;
+    overallThroughput=`echo "scale=2;${overallThroughput}" | ${bc} `;
+    committedThroughput=`echo "scale=2;${committedThroughput}" | ${bc} `;
 
-    throughput=`echo "scale=2;${throughput}" | ${bc} `;
     updateLatency=`echo "scale=2;(${updateLatency})/${#clients[@]}" | ${bc}`;
     readLatency=`echo "scale=2;(${readLatency})/${#clients[@]}" | ${bc}`;
     clientcount=`echo "${#clients[@]}*${t}" | ${bc}`;
@@ -125,10 +143,9 @@ function collectStats(){
     certificationTime=`echo "scale=10;(${certificationTime})/${#servers[@]}" | ${bc}`;
 
     
-    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${throughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime}\t${terminationTime}\t${certificationTime}"
+    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${overallThroughput}\t${committedThroughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime}\t${terminationTime}\t${certificationTime}"
 
 }
-
 
 trap "stopExp; wait; exit 255" SIGINT SIGTERM
 trap "dump; wait;" SIGQUIT
@@ -174,13 +191,12 @@ do
 	    echo "using ${t} thread(s) per machine"   
 	    ${scriptdir}/clauncher.sh
 
+	    stopExp
+
 	    echo "using ${t} thread(s) per machine is finished. Collecting stats"   
 	    collectStats >>  ${scriptdir}/results/${servercount}.txt
+
 	    sleep 10
-
-	stopExp
-
-	sleep 30
 	    
 	done
 
