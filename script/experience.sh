@@ -124,7 +124,7 @@ function collectStats(){
 	fi
 
     done
-t=1;
+    
     overallThroughput=`echo "scale=2;${overallThroughput}" | ${bc} `;
     committedThroughput=`echo "scale=2;${committedThroughput}" | ${bc} `;
 
