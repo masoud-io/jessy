@@ -47,6 +47,8 @@ public class DistributedTermination implements Learner {
 
 	private static ValueRecorder certificationTime;
 
+	private static ValueRecorder transactionTerminationTime;
+
 	private DistributedJessy jessy;
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
@@ -80,6 +82,12 @@ public class DistributedTermination implements Learner {
 		certificationTime = new ValueRecorder("Jessy#certificationTime(ms)");
 		certificationTime.setFormat("%a");
 		certificationTime.setFactor(1000000);
+
+		transactionTerminationTime = new ValueRecorder(
+				"Jessy#transactionTerminationTime(ms)");
+		transactionTerminationTime.setFormat("%a");
+		transactionTerminationTime.setFactor(1000000);
+
 	}
 
 	public DistributedTermination(DistributedJessy j) {
@@ -268,6 +276,8 @@ public class DistributedTermination implements Learner {
 		}
 
 		public TransactionState call() throws Exception {
+			long start = System.nanoTime();
+
 			HashSet<String> destGroups = new HashSet<String>();
 			Set<String> concernedKeys = jessy.getConsistency()
 					.getConcerningKeys(executionHistory);
@@ -319,6 +329,9 @@ public class DistributedTermination implements Learner {
 			 * Wait here until the result of the transaction is known.
 			 */
 			TransactionState result = vq.waitVoteResult(destGroups);
+
+			if (result == TransactionState.COMMITTED)
+				transactionTerminationTime.add(System.nanoTime() - start);
 
 			if (!executionHistory.isCertifyAtCoordinator())
 				garbageCollect(executionHistory.getTransactionHandler());

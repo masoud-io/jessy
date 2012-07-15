@@ -23,7 +23,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	private static Logger logger = Logger.getLogger(Transaction.class);
 
 	private static ValueRecorder transactionExecutionTime;
-	private static ValueRecorder transactionTerminationTime;
+	
 
 	static {
 		// Performance measuring facilities
@@ -33,10 +33,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		transactionExecutionTime.setFormat("%a");
 		transactionExecutionTime.setFactor(1000000);
 
-		transactionTerminationTime = new ValueRecorder(
-				"Transaction#transactionTerminationTime(ms)");
-		transactionTerminationTime.setFormat("%a");
-		transactionTerminationTime.setFactor(1000000);
 	}
 
 	long executionStartTime;
@@ -106,7 +102,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 */
 	public ExecutionHistory commitTransaction() {
 		transactionExecutionTime.add(System.nanoTime() - executionStartTime);
-		long terminationStartTime = System.nanoTime();
 
 		ExecutionHistory executionHistory = jessy
 				.commitTransaction(transactionHandler);
@@ -134,8 +129,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 			}
 
 		}
-		transactionTerminationTime
-				.add(System.nanoTime() - terminationStartTime);
 
 		jessy.garbageCollectTransaction(transactionHandler);
 		return executionHistory;
