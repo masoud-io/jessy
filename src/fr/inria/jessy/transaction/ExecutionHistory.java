@@ -69,11 +69,12 @@ public class ExecutionHistory implements Messageable {
 	public ExecutionHistory() {
 	}
 
-	public ExecutionHistory(TransactionHandler transactionHandler) {
+	public ExecutionHistory(TransactionHandler th) {
 		readSet = new EntitySet();
 		writeSet = new EntitySet();
 		createSet = new EntitySet();
-		this.transactionHandler = transactionHandler;
+		transactionHandler = th;
+		certifyAtCoordinator = false;
 	}
 
 	public EntitySet getReadSet() {

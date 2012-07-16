@@ -181,6 +181,9 @@ public class JessyGroupManager {
 		return sourceId;
 	}
 
+	/**
+	 * @return a sorted list of the replica groups.
+	 */
 	public List<Group> getReplicaGroups() {
 		return replicaGroups;
 	}

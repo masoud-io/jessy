@@ -77,7 +77,7 @@ public class DistributedTermination implements Learner {
 
 	static {
 		concurrentCollectionsSize = new ValueRecorder(
-				"DistributedTermination#concurrentMapSize");
+				"DistributedTermination#concurrentCollectionSize");
 		concurrentCollectionsSize.setFormat("%M");
 
 		certificationTime = new ValueRecorder("Jessy#certificationTime(ms)");
@@ -103,7 +103,7 @@ public class DistributedTermination implements Learner {
 		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 
 		terminated = new ConcurrentLinkedHashMap.Builder<TransactionHandler, Integer>()
-				.maximumWeightedCapacity(1000) // FIXME
+				.maximumWeightedCapacity(1000) // FIXME works ???
 				.build();
 	}
 
@@ -277,7 +277,9 @@ public class DistributedTermination implements Learner {
 		}
 
 		public TransactionState call() throws Exception {
+
 			long start = System.nanoTime();
+			TransactionState result;
 
 			HashSet<String> destGroups = new HashSet<String>();
 			Set<String> concernedKeys = jessy.getConsistency()
@@ -290,54 +292,59 @@ public class DistributedTermination implements Learner {
 			 * consistency.
 			 */
 			if (concernedKeys.size() == 0) {
+				
 				transactionTerminationTime.add(System.nanoTime() - start);
 				executionHistory.changeState(TransactionState.COMMITTED);
-				return TransactionState.COMMITTED;
+				result = TransactionState.COMMITTED;
+				
+			}else{
+
+				executionHistory.setCoordinator(JessyGroupManager.getInstance()
+						.getSourceId());
+
+				destGroups.addAll(jessy.partitioner.resolveNames(concernedKeys));
+				if (destGroups.contains(group.name())) {
+					executionHistory.setCertifyAtCoordinator(true);
+				} else {
+					executionHistory.setCertifyAtCoordinator(false);
+				}
+
+				votingQuorums.put(executionHistory.getTransactionHandler(),
+						new VotingQuorum(executionHistory.getTransactionHandler()));
+
+				/*
+				 * gets the pointer for the transaction's VotingQuorum because the
+				 * votingQuorums might be garbage collected by another thread after
+				 * multicasting this transaction.
+				 */
+				VotingQuorum vq = votingQuorums.get(executionHistory
+						.getTransactionHandler());
+
+				logger.debug("A node in Group " + group
+						+ " send a termination message "
+						+ executionHistory.getTransactionHandler().getId() + " to "
+						+ destGroups);
+				/*
+				 * Atomic multicast the transaction.
+				 */
+				terminationCommunication.sendTerminateTransactionRequestMessage(
+						new TerminateTransactionRequestMessage(executionHistory,
+								destGroups, group.name(), JessyGroupManager
+								.getInstance().getSourceId()), destGroups);
+
+				/*
+				 * Wait here until the result of the transaction is known.
+				 */
+				result = vq.waitVoteResult(destGroups);
+
+				if (result == TransactionState.COMMITTED)
+					transactionTerminationTime.add(System.nanoTime() - start);
+				
 			}
 
-			executionHistory.setCoordinator(JessyGroupManager.getInstance()
-					.getSourceId());
-
-			destGroups.addAll(jessy.partitioner.resolveNames(concernedKeys));
-			if (destGroups.contains(group.name())) {
-				executionHistory.setCertifyAtCoordinator(true);
-			} else {
-				executionHistory.setCertifyAtCoordinator(false);
-			}
-
-			votingQuorums.put(executionHistory.getTransactionHandler(),
-					new VotingQuorum(executionHistory.getTransactionHandler()));
-
-			/*
-			 * gets the pointer for the transaction's VotingQuorum because the
-			 * votingQuorums might be garbage collected by another thread after
-			 * multicasting this transaction.
-			 */
-			VotingQuorum vq = votingQuorums.get(executionHistory
-					.getTransactionHandler());
-
-			logger.debug("A node in Group " + group
-					+ " send a termination message "
-					+ executionHistory.getTransactionHandler().getId() + " to "
-					+ destGroups);
-			/*
-			 * Atomic multicast the transaction.
-			 */
-			terminationCommunication.sendTerminateTransactionRequestMessage(
-					new TerminateTransactionRequestMessage(executionHistory,
-							destGroups, group.name(), JessyGroupManager
-									.getInstance().getSourceId()), destGroups);
-
-			/*
-			 * Wait here until the result of the transaction is known.
-			 */
-			TransactionState result = vq.waitVoteResult(destGroups);
-
-			if (result == TransactionState.COMMITTED)
-				transactionTerminationTime.add(System.nanoTime() - start);
-
-			if (!executionHistory.isCertifyAtCoordinator())
+			if (!executionHistory.isCertifyAtCoordinator()){
 				garbageCollect(executionHistory.getTransactionHandler());
+			}
 
 			return result;
 		}
@@ -431,6 +438,7 @@ public class DistributedTermination implements Learner {
 				}
 
 				if (replicateWrittenObjects) {
+					
 					TransactionState state = votingQuorums.get(
 							msg.getExecutionHistory().getTransactionHandler())
 							.waitVoteResult(dest);
@@ -443,6 +451,10 @@ public class DistributedTermination implements Learner {
 					logger.debug("got voting quorum for "
 							+ msg.getExecutionHistory().getTransactionHandler()
 							+ " , result is " + state);
+					
+					if (state == TransactionState.COMMITTED)
+						certificationTime.add(System.nanoTime()
+								- msg.getExecutionHistory().getStartCertification());
 
 					msg.getExecutionHistory().changeState(state);
 
