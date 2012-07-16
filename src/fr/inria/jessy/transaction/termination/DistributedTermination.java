@@ -414,7 +414,7 @@ public class DistributedTermination implements Learner {
 				 * instance which only replicates an object read by the
 				 * transaction should send its vote, and return.
 				 */
-				boolean replicateWrittenObject = (dest.contains(group.name())) ? true
+				boolean replicateWrittenObjects = (dest.contains(group.name())) ? true
 						: false;
 				{
 
@@ -430,7 +430,7 @@ public class DistributedTermination implements Learner {
 					addVote(vote);
 				}
 
-				if (replicateWrittenObject) {
+				if (replicateWrittenObjects) {
 					TransactionState state = votingQuorums.get(
 							msg.getExecutionHistory().getTransactionHandler())
 							.waitVoteResult(dest);

@@ -419,6 +419,9 @@ public class DataStore {
 						ret.add(new ReadReply<JessyEntity>(entity, rr
 								.getReadRequestId()));
 						break;
+					} else if (entity.getLocalVector().isCompatible(
+							rr.getReadSet()) == Vector.CompatibleResult.NEVER_COMPATIBLE) {
+						entity = null;
 					} else {
 						entity = cur.prev();
 					}
