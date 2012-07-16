@@ -149,7 +149,8 @@ public class SnapshotIsolation extends Consistency {
 	}
 
 	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
+	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
+			ConcernedKeysTarget target) {
 		Set<String> keys = new HashSet<String>();
 		keys.addAll(executionHistory.getWriteSet().getKeys());
 		keys.addAll(executionHistory.getCreateSet().getKeys());

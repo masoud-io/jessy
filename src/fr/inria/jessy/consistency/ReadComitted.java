@@ -7,6 +7,7 @@ import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.TrivialTerminationCommunication;
+import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
@@ -47,7 +48,8 @@ public class ReadComitted extends Consistency {
 	}
 
 	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
+	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
+			ConcernedKeysTarget target) {
 		Set<String> keys = new HashSet<String>();
 		keys.addAll(executionHistory.getWriteSet().getKeys());
 		keys.addAll(executionHistory.getCreateSet().getKeys());

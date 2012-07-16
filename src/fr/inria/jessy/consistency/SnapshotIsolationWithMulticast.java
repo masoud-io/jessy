@@ -152,7 +152,8 @@ public class SnapshotIsolationWithMulticast extends Consistency {
 	}
 
 	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
+	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
+			ConcernedKeysTarget target) {
 
 		/*
 		 * If it is a read-only transaction, we return an empty set. But if it
@@ -171,7 +172,7 @@ public class SnapshotIsolationWithMulticast extends Consistency {
 		// groups.
 		Set<String> keys = new HashSet<String>();
 
-		for (int i = 0; i < manager.getReplicaGroups().size() ; i++) {
+		for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
 			keys.add("" + i);
 		}
 

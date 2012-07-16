@@ -25,6 +25,7 @@ import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
+import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
@@ -280,7 +281,8 @@ public class DistributedTermination implements Learner {
 
 			HashSet<String> destGroups = new HashSet<String>();
 			Set<String> concernedKeys = jessy.getConsistency()
-					.getConcerningKeys(executionHistory);
+					.getConcerningKeys(executionHistory,
+							ConcernedKeysTarget.ATOMIC_MULTICAST);
 
 			/*
 			 * If there is no concerning key, it means that the transaction can
@@ -288,6 +290,7 @@ public class DistributedTermination implements Learner {
 			 * consistency.
 			 */
 			if (concernedKeys.size() == 0) {
+				transactionTerminationTime.add(System.nanoTime() - start);
 				executionHistory.changeState(TransactionState.COMMITTED);
 				return TransactionState.COMMITTED;
 			}
@@ -401,7 +404,8 @@ public class DistributedTermination implements Learner {
 				Set<String> dest = new HashSet<String>();
 				dest.addAll(jessy.partitioner.resolveNames(jessy
 						.getConsistency().getConcerningKeys(
-								msg.getExecutionHistory())));
+								msg.getExecutionHistory(),
+								ConcernedKeysTarget.EXCHANGE_VOTES)));
 
 				dest.remove(group.name());
 				VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),

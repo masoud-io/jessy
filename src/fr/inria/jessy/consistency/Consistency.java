@@ -15,6 +15,10 @@ import fr.inria.jessy.transaction.termination.Vote;
 
 public abstract class Consistency {
 
+	public static enum ConcernedKeysTarget {
+		ATOMIC_MULTICAST, EXCHANGE_VOTES
+	};
+
 	protected DataStore store;
 	protected TerminationCommunication terminationCommunication;
 	protected JessyGroupManager manager = JessyGroupManager.getInstance();
@@ -81,7 +85,7 @@ public abstract class Consistency {
 	 * @return
 	 */
 	public abstract Set<String> getConcerningKeys(
-			ExecutionHistory executionHistory);
+			ExecutionHistory executionHistory, ConcernedKeysTarget target);
 
 	/**
 	 * Is called after the transaction modifications have been applied to the

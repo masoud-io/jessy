@@ -20,6 +20,7 @@ import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
+import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -251,7 +252,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		Set<String> dest = new HashSet<String>();
 
 		alreadyNotified.addAll(manager.getPartitioner().resolveNames(
-				getConcerningKeys(executionHistory)));
+				getConcerningKeys(executionHistory,
+						ConcernedKeysTarget.EXCHANGE_VOTES)));
 
 		/*
 		 * Compute the set of jessy groups that have not receive the vector.
@@ -297,7 +299,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 * @inheritDoc
 	 */
 	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
+	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
+			ConcernedKeysTarget target) {
 		Set<String> keys = new HashSet<String>();
 		keys.addAll(executionHistory.getWriteSet().getKeys());
 		keys.addAll(executionHistory.getCreateSet().getKeys());

@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunication;
+import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -154,11 +155,17 @@ public class Serializability extends Consistency {
 	}
 
 	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory) {
+	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
+			ConcernedKeysTarget target) {
 		Set<String> keys = new HashSet<String>();
-		keys.addAll(executionHistory.getReadSet().getKeys());
-		keys.addAll(executionHistory.getWriteSet().getKeys());
-		keys.addAll(executionHistory.getCreateSet().getKeys());
+		if (target == ConcernedKeysTarget.ATOMIC_MULTICAST) {
+			keys.addAll(executionHistory.getReadSet().getKeys());
+			keys.addAll(executionHistory.getWriteSet().getKeys());
+			keys.addAll(executionHistory.getCreateSet().getKeys());
+		} else {
+			keys.addAll(executionHistory.getWriteSet().getKeys());
+			keys.addAll(executionHistory.getCreateSet().getKeys());
+		}
 		return keys;
 	}
 
