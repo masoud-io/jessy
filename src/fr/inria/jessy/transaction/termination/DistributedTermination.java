@@ -407,37 +407,50 @@ public class DistributedTermination implements Learner {
 								msg.getExecutionHistory(),
 								ConcernedKeysTarget.EXCHANGE_VOTES)));
 
-				dest.remove(group.name());
-				VoteMessage voteMsg = new VoteMessage(vote, dest, group.name(),
-						JessyGroupManager.getInstance().getSourceId());
+				/*
+				 * if true, it means that it must wait for the vote from the
+				 * others and apply the changes, otherwise, it only needs to
+				 * send its vote, and garbage collect. For example, in SER, an
+				 * instance which only replicates an object read by the
+				 * transaction should send its vote, and return.
+				 */
+				boolean replicateWrittenObject = (dest.contains(group.name())) ? true
+						: false;
+				{
 
-				terminationCommunication.sendVote(voteMsg, msg
-						.getExecutionHistory().isCertifyAtCoordinator(), msg
-						.getExecutionHistory().getCoordinator());
+					dest.remove(group.name());
+					VoteMessage voteMsg = new VoteMessage(vote, dest,
+							group.name(), JessyGroupManager.getInstance()
+									.getSourceId());
 
-				addVote(vote);
+					terminationCommunication.sendVote(voteMsg, msg
+							.getExecutionHistory().isCertifyAtCoordinator(),
+							msg.getExecutionHistory().getCoordinator());
 
-				TransactionState state = votingQuorums.get(
-						msg.getExecutionHistory().getTransactionHandler())
-						.waitVoteResult(dest);
+					addVote(vote);
+				}
 
-				certificationTime.add(System.nanoTime()
-						- msg.getExecutionHistory().getStartCertification());
+				if (replicateWrittenObject) {
+					TransactionState state = votingQuorums.get(
+							msg.getExecutionHistory().getTransactionHandler())
+							.waitVoteResult(dest);
 
-				logger.debug("got voting quorum for "
-						+ msg.getExecutionHistory().getTransactionHandler()
-						+ " , result is " + state);
+					certificationTime
+							.add(System.nanoTime()
+									- msg.getExecutionHistory()
+											.getStartCertification());
 
-				msg.getExecutionHistory().changeState(state);
+					logger.debug("got voting quorum for "
+							+ msg.getExecutionHistory().getTransactionHandler()
+							+ " , result is " + state);
+
+					msg.getExecutionHistory().changeState(state);
+
+				}
 
 				handleTerminationResult(msg);
 				garbageCollect(msg.getExecutionHistory()
 						.getTransactionHandler());
-
-				// synchronized (atomicDeliveredMessages) {
-				// atomicDeliveredMessages.remove(msg);
-				// atomicDeliveredMessages.notifyAll();
-				// }
 
 			} catch (Exception e) {
 				e.printStackTrace();
