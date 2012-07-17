@@ -18,7 +18,9 @@ public class ConstantPool {
 		SERVER, PROXY
 	}
 
-	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for marshalling/unmarshalling facilities
+	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for
+																	// marshalling/unmarshalling
+																	// facilities
 
 	public static final String JESSY_EVERYBODY_GROUP = "JEVERYBODY";
 	public static final int JESSY_EVERYBODY_PORT = 4479;
@@ -66,6 +68,13 @@ public class ConstantPool {
 	 * constant should be useless.
 	 */
 	public static final int JESSY_PSI_PROPAGATION_THRESHOLD = 20;
+
+	/**
+	 * The timeout (in millisecond) and the number of times to retry a read upon
+	 * returning a null value from the server.
+	 */
+	public static final long JESSY_READ_RETRY_TIMEOUT = 2;
+	public static final short JESSY_READ_RETRY_TIMES = 3;
 
 	/**
 	 * Config.property file constants

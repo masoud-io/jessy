@@ -59,11 +59,13 @@ public class RemoteReader implements Learner {
 
 	private static Logger logger = Logger.getLogger(RemoteReader.class);
 
-	private static TimeRecorder serverAnsweringTime;
+	private static TimeRecorder serverAnsweringTime, queueAddTime;
 	private static ValueRecorder batching;
 	static {
 		serverAnsweringTime = new TimeRecorder(
 				"RemoteReader#serverAnsweringTime(us)");
+		queueAddTime = new TimeRecorder(
+			"RemoteReader#queueAddTime(us)");
 		batching = new ValueRecorder("RemoteReader#batching)");
 	}
 
@@ -95,15 +97,12 @@ public class RemoteReader implements Learner {
 
 		pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
 				RemoteReadReplyTask.class, RemoteReader.class, this));
-
-		// pool.submit(new RemoteReadReplyTask());
+//		pool.submit(new RemoteReadReplyTask());
 
 		remoteReadQ = new LinkedBlockingDeque<RemoteReadFuture<JessyEntity>>();
-		// pool.submitMultiple(
-		// new
-		// InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
-		// RemoteReader.class, this));
-		pool.submit(new RemoteReadRequestTask());
+		 pool.submitMultiple( new InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
+		 RemoteReader.class, this));
+//		pool.submit(new RemoteReadRequestTask());
 
 	}
 
@@ -118,14 +117,15 @@ public class RemoteReader implements Learner {
 
 	@SuppressWarnings("unchecked")
 	public void learn(Stream s, Serializable v) {
-
+		
 		if (v instanceof ReadRequestMessage) {
-
+			queueAddTime.start();
 			try {
 				requestQ.put((ReadRequestMessage) v);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			queueAddTime.stop();
 
 		} else {
 
@@ -312,18 +312,21 @@ public class RemoteReader implements Learner {
 
 		@SuppressWarnings("unchecked")
 		public void run() {
-
+		
 			Collection<ReadRequestMessage> msgs = new ArrayList<ReadRequestMessage>();
-
+		
 			while (true) {
-
+		
 				try {
-
+		
 					pendingRequests.clear();
 					msgs.clear();
-
+		
 					msgs.add(requestQ.take());
 					requestQ.drainTo(msgs);
+					
+					serverAnsweringTime.start();
+					
 					for (ReadRequestMessage m : msgs) {
 						if (!pendingRequests.containsKey(m.source)) {
 							pendingRequests.put(m.source,
@@ -332,10 +335,9 @@ public class RemoteReader implements Learner {
 						pendingRequests.get(m.source).addAll(
 								m.getReadRequests());
 					}
-
+		
 					logger.debug("got" + pendingRequests);
-
-					serverAnsweringTime.start();
+		
 					for (Integer dest : pendingRequests.keySet()) {
 						List<ReadReply<JessyEntity>> replies = jessy
 								.getDataStore().getAll(
@@ -344,15 +346,17 @@ public class RemoteReader implements Learner {
 							logger.warn("read requests " + pendingRequests
 									+ " failed");
 						}
+						
 						remoteReadStream.unicast(new ReadReplyMessage(replies),
 								dest);
 					}
+					
 					serverAnsweringTime.stop();
-
+		
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-
+		
 			}
 		}
 

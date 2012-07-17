@@ -205,9 +205,20 @@ public abstract class Jessy {
 			// in the same transaction before.
 			entity = executionHistory.getReadEntity(keyValue);
 
-			if (entity == null)
-				entity = performRead(entityClass, "secondaryKey", keyValue,
-						executionHistory.getReadSet().getCompactVector());
+			if (entity == null) {
+
+				short retryTimes = 0;
+				while (retryTimes < ConstantPool.JESSY_READ_RETRY_TIMES
+						&& entity == null) {
+
+					entity = performRead(entityClass, "secondaryKey", keyValue,
+							executionHistory.getReadSet().getCompactVector());
+					if (entity == null) {
+						retryTimes++;
+						Thread.sleep(ConstantPool.JESSY_READ_RETRY_TIMEOUT);
+					}
+				}
+			}
 		}
 
 		if (entity != null) {

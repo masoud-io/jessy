@@ -1,9 +1,7 @@
 package fr.inria.jessy.vector;
 
 import java.io.Externalizable;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import com.sleepycat.persist.model.Persistent;
 
