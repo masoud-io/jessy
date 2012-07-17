@@ -2,6 +2,8 @@ package fr.inria.jessy;
 
 import java.util.concurrent.TimeUnit;
 
+import net.sourceforge.fractal.Messageable;
+
 /**
  * 
  * This class contains multiple constant that might be used in Jessy.
@@ -16,7 +18,7 @@ public class ConstantPool {
 		SERVER, PROXY
 	}
 
-	public final static long JESSY_MID = 0x1L;
+	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for marshalling/unmarshalling facilities
 
 	public static final String JESSY_EVERYBODY_GROUP = "JEVERYBODY";
 	public static final int JESSY_EVERYBODY_PORT = 4479;

@@ -16,6 +16,8 @@ import java.util.Set;
 
 import com.sleepycat.persist.model.Persistent;
 
+import fr.inria.jessy.ConstantPool;
+
 /**
  * A generic value vector. It consist of a set of (key, value) pairs. Values are
  * {@link Comparable}. The value implicitly associated with a non-existing key
@@ -40,7 +42,7 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,
 	//
 	// CONSTANTS
 	//
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
 
 	/**
 	 * The return type of the {@link ValueVector#compareTo(ValueVector)} method.

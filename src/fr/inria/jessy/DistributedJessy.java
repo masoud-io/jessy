@@ -22,26 +22,33 @@ import sun.misc.SignalHandler;
 import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
+import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.partitioner.Partitioner;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.vector.CompactVector;
+import fr.inria.jessy.vector.ConcurrentVersionVector;
 import fr.inria.jessy.vector.DependenceVector;
+import fr.inria.jessy.vector.LightScalarVector;
 import fr.inria.jessy.vector.NullVector;
 import fr.inria.jessy.vector.ValueVector;
 import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.vector.VersionVector;
 
 public class DistributedJessy extends Jessy {
 
@@ -96,28 +103,40 @@ public class DistributedJessy extends Jessy {
 			remoteReader = new RemoteReader(this);
 
 			// FIXME
-			MessageStream.addClass(YCSBEntity.class.getName());
 			super.addEntity(YCSBEntity.class);
 
 			partitioner = JessyGroupManager.getInstance().getPartitioner();
 
 			// FIXME MOVE THIS
 			MessageStream.addClass(JessyEntity.class.getName());
-			MessageStream.addClass(EntitySet.class.getName());
+			MessageStream.addClass(YCSBEntity.class.getName());
+			
 			MessageStream.addClass(Vector.class.getName());
 			MessageStream.addClass(ValueVector.class.getName());
 			MessageStream.addClass(DependenceVector.class.getName());
 			MessageStream.addClass(NullVector.class.getName());
+			MessageStream.addClass(CompactVector.class.getName());
+			MessageStream.addClass(LightScalarVector.class.getName());
+			MessageStream.addClass(VersionVector.class.getName());
+			MessageStream.addClass(DependenceVector.class.getName());
+			MessageStream.addClass(ConcurrentVersionVector.class.getName());
+			
 			MessageStream.addClass(ReadReply.class.getName());
 			MessageStream.addClass(ReadRequest.class.getName());
 			MessageStream.addClass(ReadRequestMessage.class.getName());
 			MessageStream.addClass(ReadReplyMessage.class.getName());
+			MessageStream.addClass(ParallelSnapshotIsolationPropagateMessage.class.getName());
+			
 			MessageStream.addClass(VoteMessage.class.getName());
 			MessageStream.addClass(Vote.class.getName());
-			MessageStream.addClass(TerminateTransactionRequestMessage.class
-					.getName());
+			
+			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
+			
 			MessageStream.addClass(ExecutionHistory.class.getName());
 			MessageStream.addClass(TransactionHandler.class.getName());
+			MessageStream.addClass(EntitySet.class.getName());
+			
+			MessageStream.addClass(Keyspace.class.getName());
 
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -10,6 +10,7 @@ import net.sourceforge.fractal.MessageOutputStream;
 import net.sourceforge.fractal.MessageStream;
 import net.sourceforge.fractal.utils.PerformanceProbe;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,33 +18,31 @@ import org.junit.Test;
 import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.vector.DependenceVector;
 import fr.inria.jessy.vector.NullVector;
-import fr.inria.jessy.vector.ValueVector;
-import fr.inria.jessy.vector.Vector;
 
 public class DistributedJessyTest {
 
 	@Before
 	public void setUp() throws ClassNotFoundException {
-		MessageStream.addClass(JessyEntity.class.getName());
 		MessageStream.addClass(YCSBEntity.class.getName());
-		MessageStream.addClass(Vector.class.getName());
-		MessageStream.addClass(ValueVector.class.getName());
-		MessageStream.addClass(DependenceVector.class.getName());
-		MessageStream.addClass(NullVector.class.getName());
+		MessageStream.addClass(JessyEntity.class.getName());
 	}
 	
 	@Test
 	public void marshallingTest(){
 		YCSBEntity e;
 		TimeRecorder r = new TimeRecorder("marshallingTime");
+		ValueRecorder s = new ValueRecorder("marshallingSize");
+		s.setFormat("%a");
+		
 		PerformanceProbe.setOutput("/dev/stdout");
-		for(int i=0; i<200000; i++){
+		for(int i=0; i<1; i++){
 			e =  new YCSBEntity();
+			e.setLocalVector(new NullVector<String>());
 			r.start();
-			pack(e);
+			ByteBuffer bb=pack(e);
 			r.stop();
+			s.add(bb.array().length);
 		}
 	}
 
@@ -52,8 +51,9 @@ public class DistributedJessyTest {
 		YCSBEntity e;
 		TimeRecorder r = new TimeRecorder("unmarshallingTime");
 		PerformanceProbe.setOutput("/dev/stdout");
-		for(int i=0; i<200000; i++){
+		for(int i=0; i<1; i++){
 			e =  new YCSBEntity();
+			e.setLocalVector(new NullVector<String>());
 			ByteBuffer bb = pack(e);
 			r.start();
 			try {

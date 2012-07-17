@@ -13,8 +13,6 @@ import fr.inria.jessy.store.JessyEntity;
 @Entity
 public class SampleEntityClass extends JessyEntity {
 
-	private static final long serialVersionUID = ConstantPool.JESSY_MID;
-
 	public SampleEntityClass() {
 		super("");
 	}

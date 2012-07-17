@@ -7,6 +7,8 @@ import java.io.ObjectOutput;
 
 import com.sleepycat.persist.model.Persistent;
 
+import fr.inria.jessy.ConstantPool;
+
 /**
  * This is a simple ScalarVector implementation. It will be used for
  * implementing p-store like data store. I.e., during execution, read the most
@@ -26,6 +28,8 @@ import com.sleepycat.persist.model.Persistent;
 @Persistent
 public class LightScalarVector<K> extends Vector<K> implements Externalizable {
 
+	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
+	
 	/**
 	 * Needed for BerkeleyDB
 	 */

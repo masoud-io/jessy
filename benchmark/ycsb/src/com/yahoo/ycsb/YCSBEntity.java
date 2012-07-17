@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.sleepycat.persist.model.Entity;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.Keyspace.Distribution;
@@ -16,7 +17,7 @@ import fr.inria.jessy.store.Keyspace.Distribution;
 @Entity
 public class YCSBEntity extends JessyEntity implements Externalizable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = ConstantPool.JESSY_MID; 
 
 	public static Keyspace keyspace = new Keyspace("user#####",
 			Distribution.UNIFORM);

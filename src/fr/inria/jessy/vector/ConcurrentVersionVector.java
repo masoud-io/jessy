@@ -6,6 +6,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.concurrent.ConcurrentHashMap;
 
+import fr.inria.jessy.ConstantPool;
+
 /**
  * This class is a concurrent version of {@code VersionVector}. It is needed for
  * storing version vectors associated to each jessy instance in the PSI
@@ -20,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConcurrentVersionVector<K> implements Externalizable,
 		Comparable<CompactVector<K>> {
 
+	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
+	
 	private static final Integer bydefault = -1;
 
 	private ConcurrentHashMap<K, Integer> map;

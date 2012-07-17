@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.sleepycat.persist.model.Persistent;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 
 /**
@@ -26,6 +27,8 @@ import fr.inria.jessy.communication.JessyGroupManager;
 @Persistent
 public class VersionVector<K> extends Vector<K> implements Externalizable {
 
+	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
+	
 	/**
 	 * this Vector plays the role of a vector assigned to each jessy server in
 	 * the system.

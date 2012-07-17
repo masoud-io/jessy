@@ -7,9 +7,13 @@ import java.io.ObjectOutput;
 
 import com.sleepycat.persist.model.Persistent;
 
+import fr.inria.jessy.ConstantPool;
+
 @Persistent
 public abstract class Vector<K> extends ValueVector<K, Integer> implements
 		Externalizable {
+	
+	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 	
 	public enum CompatibleResult {
 		/**
