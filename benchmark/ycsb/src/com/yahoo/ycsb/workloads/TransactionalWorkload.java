@@ -407,9 +407,9 @@ public class TransactionalWorkload extends Workload {
 		String op = operationchooser.nextString();
 
 		if (op.compareTo("READ") == 0) {
-			db.readTransaction(createReadRequest());
+			db.readTransaction(createReadRequest(4));
 		} else if (op.compareTo("UPDATE") == 0) {
-			db.updateTransaction(createReadRequest(),createUpdateRequest());
+			db.updateTransaction(createReadRequest(3),createUpdateRequest(1));
 		} else if (op.compareTo("INSERT") == 0) {
 			doTransactionInsert(db);
 		} else if (op.compareTo("SCAN") == 0) {
@@ -421,7 +421,7 @@ public class TransactionalWorkload extends Workload {
 		return true;
 	}
 
-	private List<YCSBTransactionalReadRequest> createReadRequest() {
+	private List<YCSBTransactionalReadRequest> createReadRequest(int numberOfRequests) {
 		List<YCSBTransactionalReadRequest> result = new ArrayList<YCSBTransactionalReadRequest>();
 		YCSBTransactionalReadRequest tmp;
 
@@ -429,7 +429,7 @@ public class TransactionalWorkload extends Workload {
 		String keyname;
 		HashSet<String> fields = null;
 
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < numberOfRequests; i++) {
 			do {
 				keynum = keychooser.nextInt();
 			} while (keynum > transactioninsertkeysequence.lastInt());
@@ -456,7 +456,7 @@ public class TransactionalWorkload extends Workload {
 		return result;
 	}
 
-	private List<YCSBTransactionalUpdateRequest> createUpdateRequest() {
+	private List<YCSBTransactionalUpdateRequest> createUpdateRequest(int numberOfRequests) {
 		List<YCSBTransactionalUpdateRequest> result = new ArrayList<YCSBTransactionalUpdateRequest>();
 		YCSBTransactionalUpdateRequest tmp;
 
@@ -464,7 +464,7 @@ public class TransactionalWorkload extends Workload {
 		String keyname;
 		HashMap<String, String> values;
 
-		for (int r = 0; r < 1; r++) {
+		for (int r = 0; r < numberOfRequests; r++) {
 			do {
 				keynum = keychooser.nextInt();
 			} while (keynum > transactioninsertkeysequence.lastInt());
