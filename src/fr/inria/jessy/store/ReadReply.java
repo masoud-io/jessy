@@ -25,7 +25,7 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 	}
 
 	public ReadReply(E entity, int correspondingReadRequestId) {
-		entities = new ArrayList<E>();
+		entities = new ArrayList<E>(1);
 		this.entities.add(entity);
 		this.readRequestId = correspondingReadRequestId;
 	}
@@ -71,7 +71,7 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 			ClassNotFoundException {
 		readRequestId = in.readInt();
 		if (in.readBoolean()) {
-			entities = new ArrayList<E>();
+			entities = new ArrayList<E>(1);
 			entities.add((E) in.readObject());
 		} else {
 			entities = (Collection<E>) in.readObject();

@@ -641,7 +641,7 @@ public class TransactionalWorkload extends Workload {
 		}
 		String dbkey = "user" + keynum;
 
-		HashMap<String, String> values = new HashMap<String, String>();
+		HashMap<String, String> values = new HashMap<String, String>(fieldlength);
 		for (int i = 0; i < fieldcount; i++) {
 			String fieldkey = "field" + i;
 			String data = Utils.ASCIIString(fieldlength);
