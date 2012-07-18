@@ -327,6 +327,7 @@ public class DistributedTermination implements Learner {
 				/*
 				 * Atomic multicast the transaction.
 				 */
+				executionHistory.clearReadValues();
 				terminationCommunication.sendTerminateTransactionRequestMessage(
 						new TerminateTransactionRequestMessage(executionHistory,
 								destGroups, group.name(), JessyGroupManager

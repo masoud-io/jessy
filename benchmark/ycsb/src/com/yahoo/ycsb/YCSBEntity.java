@@ -79,6 +79,11 @@ public class YCSBEntity extends JessyEntity implements Externalizable {
 	}
 
 	@Override
+	public void clearValue(){
+		fields=null;
+	}
+	
+	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		out.writeObject(fields);

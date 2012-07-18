@@ -169,6 +169,12 @@ public class ExecutionHistory implements Messageable {
 		return startCertification;
 	}
 
+	public void clearReadValues(){
+		for (JessyEntity e:readSet.getEntities()){
+			e.clearValue();
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {

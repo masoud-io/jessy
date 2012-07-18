@@ -91,6 +91,10 @@ public abstract class JessyEntity implements Externalizable {
 		this.localVector = localVector;
 	}
 
+	public void clearValue(){
+		
+	}
+	
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
