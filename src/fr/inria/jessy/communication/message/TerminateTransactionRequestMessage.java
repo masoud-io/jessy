@@ -1,6 +1,6 @@
 package fr.inria.jessy.communication.message;
 
-import java.util.Set;
+import java.util.Collection;
 
 import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
 import fr.inria.jessy.ConstantPool;
@@ -14,7 +14,7 @@ public class TerminateTransactionRequestMessage extends WanAMCastMessage {
 	public TerminateTransactionRequestMessage() {
 	}
 
-	public TerminateTransactionRequestMessage(ExecutionHistory eh, Set<String> dest, String gSource, int source) {
+	public TerminateTransactionRequestMessage(ExecutionHistory eh, Collection<String> dest, String gSource, int source) {
 		super(eh, dest, gSource, source);
 	}
 

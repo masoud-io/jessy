@@ -40,12 +40,13 @@ import fr.inria.jessy.vector.LightScalarVector;
 import fr.inria.jessy.vector.NullVector;
 import fr.inria.jessy.vector.ValueVector;
 import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.VersionVector;
 
 public class DistributedJessyTest {
 
 	@Before
 	public void setUp() throws ClassNotFoundException {
+		
+		PerformanceProbe.setOutput("/dev/stdout");
 		
 		MessageStream.addClass(JessyEntity.class.getName());
 		MessageStream.addClass(YCSBEntity.class.getName());
@@ -78,77 +79,141 @@ public class DistributedJessyTest {
 		MessageStream.addClass(Keyspace.class.getName());
 	}
 	
+	// TerminationRequest
+	
 	@Test
-	public void marshallingTest(){		
+	public void marshallingTestTerminationRequest(){		
 
-		TimeRecorder r = new TimeRecorder("marshallingTime");
-		ValueRecorder s = new ValueRecorder("marshallingSize");
+		TimeRecorder r = new TimeRecorder("marshallingTimeTerminationRequest");
+		ValueRecorder s = new ValueRecorder("sizeTerminationRequest");
 		s.setFormat("%a");
-		
-		PerformanceProbe.setOutput("/dev/stdout");
-		for(int i=0; i<10000; i++){
 
-			YCSBEntity e = new YCSBEntity("user1");
-			ReadReply<JessyEntity> rr = new ReadReply<JessyEntity>(e, 1);
-			List<ReadReply<JessyEntity>> l = new ArrayList<ReadReply<JessyEntity>>();
-			l.add(rr);
-			ReadReplyMessage msg = new ReadReplyMessage<JessyEntity>(l);
+		ExecutionHistory h = new ExecutionHistory(new TransactionHandler());
+		
+		YCSBEntity e = new YCSBEntity("user1");
+		e.put("a", new String(new byte[1000]));
+		h.addReadEntity(e);
+		
+		YCSBEntity e1 = new YCSBEntity("user4");
+		e1.put("a", new String(new byte[1000]));
+		h.addReadEntity(e1);
+		
+		YCSBEntity e2 = new YCSBEntity("user3");
+		e2.put("a", new String(new byte[1000]));
+		h.addReadEntity(e2);
+		
+		YCSBEntity e3 = new YCSBEntity("user2");
+		e3.put("a", new String(new byte[1000]));
+		h.addReadEntity(e3);
+
+		List<String> dest = new ArrayList<String>();
+		dest.add("him");
+		TerminateTransactionRequestMessage msg = new TerminateTransactionRequestMessage(h,dest,"me",1);
+		
+		for(int i=0; i<1; i++){
 			
 			r.start();
 			ByteBuffer bb = Message.pack(msg, 1);
 			r.stop();
 			s.add(bb.array().length);
 		}
+		
+	}	
+	
+	// ReadReply
+	
+	@Test
+	public void testReadReply(){
+		
+		YCSBEntity e = new YCSBEntity("user1");
+		String payload =  new String(new byte[1000]);
+		// e.put("a",payload);
+		System.out.println(payload.toCharArray().length);
+		
+		List<YCSBEntity> l = new ArrayList<YCSBEntity>();
+		l.add(e);
+		
+		ReadReply<YCSBEntity> rr = new ReadReply<YCSBEntity>(l,0);
+		List<ReadReply<YCSBEntity>> L = new ArrayList<ReadReply<YCSBEntity>>();
+		L.add(rr);
+		
+		ReadReplyMessage<YCSBEntity> msg = new ReadReplyMessage<YCSBEntity>(L);
+
+		TimeRecorder r = new TimeRecorder("marshallingTimeReadReply");
+		TimeRecorder r1 = new TimeRecorder("unmarshallingTimeReadReply");
+		ValueRecorder s = new ValueRecorder("sizeRadReply");
+		s.setFormat("%a");
+		for(int i=0; i<100000; i++){
+			r.start();
+			ByteBuffer bb = Message.pack(msg,0);
+			bb.rewind();
+			r.stop();
+			s.add(bb.limit());
+			r1.start();
+			try {
+				Message.unpack(bb);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (ClassNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			r1.stop();
+		}		
 	}
 
-//	@Test
-//	public void unmarshallingTest(){
-//		YCSBEntity e;
-//		TimeRecorder r = new TimeRecorder("unmarshallingTime");
-//		PerformanceProbe.setOutput("/dev/stdout");
-//		for(int i=0; i<1; i++){
-//			e =  new YCSBEntity();
-//			e.setLocalVector(new NullVector<String>());
-//			ByteBuffer bb = pack(e);
-//			r.start();
-//			try {
-//				unpack(bb.array());
-//			} catch (IOException e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			} catch (ClassNotFoundException e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			}
-//			r.stop();
-//		}		
-//	}
-//
-//	private static JessyEntity unpack(byte[] buff) throws IOException, ClassNotFoundException{
-//		ByteArrayInputStream bais = new ByteArrayInputStream(buff);
-//		MessageInputStream mis = new MessageInputStream(bais);
-//		JessyEntity e = (JessyEntity)mis.readObject();
-//		return e;
-//	}
-//	
-//	private static ByteBuffer pack(JessyEntity e) {
-//
-//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//		MessageOutputStream mos;
-//		try {
-//			mos = new MessageOutputStream(baos);
-//			mos.writeObject(e);
-//		} catch (IOException exception) {
-//			// TODO Auto-generated catch block
-//			exception.printStackTrace();
-//		}
-//		byte [] data = baos.toByteArray(); 
-//
-//		// 3 - Pack into a ByteBuffer
-//		ByteBuffer bb = ByteBuffer.allocate(data.length);
-//		bb.put(data);
-//		bb.flip();
-//		return bb;
-//	}
-//	
+	
+	// JessyEntity.
+
+	@Test
+	public void unmarshallingTestJessyEntity(){
+		YCSBEntity e;
+		TimeRecorder r = new TimeRecorder("unmarshallingTimeJessyEntity");
+		for(int i=0; i<1; i++){
+			e =  new YCSBEntity();
+			e.setLocalVector(new NullVector<String>());
+			ByteBuffer bb = pack(e);
+			r.start();
+			try {
+				unpack(bb.array());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (ClassNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			r.stop();
+		}		
+	}
+
+	
+	private static JessyEntity unpack(byte[] buff) throws IOException, ClassNotFoundException{
+		ByteArrayInputStream bais = new ByteArrayInputStream(buff);
+		MessageInputStream mis = new MessageInputStream(bais);
+		JessyEntity e = (JessyEntity)mis.readObject();
+		return e;
+	}
+	
+	private static ByteBuffer pack(JessyEntity e) {
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		MessageOutputStream mos;
+		try {
+			mos = new MessageOutputStream(baos);
+			mos.writeObject(e);
+		} catch (IOException exception) {
+			// TODO Auto-generated catch block
+			exception.printStackTrace();
+		}
+		byte [] data = baos.toByteArray(); 
+
+		// 3 - Pack into a ByteBuffer
+		ByteBuffer bb = ByteBuffer.allocate(data.length);
+		bb.put(data);
+		bb.flip();
+		return bb;
+	}
+	
 }

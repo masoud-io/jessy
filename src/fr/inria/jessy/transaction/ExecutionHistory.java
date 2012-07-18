@@ -16,9 +16,6 @@ public class ExecutionHistory implements Messageable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-	private static TimeRecorder packingTime = new TimeRecorder(
-			"ExecutioNHistory#packingTime");
-
 	public static enum TransactionType {
 		/**
 		 * the execution history is for a read only transaction
@@ -181,8 +178,13 @@ public class ExecutionHistory implements Messageable {
 		transactionState = (TransactionState) in.readObject();
 
 		createSet = (EntitySet) in.readObject();
+		if(createSet == null ) createSet = new EntitySet();
+		
 		writeSet = (EntitySet) in.readObject();
+		if(writeSet == null ) writeSet = new EntitySet();
+		
 		readSet = (EntitySet) in.readObject();
+		if(readSet == null ) readSet = new EntitySet();
 
 		coordinator = in.readInt();
 	}
@@ -193,9 +195,21 @@ public class ExecutionHistory implements Messageable {
 		out.writeBoolean(certifyAtCoordinator);
 		out.writeObject(transactionState);
 
-		out.writeObject(createSet);
-		out.writeObject(writeSet);
-		out.writeObject(readSet);
+		if(createSet.size()==0)
+			out.writeObject(null);
+		else
+			out.writeObject(createSet);
+			
+		
+		if(writeSet.size()==0)
+			out.writeObject(null);
+		else
+			out.writeObject(writeSet);
+		
+		if(readSet.size()==0)
+			out.writeObject(null);
+		else
+			out.writeObject(readSet);
 
 		out.writeInt(coordinator);
 
