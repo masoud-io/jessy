@@ -110,6 +110,7 @@ public class DistributedJessy extends Jessy {
 			// FIXME MOVE THIS
 			MessageStream.addClass(JessyEntity.class.getName());
 			MessageStream.addClass(YCSBEntity.class.getName());
+			MessageStream.addClass(ReadRequestKey.class.getName());
 			
 			MessageStream.addClass(Vector.class.getName());
 			MessageStream.addClass(ValueVector.class.getName());

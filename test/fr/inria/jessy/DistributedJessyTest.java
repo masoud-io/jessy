@@ -30,6 +30,7 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
+import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.termination.Vote;
@@ -50,6 +51,7 @@ public class DistributedJessyTest {
 		
 		MessageStream.addClass(JessyEntity.class.getName());
 		MessageStream.addClass(YCSBEntity.class.getName());
+		MessageStream.addClass(ReadRequestKey.class.getName());
 		
 		MessageStream.addClass(Vector.class.getName());
 		MessageStream.addClass(ValueVector.class.getName());
@@ -144,7 +146,7 @@ public class DistributedJessyTest {
 		TimeRecorder r1 = new TimeRecorder("unmarshallingTimeReadReply");
 		ValueRecorder s = new ValueRecorder("sizeRadReply");
 		s.setFormat("%a");
-		for(int i=0; i<100000; i++){
+		for(int i=0; i<1; i++){
 			r.start();
 			ByteBuffer bb = Message.pack(msg,0);
 			bb.rewind();
@@ -162,6 +164,40 @@ public class DistributedJessyTest {
 		}		
 	}
 
+
+	// ReadRequest
+	@Test
+	public void testReadRequest(){
+		
+		ReadRequestKey<String> k = new ReadRequestKey<String>(null,"user1");;  
+		List<ReadRequestKey<String>> l = new ArrayList<ReadRequestKey<String>>();
+		l.add(k);
+		ReadRequest rr = new ReadRequest(YCSBEntity.class,"secondaryKey",l,null);
+		List<ReadRequest<JessyEntity>> L =  new ArrayList<ReadRequest<JessyEntity>>();;
+		L.add(rr);		
+		ReadRequestMessage msg = new ReadRequestMessage(L);
+		
+		TimeRecorder r = new TimeRecorder("marshallingTimeReadRequest");
+		TimeRecorder r1 = new TimeRecorder("unmarshallingTimeReadRequest");
+		ValueRecorder s = new ValueRecorder("sizeRadRequest");
+		s.setFormat("%a");
+		for(int i=0; i<100000; i++){
+			r.start();
+			ByteBuffer bb = Message.pack(msg,0);
+			bb.rewind();
+			r.stop();
+			s.add(bb.limit());
+			r1.start();
+			try {
+				Message.unpack(bb);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			}
+			r1.stop();
+		}
+	}
 	
 	// JessyEntity.
 

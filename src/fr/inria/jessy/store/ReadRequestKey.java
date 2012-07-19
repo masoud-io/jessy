@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import fr.inria.jessy.ConstantPool;
+
 /**
  * Any read request (either local or remote) should be sent to the data store
  * layer with an object of class {@code ReadRequestKey}
@@ -15,6 +17,8 @@ import java.io.ObjectOutput;
  */
 public class ReadRequestKey<K> implements Externalizable {
 
+	private static final long serialVersionUID = ConstantPool.JESSY_MID;
+	
 	/**
 	 * In order to increase the marshaling and unmarshaling speed,
 	 * {@code DEFAULT_KEY_NAME} is defined. If the key is the same as
