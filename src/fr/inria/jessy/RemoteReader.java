@@ -59,13 +59,20 @@ public class RemoteReader implements Learner {
 
 	private static Logger logger = Logger.getLogger(RemoteReader.class);
 
-	private static TimeRecorder serverAnsweringTime, queueAddTime;
-	private static ValueRecorder batching;
+	private static ValueRecorder batching,serverAnsweringTime, clientAskingTime, clientProcessingResponseTime;
 	static {
-		serverAnsweringTime = new TimeRecorder(
-				"RemoteReader#serverAnsweringTime(us)");
-		queueAddTime = new TimeRecorder(
-			"RemoteReader#queueAddTime(us)");
+		serverAnsweringTime = new ValueRecorder("RemoteReader#serverAnsweringTime(ms)");
+		serverAnsweringTime.setFactor(1000000);
+		serverAnsweringTime.setFormat("%a");
+		
+		clientAskingTime = new TimeRecorder("RemoteReader#clientAskingTime(ms)");
+		clientAskingTime.setFactor(1000000);
+		clientAskingTime.setFormat("%a");
+		
+		clientProcessingResponseTime = new TimeRecorder("RemoteReader#clientProcessingResponseTime(us)");
+		clientProcessingResponseTime.setFactor(1000000);
+		clientProcessingResponseTime.setFormat("%a");
+		
 		batching = new ValueRecorder("RemoteReader#batching)");
 	}
 
@@ -94,15 +101,16 @@ public class RemoteReader implements Learner {
 		pendingRemoteReads = new ConcurrentHashMap<Integer, RemoteReadFuture<JessyEntity>>();
 
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
-
-		pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
-				RemoteReadReplyTask.class, RemoteReader.class, this));
-//		pool.submit(new RemoteReadReplyTask());
-
 		remoteReadQ = new LinkedBlockingDeque<RemoteReadFuture<JessyEntity>>();
-		 pool.submitMultiple( new InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
-		 RemoteReader.class, this));
-//		pool.submit(new RemoteReadRequestTask());
+		
+		pool.submit(new RemoteReadReplyTask());
+		pool.submit(new RemoteReadRequestTask());
+		// With a LOW # of cores, contention is too expensive.
+		// Besides, we are already batching.
+		// pool.submitMultiple( new InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
+		// RemoteReader.class, this));
+		// pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
+		// RemoteReadReplyTask.class, RemoteReader.class, this));
 
 	}
 
@@ -119,16 +127,17 @@ public class RemoteReader implements Learner {
 	public void learn(Stream s, Serializable v) {
 		
 		if (v instanceof ReadRequestMessage) {
-			queueAddTime.start();
+			
 			try {
 				requestQ.put((ReadRequestMessage) v);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			queueAddTime.stop();
 
 		} else {
 
+			long start = System.nanoTime();
+			
 			List<ReadReply> list = ((ReadReplyMessage) v).getReadReplies();
 			batching.add(list.size());
 
@@ -147,6 +156,8 @@ public class RemoteReader implements Learner {
 
 			}
 
+			clientProcessingResponseTime.add(System.nanoTime()-start);
+			
 		}
 	}
 
@@ -259,6 +270,9 @@ public class RemoteReader implements Learner {
 					toSend.clear();
 					list.clear();
 					list.add(remoteReadQ.take());
+					
+					long start = System.nanoTime();
+					
 					remoteReadQ.drainTo(list);
 
 					// Factorize read requests.
@@ -291,6 +305,8 @@ public class RemoteReader implements Learner {
 						remoteReadStream.unicast(
 								new ReadRequestMessage(toSend.get(dest)), swid);
 					}
+					
+					clientAskingTime.add(System.nanoTime()-start);
 
 				}
 
@@ -325,7 +341,7 @@ public class RemoteReader implements Learner {
 					msgs.add(requestQ.take());
 					requestQ.drainTo(msgs);
 					
-					serverAnsweringTime.start();
+					long start = System.nanoTime();
 					
 					for (ReadRequestMessage m : msgs) {
 						if (!pendingRequests.containsKey(m.source)) {
@@ -351,7 +367,7 @@ public class RemoteReader implements Learner {
 								dest);
 					}
 					
-					serverAnsweringTime.stop();
+					serverAnsweringTime.add(System.nanoTime()-start);
 		
 				} catch (Exception e) {
 					e.printStackTrace();

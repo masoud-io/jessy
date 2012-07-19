@@ -82,7 +82,7 @@ public class DistributedJessyTest {
 	// TerminationRequest
 	
 	@Test
-	public void marshallingTestTerminationRequest(){		
+	public void testTerminationRequest(){		
 
 		TimeRecorder r = new TimeRecorder("marshallingTimeTerminationRequest");
 		ValueRecorder s = new ValueRecorder("sizeTerminationRequest");
@@ -127,7 +127,8 @@ public class DistributedJessyTest {
 		
 		YCSBEntity e = new YCSBEntity("user1");
 		String payload =  new String(new byte[1000]);
-		// e.put("a",payload);
+		e.put("a",payload);
+		e.setLocalVector(new NullVector<String>());
 		System.out.println(payload.toCharArray().length);
 		
 		List<YCSBEntity> l = new ArrayList<YCSBEntity>();
@@ -153,10 +154,8 @@ public class DistributedJessyTest {
 			try {
 				Message.unpack(bb);
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (ClassNotFoundException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			r1.stop();
@@ -167,7 +166,7 @@ public class DistributedJessyTest {
 	// JessyEntity.
 
 	@Test
-	public void unmarshallingTestJessyEntity(){
+	public void testJessyEntity(){
 		YCSBEntity e;
 		TimeRecorder r = new TimeRecorder("unmarshallingTimeJessyEntity");
 		for(int i=0; i<1; i++){

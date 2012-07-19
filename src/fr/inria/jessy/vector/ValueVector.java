@@ -72,8 +72,8 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,
 	//
 	// OBJECT FIELDS
 	//
-	private HashMap<K, V> map;
-	private V bydefault;
+	protected HashMap<K, V> map;
+	protected V bydefault;
 
 	//
 	// CONSTRUCTORS

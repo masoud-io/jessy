@@ -99,9 +99,7 @@ public abstract class JessyEntity implements Externalizable {
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		secondaryKey = (String) in.readObject();
-		// unpackTime.start();
 		localVector = (Vector<String>) in.readObject();
-		// unpackTime.stop();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {

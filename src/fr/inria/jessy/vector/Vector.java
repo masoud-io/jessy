@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashMap;
 
 import com.sleepycat.persist.model.Persistent;
 
@@ -105,13 +106,13 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		super.readExternal(in);
+		map = (HashMap<K, Integer>) in.readObject();
 		super.setBydefault(_bydefault);
 		selfKey = (K) in.readObject();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
-		super.writeExternal(out);
+		out.writeObject(map);
 		out.writeObject(selfKey);
 	}
 }
