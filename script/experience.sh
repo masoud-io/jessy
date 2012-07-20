@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /home/msaeida/jessy_script/configuration.sh
+source /home/msaeidaardekani/jessy/scripts/configuration.sh
 
 function stopExp(){
     let sc=${#servers[@]}-1
@@ -192,6 +192,23 @@ do
 	    ${scriptdir}/clauncher.sh
 
 	    stopExp
+
+	if $running_on_grid ; then
+		echo "trnasfering experiment files to the main launcher frontend..."
+		let sc=${#servers[@]}-1
+		for ii in `seq 0 $sc`;
+		do
+			scpServer=${servers[${ii}]}
+			scp ${scpServer}:~/jessy/scripts/${scpServer} .
+		done
+
+		let cc=${#clients[@]}-1
+		for ii in `seq 0 $cc`;
+		do
+			scpClient=${clients[${ii}]}
+			scp ${scpClient}:~/jessy/scripts/${scpClient} .
+		done
+	fi
 
 	    echo "using ${t} thread(s) per machine is finished. Collecting stats"   
 	    collectStats >>  ${scriptdir}/results/${servercount}.txt

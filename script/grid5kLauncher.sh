@@ -1,5 +1,8 @@
 #!/bin/bash
 
+rm -f *.fr
+running_on_grid=true
+
 if [ ${#} -lt 2 ]
 then
   echo 'grid5kLaucher: usage: this script need at least two parameters: number of clients and number of servers'
@@ -50,7 +53,7 @@ reservation=${reservation%?}
 echo "starting grid5kLaucher..."
 echo ""
 echo "reserving nodes..."
-oargridsub -t allow_classic_ssh -w '0:20:00' $reservation > tmp
+oargridsub -t allow_classic_ssh -w '0:05:00' $reservation > tmp
 echo "done"
 
 
