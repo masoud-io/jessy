@@ -79,13 +79,13 @@ public class ConstantPool {
 	/**
 	 * Number of read operations in Read-only transaction in YCSB 
 	 */
-	public static final short READ_ONLY_TRANSACTION_READ_COUNT=4;
+	public static final short READ_ONLY_TRANSACTION_READ_OPERATION_COUNT=4;
 	
 	/**
 	 * Number of read/update operations in update transaction in YCSB 
 	 */
-	public static final short UPDATE_TRANSACTION_READ_COUNT=0;
-	public static final short UPDATE_TRANSACTION_UPDATE_COUNT=4;
+	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=0;
+	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=4;
 	
 	
 	

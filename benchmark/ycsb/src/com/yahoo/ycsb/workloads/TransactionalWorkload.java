@@ -409,9 +409,9 @@ public class TransactionalWorkload extends Workload {
 		String op = operationchooser.nextString();
 
 		if (op.compareTo("READ") == 0) {
-			db.readTransaction(createReadRequest(ConstantPool.READ_ONLY_TRANSACTION_READ_COUNT));
+			db.readTransaction(createReadRequest(ConstantPool.READ_ONLY_TRANSACTION_READ_OPERATION_COUNT));
 		} else if (op.compareTo("UPDATE") == 0) {
-			db.updateTransaction(createReadRequest(ConstantPool.UPDATE_TRANSACTION_READ_COUNT),createUpdateRequest(ConstantPool.UPDATE_TRANSACTION_UPDATE_COUNT));
+			db.updateTransaction(createReadRequest(ConstantPool.UPDATE_TRANSACTION_READ_OPERATION_COUNT),createUpdateRequest(ConstantPool.UPDATE_TRANSACTION_WRITE_OPERATION_COUNT));
 		} else if (op.compareTo("INSERT") == 0) {
 			doTransactionInsert(db);
 		} else if (op.compareTo("SCAN") == 0) {
