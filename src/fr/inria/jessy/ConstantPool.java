@@ -77,6 +77,19 @@ public class ConstantPool {
 	public static final short JESSY_READ_RETRY_TIMES = 3;
 
 	/**
+	 * Number of read operations in Read-only transaction in YCSB 
+	 */
+	public static final short READ_ONLY_TRANSACTION_READ_COUNT=4;
+	
+	/**
+	 * Number of read/update operations in update transaction in YCSB 
+	 */
+	public static final short UPDATE_TRANSACTION_READ_COUNT=0;
+	public static final short UPDATE_TRANSACTION_UPDATE_COUNT=4;
+	
+	
+	
+	/**
 	 * Config.property file constants
 	 */
 	public static final String CONFIG_PROPERTY = "config.property";
