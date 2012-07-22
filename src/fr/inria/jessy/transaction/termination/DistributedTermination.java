@@ -45,6 +45,8 @@ public class DistributedTermination implements Learner {
 			.getLogger(DistributedTermination.class);
 
 	private static ValueRecorder concurrentCollectionsSize;
+	
+	private static ValueRecorder vectorSize; 
 
 	private static ValueRecorder certificationTime;
 
@@ -79,6 +81,10 @@ public class DistributedTermination implements Learner {
 		concurrentCollectionsSize = new ValueRecorder(
 				"DistributedTermination#concurrentCollectionSize");
 		concurrentCollectionsSize.setFormat("%M");
+		
+		vectorSize = new ValueRecorder(
+		"DistributedTermination#vectorSize");
+		vectorSize.setFormat("%M");
 
 		certificationTime = new ValueRecorder("Jessy#certificationTime(ms)");
 		certificationTime.setFormat("%a");
@@ -119,6 +125,9 @@ public class DistributedTermination implements Learner {
 		logger.debug("terminate transaction "
 				+ ex.getTransactionHandler().getId());
 		ex.changeState(TransactionState.COMMITTING);
+		vectorSize.add(ex.getCreateSet().getCompactVector().size()
+					   + ex.getReadSet().getCompactVector().size()
+					   + ex.getWriteSet().getCompactVector().size());
 		terminationRequests.put(ex.getTransactionHandler().getId(),
 				ex.getTransactionHandler());
 		Future<TransactionState> reply = pool
@@ -443,11 +452,6 @@ public class DistributedTermination implements Learner {
 					TransactionState state = votingQuorums.get(
 							msg.getExecutionHistory().getTransactionHandler())
 							.waitVoteResult(dest);
-
-					certificationTime
-							.add(System.nanoTime()
-									- msg.getExecutionHistory()
-											.getStartCertification());
 
 					logger.debug("got voting quorum for "
 							+ msg.getExecutionHistory().getTransactionHandler()

@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunication;
-import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -51,7 +50,7 @@ public class Serializability extends Consistency {
 				 * set the selfkey of the created vector and put it back in the
 				 * entity
 				 */
-				tmp.getLocalVector().increament();
+				tmp.getLocalVector().increment();
 			}
 
 			logger.debug(executionHistory.getTransactionHandler() + " >> "

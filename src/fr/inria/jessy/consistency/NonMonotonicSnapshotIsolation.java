@@ -65,7 +65,7 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 				 * set the selfkey of the created vector and put it back in the
 				 * entity
 				 */
-				tmp.getLocalVector().increament();
+				tmp.getLocalVector().increment();
 			}
 
 			logger.debug(executionHistory.getTransactionHandler() + " >> "

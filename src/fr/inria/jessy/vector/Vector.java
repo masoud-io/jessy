@@ -99,7 +99,7 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 	/**
 	 * Increament the value of selfKey;
 	 */
-	public void increament() {
+	public void increment() {
 		setValue(selfKey, (getSelfValue() + 1));
 	}
 
