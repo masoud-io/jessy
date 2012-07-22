@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 
@@ -61,21 +61,29 @@ public abstract class Jessy {
 	// CLASS FIELDS
 	//
 
-	protected static SimpleCounter failedReadCount = new SimpleCounter(
-			"Jessy#failedReadCount");
+	protected static SimpleCounter failedReadCount;
 
-	protected static SimpleCounter totalReadCount = new SimpleCounter(
-			"Jessy#ReadCount");
+	protected static SimpleCounter totalReadCount;
+	
+	private static ValueRecorder vectorSize;
+
+	static{
+		failedReadCount = new SimpleCounter("Jessy#failedReadCount");
+		totalReadCount = new SimpleCounter("Jessy#ReadCount");
+		vectorSize = new ValueRecorder(
+		"DistributedTermination#vectorSize");
+		vectorSize.setFormat("%M");
+	}
+	
+	//
+	// OBJECT FIELDS
+	//
 
 	protected DataStore dataStore;
 	Consistency consistency;
 
 	protected Set<Object> activeClients = new HashSet<Object>();
-
-	//
-	// OBJECT FIELDS
-	//
-
+	
 	private ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
 	// Map<AtomicInteger, EntitySet> committedWritesets;
@@ -222,6 +230,7 @@ public abstract class Jessy {
 		}
 
 		if (entity != null) {
+			vectorSize.add(entity.getLocalVector().size());
 			executionHistory.addReadEntity(entity);
 			return entity;
 		} else {

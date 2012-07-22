@@ -151,6 +151,10 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,
 	protected void setMap(HashMap<K, V> map) {
 		this.map = map;
 	}
+	
+	public int size(){
+		return this.map.size();
+	}
 
 	//
 	// UPDATE

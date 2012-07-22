@@ -111,7 +111,7 @@ public class DistributedJessy extends Jessy {
 			MessageStream.addClass(JessyEntity.class.getName());
 			MessageStream.addClass(YCSBEntity.class.getName());
 			MessageStream.addClass(ReadRequestKey.class.getName());
-			
+
 			MessageStream.addClass(Vector.class.getName());
 			MessageStream.addClass(ValueVector.class.getName());
 			MessageStream.addClass(DependenceVector.class.getName());
@@ -121,22 +121,25 @@ public class DistributedJessy extends Jessy {
 			MessageStream.addClass(VersionVector.class.getName());
 			MessageStream.addClass(DependenceVector.class.getName());
 			MessageStream.addClass(ConcurrentVersionVector.class.getName());
-			
+
 			MessageStream.addClass(ReadReply.class.getName());
 			MessageStream.addClass(ReadRequest.class.getName());
 			MessageStream.addClass(ReadRequestMessage.class.getName());
 			MessageStream.addClass(ReadReplyMessage.class.getName());
-			MessageStream.addClass(ParallelSnapshotIsolationPropagateMessage.class.getName());
-			
+			MessageStream
+					.addClass(ParallelSnapshotIsolationPropagateMessage.class
+							.getName());
+
 			MessageStream.addClass(VoteMessage.class.getName());
 			MessageStream.addClass(Vote.class.getName());
-			
-			MessageStream.addClass(TerminateTransactionRequestMessage.class.getName());
-			
+
+			MessageStream.addClass(TerminateTransactionRequestMessage.class
+					.getName());
+
 			MessageStream.addClass(ExecutionHistory.class.getName());
 			MessageStream.addClass(TransactionHandler.class.getName());
 			MessageStream.addClass(EntitySet.class.getName());
-			
+
 			MessageStream.addClass(Keyspace.class.getName());
 
 		} catch (Exception ex) {
@@ -187,9 +190,11 @@ public class DistributedJessy extends Jessy {
 					 * again.
 					 */
 				} catch (InterruptedException ie) {
-					logger.error("InterruptedException happened in the remote reader");
+					logger
+							.error("InterruptedException happened in the remote reader");
 				} catch (ExecutionException ee) {
-					logger.error("ExecutionException happened in the remote reader");
+					logger
+							.error("ExecutionException happened in the remote reader");
 				}
 			} while (!isDone);
 
@@ -198,8 +203,8 @@ public class DistributedJessy extends Jessy {
 		if (readReply != null && readReply.getEntity() != null
 				&& readReply.getEntity().iterator().hasNext()
 				&& readReply.getEntity().iterator().next() != null) { // FIXME
-																		// improve
-																		// this
+			// improve
+			// this
 			logger.debug("read " + readRequest + " is successfull ");
 			return readReply.getEntity().iterator().next();
 		} else {
@@ -242,9 +247,11 @@ public class DistributedJessy extends Jessy {
 					 * again.
 					 */
 				} catch (InterruptedException ie) {
-					logger.error("InterruptedException happened in the remote reader");
+					logger
+							.error("InterruptedException happened in the remote reader");
 				} catch (ExecutionException ee) {
-					logger.error("ExecutionException happened in the remote reader");
+					logger
+							.error("ExecutionException happened in the remote reader");
 				}
 			} while (!isDone);
 
@@ -253,8 +260,8 @@ public class DistributedJessy extends Jessy {
 		if (readReply != null && readReply.getEntity() != null
 				&& readReply.getEntity().iterator().hasNext()
 				&& readReply.getEntity().iterator().next() != null) { // FIXME
-																		// improve
-																		// this
+			// improve
+			// this
 			logger.debug("read " + readRequest + " is successfull ");
 			return readReply.getEntity();
 		} else {
@@ -381,7 +388,8 @@ public class DistributedJessy extends Jessy {
 
 			voteRatioAbortedTransactions.setFormat("%t");
 			voteRatioAbortedTransactions.add(Double.valueOf(abortByVoteCount
-					.toString()) / (Double.valueOf(executionCount.toString())));
+					.toString())
+					/ (Double.valueOf(executionCount.toString())));
 
 			certificationRatioAbortedTransactions.setFormat("%t");
 			certificationRatioAbortedTransactions.add(Double
@@ -390,7 +398,8 @@ public class DistributedJessy extends Jessy {
 
 			timeoutRatioAbortedTransactions.setFormat("%t");
 			timeoutRatioAbortedTransactions.add(Double.valueOf(abortByTimeout
-					.toString()) / (Double.valueOf(executionCount.toString())));
+					.toString())
+					/ (Double.valueOf(executionCount.toString())));
 
 			ratioFailedReads.setFormat("%t");
 			ratioFailedReads.add(Double.valueOf(failedReadCount.toString())

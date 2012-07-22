@@ -131,7 +131,6 @@ public class DistributedJessyTest {
 		String payload =  new String(new byte[1000]);
 		e.put("a",payload);
 		e.setLocalVector(new NullVector<String>());
-		System.out.println(payload.toCharArray().length);
 		
 		List<YCSBEntity> l = new ArrayList<YCSBEntity>();
 		l.add(e);
