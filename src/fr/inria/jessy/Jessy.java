@@ -71,7 +71,7 @@ public abstract class Jessy {
 		failedReadCount = new SimpleCounter("Jessy#failedReadCount");
 		totalReadCount = new SimpleCounter("Jessy#ReadCount");
 		vectorSize = new ValueRecorder(
-		"DistributedTermination#vectorSize");
+		"Jessy#vectorSize");
 		vectorSize.setFormat("%M");
 	}
 	
