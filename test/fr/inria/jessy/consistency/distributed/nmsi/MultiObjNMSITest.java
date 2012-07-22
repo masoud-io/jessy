@@ -23,6 +23,7 @@ import fr.inria.jessy.consistency.distributed.nmsi.transaction.SampleTransaction
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;
 
 /**
@@ -143,7 +144,7 @@ public class MultiObjNMSITest extends TestCase {
 
 		SampleTransactionMultiObj2 myTran = new SampleTransactionMultiObj2(
 				jessy);
-		myTran.setRetryCommitOnAbort(true);
+		Transaction.setRetryCommitOnAbort(true);
 		Future<ExecutionHistory> future2;
 		future2 = pool.submit(myTran);
 

@@ -39,13 +39,14 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
+	private boolean isQuery;
 
 	private static boolean retryCommitOnAbort;
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;
 		this.transactionHandler = jessy.startTransaction();
-
+		this.isQuery = true;
 		executionStartTime = System.nanoTime();
 	}
 
@@ -82,8 +83,9 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public <E extends JessyEntity> void write(E entity)
 			throws NullPointerException {
 		entity.setPrimaryKey(null);
-
+		
 		jessy.write(transactionHandler, entity);
+		isQuery = false;
 	}
 
 	public <E extends JessyEntity> void create(E entity) {
@@ -108,7 +110,14 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 		if (executionHistory.getTransactionState() != TransactionState.COMMITTED
 				&& retryCommitOnAbort) {
+			
 			try {
+
+				logger.warn( "Re-executing aborted "
+					     + (isQuery?"(query)":"" )
+					     +" transaction "
+					     + executionHistory.getTransactionHandler());
+				
 				/*
 				 * Garbage collect the older execution. We do not need it
 				 * anymore.
@@ -120,9 +129,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 				 */
 				this.transactionHandler = jessy.startTransaction();
 
-				logger.warn("Re-executing aborted transaction: "
-						+ executionHistory.getTransactionHandler());
 				executionHistory = execute();
+			
 			} catch (Exception e) {
 				// FIXME abort properly
 				e.printStackTrace();

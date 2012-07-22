@@ -1,5 +1,9 @@
 package fr.inria.jessy.consistency;
 
+
+import static fr.inria.jessy.vector.ValueVector.ComparisonResult.EQUAL_TO;
+import static fr.inria.jessy.vector.ValueVector.ComparisonResult.GREATER_THAN;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +21,7 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
+import fr.inria.jessy.vector.ValueVector.ComparisonResult;
 
 /**
  * This class implements Non-Monotonic Snapshot Isolation consistency criterion.
@@ -92,9 +97,10 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 								(Class<JessyEntity>) tmp.getClass(),
 								"secondaryKey", tmp.getKey(), null))
 						.getEntity().iterator().next();
-
-				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
+				
+				ComparisonResult r = tmp.getLocalVector().compareTo(lastComittedEntity.getLocalVector());
+				if( r != GREATER_THAN && r != EQUAL_TO ){
+					System.out.println(tmp.getLocalVector().toString()+" VS "+lastComittedEntity.getLocalVector().toString());
 					return false;
 				}
 

@@ -1,0 +1,5 @@
+- add more consistency tests for NMSI.
+- vectors should not be generic , that is there are all ValueVector<String>
+  or partitioner should be generic.
+- an execution history should only contains (i) a vector that defines the entities read by the transaction,
+  and (ii) the set of updates entities.  Currently it is too heavy weighted.

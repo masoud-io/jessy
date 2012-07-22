@@ -26,9 +26,6 @@ public class ModuloPartitioner extends Partitioner {
 
 	private static Logger logger = Logger.getLogger(ModuloPartitioner.class);
 
-	// TODO should be defined by the user
-	private String nonNumerical = "user";
-
 	public ModuloPartitioner() {
 		super();
 
@@ -77,8 +74,12 @@ public class ModuloPartitioner extends Partitioner {
 	 *            a key
 	 * @return the replica group of <i>k</i>.
 	 */
-	private Group resolve(String key) {
-		int numericKey = Integer.valueOf(key.replaceAll(nonNumerical, ""));
+	public static Group resolve(String key) {
+		int numericKey = 0;
+		String mkey = key.replaceAll( "[^\\d]", "" );
+		if(!mkey.equals("")){
+			numericKey = Integer.valueOf(mkey); 
+		}
 		return JessyGroupManager
 				.getInstance()
 				.getReplicaGroups()

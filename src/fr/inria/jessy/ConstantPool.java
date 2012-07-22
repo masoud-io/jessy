@@ -52,6 +52,7 @@ public class ConstantPool {
 	 * should be sent out to a jessy instance replicating the entity.
 	 */
 	public static final long JESSY_REMOTE_READER_TIMEOUT = 5000;
+	public static final long JESSY_REMOTE_READER_NUMBER_RETRY = 3;
 	public static final TimeUnit JESSY_REMOTE_READER_TIMEOUT_TYPE = TimeUnit.MILLISECONDS;
 
 	/**

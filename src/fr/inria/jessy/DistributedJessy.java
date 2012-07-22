@@ -163,54 +163,71 @@ public class DistributedJessy extends Jessy {
 			String keyName, SK keyValue, CompactVector<String> readSet)
 			throws InterruptedException, ExecutionException {
 
-		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
-				keyValue, readSet);
+		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,keyValue, readSet);
 		ReadReply<E> readReply = null;
+		E result = null;
+		
 		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
+		
 			logger.debug("performing local read on " + keyValue
 					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);
+			result = readReply.getEntity().iterator().next();
+		
 		} else {
+			
 			logger.debug("performing remote read on " + keyValue
 					+ " for request " + readRequest);
 			remoteReads.incr();
 
 			Future<ReadReply<E>> future;
 			boolean isDone = false;
+			int tries=0;
+			
 			do {
+				
 				future = remoteReader.remoteRead(readRequest);
+				
 				try {
+					
+					tries++;
 					readReply = future.get(
 							ConstantPool.JESSY_REMOTE_READER_TIMEOUT,
 							ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
-					isDone = true;
+					
+					if ( readReply != null
+						 && readReply.getEntity() != null
+						 && readReply.getEntity().iterator().hasNext()
+						 && readReply.getEntity().iterator().next() != null) { // FIXME
+						
+						logger.debug("read " + readRequest + " is successfull ");
+						result = readReply.getEntity().iterator().next();
+						isDone = true;
+						
+					} else {
+						logger.debug("request " + readRequest + " failed");
+						failedReadCount.incr();
+						isDone = tries==ConstantPool.JESSY_REMOTE_READER_NUMBER_RETRY ? true : false;
+					}
+					
 				} catch (TimeoutException te) {
 					/*
 					 * Nothing to do. The message should have been lost. Retry
 					 * again.
 					 */
 				} catch (InterruptedException ie) {
-					logger
-							.error("InterruptedException happened in the remote reader");
+					logger.error("InterruptedException happened in the remote reader");
+					isDone = true;
 				} catch (ExecutionException ee) {
-					logger
-							.error("ExecutionException happened in the remote reader");
+					logger.error("ExecutionException happened in the remote reader");
+					isDone = true;
 				}
+				
 			} while (!isDone);
-
+			
 		}
-
-		if (readReply != null && readReply.getEntity() != null
-				&& readReply.getEntity().iterator().hasNext()
-				&& readReply.getEntity().iterator().next() != null) { // FIXME
-			// improve
-			// this
-			logger.debug("read " + readRequest + " is successfull ");
-			return readReply.getEntity().iterator().next();
-		} else {
-			logger.debug("request " + readRequest + " failed");
-			return null;
-		}
+		
+		return result;
 
 	}
 

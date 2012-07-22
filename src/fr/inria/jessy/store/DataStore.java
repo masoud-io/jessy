@@ -7,9 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
+import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+
+import org.apache.log4j.Logger;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
@@ -40,8 +41,8 @@ public class DataStore {
 
 	private Environment env;
 
-	protected static TimeRecorder curTime = new TimeRecorder(
-			"DataStore#curTime");
+	protected static TimeRecorder curTime = new TimeRecorder("DataStore#curTime");
+	protected static SimpleCounter failedReads = new SimpleCounter("DataStore#failedReads");
 
 	private EntityStore entityStore;
 
@@ -280,6 +281,7 @@ public class DataStore {
 			}
 
 			cur.close();
+			failedReads.incr();
 			return null;
 		} catch (NullPointerException ex) {
 			throw new NullPointerException("SecondaryIndex cannot be found");
@@ -343,6 +345,7 @@ public class DataStore {
 
 			return results.values();
 		} catch (NullPointerException ex) {
+			failedReads.incr();
 			throw new NullPointerException("SecondaryIndex cannot be found");
 		}
 	}
@@ -421,6 +424,7 @@ public class DataStore {
 						break;
 					} else if (entity.getLocalVector().isCompatible(
 							rr.getReadSet()) == Vector.CompatibleResult.NEVER_COMPATIBLE) {
+						failedReads.incr();
 						entity = null;
 					} else {
 						entity = cur.prev();
