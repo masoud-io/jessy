@@ -32,7 +32,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 				"Transaction#transactionExecutionTime(ms)");
 		transactionExecutionTime.setFormat("%a");
 		transactionExecutionTime.setFactor(1000000);
-
+		retryCommitOnAbort = readConfig();
 	}
 
 	long executionStartTime;
@@ -40,7 +40,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
 
-	private static boolean retryCommitOnAbort = readConfig();
+	private static boolean retryCommitOnAbort;
 
 	public Transaction(Jessy jessy) throws Exception {
 		this.jessy = jessy;
@@ -146,9 +146,14 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		return retryCommitOnAbort;
 	}
 
-	public void setRetryCommitOnAbort(boolean retryCommitOnAbort) {
-		this.retryCommitOnAbort = retryCommitOnAbort;
+	public static void setRetryCommitOnAbort(boolean retryCommitOnAbort) {
+		Transaction.retryCommitOnAbort = retryCommitOnAbort;
 	}
+
+	public static boolean getRetryCommitOnAbort() {
+		return Transaction.retryCommitOnAbort;
+	}
+
 
 	private static boolean readConfig() {
 		try {

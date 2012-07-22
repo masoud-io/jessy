@@ -21,6 +21,7 @@ import fr.inria.jessy.consistency.local.nmsi.transaction.SampleTransactionSingle
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;
 
 /**
@@ -36,7 +37,6 @@ public class SingleObjNMSITest extends TestCase {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-			
 	}
 
 	/**
@@ -46,6 +46,7 @@ public class SingleObjNMSITest extends TestCase {
 	public void setUp() throws Exception {
 		PropertyConfigurator.configure("log4j.properties");	
 		jessy = LocalJessy.getInstance();
+		Transaction.setRetryCommitOnAbort(false);
 
 		// First, we have to define the entities read or written inside the
 		// transaction
@@ -67,14 +68,14 @@ public class SingleObjNMSITest extends TestCase {
 		Future<ExecutionHistory> future;
 		future = pool.submit(new SampleEntityInitTransaction(jessy));
 		
+		ExecutionHistory result=future.get();
+		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
+		
 		Future<ExecutionHistory> future1;
 		future1 = pool.submit(new SampleTransactionSingleObj1(jessy));
 		
 		Future<ExecutionHistory> future2;
 		future2 = pool.submit(new SampleTransactionSingleObj2(jessy));
-
-		ExecutionHistory result=future.get();
-		assertEquals("Result", TransactionState.COMMITTED, result.getTransactionState());
 		
 		ExecutionHistory result1=future1.get();
 		assertEquals("Result", TransactionState.COMMITTED, result1.getTransactionState());

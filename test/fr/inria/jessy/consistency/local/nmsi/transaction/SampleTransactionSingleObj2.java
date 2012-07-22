@@ -14,8 +14,6 @@ public class SampleTransactionSingleObj2 extends Transaction {
 	@Override
 	public ExecutionHistory execute() {
 		try {
-	
-			Thread.sleep(1000);
 			
 			SampleEntityClass se=read(SampleEntityClass.class, "1");			
 			se.setData("Second Trans");
