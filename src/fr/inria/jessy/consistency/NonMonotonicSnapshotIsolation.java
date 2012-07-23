@@ -100,7 +100,6 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 				
 				ComparisonResult r = tmp.getLocalVector().compareTo(lastComittedEntity.getLocalVector());
 				if( r != GREATER_THAN && r != EQUAL_TO ){
-					System.out.println(tmp.getLocalVector().toString()+" VS "+lastComittedEntity.getLocalVector().toString());
 					return false;
 				}
 
