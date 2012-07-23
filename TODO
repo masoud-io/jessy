@@ -14,7 +14,7 @@ last update: P. Sutra, 23/07/2012
 - [fix] vectors should not be generic  (that is, there are all ValueVector<String> ) 
         OR partitioner should be generic.
 
-- [Fix] ExecutionHistory should only contains (i) a vector that defines the entities read by the transaction,
+- [fix] ExecutionHistory should only contains (i) a vector that defines the entities read by the transaction,
   and (ii) the set of updates entities.  Currently it is too heavy weighted.
   
 
