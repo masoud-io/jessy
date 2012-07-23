@@ -4,17 +4,18 @@
 
 last update: P. Sutra, 23/07/2012
 
+(always in order of importance)
 
 - [add] PartitionnedDependenceVector : cause we do not scale 
-       (e.g., 3 servers 3*4 clients, 10^6 objects,
+        (e.g., 3 servers 3*4 clients, 10^6 objects,
         after 2 minutes, vectors are of size 3*10^3 )
-         
-- [add] add more consistency tests for NMSI.
-
-- [fix] vectors should not be generic  (that is, there are all ValueVector<String> ) 
-        OR partitioner should be generic.
+        The size of a partition is a parameter.
 
 - [fix] ExecutionHistory should only contains (i) a vector that defines the entities read by the transaction,
   and (ii) the set of updates entities.  Currently it is too heavy weighted.
-  
+
+- [fix] vectors should not be generic  (that is, there are all ValueVector<String> ) 
+        OR partitioner should be generic.
+        
+- [add] add more consistency tests for NMSI.
 
