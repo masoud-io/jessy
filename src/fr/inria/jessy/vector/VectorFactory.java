@@ -1,15 +1,13 @@
 package fr.inria.jessy.vector;
 
-import java.io.FileInputStream;
-import java.util.Properties;
-
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.utils.Configuration;
 
 public class VectorFactory {
 
-	private static String consType = readConfig();
-
+	private static String consType = Configuration.readConfig(ConstantPool.CONSISTENCY_TYPE);
+	
 	public static <K> Vector<K> getVector(K selfKey) {
 		if (consType.equals("nmsi")) {
 			return new DependenceVector<K>(selfKey);
@@ -33,21 +31,5 @@ public class VectorFactory {
 		return null;
 	}
 
-	private static String readConfig() {
-		String vectorType = "";
-		try {
-			Properties myProps = new Properties();
-			FileInputStream MyInputStream = new FileInputStream(
-					ConstantPool.CONFIG_PROPERTY);
-			myProps.load(MyInputStream);
-			vectorType = myProps.getProperty(ConstantPool.CONSISTENCY_TYPE);
-			MyInputStream.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return vectorType;
-
-	}
 
 }

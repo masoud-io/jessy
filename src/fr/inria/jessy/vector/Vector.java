@@ -13,9 +13,9 @@ import fr.inria.jessy.ConstantPool;
 @Persistent
 public abstract class Vector<K> extends ValueVector<K, Integer> implements
 		Externalizable {
-	
+
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
-	
+
 	public enum CompatibleResult {
 		/**
 		 * The two vectors are compatibles.
@@ -26,7 +26,8 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 		 */
 		NOT_COMPATIBLE_TRY_NEXT,
 		/**
-		 * The two vectors are not compatibles and any version of this entity can be compatible with this vector
+		 * The two vectors are not compatibles and any version of this entity
+		 * can be compatible with this vector
 		 */
 		NEVER_COMPATIBLE,
 	};
@@ -115,4 +116,20 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 		out.writeObject(map);
 		out.writeObject(selfKey);
 	}
+
+	/**
+	 * Returns true if one specific subclass of this class needs to perform
+	 * extra computation in CompactVector through using
+	 * {@code CompactVector#getExtraObject()}
+	 * 
+	 * @return
+	 */
+	public boolean requireExtraObjectInCompactVector() {
+		return false;
+	}
+
+	public void updateExtraObjectInCompactVector(Object object) {
+		return;
+	}
+
 }

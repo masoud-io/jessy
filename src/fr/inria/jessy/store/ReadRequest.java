@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.CompactVector;
+import fr.inria.jessy.vector.VectorFactory;
 
 //TODO Comment me and all methods
 public class ReadRequest<E extends JessyEntity> implements Externalizable {
@@ -18,8 +19,8 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 
 	private static AtomicInteger requestCounter = new AtomicInteger();
 
-	String entityClassName;
-	CompactVector<String> readSet;
+	private String entityClassName;
+	private CompactVector<String> readSet;
 
 	/**
 	 * If true, the query is on one key, thus {@code oneKey} holds the key.
@@ -31,16 +32,16 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	 * seperated. For most queries, the query is only with one key. Thus
 	 * {@code firstKey} is used.
 	 */
-	ReadRequestKey<?> oneKey;
+	private ReadRequestKey<?> oneKey;
 
 	/**
 	 * If the user needs to perform a query on several keys,
 	 * {@code isOneKeyRequest} is set to false, and this variable is filled with
 	 * the request.
 	 */
-	List<ReadRequestKey<?>> multiKeys;
+	private List<ReadRequestKey<?>> multiKeys;
 
-	int readRequestId;
+	private int readRequestId;
 
 	/**
 	 * For externalizable interface
@@ -63,7 +64,8 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	 */
 	public <K> ReadRequest(Class<E> entityClass, String keyName, K keyValue,
 			CompactVector<String> readSet) {
-		this.entityClassName = Compress.compressClassName(entityClass.getName());
+		this.entityClassName = Compress
+				.compressClassName(entityClass.getName());
 		this.readSet = readSet;
 
 		oneKey = new ReadRequestKey<K>(keyName, keyValue);
@@ -81,7 +83,8 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	 */
 	public ReadRequest(Class<E> entityClass, List<ReadRequestKey<?>> keys,
 			CompactVector<String> readSet) {
-		this.entityClassName = Compress.compressClassName(entityClass.getName());
+		this.entityClassName = Compress
+				.compressClassName(entityClass.getName());
 		this.readSet = readSet;
 
 		isOneKeyRequest = false;
@@ -120,7 +123,7 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 
 	@Override
 	public String toString() {
-		return "RReQ"+getReadRequestId().toString();
+		return "RReQ" + getReadRequestId().toString();
 	}
 
 	@Override
@@ -134,6 +137,7 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 		} else {
 			out.writeObject(multiKeys);
 		}
+		
 	}
 
 	@Override
@@ -149,9 +153,10 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 		} else {
 			multiKeys = (List<ReadRequestKey<?>>) in.readObject();
 		}
+		
 	}
-	
-	public boolean isOneKeyRequest(){
+
+	public boolean isOneKeyRequest() {
 		return isOneKeyRequest;
 	}
 

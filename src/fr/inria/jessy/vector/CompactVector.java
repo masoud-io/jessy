@@ -26,6 +26,14 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	private final static Integer _bydefault = -1;
 
 	private List<K> keys;
+	
+	/**
+	 * 
+	 */
+	private final static boolean requireExtraObjectInReadRequest = VectorFactory
+			.getVector("").requireExtraObjectInCompactVector();
+
+	private Object extraObject;
 
 	public CompactVector() {
 		super(_bydefault);
@@ -35,6 +43,8 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	public void update(Vector<K> vector) {
 		super.update(vector);
 		keys.add(vector.getSelfKey());
+		if(requireExtraObjectInReadRequest)
+			vector.updateExtraObjectInCompactVector(extraObject);
 	}
 
 	public List<K> getKeys() {
@@ -48,11 +58,18 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	public int size() {
 		return keys.size();
 	}
+	
+	public Object getExtraObject(){
+		return extraObject;
+	} 
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		out.writeObject(keys);
+		if (requireExtraObjectInReadRequest) {
+			out.writeObject(extraObject);
+		}
 	}
 
 	@Override
@@ -61,6 +78,9 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 		super.readExternal(in);
 		super.setBydefault(_bydefault);
 		keys = (List<K>) in.readObject();
+		if (requireExtraObjectInReadRequest) {
+			extraObject = (Object) in.readObject();
+		}
 	}
 
 }
