@@ -4,7 +4,7 @@
 #consistency type: "nmsi" | "si" | "ser" | "rc" | "psi" | "us" | "si2" snapshot isolation with Atomic-Multicast to every group
 consistency_type = nmsi
 
-#partitioner type: "keyspace" | "modulo"
+#partitioner type: "keyspace" | "modulo" | "replicatedModulo"
 partitioner_type = modulo
 
 #retry to execute and commit the transaction upon its abort.

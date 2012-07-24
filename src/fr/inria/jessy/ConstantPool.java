@@ -32,6 +32,7 @@ public class ConstantPool {
 	public static final int JESSY_ALL_SERVERS_PORT = 4481;
 
 	public static final int GROUP_SIZE = 1;
+	public static final int REPLICATION_FACTOR = 1;
 
 	/**
 	 * Communication layer related constants

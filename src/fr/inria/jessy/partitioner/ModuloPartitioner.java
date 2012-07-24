@@ -22,7 +22,7 @@ import fr.inria.jessy.store.ReadRequest;
  * 
  */
 // TODO InComplete!!!
-public class ModuloPartitioner extends Partitioner {
+public class ModuloPartitioner implements Partitioner {
 
 	private static Logger logger = Logger.getLogger(ModuloPartitioner.class);
 
@@ -74,7 +74,7 @@ public class ModuloPartitioner extends Partitioner {
 	 *            a key
 	 * @return the replica group of <i>k</i>.
 	 */
-	public static Group resolve(String key) {
+	private static Group resolve(String key) {
 		int numericKey = 0;
 		String mkey = key.replaceAll( "[^\\d]", "" );
 		if(!mkey.equals("")){

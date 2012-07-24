@@ -6,11 +6,8 @@ import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 
-public abstract class Partitioner {
+public interface Partitioner {
 
-
-	public Partitioner() {
-	}
 
 	public abstract <E extends JessyEntity> Set<Group> resolve(
 			ReadRequest<E> readRequest);

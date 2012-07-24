@@ -6,7 +6,7 @@ import fr.inria.jessy.utils.Configuration;
 public class PartitionerFactory {
 
 	private static String PartitionerType = Configuration
-			.readConfig(fr.inria.jessy.ConstantPool.PARTITIONER_TYPE);
+	.readConfig(fr.inria.jessy.ConstantPool.PARTITIONER_TYPE);
 
 	public static Partitioner getPartitioner(Keyspace keyspace) {
 
@@ -14,6 +14,8 @@ public class PartitionerFactory {
 			return new KeySpacePartitioner( keyspace);
 		} else if (PartitionerType.equals("modulo")) {
 			return new ModuloPartitioner();
+		} else if (PartitionerType.equals("replicatedModulo")) {
+			return new ReplicatedModuloPartitioner();
 		}
 		return null;
 	}

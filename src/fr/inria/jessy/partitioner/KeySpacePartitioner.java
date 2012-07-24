@@ -31,7 +31,7 @@ import fr.inria.jessy.store.ReadRequestKey;
  * 
  */
 
-public class KeySpacePartitioner  extends Partitioner{
+public class KeySpacePartitioner  implements Partitioner{
 	
 	private static Logger logger = Logger.getLogger(KeySpacePartitioner.class);
 	private static TimeRecorder resolveTime;
