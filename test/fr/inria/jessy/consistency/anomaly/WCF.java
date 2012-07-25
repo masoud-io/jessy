@@ -10,7 +10,6 @@ import org.apache.log4j.PropertyConfigurator;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.entity.Sample2EntityClass;
@@ -18,7 +17,6 @@ import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;
-import fr.inria.jessy.utils.Configuration;
 
 /**
  * This testcase tests all consistency criterion whether they ensure SCONSa or
@@ -28,7 +26,7 @@ import fr.inria.jessy.utils.Configuration;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class SCONSa extends TestCase {
+public class WCF extends TestCase {
 	DistributedJessy jessy;
 
 	/**
@@ -43,49 +41,31 @@ public class SCONSa extends TestCase {
 		// transaction
 		jessy.addEntity(SampleEntityClass.class);
 		jessy.addEntity(Sample2EntityClass.class);
+		Transaction.setRetryCommitOnAbort(false);
 	}
 
 	@Test
-	public void testNMSI_NoRetryOnAbort() throws Exception {
+	public void testConcurrentWrite() throws Exception {
 		ExecutorService pool = Executors.newFixedThreadPool(4);
 
 		Future<ExecutionHistory> futureInit1;
 		futureInit1 = pool.submit(new InitTransaction(jessy));
 
-		Future<ExecutionHistory> futureProblematic;
-		futureProblematic = pool.submit(new ReadWriteTransaction(jessy));
-
-		Future<ExecutionHistory> futureWrite;
-		futureWrite = pool.submit(new WriteTransaction(jessy));
-
 		assertEquals(futureInit1.get().getTransactionState(),
 				TransactionState.COMMITTED);
 
-		assertEquals(futureWrite.get().getTransactionState(),
+		Future<ExecutionHistory> futureWrite1;
+		futureWrite1 = pool.submit(new WriteTransaction1(jessy));
+
+		Future<ExecutionHistory> futureWrite2;
+		futureWrite2 = pool.submit(new WriteTransaction2(jessy));
+
+		assertEquals(futureWrite1.get().getTransactionState(),
 				TransactionState.COMMITTED);
 
-		String consistency = Configuration
-				.readConfig(ConstantPool.CONSISTENCY_TYPE);
+		assertNotSame(futureWrite2.get().getTransactionState(),
+				TransactionState.COMMITTED);
 
-		if (consistency.equals("nmsi")) {
-			assertEquals(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		} else if (consistency.equals("nmsi2")) {
-			assertEquals(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		} else if (consistency.equals("ser")) {
-			assertEquals(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		} else if (consistency.equals("rc")) {
-			assertEquals(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		} else if (consistency.equals("psi")) {
-			assertNotSame(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		} else if (consistency.equals("si")) {
-			assertNotSame(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		}
 	}
 
 	private class InitTransaction extends Transaction {
@@ -115,11 +95,11 @@ public class SCONSa extends TestCase {
 
 	}
 
-	private class ReadWriteTransaction extends Transaction {
+	private class WriteTransaction1 extends Transaction {
 
-		public ReadWriteTransaction(Jessy jessy) throws Exception {
+		public WriteTransaction1(Jessy jessy) throws Exception {
 			super(jessy);
-			setRetryCommitOnAbort(false);
+
 		}
 
 		@Override
@@ -127,14 +107,11 @@ public class SCONSa extends TestCase {
 			try {
 
 				Thread.sleep(500);
-				SampleEntityClass se = read(SampleEntityClass.class, "1");
 
-				Thread.sleep(1500);
-				Sample2EntityClass se2 = read(Sample2EntityClass.class, "2");
+				SampleEntityClass se = new SampleEntityClass("1",
+						"second write");
 
-				Thread.sleep(2000);
-				se2.setData("consistency depends write");
-				write(se2);
+				write(se);
 
 				return commitTransaction();
 			} catch (Exception ex) {
@@ -145,23 +122,31 @@ public class SCONSa extends TestCase {
 
 	}
 
-	private class WriteTransaction extends Transaction {
+	/**
+	 * Read before {@code WriteTransaction1}, thus must abort.
+	 * 
+	 * @author msaeida
+	 * 
+	 */
+	private class WriteTransaction2 extends Transaction {
 
-		public WriteTransaction(Jessy jessy) throws Exception {
+		public WriteTransaction2(Jessy jessy) throws Exception {
 			super(jessy);
-			
+
 		}
 
 		@Override
 		public ExecutionHistory execute() {
 			try {
+				Thread.sleep(500);
 
-				Thread.sleep(1000);
+				SampleEntityClass se = read(SampleEntityClass.class, "1");
 
-				Sample2EntityClass se2 = new Sample2EntityClass("2",
-						"second write");
+				Thread.sleep(1500);
 
-				write(se2);
+				se.setData("third write");
+
+				write(se);
 
 				return commitTransaction();
 			} catch (Exception ex) {

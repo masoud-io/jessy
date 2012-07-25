@@ -39,6 +39,9 @@ public class ConsistencyFactory {
 		} else if (consistencyType.equals("us")) {
 			_instance = new UpdateSerializability(dataStore);
 		}
+		else if (consistencyType.equals("nmsi2")) {
+			_instance = new NonMonotonicSnapshotIsolationWithGMUVector(dataStore);
+		}
 		return _instance;
 	}
 

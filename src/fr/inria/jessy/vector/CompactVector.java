@@ -13,8 +13,8 @@ import java.util.List;
 import fr.inria.jessy.ConstantPool;
 
 /**
- * This class implements a generic and externalizable interface. It is used during
- * read requests for sending requests over the network.
+ * This class implements a generic and externalizable interface. It is used
+ * during read requests for sending requests over the network.
  * 
  * @author Masoud Saeida Ardekani
  * 
@@ -23,27 +23,39 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 		Externalizable {
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;;
-	private final static Integer _bydefault = -1;
+
+	private final static Integer _bydefault;
 
 	private List<K> keys;
-	
-	/**
-	 * 
-	 */
-	private final static boolean requireExtraObjectInReadRequest = VectorFactory
-			.getVector("").requireExtraObjectInCompactVector();
 
+	/**
+	 * if true, then initliaze and serialize the
+	 * {@code CompactVector#extraObject}, otherwise it skips the extraObject.
+	 */
+	private static boolean requireExtraObject;
+
+	/**
+	 * an extra object that might be used for storing extra data.
+	 * 
+	 * e.g., in GMUVector implementation, we stores hasRead hashmap.
+	 */
 	private Object extraObject;
+
+	static {
+		requireExtraObject = VectorFactory.needExtraObject();
+		_bydefault = -1;
+	}
 
 	public CompactVector() {
 		super(_bydefault);
 		keys = new ArrayList<K>();
+
 	}
 
 	public void update(Vector<K> vector) {
 		super.update(vector);
 		keys.add(vector.getSelfKey());
-		if(requireExtraObjectInReadRequest)
+		if (requireExtraObject)
 			vector.updateExtraObjectInCompactVector(extraObject);
 	}
 
@@ -58,16 +70,16 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	public int size() {
 		return keys.size();
 	}
-	
-	public Object getExtraObject(){
+
+	public Object getExtraObject() {
 		return extraObject;
-	} 
+	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		out.writeObject(keys);
-		if (requireExtraObjectInReadRequest) {
+		if (requireExtraObject) {
 			out.writeObject(extraObject);
 		}
 	}
@@ -78,7 +90,7 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 		super.readExternal(in);
 		super.setBydefault(_bydefault);
 		keys = (List<K>) in.readObject();
-		if (requireExtraObjectInReadRequest) {
+		if (requireExtraObject) {
 			extraObject = (Object) in.readObject();
 		}
 	}

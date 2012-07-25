@@ -6,6 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sleepycat.persist.model.Persistent;
 
@@ -24,52 +25,41 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
 
 	/**
-	 * Needed for BerkeleyDB
+	 * Defined and used in line 21 of Algorithm 4.
 	 */
-	@Deprecated
-	public GMUVector() {
-		super();
-	}
+	public static AtomicInteger lastPrepSC;
 
-	public GMUVector(K selfKey) {
-		super(selfKey);
-		super.setValue(selfKey, 0);
-	}
+	public static GMUVector<String> mostRecentVC;
 
-	@Override
-	public CompatibleResult isCompatible(Vector<K> other)
-			throws NullPointerException {
-		// check special values
-		if (other == null) {
-			throw new NullPointerException("Input Vector is Null");
-		}
-
-		Integer selfValueOnSelfKey = getSelfValue();
-		Integer otherValueOnSelfKey = other.getValue(selfKey);
-
-		Integer selfValueOnOtherKey = getValue(other.getSelfKey());
-		Integer otherValueOnOtherKey = other.getSelfValue();
-
-		if (selfValueOnSelfKey >= otherValueOnSelfKey
-				&& otherValueOnOtherKey >= selfValueOnOtherKey) {
-			return Vector.CompatibleResult.COMPATIBLE;
-		}
-
-		return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
+	static {
+		lastPrepSC = new AtomicInteger(0);
+		mostRecentVC = new GMUVector<String>();
 	}
 
 	/**
-	 * This implementatino corresponds to Algorithm 2 in the paper
+	 * Needed for BerkeleyDB
+	 */
+	public GMUVector() {
+		super((K) JessyGroupManager.getInstance().getMyGroup().name());
+		super.setValue((K) JessyGroupManager.getInstance().getMyGroup().name(),
+				0);
+	}
+
+	/**
+	 * This implementation corresponds to Algorithm 2 in the paper
 	 */
 	@Override
 	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
+
 		HashMap<K, Boolean> hasRead = (HashMap<K, Boolean>) other
 				.getExtraObject();
 
 		Integer maxVCAti;
 
-		if (!hasRead.get(getSelfKey())) {
+		if (hasRead == null) {
+			maxVCAti = getValue(getSelfKey());
+		} else if (!hasRead.get(getSelfKey())) {
 			/*
 			 * line 3,4
 			 */
@@ -86,34 +76,6 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 			return CompatibleResult.COMPATIBLE;
 		else
 			return CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
-
-	}
-
-	/**
-	 * update method gets two {@link CompactVector} as readSet and writeSet and
-	 * applies them into its local vector. <b> this implementation does not
-	 * assume read before write rule <\b>
-	 */
-	@Override
-	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
-		// Readset can be simply applied by using the update method of
-		// ValueVector Class
-		if (readSet.size() > 0)
-			super.update(readSet);
-
-		// Write set is more involved.
-		Integer value;
-
-		for (Map.Entry<K, Integer> entry : writeSet.getEntrySet()) {
-			K key = entry.getKey();
-			value = entry.getValue();
-			if (writeSet.getKeys().contains(key))
-				value++;
-			if (getValue(key).compareTo(value) < 0) {
-				setValue(key, value);
-			}
-		}
-
 	}
 
 	@Override
@@ -130,13 +92,20 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 		super.writeExternal(out);
 	}
 
+	// TODO parameterize 4 correctly
 	@Override
-	public boolean requireExtraObjectInCompactVector() {
-		return true;
+	public void updateExtraObjectInCompactVector(Object object) {
+		/*
+		 * init with 4 entries, because for the moment, we have 4 reads.
+		 */
+		if (object == null)
+			object = new HashMap<K, Boolean>(4);
+		((HashMap<K, Boolean>) object).put(selfKey, true);
 	}
 
 	@Override
-	public void updateExtraObjectInCompactVector(Object object) {
-		((HashMap<K, Boolean>) object).put(selfKey, true);
+	public fr.inria.jessy.vector.Vector.CompatibleResult isCompatible(
+			Vector<K> other) throws NullPointerException {
+		return null;
 	}
 }

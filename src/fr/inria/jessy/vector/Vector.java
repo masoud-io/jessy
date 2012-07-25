@@ -33,7 +33,8 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 	};
 
 	K selfKey;
-	private final static Integer _bydefault = -1;
+
+	private static final Integer _bydefault = -1;
 
 	/**
 	 * needed by BerkleyDB
@@ -74,8 +75,9 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 	public abstract CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException;
 
-	public abstract void update(CompactVector<K> readSet,
-			CompactVector<K> writeSet);
+	public void update(CompactVector<K> readSet, CompactVector<K> writeSet) {
+		return;
+	}
 
 	public void setSelfKey(K selfKey) {
 		this.selfKey = selfKey;
@@ -115,17 +117,6 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(map);
 		out.writeObject(selfKey);
-	}
-
-	/**
-	 * Returns true if one specific subclass of this class needs to perform
-	 * extra computation in CompactVector through using
-	 * {@code CompactVector#getExtraObject()}
-	 * 
-	 * @return
-	 */
-	public boolean requireExtraObjectInCompactVector() {
-		return false;
 	}
 
 	public void updateExtraObjectInCompactVector(Object object) {

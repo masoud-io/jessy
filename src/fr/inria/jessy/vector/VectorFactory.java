@@ -6,10 +6,11 @@ import fr.inria.jessy.utils.Configuration;
 
 public class VectorFactory {
 
-	private static String consType = Configuration.readConfig(ConstantPool.CONSISTENCY_TYPE);
-	
+	private static String consType = Configuration
+			.readConfig(ConstantPool.CONSISTENCY_TYPE);
+
 	public static <K> Vector<K> getVector(K selfKey) {
-		if (consType.equals("nmsi")) {
+		if (consType.equals("nmsi") || consType.equals("us")) {
 			return new DependenceVector<K>(selfKey);
 		}
 		if (consType.equals("rc")) {
@@ -25,10 +26,19 @@ public class VectorFactory {
 			return new VersionVector(JessyGroupManager.getInstance()
 					.getMyGroup().name(), 0);
 		}
-		if (consType.equals("us")) {
-			return new DependenceVector<K>(selfKey);
+		if (consType.equals("nmsi2") || consType.equals("us2")) {
+			return new GMUVector<K>();
 		}
 		return null;
+	}
+
+	public static boolean needExtraObject() {
+
+		if (consType.equals("nmsi2") || consType.equals("us2")) {
+			return true;
+		}
+
+		return false;
 	}
 
 

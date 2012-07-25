@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import fr.inria.jessy.consistency.ParallelSnapshotIsolationPiggyback;
-
-
 /**
  * 
  * @author Masoud Saeida Ardekani
@@ -16,29 +13,28 @@ import fr.inria.jessy.consistency.ParallelSnapshotIsolationPiggyback;
  * 
  */
 public class VotePiggyback implements Externalizable {
-	ParallelSnapshotIsolationPiggyback piggyback;
+	Object piggyback;
 
 	public VotePiggyback() {
 	}
 
-	public VotePiggyback(ParallelSnapshotIsolationPiggyback piggyback) {
+	public VotePiggyback(Object piggyback) {
 		this.piggyback = piggyback;
 	}
 
-	public ParallelSnapshotIsolationPiggyback getPiggyback() {
+	public Object getPiggyback() {
 		return piggyback;
 	}
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		piggyback = (ParallelSnapshotIsolationPiggyback) in.readObject();
+		piggyback = in.readObject();
 
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
-
 		out.writeObject(piggyback);
 	}
 

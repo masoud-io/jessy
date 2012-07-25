@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
 /**
@@ -16,6 +17,8 @@ import fr.inria.jessy.transaction.ExecutionHistory;
  */
 public class ParallelSnapshotIsolationPiggyback implements Externalizable {
 
+	private static final long serialVersionUID = ConstantPool.JESSY_MID;
+	
 	/**
 	 * The group name of the jessy instances that replicate the first write
 	 * in the transaction
