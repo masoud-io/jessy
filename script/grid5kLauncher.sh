@@ -3,9 +3,9 @@
 rm -f *.fr
 running_on_grid=true
 
-if [ ${#} -lt 2 ]
+if [ ${#} -lt 3 ]
 then
-  echo 'grid5kLaucher: usage: this script need at least two parameters: number of clients and number of servers'
+  echo 'grid5kLaucher: usage: this script need at least three parameters: cluster name, number of clients and number of servers'
   exit
 fi
 
