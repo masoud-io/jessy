@@ -29,19 +29,21 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 	private int roundIndex;
 
 	public ReplicatedModuloPartitioner(){
-		//		ReplicatedModuloPartitioner assume that the group size is equal to 1, i.e. each group contains exactly one Jessy instance
-		assert ConstantPool.GROUP_SIZE==1;
-
-		//		number of jessy insancies can't be less than the replicationFactor
-		assert jessyInstances>replicationFactor;
-
-		//		TODO handle any number of jessy instancies
-		//		for simplicity for now assume that jessy instancies are divisible by the replication factor
-		assert jessyInstances % replicationFactor == 0;
-
+		
 		replicationFactor=ConstantPool.REPLICATION_FACTOR;
 		jessyInstances= JessyGroupManager.getInstance().getReplicaGroups().size();
 		roundIndex=-1;
+		
+		//		ReplicatedModuloPartitioner assume that the group size is equal to 1, i.e. each group contains exactly one Jessy instance
+		assert ConstantPool.GROUP_SIZE==1;
+
+		//		number of jessy instances can't be less than the replicationFactor
+		assert jessyInstances>replicationFactor;
+
+		//		TODO handle any number of jessy instances
+		//		for simplicity for now assume that jessy instances are divisible by the replication factor
+		assert jessyInstances % replicationFactor == 0;
+
 	}
 
 	/**
