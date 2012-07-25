@@ -32,7 +32,6 @@ public class ConstantPool {
 	public static final int JESSY_ALL_SERVERS_PORT = 4481;
 
 	public static final int GROUP_SIZE = 1;
-	public static final int REPLICATION_FACTOR = 1;
 
 	/**
 	 * Communication layer related constants
@@ -101,5 +100,6 @@ public class ConstantPool {
 	public static final String RETRY_COMMIT = "retry_commit";
 	public static final String FRACTAL_FILE = "fractal_file";
 	public static final String CHECK_COMMUTAVITY = "check_commutativity";
+	public static final String REPLICATION_FACTOR = "replication_factor";
 
 }

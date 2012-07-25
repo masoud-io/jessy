@@ -10,6 +10,9 @@ consistency_type = us2
 #partitioner type: "keyspace" | "modulo" | "replicatedModulo"
 partitioner_type = modulo
 
+#replication factor
+replication_factor = 4
+
 #retry to execute and commit the transaction upon its abort.
 #re-execution happens only if the transaction is aborted by the certification and not by the client.
 # retry_commit : "true" | "false"

@@ -11,38 +11,28 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
+import fr.inria.jessy.utils.Configuration;
 
 
 
 /**
  * 
- * ReplicatedModuloPartitioner implements a Partitioner that manage replication factors greater than 1 (i.e. entities can be replicated in more than one Jessy 
- * insance)
+ * ReplicatedModuloPartitioner implements a Partitioner that manage replication factors greater (i.e. how many jessy instances 
+ * replicate each entity. It suppose (i)GROUP_SIZE==1 (ii) jessy instances are divisible by the replication factor i.e. all groups have 
+ * the same number of jessy instances.)
  * 
  * @author pcincilla
  *
  */
 public class ReplicatedModuloPartitioner implements Partitioner{
 
-	private int replicationFactor;
-//	private int jessyInstances;
+	private int replicationFactor = -1;
+	private int groupMembersNumber=-1;
 	private int roundIndex;
-
+	
 	public ReplicatedModuloPartitioner(){
 		
-		replicationFactor=ConstantPool.REPLICATION_FACTOR;
-//		jessyInstances= JessyGroupManager.getInstance().getReplicaGroups().size();
 		roundIndex=-1;
-		
-		//		ReplicatedModuloPartitioner assume that the group size is equal to 1, i.e. each group contains exactly one Jessy instance
-		assert ConstantPool.GROUP_SIZE==1;
-
-//		//		number of jessy instances can't be less than the replicationFactor
-//		assert JessyGroupManager.getInstance().getReplicaGroups().size()>replicationFactor;
-//
-//		//		TODO handle any number of jessy instances
-//		//		for simplicity for now assume that jessy instances are divisible by the replication factor
-//		assert JessyGroupManager.getInstance().getReplicaGroups().size() % replicationFactor == 0;
 
 	}
 
@@ -110,12 +100,16 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 			numericKey = Integer.valueOf(mkey); 
 		}
 
-		//		the groupSetNumber
-		int groupSetNumber=numericKey % replicationFactor;
-		//		the first group of this group set
-		int groupSetStart=groupSetNumber*replicationFactor;
+		if(replicationFactor==-1||groupMembersNumber==-1){
+			setUpVariables();
+		}
 
-		for(int i=0; i<replicationFactor; i++){
+		//		the groupSetNumber
+		int groupSetNumber=numericKey % (replicationFactor-1);
+		//		the first group of this group set
+		int groupSetStart=groupSetNumber*(replicationFactor-1);
+
+		for(int i=0; i<groupMembersNumber; i++){
 			groupSet.add(JessyGroupManager
 					.getInstance()
 					.getReplicaGroups()
@@ -142,12 +136,17 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 			numericKey = Integer.valueOf(mkey); 
 		}
 
+		if(replicationFactor==-1||groupMembersNumber==-1){
+			setUpVariables();
+		}
+		
 		//		the groupSetNumber
-		int groupSetNumber=numericKey % replicationFactor;
+		int groupSetNumber=numericKey % (replicationFactor-1);
 		//		the first group of this group set
-		int groupSetStart=groupSetNumber*replicationFactor;
+		int groupSetStart=groupSetNumber*(replicationFactor-1);
 
-		for(int i=0; i<replicationFactor; i++){
+		for(int i=0; i<groupMembersNumber; i++){
+			
 			groupSet.add(JessyGroupManager
 					.getInstance()
 					.getReplicaGroups()
@@ -163,9 +162,31 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 	 */
 	private int getNextRoundIndex() {
 		roundIndex=roundIndex+1;
-		roundIndex=roundIndex%replicationFactor;
+		roundIndex=roundIndex%(groupMembersNumber-1);
 
 		return roundIndex;
+	}
+	
+	private void setUpVariables(){
+		
+		
+		replicationFactor=Integer.parseInt(Configuration.readConfig(fr.inria.jessy.ConstantPool.REPLICATION_FACTOR));
+		groupMembersNumber=JessyGroupManager.getInstance().getReplicaGroups().size()/(replicationFactor);
+		
+	
+		//		ReplicatedModuloPartitioner assume that the group size is equal to 1, i.e. each group contains exactly one Jessy instance
+		if( ConstantPool.GROUP_SIZE!=1){
+			System.err.println("ReplicatedModuloPartitioner is used with GROUP_SIZE!=1, system will exit");
+			System.exit(1);
+		}	
+
+		//		TODO handle any number of jessy instances
+		//		for simplicity for now assume that jessy instances are divisible by the replication factor
+		if( !(JessyGroupManager.getInstance().getReplicaGroups().size() % (replicationFactor) == 0)){
+			System.err.println("ReplicatedModuloPartitioner is used and jessy instances are NOT divisible by the replication factor, system will exit");
+			System.exit(1);
+		}
+		
 	}
 
 }
