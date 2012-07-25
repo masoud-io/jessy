@@ -25,24 +25,24 @@ import fr.inria.jessy.store.ReadRequest;
 public class ReplicatedModuloPartitioner implements Partitioner{
 
 	private int replicationFactor;
-	private int jessyInstances;
+//	private int jessyInstances;
 	private int roundIndex;
 
 	public ReplicatedModuloPartitioner(){
 		
 		replicationFactor=ConstantPool.REPLICATION_FACTOR;
-		jessyInstances= JessyGroupManager.getInstance().getReplicaGroups().size();
+//		jessyInstances= JessyGroupManager.getInstance().getReplicaGroups().size();
 		roundIndex=-1;
 		
 		//		ReplicatedModuloPartitioner assume that the group size is equal to 1, i.e. each group contains exactly one Jessy instance
 		assert ConstantPool.GROUP_SIZE==1;
 
-		//		number of jessy instances can't be less than the replicationFactor
-		assert jessyInstances>replicationFactor;
-
-		//		TODO handle any number of jessy instances
-		//		for simplicity for now assume that jessy instances are divisible by the replication factor
-		assert jessyInstances % replicationFactor == 0;
+//		//		number of jessy instances can't be less than the replicationFactor
+//		assert JessyGroupManager.getInstance().getReplicaGroups().size()>replicationFactor;
+//
+//		//		TODO handle any number of jessy instances
+//		//		for simplicity for now assume that jessy instances are divisible by the replication factor
+//		assert JessyGroupManager.getInstance().getReplicaGroups().size() % replicationFactor == 0;
 
 	}
 
@@ -111,7 +111,7 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 		}
 
 		//		the groupSetNumber
-		int groupSetNumber=replicationFactor % numericKey;
+		int groupSetNumber=numericKey % replicationFactor;
 		//		the first group of this group set
 		int groupSetStart=groupSetNumber*replicationFactor;
 
@@ -143,7 +143,7 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 		}
 
 		//		the groupSetNumber
-		int groupSetNumber=replicationFactor % numericKey;
+		int groupSetNumber=numericKey % replicationFactor;
 		//		the first group of this group set
 		int groupSetStart=groupSetNumber*replicationFactor;
 

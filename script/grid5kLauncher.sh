@@ -76,7 +76,7 @@ nodeStr='' #'nodes=('
 servers='' #'servers=('
 clients='' #'clients=('
 nodes=''
-echo "nodes0:"$nodes
+
 j=0
 next=0
 for i in `seq 1 $clustersNumber`;
@@ -106,14 +106,14 @@ do
 		ip=$(cut tmp -f4 -d ' ')
  
 		nodes="$nodes \"$name\""
-		echo "nodesLoop:"$nodes
+
 		if [ $k -lt $serverNumber ]
 		then
-			echo 'grid5kLaucher. server: '$name
+			echo 'server: '$name
    			echo '<node id="'$j'" ip="'$ip'"/>' >> myfractal.xml
 			servers="$servers \"$name\""
 		else
-		    echo 'grid5kLaucher. client: '$name
+		    echo 'client: '$name
 		    clients="$clients \"$name\""
 		fi
 		j=$((j+1))
@@ -123,8 +123,6 @@ done
 echo ""
 
 nodeStr="nodes=("$nodes")"
-echo "nodeLast:-"$nodes
-echo "nodeStr:-"$nodeStr
 servers="servers=("$servers")"
 clients="clients=("$clients")"
 
@@ -146,15 +144,15 @@ rm machines tmp
 
 export OAR_JOB_KEY_FILE=$OAR_JOB_KEY_PATH
 
-echo 'grid5kLaucher: exported oarJobKeyFile ' $OAR_JOB_KEY_PATH
+echo 'exported oarJobKeyFile ' $OAR_JOB_KEY_PATH
 
 
-echo 'grid5kLaucher: synchronizing keys and data...'
+echo 'synchronizing keys and data...'
 next=0
 for i in `seq 1 $clustersNumber`;
 do
         nodeName=${param[$next]}
-	echo "synchronizing "$nodeName
+	echo "synchronizing "$nodeName"..."
 
 	rsync -a -f"+ */" -f"- *" ../../jessy/scripts $nodeName.grid5000.fr:~/jessy	
 
@@ -167,16 +165,16 @@ done
 
 #rsync --delete -avz ~/.ssh --exclude known_hosts lille.grid5000.fr:
 #rsync --delete -avz ./* lille.grid5000.fr:./jessy/scripts/
-echo 'grid5kLaucher: done'
+echo 'done'
 
 #echo "sleeping 60 sec before run experience..."
 #sleep 60
 #echo "done."
 
 echo ""
-echo "******************************************************************************"
-echo "grid5kLaucher: myfractal and configuration.sh are done, lauching experience..."
-echo "******************************************************************************"
+echo "**************************************************************************************"
+echo "*** grid5kLaucher: myfractal and configuration.sh are done, lauching experience... ***"
+echo "**************************************************************************************"
 
 ./experience.sh
 echo "******************************************************************************"
