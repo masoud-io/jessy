@@ -15,17 +15,17 @@ import fr.inria.jessy.vector.GMUVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class NonMonotonicSnapshotIsolationPiggyback implements Externalizable {
+public class GMUVectorPiggyback implements Externalizable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	GMUVector<String> vector;
 
 	@Deprecated
-	public NonMonotonicSnapshotIsolationPiggyback() {
+	public GMUVectorPiggyback() {
 	}
 
-	public NonMonotonicSnapshotIsolationPiggyback(GMUVector<String> vector) {
+	public GMUVectorPiggyback(GMUVector<String> vector) {
 		this.vector = vector;
 	}
 
