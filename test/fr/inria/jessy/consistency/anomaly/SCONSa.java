@@ -67,22 +67,13 @@ public class SCONSa extends TestCase {
 		String consistency = Configuration
 				.readConfig(ConstantPool.CONSISTENCY_TYPE);
 
-		if (consistency.equals("nmsi")) {
+		if (consistency.equals("nmsi") || consistency.equals("nmsi2")
+				|| consistency.equals("ser") || consistency.equals("rc")
+				|| consistency.equals("us") || consistency.equals("us2")) {
 			assertEquals(futureProblematic.get().getTransactionState(),
 					TransactionState.COMMITTED);
-		} else if (consistency.equals("nmsi2")) {
-			assertEquals(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		} else if (consistency.equals("ser")) {
-			assertEquals(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		} else if (consistency.equals("rc")) {
-			assertEquals(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		} else if (consistency.equals("psi")) {
-			assertNotSame(futureProblematic.get().getTransactionState(),
-					TransactionState.COMMITTED);
-		} else if (consistency.equals("si")) {
+		} else if (consistency.equals("psi") || consistency.equals("si")
+				|| consistency.equals("si2")) {
 			assertNotSame(futureProblematic.get().getTransactionState(),
 					TransactionState.COMMITTED);
 		}
@@ -149,7 +140,7 @@ public class SCONSa extends TestCase {
 
 		public WriteTransaction(Jessy jessy) throws Exception {
 			super(jessy);
-			
+
 		}
 
 		@Override

@@ -26,6 +26,9 @@ public class ConsistencyFactory {
 
 		if (consistencyType.equals("nmsi")) {
 			_instance = new NonMonotonicSnapshotIsolation(dataStore);
+		} else if (consistencyType.equals("nmsi2")) {
+			_instance = new NonMonotonicSnapshotIsolationWithGMUVector(
+					dataStore);
 		} else if (consistencyType.equals("si")) {
 			_instance = new SnapshotIsolation(dataStore);
 		} else if (consistencyType.equals("si2")) {
@@ -38,9 +41,8 @@ public class ConsistencyFactory {
 			_instance = new ParallelSnapshotIsalation(dataStore);
 		} else if (consistencyType.equals("us")) {
 			_instance = new UpdateSerializability(dataStore);
-		}
-		else if (consistencyType.equals("nmsi2")) {
-			_instance = new NonMonotonicSnapshotIsolationWithGMUVector(dataStore);
+		} else if (consistencyType.equals("us2")) {
+			_instance = new UpdateSerializabilityWithGMUVector(dataStore);
 		}
 		return _instance;
 	}

@@ -41,5 +41,4 @@ public class VectorFactory {
 		return false;
 	}
 
-
 }

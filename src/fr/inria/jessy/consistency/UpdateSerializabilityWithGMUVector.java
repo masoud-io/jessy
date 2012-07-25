@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
-import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -27,8 +26,8 @@ import fr.inria.jessy.transaction.termination.VotePiggyback;
 import fr.inria.jessy.vector.GMUVector;
 
 /**
- * This class implements Non-Monotonic Snapshot Isolation consistency criterion
- * along with using GMUVector introduced by [Peluso2012]
+ * This class implements Update Serializability consistency criterion along with
+ * using GMUVector introduced by [Peluso2012]
  * 
  * 
  * @author Masoud Saeida Ardekani
@@ -116,7 +115,7 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 			}
 
 		}
-		
+
 		for (JessyEntity tmp : executionHistory.getCreateSet().getEntities()) {
 
 			try {
