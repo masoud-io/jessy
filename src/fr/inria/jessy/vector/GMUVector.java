@@ -58,10 +58,13 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 		Integer maxVCAti;
 
 		if (hasRead == null) {
+			/*
+			 * this is the first read because hasRead is not yet initialize.
+			 */
 			maxVCAti = getValue(getSelfKey());
 		} else if (!hasRead.get(getSelfKey())) {
 			/*
-			 * line 3,4
+			 * line 3,4 of Algorithm 2
 			 */
 			for (K index : hasRead.keySet()) {
 				if (getValue(index) > other.getValue(index))

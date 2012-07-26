@@ -133,6 +133,9 @@ public class NonMonotonicSnapshotIsolation extends Consistency {
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
 
+		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
+			return;
+		
 		// updatedVector is a new vector. It will be used as a new
 		// vector for all modified vectors.
 		Vector<String> updatedVector = VectorFactory.getVector("");

@@ -6,6 +6,7 @@ import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
 
+import org.antlr.grammar.v3.ANTLRv3Parser.throwsSpec_return;
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.Before;
 import org.junit.Test;
@@ -108,9 +109,8 @@ public class WCF extends TestCase {
 
 				Thread.sleep(500);
 
-				SampleEntityClass se = new SampleEntityClass("1",
-						"second write");
-
+				SampleEntityClass se = read(SampleEntityClass.class, "1");
+				se.setData("Second Write");
 				write(se);
 
 				return commitTransaction();
@@ -138,9 +138,8 @@ public class WCF extends TestCase {
 		@Override
 		public ExecutionHistory execute() {
 			try {
-				Thread.sleep(500);
-
 				SampleEntityClass se = read(SampleEntityClass.class, "1");
+				System.out.println(se.getData());
 
 				Thread.sleep(1500);
 

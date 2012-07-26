@@ -5,7 +5,7 @@
 #"si2" snapshot isolation with Atomic-Multicast to every group
 #"nmsi2" non-monotonic snapshot isolation with GMUVector from [Peluso2012] 
 #"us2" Update serializability with GMUVector from [Peluso2012]
-consistency_type = us2
+consistency_type = unmsi
 
 #partitioner type: "keyspace" | "modulo" | "replicatedModulo"
 partitioner_type = modulo

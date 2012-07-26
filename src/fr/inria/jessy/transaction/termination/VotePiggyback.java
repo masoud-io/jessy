@@ -5,14 +5,16 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import fr.inria.jessy.ConstantPool;
+
 /**
  * 
  * @author Masoud Saeida Ardekani
  * 
- *         TODO Generalize this class
- * 
  */
 public class VotePiggyback implements Externalizable {
+	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
+
 	Object piggyback;
 
 	public VotePiggyback() {

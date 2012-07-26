@@ -41,9 +41,11 @@ import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
+import fr.inria.jessy.transaction.termination.VotePiggyback;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.ConcurrentVersionVector;
 import fr.inria.jessy.vector.DependenceVector;
+import fr.inria.jessy.vector.GMUVector;
 import fr.inria.jessy.vector.LightScalarVector;
 import fr.inria.jessy.vector.NullVector;
 import fr.inria.jessy.vector.ValueVector;
@@ -121,6 +123,7 @@ public class DistributedJessy extends Jessy {
 			MessageStream.addClass(VersionVector.class.getName());
 			MessageStream.addClass(DependenceVector.class.getName());
 			MessageStream.addClass(ConcurrentVersionVector.class.getName());
+			MessageStream.addClass(GMUVector.class.getName());
 
 			MessageStream.addClass(ReadReply.class.getName());
 			MessageStream.addClass(ReadRequest.class.getName());
@@ -132,6 +135,7 @@ public class DistributedJessy extends Jessy {
 
 			MessageStream.addClass(VoteMessage.class.getName());
 			MessageStream.addClass(Vote.class.getName());
+			MessageStream.addClass(VotePiggyback.class.getName());
 
 			MessageStream.addClass(TerminateTransactionRequestMessage.class
 					.getName());

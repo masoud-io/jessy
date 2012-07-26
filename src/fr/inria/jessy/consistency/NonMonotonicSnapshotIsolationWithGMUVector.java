@@ -106,8 +106,10 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
 				 * committed values
 				 */
 				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getSelfValue())
+						.getLocalVector().getSelfValue()) {
+					System.out.println("DAMN FALSE");
 					return false;
+				}
 
 			} catch (NullPointerException e) {
 				// nothing to do.
@@ -139,7 +141,8 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
 				|| certify(executionHistory);
 
 		GMUVector<String> prepVC = null;
-		if (isCommitted) {
+		if (isCommitted
+				&& executionHistory.getTransactionType() == TransactionType.UPDATE_TRANSACTION) {
 			/*
 			 * We have to update the vector here, and send it over to the
 			 * others. Corresponds to line 20-22 of Algorithm 4
@@ -164,8 +167,9 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
 	public void voteReceived(Vote vote) {
 		if (vote.getVotePiggyBack().getPiggyback() == null) {
 			/*
-			 * transaction has been terminated, thus a null piggyback is sent
-			 * along with the vote. no need for extra work.
+			 * transaction has been terminated, or it is an init or read only
+			 * transaction, thus a null piggyback is sent along with the vote.
+			 * no need for extra work.
 			 */
 			return;
 		}
@@ -196,11 +200,19 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
 
+		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
+			return;
+
+		executionHistory.getWriteSet().addEntity(
+				executionHistory.getCreateSet());
+		
 		/*
 		 * Corresponds to line 22
 		 */
-		GMUVector<String> commitVC = receivedVectors.get(executionHistory
-				.getTransactionHandler().getId());
+		GMUVector<String> commitVC = receivedVectors.contains(executionHistory
+				.getTransactionHandler().getId()) ? receivedVectors
+				.get(executionHistory.getTransactionHandler().getId())
+				: new GMUVector<String>();
 		Integer xactVN = 0;
 		for (Entry<String, Integer> entry : commitVC.getEntrySet()) {
 			if (entry.getValue() > xactVN)
