@@ -2,11 +2,13 @@
 #the hooks are defined in ConstantPool.java!!!
 
 #consistency type: "nmsi" | "si" | "ser" | "rc" | "psi" | "us" | "si2" snapshot isolation with Atomic-Multicast to every group
-consistency_type = ser
+consistency_type = rc
 
 #partitioner type: "keyspace" | "modulo"
 partitioner_type = modulo
 
+#replication factor
+replication_factor = 1
 #retry to execute and commit the transaction upon its abort.
 #re-execution happens only if the transaction is aborted by the certification and not by the client.
 # retry_commit : "true" | "false"
