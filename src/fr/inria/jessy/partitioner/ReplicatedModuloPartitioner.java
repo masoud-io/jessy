@@ -162,7 +162,7 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 	 */
 	private int getNextRoundIndex() {
 		roundIndex=roundIndex+1;
-		roundIndex=roundIndex%(groupMembersNumber-1);
+		roundIndex=roundIndex%(groupMembersNumber);
 
 		return roundIndex;
 	}
