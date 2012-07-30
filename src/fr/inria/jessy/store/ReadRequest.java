@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.CompactVector;
-import fr.inria.jessy.vector.VectorFactory;
 
 //TODO Comment me and all methods
 public class ReadRequest<E extends JessyEntity> implements Externalizable {
@@ -117,8 +116,18 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 	 * @return
 	 */
 	public String getPartitioningKey() {
-		return oneKey.toString();
-		// return this.keys.get(0).getKeyValue().toString();
+		
+		if(isOneKeyRequest){
+			return oneKey.toString();
+			// return this.keys.get(0).getKeyValue().toString();
+		}
+		else{
+			String keyConcatenation = "";
+			for (ReadRequestKey<?> rk : multiKeys){
+				keyConcatenation.concat(rk.toString());
+			}
+			return keyConcatenation;
+		}
 	}
 
 	@Override
