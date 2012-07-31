@@ -1,5 +1,7 @@
 package fr.inria.jessy.benchmark.tpcc;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -19,6 +21,7 @@ import fr.inria.jessy.consistency.local.si.transaction.InitTransaction;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionState;
 
 public class TpccTestEntityReadAndWrite extends TestCase{
 
@@ -59,7 +62,8 @@ public class TpccTestEntityReadAndWrite extends TestCase{
 			Future<ExecutionHistory> futureInit;
 			futureInit = pool.submit(new InitTransaction(jessy));
 			
-			futureInit.get();
+			ExecutionHistory init=futureInit.get();
+			assertEquals("Result", TransactionState.COMMITTED, init.getTransactionState());
 			
 			Future<ExecutionHistory> future1;
 			future1 = pool.submit(new ReadAndWriteOnSampleEntity(jessy));
@@ -70,13 +74,15 @@ public class TpccTestEntityReadAndWrite extends TestCase{
 			
 			ExecutionHistory result1 = future1.get();
 			assertEquals("Value", "0x", ((SampleEntityClass)result1.getReadSet().getEntities().iterator().next()).getData());
-
+			assertEquals("Result", TransactionState.COMMITTED, result1.getTransactionState());
+			
 			ExecutionHistory result2 = future2.get();
 			assertEquals("Value", "0x", ((SampleEntityClass)result2.getReadSet().getEntities().iterator().next()).getData());
+			assertEquals("Result", TransactionState.COMMITTED, result2.getTransactionState());
+			
 			
 			
 			/*	TEST District*/
-			
 			District d;
 			
 //			read and write the district entity with warehouse id=1 and district id=1
