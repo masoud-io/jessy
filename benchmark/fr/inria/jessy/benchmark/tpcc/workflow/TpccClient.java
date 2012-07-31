@@ -5,7 +5,6 @@ import org.apache.log4j.PropertyConfigurator;
 
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
-import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.benchmark.tpcc.Delivery;
 import fr.inria.jessy.benchmark.tpcc.NewOrder;
 import fr.inria.jessy.benchmark.tpcc.OrderStatus;
@@ -83,16 +82,16 @@ public class TpccClient {
 				for (i = 1; i <= rest / 2; i++) {
 
 					neworder();
-					logger.debug("NewOrder transaction committed in round: " + i );
+					logger.debug("1 NewOrder transaction committed in round: " + i );
 
 					payment();
-					logger.debug("Payment transaction committed in round: " + i );
+					logger.debug("2 Payment transaction committed in round: " + i );
 				}
 
 				if (rest % 2 == 1) {
 
 					neworder();
-					logger.debug("NewOrder transaction committed in round: " + i );
+					logger.debug("3 NewOrder transaction committed in round: " + i );
 				}
 
 			} else {
@@ -100,22 +99,22 @@ public class TpccClient {
 				for (i = 1; i <= quotient; i++) {
 
 					neworder();
-					logger.debug("NewOrder transaction committed in round: " + i );
+					logger.debug("4 NewOrder transaction committed in round: " + i );
 
 					payment();
-					logger.debug("Payment transaction committed in round: " + i );
+					logger.debug("5 Payment transaction committed in round: " + i );
 
 					/* for decks */
 					if (i != 0 && i % 10 == 0) {
 
 						orderstatus();
-						logger.debug("OrderStatus transaction committed in round: " + i );
+						logger.debug("6 OrderStatus transaction committed in round: " + i );
 
 						delivery();
-						logger.debug("Delivery transaction committed in round: " + i );
+						logger.debug("7 Delivery transaction committed in round: " + i );
 
 						stocklevel();
-						logger.debug("StockLevel transaction committed in round: " + i );
+						logger.debug("8 StockLevel transaction committed in round: " + i );
 					}
 
 				}
@@ -124,16 +123,16 @@ public class TpccClient {
 				for (j = 0; j < rest / 2; j++) {
 
 					neworder();
-					logger.debug("NewOrder transaction committed in round: " + i );
+					logger.debug("9 NewOrder transaction committed in round: " + i );
 
 					payment();
-					logger.debug("Payment transaction committed in round: " + i );
+					logger.debug("10 Payment transaction committed in round: " + i );
 				}
 
 				if (rest % 2 == 1) {
 
 					neworder();
-					logger.debug("NewOrder transaction committed in round: " + i );
+					logger.debug("11 NewOrder transaction committed in round: " + i );
 				}
 			}
 
@@ -145,39 +144,46 @@ public class TpccClient {
 
 	public void neworder() throws Exception {
 
+		logger.debug("executing NewOrder...");
 		NewOrder neworder = new NewOrder(jessy, this.warehouseNumber);
 		neworder.execute();
 	}
 
 	public void payment() throws Exception {
-
+		
+		logger.debug("executing payment...");
 		Payment payment = new Payment(jessy, this.warehouseNumber);
 		payment.execute();
 	}
 
 	public void orderstatus() throws Exception {
-
+		
+		logger.debug("executing orderstatus...");
 		OrderStatus orderstatus = new OrderStatus(jessy, this.warehouseNumber);
 		orderstatus.execute();
 	}
 
 	public void delivery() throws Exception {
 
+		logger.debug("executing delivery...");
 		Delivery delivery = new Delivery(jessy, this.warehouseNumber);
 		delivery.execute();
 	}
 
 	public void stocklevel() throws Exception {
 
+		logger.debug("executing stocklevel...");
 		StockLevel stocklevel = new StockLevel(jessy, this.warehouseNumber, this.districtNumber);
 		stocklevel.execute();
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		TpccClient client = new TpccClient(46, 1, 1);
+		TpccClient client = new TpccClient(42, 1, 1);
 		client.execute();
 
+//		TODO cleanly close fractal
+		System.exit(0);
 	}
 
 }

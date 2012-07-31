@@ -1,7 +1,5 @@
 package fr.inria.jessy.benchmark.tpcc;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -15,7 +13,6 @@ import org.junit.Test;
 
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
-import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.benchmark.tpcc.entities.District;
 import fr.inria.jessy.consistency.local.si.transaction.InitTransaction;
 import fr.inria.jessy.entity.Sample2EntityClass;
@@ -40,7 +37,6 @@ public class TpccTestEntityReadAndWrite extends TestCase{
 
 		try {
 			jessy = DistributedJessy.getInstance();
-//			jessy = LocalJessy.getInstance();
 
 			jessy.addEntity(District.class);
 			jessy.addEntity(SampleEntityClass.class);
@@ -120,11 +116,4 @@ public class TpccTestEntityReadAndWrite extends TestCase{
 		ReandAndWriteOnDistrict rwd = new ReandAndWriteOnDistrict(jessy, warehouseId, districtId);
 		return rwd.readAndWrite();
 	}
-	
-//	private SampleEntityClass ReadAndWriteOnSampleEntity() throws Exception {
-//
-//		ReadAndWriteOnSampleEntity rwse = new ReadAndWriteOnSampleEntity(jessy);
-//		return rwse.readAndWrite();
-//	}
-
 }

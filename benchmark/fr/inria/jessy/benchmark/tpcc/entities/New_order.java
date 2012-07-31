@@ -1,5 +1,9 @@
 package fr.inria.jessy.benchmark.tpcc.entities;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import com.sleepycat.persist.model.Entity;
 
 import fr.inria.jessy.store.JessyEntity;
@@ -20,7 +24,7 @@ public class New_order extends JessyEntity {
 	public New_order(String entityID) {
 		super(entityID);
 	}
-	
+
 	public New_order() {
 		super("");
 	}
@@ -37,11 +41,11 @@ public class New_order extends JessyEntity {
 	public int getNO_O_ID() {
 		return NO_O_ID;
 	}
-	
+
 	public String getNO_D_ID() {
 		return NO_D_ID;
 	}
-	
+
 	public String getNO_W_ID() {
 		return NO_W_ID;
 	}
@@ -61,6 +65,22 @@ public class New_order extends JessyEntity {
 		this.NO_W_ID = NO_W_ID;
 	}
 
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(NO_O_ID);
+		out.writeObject(NO_D_ID);
+		out.writeObject(NO_W_ID);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+	ClassNotFoundException {
+		super.readExternal(in);
+		NO_O_ID = (Integer) in.readObject();
+		NO_D_ID = (String) in.readObject();
+		NO_W_ID = (String) in.readObject();
+	}
 }
 
 

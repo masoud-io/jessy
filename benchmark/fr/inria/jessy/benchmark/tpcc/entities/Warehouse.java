@@ -1,5 +1,9 @@
 package fr.inria.jessy.benchmark.tpcc.entities;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import com.sleepycat.persist.model.Entity;
 
 import fr.inria.jessy.store.JessyEntity;
@@ -16,7 +20,7 @@ public class Warehouse extends JessyEntity {
 	public Warehouse(String entityID) {
 		super(entityID);
 	}
-	
+
 	public Warehouse() {
 		super("");
 	}
@@ -112,4 +116,32 @@ public class Warehouse extends JessyEntity {
 		this.W_YTD = d;
 	}
 
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(W_ID);
+		out.writeObject(W_NAME);
+		out.writeObject(W_STREET_1);
+		out.writeObject(W_STREET_2);
+		out.writeObject(W_CITY);
+		out.writeObject(W_STATE);
+		out.writeObject(W_ZIP);
+		out.writeObject(W_TAX);
+		out.writeObject(W_YTD);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+	ClassNotFoundException {
+		super.readExternal(in);
+		W_ID = (String) in.readObject();
+		W_NAME = (String) in.readObject();
+		W_STREET_1 = (String) in.readObject();
+		W_STREET_2 = (String) in.readObject();
+		W_CITY = (String) in.readObject();
+		W_STATE = (String) in.readObject();
+		W_ZIP = (String) in.readObject();
+		W_TAX = (Double) in.readObject();
+		W_YTD = (Double) in.readObject();
+	}
 }

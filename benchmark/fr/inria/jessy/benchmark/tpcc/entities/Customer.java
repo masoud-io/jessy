@@ -12,7 +12,6 @@ import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.vector.Vector;
 
 /**
  * @author Wang Haiyun & ZHAO Guang
@@ -243,7 +242,6 @@ public class Customer extends JessyEntity implements Externalizable{
 		this.C_DATA = C_DATA;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		super.readExternal(in);

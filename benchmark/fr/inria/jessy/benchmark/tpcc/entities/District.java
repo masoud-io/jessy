@@ -1,14 +1,12 @@
 package fr.inria.jessy.benchmark.tpcc.entities;
 
-import com.sleepycat.persist.model.Entity;
-import com.sleepycat.persist.model.PrimaryKey;
-import static com.sleepycat.persist.model.Relationship.*;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
-import com.sleepycat.persist.model.SecondaryKey;
+import com.sleepycat.persist.model.Entity;
 
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.vector.DependenceVector;
-import fr.inria.jessy.vector.Vector;
 
 /**
  * @author Wang Haiyun & ZHAO Guang
@@ -24,6 +22,7 @@ public class District extends JessyEntity {
 	/**
 	 * 
 	 */
+	
 	private static final long serialVersionUID = 1L;
 	public District(String entityID) {
 		super(entityID);
@@ -140,5 +139,38 @@ public class District extends JessyEntity {
 	public void setD_NEXT_O(int D_NEXT_O) {
 		this.D_NEXT_O = D_NEXT_O;
 	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(D_ID);
+		out.writeObject(D_W_ID);
+		out.writeObject(D_NAME);
+		out.writeObject(D_STREET_1);
+		out.writeObject(D_STREET_2);
+		out.writeObject(D_CITY);
+		out.writeObject(D_STATE);
+		out.writeObject(D_ZIP);
+		out.writeObject(D_TAX);
+		out.writeObject(D_YTD);
+		out.writeObject(D_NEXT_O);
+	}
 
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		super.readExternal(in);
+		D_ID = (String) in.readObject();
+		D_W_ID = (String) in.readObject();
+		D_NAME = (String) in.readObject();
+		D_STREET_1 = (String) in.readObject();
+		D_STREET_2 = (String) in.readObject();
+		D_CITY = (String) in.readObject();
+		D_STATE = (String) in.readObject();
+		D_ZIP = (String) in.readObject();
+		D_TAX = (Double) in.readObject();
+		D_YTD = (Double) in.readObject();
+		D_NEXT_O = (Integer) in.readObject();
+	}
+	
 }
