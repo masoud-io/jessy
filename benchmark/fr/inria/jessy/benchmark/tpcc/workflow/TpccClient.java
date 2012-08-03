@@ -179,7 +179,7 @@ public class TpccClient {
 
 	public static void main(String[] args) throws Exception {
 
-		TpccClient client = new TpccClient(42, 1, 1);
+		TpccClient client = new TpccClient(4096, 4, 1);
 		client.execute();
 
 //		TODO cleanly close fractal

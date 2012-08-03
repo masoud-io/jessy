@@ -20,7 +20,7 @@ import fr.inria.jessy.transaction.Transaction;
  * 
  */
 public class NewOrder extends Transaction {
-
+	
 	private String warhouseNumber;
 
 	/* this class is written according to tpcc section 2.4.2 */
@@ -47,7 +47,7 @@ public class NewOrder extends Transaction {
 
 			int O_OL_CNT = rand.nextInt(15 - 5 + 1) + 5;
 			int OL_QUANTITY;
-			int warehouse_count, remote_warehouse_number, i;
+			int warehouse_count, remote_warehouse_number, i, j, k;
 			// we have 1% chance(when x == 1) that the ol_supply_warehouse is a remote warehouse
 			int x;
 			x = rand.nextInt(100);
@@ -106,6 +106,7 @@ public class NewOrder extends Transaction {
 			/* for each item in this new order, insert an entity in Order_line */
 			for (i = 0; i < ol_cnt; i++) {
 				int OL_I_ID;
+				
 				/*
 				 * A fixed 1% of the NewOrder transactions are chosen at random
 				 * to simulate user data entry errors and exercise the
@@ -167,21 +168,21 @@ public class NewOrder extends Transaction {
 				ol.setOL_D_ID(dis.getD_ID());
 				if(x == 1){//1% chance is a remote supply warehouse
 					warehouse_count = 1;
-					i = 0;
-					while(i == 0){//calculate how many warehouses do we have in the DB
+					j = 0;
+					while(j == 0){//calculate how many warehouses do we have in the DB
 						wh = read(Warehouse.class, "W_"+warehouse_count);
 						if(wh != null)
 							warehouse_count++;
 						else
-							i = 1;
+							j = 1;
 					}
-					i = 0;
+					k = 0;
 					//randomly choose 1 remote warehouses from the DB by checking we have more than one warehouse
-					while(warehouse_count > 1 && i == 0){
+					while(warehouse_count > 1 && k == 0){
 						remote_warehouse_number = rand.nextInt(warehouse_count)+1;
 						//make sure this is not the home warehouse
 						if(remote_warehouse_number != Integer.parseInt(warhouseNumber)){ 
-							i = 1;
+							k = 1;
 							ol.setOL_SUPPLY_W_ID(Integer.toString(remote_warehouse_number));
 						}
 					}
@@ -202,7 +203,6 @@ public class NewOrder extends Transaction {
 
 				}
 			}
-
 			return commitTransaction();
 		} catch (Exception ex) {
 			ex.printStackTrace();

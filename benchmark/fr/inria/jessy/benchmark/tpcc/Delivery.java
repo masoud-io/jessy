@@ -12,8 +12,10 @@ import fr.inria.jessy.benchmark.tpcc.entities.Order_line;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
 
+
 public class Delivery extends Transaction {
 
+	
 	private String W_ID;
 	private String O_CARRIER_ID;
 
@@ -45,7 +47,7 @@ public class Delivery extends Transaction {
 			/* for each of the 10 districts within the given warehouse */
 			for (i = 1; i <= 10; i++) {
 				district = read(District.class, "D_W_" + W_ID + "_" + "D_" + i);
-
+//				TODO implement in a more efficient way if possible...
 				/* retrieve the oldest undelivered order of the district */
 				for (j = 1; j < district.getD_NEXT_O(); j++) {
 					no = read(New_order.class, "NO_W_" + W_ID + "_" + "NO_D_"
@@ -120,8 +122,9 @@ public class Delivery extends Transaction {
 			 * The transaction is committed unless more orders will be delivery
 			 * within this transaction
 			 */
-			if (order_counter > 1)
+			if (order_counter > 1){
 				return commitTransaction();
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -32,6 +32,8 @@ public class TpccTestInsertData extends TestCase{
 	District di;
 	Item it;
 	Customer cu;
+	
+	int warehauses=10;
 
 	/**
 	 * @throws java.lang.Exception
@@ -58,8 +60,7 @@ public class TpccTestInsertData extends TestCase{
 		jessy.addEntity(Order.class);
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
-		id = new InsertData(jessy,1);
-
+		
 	}
 
 	/**
@@ -69,12 +70,19 @@ public class TpccTestInsertData extends TestCase{
 	 */
 	@Test
 	public void testInsertData() throws Exception {
+		
+		ExecutionHistory result;
 
-		ExecutionHistory result = id.execute();
+//		for(int i=1;i<=warehauses;i++){
+			
+			id = new InsertData(jessy,5);
+		
+		
+			result = id.execute();
 		/* test execution */
 		assertEquals("Result", TransactionState.COMMITTED,
 				result.getTransactionState());
-
+//		}
 		jessy.close(this);
 	}
 	

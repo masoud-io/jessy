@@ -30,14 +30,14 @@ public class InsertData extends Transaction {
 	@Override
 	public ExecutionHistory execute() {
 		try {
-			int i, j, k, l, random;
+			int /*i,*/ j, k, l, random;
 			Random rand = new Random(System.currentTimeMillis());			
 			String[] lastnames = {"BAR", "OUGHT", "ABLE", "PRI", "PRES", "ESE", "ANTI", "CALLY", "ATION", "EING"};
 			int[] randCustomerId = new int[NUMBER_OF_CUSTOMER]; // random permutation of 3k customer IDs, used while creating Order table
-			for(i=0; i<NUMBER_OF_CUSTOMER; i++){
+			for(int i=0; i<NUMBER_OF_CUSTOMER; i++){
 				randCustomerId[i] = i;
 			}
-			for(i=0; i<NUMBER_OF_CUSTOMER; i++){
+			for(int i=0; i<NUMBER_OF_CUSTOMER; i++){
 				j = rand.nextInt(NUMBER_OF_CUSTOMER);
 				k = randCustomerId[i];
 				randCustomerId[i] = randCustomerId[j];
@@ -62,7 +62,11 @@ public class InsertData extends Transaction {
 		
 			
 			/*for i  warehouses*/
-			for(i=1; i<=this.NumberWarhouse; i++){			
+//			for(i=1; i<=this.NumberWarhouse; i++){			
+			
+			
+			int i=NumberWarhouse;
+			
 				wh = new Warehouse("W_"+i);
 				wh.setW_ID(Integer.toString(i));
 				wh.setW_NAME(NString.generate(6, 10));
@@ -252,8 +256,9 @@ public class InsertData extends Transaction {
 					}
 				}
 					
-			}
-			
+//			}
+//			for the very first call
+				if(i==1){
 			/*for whole system, we have 100k different types of item*/
 			for(i=1; i<=NUMBER_OF_ITEM; i++){
 				it = new Item("I_"+i);
@@ -267,7 +272,7 @@ public class InsertData extends Transaction {
 				else it.setI_DATA(NString.generate(26, 50));
 				create(it);
 			}
-			
+				}
 			bw.close();
 			fw.close();
 			
