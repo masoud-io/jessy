@@ -11,7 +11,7 @@ done
 
 res=`date --rfc-3339="s" | gawk -F"+" '{print $1}'`
 
-oarsub -l nodes=${#nodes[@]}/blade=1,walltime=36:00:00 -p "${nodeQuery}" --reservation="$res"
+oarsub -l nodes=${#nodes[@]}/blade=1,walltime=12:00:00 -p "${nodeQuery}" --reservation="$res"
 
 
 
