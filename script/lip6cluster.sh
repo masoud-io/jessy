@@ -9,10 +9,12 @@ nvar=(`oarstat -f | grep assigned_hostnames | gawk -F= '{print $2}' | sed s/+/" 
 
 # 3 - Launching
 nservers=`seq ${server_machine_glb} ${server_machine_increment} ${server_machine_lub}`
-nclients=`seq ${client_machine_glb} ${client_machine_increment} ${client_machine_lub}`
+#nclients=`seq ${client_machine_glb} ${client_machine_increment} ${client_machine_lub}`
 for s in ${nservers}; 
 do
 
+	client_machine_lub=`echo "scale=1;${s}*${client_machine_lub_multiplier}" | ${bc}`;
+	nclients=`seq ${s} ${client_machine_increment} ${client_machine_lub}`
     # Construct servers variable.
     svar="\"${nvar[0]}\""
     for i in `seq 1 $[${s}-1]`
