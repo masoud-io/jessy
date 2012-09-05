@@ -27,6 +27,7 @@ import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
+import fr.inria.jessy.consistency.ParallelSnapshotIsolationPiggyback;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.partitioner.Partitioner;
 import fr.inria.jessy.store.EntitySet;
@@ -132,6 +133,8 @@ public class DistributedJessy extends Jessy {
 			MessageStream
 					.addClass(ParallelSnapshotIsolationPropagateMessage.class
 							.getName());
+			MessageStream.addClass(ParallelSnapshotIsolationPiggyback.class
+					.getName());
 
 			MessageStream.addClass(VoteMessage.class.getName());
 			MessageStream.addClass(Vote.class.getName());
@@ -167,53 +170,54 @@ public class DistributedJessy extends Jessy {
 			String keyName, SK keyValue, CompactVector<String> readSet)
 			throws InterruptedException, ExecutionException {
 
-		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,keyValue, readSet);
+		ReadRequest<E> readRequest = new ReadRequest<E>(entityClass, keyName,
+				keyValue, readSet);
 		ReadReply<E> readReply = null;
 		E result = null;
-		
+
 		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
-		
+
 			logger.debug("performing local read on " + keyValue
 					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);
 			result = readReply.getEntity().iterator().next();
-		
+
 		} else {
-			
+
 			logger.debug("performing remote read on " + keyValue
 					+ " for request " + readRequest);
 			remoteReads.incr();
 
 			Future<ReadReply<E>> future;
 			boolean isDone = false;
-			int tries=0;
-			
+			int tries = 0;
+
 			do {
-				
+
 				future = remoteReader.remoteRead(readRequest);
-				
+
 				try {
-					
+
 					tries++;
 					readReply = future.get(
 							ConstantPool.JESSY_REMOTE_READER_TIMEOUT,
 							ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
-					
-					if ( readReply != null
-						 && readReply.getEntity() != null
-						 && readReply.getEntity().iterator().hasNext()
-						 && readReply.getEntity().iterator().next() != null) { // FIXME
-						
+
+					if (readReply != null && readReply.getEntity() != null
+							&& readReply.getEntity().iterator().hasNext()
+							&& readReply.getEntity().iterator().next() != null) { // FIXME
+
 						logger.debug("read " + readRequest + " is successfull ");
 						result = readReply.getEntity().iterator().next();
 						isDone = true;
-						
+
 					} else {
 						logger.debug("request " + readRequest + " failed");
 						failedReadCount.incr();
-						isDone = tries==ConstantPool.JESSY_REMOTE_READER_NUMBER_RETRY ? true : false;
+						isDone = tries == ConstantPool.JESSY_REMOTE_READER_NUMBER_RETRY ? true
+								: false;
 					}
-					
+
 				} catch (TimeoutException te) {
 					/*
 					 * Nothing to do. The message should have been lost. Retry
@@ -226,11 +230,11 @@ public class DistributedJessy extends Jessy {
 					logger.error("ExecutionException happened in the remote reader");
 					isDone = true;
 				}
-				
+
 			} while (!isDone);
-			
+
 		}
-		
+
 		return result;
 
 	}
@@ -268,11 +272,9 @@ public class DistributedJessy extends Jessy {
 					 * again.
 					 */
 				} catch (InterruptedException ie) {
-					logger
-							.error("InterruptedException happened in the remote reader");
+					logger.error("InterruptedException happened in the remote reader");
 				} catch (ExecutionException ee) {
-					logger
-							.error("ExecutionException happened in the remote reader");
+					logger.error("ExecutionException happened in the remote reader");
 				}
 			} while (!isDone);
 
@@ -409,8 +411,7 @@ public class DistributedJessy extends Jessy {
 
 			voteRatioAbortedTransactions.setFormat("%t");
 			voteRatioAbortedTransactions.add(Double.valueOf(abortByVoteCount
-					.toString())
-					/ (Double.valueOf(executionCount.toString())));
+					.toString()) / (Double.valueOf(executionCount.toString())));
 
 			certificationRatioAbortedTransactions.setFormat("%t");
 			certificationRatioAbortedTransactions.add(Double
@@ -419,8 +420,7 @@ public class DistributedJessy extends Jessy {
 
 			timeoutRatioAbortedTransactions.setFormat("%t");
 			timeoutRatioAbortedTransactions.add(Double.valueOf(abortByTimeout
-					.toString())
-					/ (Double.valueOf(executionCount.toString())));
+					.toString()) / (Double.valueOf(executionCount.toString())));
 
 			ratioFailedReads.setFormat("%t");
 			ratioFailedReads.add(Double.valueOf(failedReadCount.toString())

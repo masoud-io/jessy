@@ -205,7 +205,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
 
 		executionHistory.getWriteSet().addEntity(
 				executionHistory.getCreateSet());
-		
+
 		/*
 		 * Corresponds to line 22
 		 */
@@ -255,10 +255,10 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
 		/*
 		 * Garbage collect the received vectors. We don't need them anymore.
 		 */
-		if (receivedVectors.contains(executionHistory.getTransactionHandler()
-				.getId()))
-			receivedVectors.remove(executionHistory.getTransactionHandler()
-					.getId());
+		// if (receivedVectors.contains(executionHistory.getTransactionHandler()
+		// .getId()))
+		receivedVectors
+				.remove(executionHistory.getTransactionHandler().getId());
 	}
 
 	@Override

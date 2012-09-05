@@ -115,9 +115,9 @@ public class ExecutionHistory implements Messageable {
 	}
 
 	public TransactionType getTransactionType() {
-		if (createSet.size() > 0 && writeSet.size() == 0 && readSet.size() == 0)
+		if (createSet.size() > 0 && readSet.size() == 0)
 			return TransactionType.INIT_TRANSACTION;
-		else if (readSet.size() == 0)
+		else if (writeSet.size() > 0 && readSet.size() == 0)
 			return TransactionType.BLIND_WRITE;
 		else if (writeSet.size() == 0)
 			return TransactionType.READONLY_TRANSACTION;
