@@ -1,0 +1,5 @@
+Consistency	Server_Machines	Client_Machines	Number_Of_Clients	Overall_Throughput	Committed_Throughput	updateLatency	readLatency	Failed_Termination_Ratio	Failed_Execution_Ratio	Failed_Read_Ratio	Termination_Timeout_Ratio	Transaction_Execution_Time	Transaction_Termination_Time	Certification_Time
+nmsi2	3	1	16	1523.0436504310214	1523	20.07	7.92	0	0	0	0	7.7739658355	2.4382040500	.4566103319
+nmsi2	3	2	16	2223.9459457744599	2223	14.44	5.26	0	0	0	0	5.1654906272	1.8381389975	1.6181993484
+nmsi2	3	4	16	2252.3000825857618	2250	18.53	4.16	0	0	0	0	4.0897347331	2.8680667281	5.9111847877
+nmsi2	3	8	16	1180.21446338116610	1176	50.48	4.25	0	0	0	0	4.1866344213	9.2354520559	31.6001548767
