@@ -9,6 +9,7 @@ import java.util.List;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.membership.Group;
+import net.sourceforge.fractal.membership.Membership;
 
 import org.apache.log4j.Logger;
 
@@ -202,5 +203,9 @@ public class JessyGroupManager {
 
 	public boolean isProxy() {
 		return isProxy;
+	}
+	
+	public Membership getMembership(){
+		return fractal.getMembership();
 	}
 }
