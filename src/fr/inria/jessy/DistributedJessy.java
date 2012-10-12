@@ -12,6 +12,7 @@ import net.sourceforge.fractal.utils.PerformanceProbe;
 import net.sourceforge.fractal.utils.PerformanceProbe.FloatValueRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -28,7 +29,6 @@ import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.ParallelSnapshotIsolationPiggyback;
-import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.partitioner.Partitioner;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
@@ -39,7 +39,6 @@ import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
-import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.VotePiggyback;
@@ -84,6 +83,8 @@ public class DistributedJessy extends Jessy {
 	private static FloatValueRecorder ratioFailedExecution = new FloatValueRecorder(
 			"Jessy#ratioFailedExecution");
 
+	private static ValueRecorder remoteReaderLatency, clientProcessingResponseTime;
+	
 	public RemoteReader remoteReader;
 	public DistributedTermination distributedTermination;
 	public Partitioner partitioner;
@@ -93,9 +94,18 @@ public class DistributedJessy extends Jessy {
 		remoteReads = new SimpleCounter("Jessy#RemoteReads");
 		NonTransactionalWriteRequestTime = new TimeRecorder(
 				"Jessy#NonTransactionalWriteRequestTime");
+		
+		remoteReaderLatency = new ValueRecorder(
+				"DistributedJessy#remoteReaderLatency(ms)");
+		remoteReaderLatency.setFormat("%a");
+		remoteReaderLatency.setFactor(1000000);
+		
+		clientProcessingResponseTime = new TimeRecorder("RemoteReader#clientProcessingResponseTime(ms)");
+		clientProcessingResponseTime.setFactor(1000000);
+		clientProcessingResponseTime.setFormat("%a");
 	}
 
-	private DistributedJessy() throws Exception {
+	public DistributedJessy() throws Exception {
 		super();
 		try {
 
@@ -192,6 +202,7 @@ public class DistributedJessy extends Jessy {
 			boolean isDone = false;
 			int tries = 0;
 
+			long start=System.nanoTime();
 			do {
 
 				future = remoteReader.remoteRead(readRequest);
@@ -209,6 +220,7 @@ public class DistributedJessy extends Jessy {
 
 						logger.debug("read " + readRequest + " is successfull ");
 						result = readReply.getEntity().iterator().next();
+						remoteReaderLatency.add(System.nanoTime()-start);
 						isDone = true;
 
 					} else {
@@ -336,7 +348,7 @@ public class DistributedJessy extends Jessy {
 			while (itr.hasNext()) {
 				JessyEntity tmp = itr.next();
 
-				// Send the entity to the datastore to be saved if it is local
+				// Send the entity to the data store to be saved if it is local
 				if (partitioner.isLocal(tmp.getKey()))
 					dataStore.put(tmp);
 			}
@@ -347,7 +359,7 @@ public class DistributedJessy extends Jessy {
 			while (itr.hasNext()) {
 				JessyEntity tmp = itr.next();
 
-				// Send the entity to the datastore to be saved if it is local
+				// Send the entity to the data store to be saved if it is local
 				if (partitioner.isLocal(tmp.getKey()))
 					dataStore.put(tmp);
 			}
@@ -359,6 +371,7 @@ public class DistributedJessy extends Jessy {
 			TransactionHandler transactionHandler) {
 		logger.debug(transactionHandler + " IS COMMITTING");
 		ExecutionHistory executionHistory = getExecutionHistory(transactionHandler);
+		
 		Future<TransactionState> stateFuture = distributedTermination
 				.terminateTransaction(executionHistory);
 

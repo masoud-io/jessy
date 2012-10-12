@@ -36,7 +36,6 @@ public abstract class JessyEntity implements Externalizable {
 	private Vector<String> localVector;
 	private boolean removed = true;
 
-
 	@SuppressWarnings("unused")
 	private JessyEntity() {
 	}
@@ -49,7 +48,7 @@ public abstract class JessyEntity implements Externalizable {
 	public boolean isRemovoed() {
 		return removed;
 	}
-	
+
 	/**
 	 * Set the entity to be removed by the garbage collector. TODO set
 	 * localVector to null to save memory! (safety might be broken)
@@ -58,9 +57,9 @@ public abstract class JessyEntity implements Externalizable {
 	public void removoe() {
 		this.removed = true;
 	}
-	
+
 	@PrimaryKey(sequence = "Jessy_Sequence")
-	private Long primaryKey;
+	private PrimaryKeyType primaryKey;
 
 	@SecondaryKey(relate = MANY_TO_ONE)
 	private String secondaryKey;
@@ -71,7 +70,8 @@ public abstract class JessyEntity implements Externalizable {
 	 */
 	@Deprecated
 	public void setPrimaryKey(Long primaryKey) {
-		this.primaryKey = primaryKey;
+		if (primaryKey != null)
+			this.primaryKey.primaryKey = primaryKey;
 	}
 
 	/**
@@ -91,10 +91,10 @@ public abstract class JessyEntity implements Externalizable {
 		this.localVector = localVector;
 	}
 
-	public void clearValue(){
-		
+	public void clearValue() {
+
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {

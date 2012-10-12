@@ -43,16 +43,17 @@ public class JessyDBClient extends DB {
 
 	public JessyDBClient() {
 		super();
-		// try {
-		// if (USE_DIST_JESSY) {
-		// jessy = DistributedJessy.getInstance();
-		// } else {
-		// jessy = LocalJessy.getInstance();
-		// }
-		// jessy.addEntity(YCSBEntity.class);
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
+//		 try {
+//		 if (USE_DIST_JESSY) {
+////		 jessy = DistributedJessy.getInstance();
+//			 jessy=new DistributedJessy();
+//		 } else {
+//		 jessy = LocalJessy.getInstance();
+//		 }
+//		 jessy.addEntity(YCSBEntity.class);
+//		 } catch (Exception e) {
+//		 e.printStackTrace();
+//		 }
 	}
 
 	@Override

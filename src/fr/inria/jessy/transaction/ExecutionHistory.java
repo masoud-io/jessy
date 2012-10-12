@@ -6,7 +6,6 @@ import java.io.ObjectOutput;
 import java.util.Collection;
 
 import net.sourceforge.fractal.Messageable;
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;

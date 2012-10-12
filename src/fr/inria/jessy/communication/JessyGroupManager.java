@@ -42,7 +42,7 @@ public class JessyGroupManager {
 	private int sourceId;
 
 	/**
-	 * Dependeing on whether this jessy instance is a proxy or a replica,
+	 * Depending on whether this jessy instance is a proxy or a replica,
 	 * myGroup is either myReplicaGroup or groupOfAllInstances
 	 */
 	private Group myGroup;

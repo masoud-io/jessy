@@ -14,6 +14,7 @@ import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
+import org.cliffc.high_scale_lib.NonBlockingHashtable;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.persist.model.SecondaryKey;
@@ -88,7 +89,7 @@ public abstract class Jessy {
 
 	// Map<AtomicInteger, EntitySet> committedWritesets;
 
-	ConcurrentMap<TransactionHandler, ExecutionHistory> handler2executionHistory;
+	NonBlockingHashtable<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	protected List<Class<? extends JessyEntity>> entityClasses;
 
 	protected Jessy() throws Exception {
@@ -100,7 +101,7 @@ public abstract class Jessy {
 		dataStore = new DataStore(environmentHome, readOnly, storeName);
 		consistency = ConsistencyFactory.initConsistency(dataStore);
 
-		handler2executionHistory = new ConcurrentHashMap<TransactionHandler, ExecutionHistory>();
+		handler2executionHistory = new NonBlockingHashtable<TransactionHandler, ExecutionHistory>();
 
 		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
 

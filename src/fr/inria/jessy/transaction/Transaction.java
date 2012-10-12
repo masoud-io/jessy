@@ -23,6 +23,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	private static Logger logger = Logger.getLogger(Transaction.class);
 
 	private static ValueRecorder transactionExecutionTime;
+	private static ValueRecorder transactionTerminationTime;
+	private static ValueRecorder transactionReadOperatinTime;
 	
 
 	static {
@@ -32,6 +34,17 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 				"Transaction#transactionExecutionTime(ms)");
 		transactionExecutionTime.setFormat("%a");
 		transactionExecutionTime.setFactor(1000000);
+		
+		transactionTerminationTime = new ValueRecorder(
+				"Transaction#transactionTerminationTime(ms)");
+		transactionTerminationTime.setFormat("%a");
+		transactionTerminationTime.setFactor(1000000);
+		
+		transactionReadOperatinTime = new ValueRecorder(
+				"Transaction#transactionReadOperatinTime(ms)");
+		transactionReadOperatinTime.setFormat("%a");
+		transactionReadOperatinTime.setFactor(1000000);
+		
 		retryCommitOnAbort = readConfig();
 	}
 
@@ -69,7 +82,9 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 */
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
 			throws Exception {
+		long start=System.nanoTime();
 		E entity = jessy.read(transactionHandler, entityClass, keyValue);
+		transactionReadOperatinTime.add(System.nanoTime()-start);
 		// if (entity != null)
 		// entity.setPrimaryKey(null);
 		return entity;
@@ -105,6 +120,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public ExecutionHistory commitTransaction() {
 		transactionExecutionTime.add(System.nanoTime() - executionStartTime);
 
+		long startterm=System.nanoTime();
+		
 		ExecutionHistory executionHistory = jessy
 				.commitTransaction(transactionHandler);
 
@@ -139,6 +156,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		}
 
 		jessy.garbageCollectTransaction(transactionHandler);
+		transactionTerminationTime.add(System.nanoTime() - startterm);
 		return executionHistory;
 	}
 

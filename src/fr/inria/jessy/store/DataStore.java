@@ -9,12 +9,14 @@ import java.util.Map;
 
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
+import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
+import com.sleepycat.je.LockMode;
 import com.sleepycat.je.PreloadConfig;
 import com.sleepycat.persist.EntityCursor;
 import com.sleepycat.persist.EntityJoin;
@@ -24,6 +26,7 @@ import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
 
+import fr.inria.jessy.store.JessyEntity.*;
 import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
@@ -37,11 +40,9 @@ import fr.inria.jessy.vector.Vector;
 
 public class DataStore {
 
-	private static Logger logger = Logger.getLogger(DataStore.class);
 
 	private Environment env;
 
-	protected static TimeRecorder curTime = new TimeRecorder("DataStore#curTime");
 	protected static SimpleCounter failedReads = new SimpleCounter("DataStore#failedReads");
 
 	private EntityStore entityStore;
@@ -51,18 +52,18 @@ public class DataStore {
 	 * entity class can have only one primary key. Thus, the key of the map is
 	 * the name of the entity class.
 	 */
-	private Map<String, PrimaryIndex<Long, ? extends JessyEntity>> primaryIndexes;
+	private Map<String, PrimaryIndex<PrimaryKeyType, ? extends JessyEntity>> primaryIndexes;
 
 	/**
 	 * Store all secondary indexes of all entities manage by this DataStore.
 	 * Each entity class can have multiple secondary keys. Thus, the key of the
-	 * map is the concatenation of entity class name and secondarykey name.
+	 * map is the concatenation of entity class name and secondary key name.
 	 */
 	private Map<String, SecondaryIndex<?, ?, ? extends JessyEntity>> secondaryIndexes;
 
 	public DataStore(File envHome, boolean readOnly, String storeName)
 			throws Exception {
-		primaryIndexes = new HashMap<String, PrimaryIndex<Long, ? extends JessyEntity>>();
+		primaryIndexes = new HashMap<String, PrimaryIndex<PrimaryKeyType, ? extends JessyEntity>>();
 		secondaryIndexes = new HashMap<String, SecondaryIndex<?, ?, ? extends JessyEntity>>();
 
 		setupEnvironment(envHome, readOnly);
@@ -75,7 +76,7 @@ public class DataStore {
 	 * @param envHome
 	 *            database home directory
 	 * @param readOnly
-	 *            whether the database should be opened as readonly or not
+	 *            whether the database should be opened as read-only or not
 	 */
 	private void setupEnvironment(File envHome, boolean readOnly) {
 		EnvironmentConfig envConfig = new EnvironmentConfig();
@@ -88,19 +89,20 @@ public class DataStore {
 
 		// TODO database should be clean manually. EFFECT THE PERFORMANCE
 		// SUBSTANTIALLY
-		envConfig = envConfig.setLocking(true); // The cleaner becomes disable
+		envConfig = envConfig.setLocking(false); // The cleaner becomes disable
 												// here!
 		// Influence the performance tremendously!
-		envConfig.setSharedCache(true); // Does not effect the prformance much!
+		envConfig.setSharedCache(true); // Does not effect the performance much!
 		// TODO subject to change for optimization
 		// envConfig.setCachePercent(90);
+		
 		env = new Environment(envHome, envConfig);
 
 	}
 
 	/**
 	 * Add a new store in BerkeleyDB. One store is automatically created when a
-	 * datastore object is initialised.
+	 * data store object is initialized.
 	 * 
 	 * @param readonly
 	 *            true if the store is only for performing read operations.
@@ -140,14 +142,12 @@ public class DataStore {
 	 */
 	public <E extends JessyEntity> void addPrimaryIndex(Class<E> entityClass)
 			throws Exception {
-		PrimaryIndex<Long, E> pindex = entityStore.getPrimaryIndex(Long.class,
+		PrimaryIndex<PrimaryKeyType, E> pindex = entityStore.getPrimaryIndex(PrimaryKeyType.class,
 				entityClass);
 
 		PreloadConfig preloadConfig = new PreloadConfig();
 		preloadConfig.setMaxBytes(1073741824);
 		preloadConfig.setLoadLNs(true);
-
-		// pindex.getDatabase().preload(preloadConfig);
 
 		primaryIndexes.put(Compress.compressClassName(entityClass.getName()),
 				pindex);
@@ -178,12 +178,13 @@ public class DataStore {
 			String secondaryKeyName) throws Exception {
 
 		try {
-			PrimaryIndex<Long, ? extends JessyEntity> pindex = primaryIndexes
+			PrimaryIndex<PrimaryKeyType, ? extends JessyEntity> pindex = primaryIndexes
 					.get(Compress.compressClassName(entityClass.getName()));
 
-			SecondaryIndex<SK, Long, ? extends JessyEntity> sindex = entityStore
+			SecondaryIndex<SK, PrimaryKeyType, ? extends JessyEntity> sindex = entityStore
 					.getSecondaryIndex(pindex, secondaryKeyClass,
 							secondaryKeyName);
+			
 			secondaryIndexes.put(
 					Compress.compressClassName(entityClass.getName())
 							+ secondaryKeyName, sindex);
@@ -208,7 +209,7 @@ public class DataStore {
 			throws NullPointerException {
 		try {
 			@SuppressWarnings("unchecked")
-			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
+			PrimaryIndex<PrimaryKeyType, E> pindex = (PrimaryIndex<PrimaryKeyType, E>) primaryIndexes
 					.get(Compress
 							.compressClassName(entity.getClass().getName()));
 			pindex.put(entity);
@@ -249,15 +250,15 @@ public class DataStore {
 	private <E extends JessyEntity, SK> E get(String entityClassName,
 			String secondaryKeyName, SK keyValue, CompactVector<String> readSet)
 			throws NullPointerException {
-		curTime.start();
+		
 		try {
 			@SuppressWarnings("unchecked")
 			SecondaryIndex<SK, Long, E> sindex = (SecondaryIndex<SK, Long, E>) secondaryIndexes
 					.get(entityClassName + secondaryKeyName);
 
 			EntityCursor<E> cur = sindex.subIndex(keyValue).entities();
-			E entity = cur.last();
-			curTime.stop();
+			
+			E entity = cur.first();
 
 			if (readSet == null) {
 				cur.close();
@@ -317,9 +318,9 @@ public class DataStore {
 		try {
 
 			SecondaryIndex sindex;
-			PrimaryIndex<Long, E> pindex = (PrimaryIndex<Long, E>) primaryIndexes
+			PrimaryIndex<PrimaryKeyType, E> pindex = (PrimaryIndex<PrimaryKeyType, E>) primaryIndexes
 					.get(entityClassName);
-			EntityJoin<Long, E> entityJoin = new EntityJoin<Long, E>(pindex);
+			EntityJoin<PrimaryKeyType, E> entityJoin = new EntityJoin<PrimaryKeyType, E>(pindex);
 
 			for (ReadRequestKey key : keys) {
 				sindex = secondaryIndexes.get(entityClassName
@@ -408,7 +409,7 @@ public class DataStore {
 						.get(kindex);
 				cur = sindex.subIndex((SK) rk.getKeyValue()).entities();
 
-				JessyEntity entity = cur.last();
+				JessyEntity entity = cur.first();
 
 				if (rr.getReadSet() == null) {
 					ret.add(new ReadReply<JessyEntity>((JessyEntity) entity, rr
@@ -445,7 +446,7 @@ public class DataStore {
 	}
 
 	/**
-	 * Delete an entity with the provided secondary key from the berkeyley DB.
+	 * Delete an entity with the provided secondary key from the berkeley DB.
 	 * 
 	 * @param <E>
 	 *            the type that extends JessyEntity

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -21,13 +20,17 @@ import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.utils.ExecutorPool;
-import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
+import org.cliffc.high_scale_lib.NonBlockingHashtable;
+
+import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.communication.UnicastClientManager;
+import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
@@ -59,24 +62,31 @@ public class RemoteReader implements Learner {
 
 	private static Logger logger = Logger.getLogger(RemoteReader.class);
 
-	private static ValueRecorder batching,serverAnsweringTime, clientAskingTime, clientProcessingResponseTime;
+	private static ValueRecorder batching_ReadRequest,batching,serverLookupTime,serverSendingTime,serverAnsweringTime, clientAskingTime;
 	static {
+		serverLookupTime = new ValueRecorder("RemoteReader#serverLookupTime(ms)");
+		serverLookupTime.setFactor(1000000);
+		serverLookupTime.setFormat("%a");
+
+		serverSendingTime = new ValueRecorder("RemoteReader#serverSendingTime(ms)");
+		serverSendingTime.setFactor(1000000);
+		serverSendingTime.setFormat("%a");
+
 		serverAnsweringTime = new ValueRecorder("RemoteReader#serverAnsweringTime(ms)");
 		serverAnsweringTime.setFactor(1000000);
 		serverAnsweringTime.setFormat("%a");
+
 		
 		clientAskingTime = new TimeRecorder("RemoteReader#clientAskingTime(ms)");
 		clientAskingTime.setFactor(1000000);
 		clientAskingTime.setFormat("%a");
 		
-		clientProcessingResponseTime = new TimeRecorder("RemoteReader#clientProcessingResponseTime(us)");
-		clientProcessingResponseTime.setFactor(1000000);
-		clientProcessingResponseTime.setFormat("%a");
-		
 		batching = new ValueRecorder("RemoteReader#batching)");
+		batching_ReadRequest= new ValueRecorder("RemoteReader#batching_ReadRequest)");
 	}
 
-	private Map<Integer, RemoteReadFuture<JessyEntity>> pendingRemoteReads;
+	private NonBlockingHashtable<Integer, RemoteReadFuture<JessyEntity>> pendingRemoteReads;
+	
 	private BlockingQueue<RemoteReadFuture<JessyEntity>> remoteReadQ;
 
 	private BlockingQueue<ReadRequestMessage> requestQ;
@@ -86,8 +96,11 @@ public class RemoteReader implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
+	public UnicastClientManager cmanager;
+	public UnicastServerManager smanager;
+	
+	
 	public RemoteReader(DistributedJessy j) {
-
 		jessy = j;
 		remoteReadStream = FractalManager.getInstance()
 				.getOrCreateMulticastStream(
@@ -98,7 +111,7 @@ public class RemoteReader implements Learner {
 		remoteReadStream.registerLearner("ReadReplyMessage", this);
 		remoteReadStream.start();
 
-		pendingRemoteReads = new ConcurrentHashMap<Integer, RemoteReadFuture<JessyEntity>>();
+		pendingRemoteReads = new NonBlockingHashtable<Integer, RemoteReadFuture<JessyEntity>>();
 
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
 		remoteReadQ = new LinkedBlockingDeque<RemoteReadFuture<JessyEntity>>();
@@ -107,13 +120,18 @@ public class RemoteReader implements Learner {
 		pool.submit(new RemoteReadRequestTask());
 		// With a LOW # of cores, contention is too expensive.
 		// Besides, we are already batching.
-		// pool.submitMultiple( new InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
-		// RemoteReader.class, this));
-		// pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
-		// RemoteReadReplyTask.class, RemoteReader.class, this));
+//		 pool.submitMultiple( new InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
+//		 RemoteReader.class, this));
+//		 pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
+//		 RemoteReadReplyTask.class, RemoteReader.class, this));
 
+		if (JessyGroupManager.getInstance().isProxy())
+			cmanager=new UnicastClientManager(this);
+		else 
+			smanager=new UnicastServerManager(this);
 	}
 
+	
 	@SuppressWarnings("unchecked")
 	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
 			ReadRequest<E> readRequest) throws InterruptedException {
@@ -130,6 +148,25 @@ public class RemoteReader implements Learner {
 			
 			try {
 				requestQ.put((ReadRequestMessage) v);
+				
+//				{
+//					long start = System.nanoTime();
+//					
+//					ReadRequestMessage  tmp=(ReadRequestMessage) v;
+//					
+//						List<ReadReply<JessyEntity>> replies = jessy
+//								.getDataStore().getAll(tmp.getReadRequests());
+//						
+//						serverLookupTime.add(System.nanoTime()-start);
+//						
+//						start=System.nanoTime();
+//						smanager.unicast(new ReadReplyMessage(replies),
+//								tmp.source);
+////						remoteReadStream.unicast(new ReadReplyMessage(replies),
+////								tmp.source);
+//
+//						serverSendingTime.add(System.nanoTime()-start);
+//				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -149,14 +186,14 @@ public class RemoteReader implements Learner {
 					logger.info("received an incorrect reply or request already served");
 					continue;
 				}
-
+				
 				if (pendingRemoteReads.get(reply.getReadRequestId())
 						.mergeReply(reply))
 					pendingRemoteReads.remove(reply.getReadRequestId());
 
 			}
 
-			clientProcessingResponseTime.add(System.nanoTime()-start);
+//			clientProcessingResponseTime.add(System.nanoTime()-start);
 			
 		}
 	}
@@ -273,7 +310,7 @@ public class RemoteReader implements Learner {
 					
 					long start = System.nanoTime();
 					
-					remoteReadQ.drainTo(list);
+//					remoteReadQ.drainTo(list);
 
 					// Factorize read requests.
 					for (RemoteReadFuture remoteRead : list) {
@@ -302,8 +339,9 @@ public class RemoteReader implements Learner {
 						int swid = dest.members().iterator().next(); // FIXME
 																		// improve
 																		// this.
-						remoteReadStream.unicast(
-								new ReadRequestMessage(toSend.get(dest)), swid);
+						cmanager.unicast(new ReadRequestMessage(toSend.get(dest)), swid);
+//						remoteReadStream.unicast(
+//								new ReadRequestMessage(toSend.get(dest)), swid);
 					}
 					
 					clientAskingTime.add(System.nanoTime()-start);
@@ -334,6 +372,7 @@ public class RemoteReader implements Learner {
 			while (true) {
 		
 				try {
+					long start = System.nanoTime();
 		
 					pendingRequests.clear();
 					msgs.clear();
@@ -341,7 +380,6 @@ public class RemoteReader implements Learner {
 					msgs.add(requestQ.take());
 					requestQ.drainTo(msgs);
 					
-					long start = System.nanoTime();
 					
 					for (ReadRequestMessage m : msgs) {
 						if (!pendingRequests.containsKey(m.source)) {
@@ -355,6 +393,7 @@ public class RemoteReader implements Learner {
 					logger.debug("got" + pendingRequests);
 		
 					for (Integer dest : pendingRequests.keySet()) {
+						batching_ReadRequest.add(pendingRequests.get(dest).size());
 						List<ReadReply<JessyEntity>> replies = jessy
 								.getDataStore().getAll(
 										pendingRequests.get(dest));
@@ -363,8 +402,10 @@ public class RemoteReader implements Learner {
 									+ " failed");
 						}
 						
-						remoteReadStream.unicast(new ReadReplyMessage(replies),
+						smanager.unicast(new ReadReplyMessage(replies),
 								dest);
+//						remoteReadStream.unicast(new ReadReplyMessage(replies),
+//								dest);
 					}
 					
 					serverAnsweringTime.add(System.nanoTime()-start);
@@ -376,6 +417,13 @@ public class RemoteReader implements Learner {
 			}
 		}
 
+	}
+	
+	private ReadReply<JessyEntity> createFastYCSBReply(ReadRequest<JessyEntity> rr){
+		JessyEntity entity=new YCSBEntity(rr.getOneKey().getKeyValue().toString());
+		ReadReply<JessyEntity> reply=new ReadReply<JessyEntity>(entity,rr.getReadRequestId());
+		return reply;
+		
 	}
 
 }
