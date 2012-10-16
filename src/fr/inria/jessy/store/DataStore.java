@@ -271,7 +271,7 @@ public class DataStore {
 					return entity;
 				} else {
 					if (entity.getLocalVector().isCompatible(readSet) == Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
-						entity = cur.prev();
+						entity = cur.next();
 					}
 					// NEVER_COMPATIBLE
 					else {
@@ -428,7 +428,7 @@ public class DataStore {
 						failedReads.incr();
 						entity = null;
 					} else {
-						entity = cur.prev();
+						entity = cur.next();
 					}
 				}
 

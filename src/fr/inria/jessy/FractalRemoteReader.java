@@ -28,14 +28,8 @@ import fr.inria.jessy.store.ReadRequest;
 
 /**
  * 
- * A remote reader for distributed Jessy. This class takes as input a remote
- * read request via function
- * <p>
- * remoteRead
- * </p>
- * , and returns a Future encapsulating a JessyEntity. It makes use of the
- * Fractal group ALLNODES to exchange replies , and create a
- * ReliableMulticastStream named RemoteReaderStream.
+ * This class implements {@link RemoteReader} by using Netty package for
+ * performing unicast operations.
  * 
  * TODO: put the ExecutorPool inside Jessy (?) TODO: suppress or garbage-collect
  * cancelled requests.

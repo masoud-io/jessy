@@ -15,50 +15,64 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
 
+/**
+ * * A remote reader for distributed Jessy. This class takes as input a remote
+ * read request via function {@link RemoteReader#remoteRead(ReadRequest)} and
+ * returns a Future encapsulating a JessyEntity.
+ * 
+ * @author Masoud Saeida Ardekani
+ * 
+ */
+
 public abstract class RemoteReader {
 
 	protected static Logger logger = Logger.getLogger(RemoteReader.class);
-	
-	protected  static ValueRecorder batching_ReadRequest,batching,serverLookupTime,serverSendingTime,serverAnsweringTime, clientAskingTime;
-	
+
+	protected static ValueRecorder batching_ReadRequest, batching,
+			serverLookupTime, serverSendingTime, serverAnsweringTime,
+			clientAskingTime;
+
 	static {
-		serverLookupTime = new ValueRecorder("RemoteReader#serverLookupTime(ms)");
+		serverLookupTime = new ValueRecorder(
+				"RemoteReader#serverLookupTime(ms)");
 		serverLookupTime.setFactor(1000000);
 		serverLookupTime.setFormat("%a");
 
-		serverSendingTime = new ValueRecorder("RemoteReader#serverSendingTime(ms)");
+		serverSendingTime = new ValueRecorder(
+				"RemoteReader#serverSendingTime(ms)");
 		serverSendingTime.setFactor(1000000);
 		serverSendingTime.setFormat("%a");
 
-		serverAnsweringTime = new ValueRecorder("RemoteReader#serverAnsweringTime(ms)");
+		serverAnsweringTime = new ValueRecorder(
+				"RemoteReader#serverAnsweringTime(ms)");
 		serverAnsweringTime.setFactor(1000000);
 		serverAnsweringTime.setFormat("%a");
 
-		
 		clientAskingTime = new TimeRecorder("RemoteReader#clientAskingTime(ms)");
 		clientAskingTime.setFactor(1000000);
 		clientAskingTime.setFormat("%a");
-		
+
 		batching = new ValueRecorder("RemoteReader#batching)");
-		batching_ReadRequest= new ValueRecorder("RemoteReader#batching_ReadRequest)");
+		batching_ReadRequest = new ValueRecorder(
+				"RemoteReader#batching_ReadRequest)");
 	}
-	
+
 	protected DistributedJessy jessy;
-	
+
 	protected ExecutorPool pool = ExecutorPool.getInstance();
-	
+
 	protected NonBlockingHashtable<Integer, RemoteReadFuture<JessyEntity>> pendingRemoteReads;
-	
+
 	protected BlockingQueue<RemoteReadFuture<JessyEntity>> remoteReadQ;
-	
-	public RemoteReader(DistributedJessy j){
+
+	public RemoteReader(DistributedJessy j) {
 		jessy = j;
-		
+
 		remoteReadQ = new LinkedBlockingDeque<RemoteReadFuture<JessyEntity>>();
 		pendingRemoteReads = new NonBlockingHashtable<Integer, RemoteReadFuture<JessyEntity>>();
 	}
-	
+
 	public abstract <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
 			ReadRequest<E> readRequest) throws InterruptedException;
-	
+
 }

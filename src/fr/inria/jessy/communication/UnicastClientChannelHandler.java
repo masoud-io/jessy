@@ -1,7 +1,5 @@
 package fr.inria.jessy.communication;
 
-import net.sourceforge.fractal.Learner;
-
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -10,13 +8,14 @@ import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
 import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 
+import fr.inria.jessy.NettyRemoteReader;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 
 public class UnicastClientChannelHandler extends SimpleChannelHandler {
 
-	Learner learner;
+	NettyRemoteReader learner;
 
-	public UnicastClientChannelHandler(Learner learner) {
+	public UnicastClientChannelHandler(NettyRemoteReader learner) {
 		this.learner = learner;
 	}
 
@@ -30,10 +29,10 @@ public class UnicastClientChannelHandler extends SimpleChannelHandler {
 				.addAfter("decoder", "encoder", new ObjectEncoder());
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-		ReadReplyMessage msg = (ReadReplyMessage) e.getMessage();
-		learner.learn(null, msg);
+		learner.learnReadReplyMessage((ReadReplyMessage) e.getMessage());
 	}
 
 	@Override

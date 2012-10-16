@@ -4,7 +4,6 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 
-import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.multicast.MulticastMessage;
 
@@ -13,13 +12,15 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
+import fr.inria.jessy.NettyRemoteReader;
+
 public class UnicastClientManager {
 
 	private HashMap<Integer, Channel> swid2Channel = new HashMap<Integer, Channel>();
 
-	Learner learner;
+	NettyRemoteReader learner;
 	
-	public UnicastClientManager(Learner learner) {
+	public UnicastClientManager(NettyRemoteReader learner) {
 		this.learner=learner;
 		
 		Membership membership = JessyGroupManager.getInstance().getMembership();
@@ -33,7 +34,7 @@ public class UnicastClientManager {
 	}
 
 	public void closeConnections() {
-		// todo
+		// TODO
 	}
 
 	private Channel createUnicastClientChannel(String host) {
