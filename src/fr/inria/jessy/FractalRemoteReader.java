@@ -8,29 +8,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
-import net.sourceforge.fractal.utils.ExecutorPool;
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
-import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
-
-import org.apache.log4j.Logger;
-import org.cliffc.high_scale_lib.NonBlockingHashtable;
 
 import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.communication.UnicastClientManager;
-import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
@@ -44,7 +33,7 @@ import fr.inria.jessy.store.ReadRequest;
  * <p>
  * remoteRead
  * </p>
- * , and returns a Future encapsulating a JessyEntity. It maekes use of the
+ * , and returns a Future encapsulating a JessyEntity. It makes use of the
  * Fractal group ALLNODES to exchange replies , and create a
  * ReliableMulticastStream named RemoteReaderStream.
  * 
@@ -58,46 +47,14 @@ import fr.inria.jessy.store.ReadRequest;
 // FIXME fix parametrized types.
 // TODO CAUTION: this implementation is not fault tolerant
 
-public class FractalRemoteReader implements Learner {
-
-	private static Logger logger = Logger.getLogger(FractalRemoteReader.class);
-
-	private static ValueRecorder batching_ReadRequest,batching,serverLookupTime,serverSendingTime,serverAnsweringTime, clientAskingTime;
-	static {
-		serverLookupTime = new ValueRecorder("RemoteReader#serverLookupTime(ms)");
-		serverLookupTime.setFactor(1000000);
-		serverLookupTime.setFormat("%a");
-
-		serverSendingTime = new ValueRecorder("RemoteReader#serverSendingTime(ms)");
-		serverSendingTime.setFactor(1000000);
-		serverSendingTime.setFormat("%a");
-
-		serverAnsweringTime = new ValueRecorder("RemoteReader#serverAnsweringTime(ms)");
-		serverAnsweringTime.setFactor(1000000);
-		serverAnsweringTime.setFormat("%a");
-
-		
-		clientAskingTime = new TimeRecorder("RemoteReader#clientAskingTime(ms)");
-		clientAskingTime.setFactor(1000000);
-		clientAskingTime.setFormat("%a");
-		
-		batching = new ValueRecorder("RemoteReader#batching)");
-		batching_ReadRequest= new ValueRecorder("RemoteReader#batching_ReadRequest)");
-	}
-
-	private NonBlockingHashtable<Integer, RemoteReadFuture<JessyEntity>> pendingRemoteReads;
-	
-	private BlockingQueue<RemoteReadFuture<JessyEntity>> remoteReadQ;
+public class FractalRemoteReader extends RemoteReader implements Learner {
 
 	private BlockingQueue<ReadRequestMessage> requestQ;
 
-	private DistributedJessy jessy;
 	private MulticastStream remoteReadStream;
 
-	private ExecutorPool pool = ExecutorPool.getInstance();
-
 	public FractalRemoteReader(DistributedJessy j) {
-		jessy = j;
+		super(j);
 		remoteReadStream = FractalManager.getInstance()
 				.getOrCreateMulticastStream(
 						ConstantPool.JESSY_READER_STREAM,
@@ -107,10 +64,8 @@ public class FractalRemoteReader implements Learner {
 		remoteReadStream.registerLearner("ReadReplyMessage", this);
 		remoteReadStream.start();
 
-		pendingRemoteReads = new NonBlockingHashtable<Integer, RemoteReadFuture<JessyEntity>>();
-
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
-		remoteReadQ = new LinkedBlockingDeque<RemoteReadFuture<JessyEntity>>();
+
 		
 		pool.submit(new RemoteReadReplyTask());
 		pool.submit(new RemoteReadRequestTask());
@@ -122,8 +77,8 @@ public class FractalRemoteReader implements Learner {
 //		 RemoteReadReplyTask.class, RemoteReader.class, this));
 	}
 
-	
 	@SuppressWarnings("unchecked")
+	@Override
 	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
 			ReadRequest<E> readRequest) throws InterruptedException {
 		logger.debug("creating task for " + readRequest);
@@ -166,96 +121,7 @@ public class FractalRemoteReader implements Learner {
 
 			}
 
-//			clientProcessingResponseTime.add(System.nanoTime()-start);
-			
 		}
-	}
-
-	//
-	// INNER CLASSES
-	//
-
-	public class RemoteReadFuture<E extends JessyEntity> implements
-			Future<ReadReply<E>> {
-
-		private Integer state; // 0 => init, 1 => done, -1 => cancelled
-		private ReadReply<E> reply;
-		private ReadRequest<E> readRequest;
-
-		public RemoteReadFuture(ReadRequest<E> rr) {
-			state = new Integer(0);
-			reply = null;
-			readRequest = rr;
-		}
-
-		public boolean cancel(boolean mayInterruptIfRunning) {
-			synchronized (state) {
-				if (state != 0)
-					return false;
-				state = -1;
-				if (mayInterruptIfRunning)
-					state.notifyAll();
-			}
-			return true;
-		}
-
-		public ReadReply<E> get() throws InterruptedException,
-				ExecutionException {
-			synchronized (state) {
-				if (state == 0)
-					state.wait();
-			}
-			return (state == -1) ? null : reply;
-		}
-
-		public ReadReply<E> get(long timeout, TimeUnit unit)
-				throws InterruptedException, ExecutionException,
-				TimeoutException {
-			
-			synchronized (state) {
-				if (state == 0)
-					state.wait(timeout);
-			}
-			return (state == -1) ? null : reply;
-		}
-
-		public boolean isCancelled() {
-			return state == -1;
-		}
-
-		public boolean isDone() {
-			return reply == null;
-		}
-
-		public boolean mergeReply(ReadReply<E> r) {
-
-			synchronized (state) {
-
-				if (state == -1)
-					return true;
-
-				if (reply == null) {
-					reply = r;
-				} else {
-					reply.mergeReply(r);
-				}
-
-				if (readRequest.isOneKeyRequest()
-						|| reply.getEntity().size() == readRequest
-								.getMultiKeys().size()) {
-					state.notifyAll();
-					return true;
-				}
-
-				return false;
-			}
-
-		}
-
-		public ReadRequest<E> getReadRequest() {
-			return readRequest;
-		}
-
 	}
 
 	public class RemoteReadRequestTask implements Runnable {

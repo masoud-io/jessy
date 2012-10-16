@@ -85,7 +85,7 @@ public class DistributedJessy extends Jessy {
 
 	private static ValueRecorder remoteReaderLatency, clientProcessingResponseTime;
 	
-	public FractalRemoteReader remoteReader;
+	public RemoteReader remoteReader;
 	public DistributedTermination distributedTermination;
 	public Partitioner partitioner;
 
@@ -113,7 +113,7 @@ public class DistributedJessy extends Jessy {
 
 			distributedTermination = new DistributedTermination(this);
 
-			remoteReader = new FractalRemoteReader(this);
+			remoteReader = new NettyRemoteReader(this);
 
 			// FIXME
 			super.addEntity(YCSBEntity.class);
