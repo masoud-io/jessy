@@ -52,6 +52,9 @@ public class UnicastClientManager {
 		bootstrap.getPipeline().addLast("handler", handler);
 		bootstrap.setOption("tcpNoDelay", true);
 		bootstrap.setOption("keepAlive", true);
+		
+		bootstrap.setOption("sendBufferSize", 1048576); 
+		bootstrap.setOption("receiveBufferSize", 1048576);
 
 		// Connect to the server, wait for the connection and get back the
 		// channel
@@ -61,8 +64,7 @@ public class UnicastClientManager {
 	}
 
 	public void unicast(MulticastMessage m, int swid) {
-		Channel ch = swid2Channel.get(swid);
-		ch.write(m);
+		swid2Channel.get(swid).write(m);
 	}
 
 }

@@ -6,6 +6,8 @@ import java.io.ObjectOutput;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.netty.channel.Channel;
+
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.JessyEntity;
@@ -13,6 +15,8 @@ import fr.inria.jessy.store.ReadRequest;
 
 public class ReadRequestMessage extends MulticastMessage {
 
+	public transient Channel channel;
+	
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	private List<ReadRequest<JessyEntity>> requests;

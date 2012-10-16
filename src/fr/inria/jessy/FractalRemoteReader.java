@@ -58,9 +58,9 @@ import fr.inria.jessy.store.ReadRequest;
 // FIXME fix parametrized types.
 // TODO CAUTION: this implementation is not fault tolerant
 
-public class RemoteReader implements Learner {
+public class FractalRemoteReader implements Learner {
 
-	private static Logger logger = Logger.getLogger(RemoteReader.class);
+	private static Logger logger = Logger.getLogger(FractalRemoteReader.class);
 
 	private static ValueRecorder batching_ReadRequest,batching,serverLookupTime,serverSendingTime,serverAnsweringTime, clientAskingTime;
 	static {
@@ -96,11 +96,7 @@ public class RemoteReader implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
-	public UnicastClientManager cmanager;
-	public UnicastServerManager smanager;
-	
-	
-	public RemoteReader(DistributedJessy j) {
+	public FractalRemoteReader(DistributedJessy j) {
 		jessy = j;
 		remoteReadStream = FractalManager.getInstance()
 				.getOrCreateMulticastStream(
@@ -124,11 +120,6 @@ public class RemoteReader implements Learner {
 //		 RemoteReader.class, this));
 //		 pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
 //		 RemoteReadReplyTask.class, RemoteReader.class, this));
-
-		if (JessyGroupManager.getInstance().isProxy())
-			cmanager=new UnicastClientManager(this);
-		else 
-			smanager=new UnicastServerManager(this);
 	}
 
 	
@@ -149,24 +140,6 @@ public class RemoteReader implements Learner {
 			try {
 				requestQ.put((ReadRequestMessage) v);
 				
-//				{
-//					long start = System.nanoTime();
-//					
-//					ReadRequestMessage  tmp=(ReadRequestMessage) v;
-//					
-//						List<ReadReply<JessyEntity>> replies = jessy
-//								.getDataStore().getAll(tmp.getReadRequests());
-//						
-//						serverLookupTime.add(System.nanoTime()-start);
-//						
-//						start=System.nanoTime();
-//						smanager.unicast(new ReadReplyMessage(replies),
-//								tmp.source);
-////						remoteReadStream.unicast(new ReadReplyMessage(replies),
-////								tmp.source);
-//
-//						serverSendingTime.add(System.nanoTime()-start);
-//				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -310,7 +283,7 @@ public class RemoteReader implements Learner {
 					
 					long start = System.nanoTime();
 					
-//					remoteReadQ.drainTo(list);
+					remoteReadQ.drainTo(list);
 
 					// Factorize read requests.
 					for (RemoteReadFuture remoteRead : list) {
@@ -339,9 +312,8 @@ public class RemoteReader implements Learner {
 						int swid = dest.members().iterator().next(); // FIXME
 																		// improve
 																		// this.
-						cmanager.unicast(new ReadRequestMessage(toSend.get(dest)), swid);
-//						remoteReadStream.unicast(
-//								new ReadRequestMessage(toSend.get(dest)), swid);
+						remoteReadStream.unicast(
+								new ReadRequestMessage(toSend.get(dest)), swid);
 					}
 					
 					clientAskingTime.add(System.nanoTime()-start);
@@ -402,10 +374,8 @@ public class RemoteReader implements Learner {
 									+ " failed");
 						}
 						
-						smanager.unicast(new ReadReplyMessage(replies),
+						remoteReadStream.unicast(new ReadReplyMessage(replies),
 								dest);
-//						remoteReadStream.unicast(new ReadReplyMessage(replies),
-//								dest);
 					}
 					
 					serverAnsweringTime.add(System.nanoTime()-start);
