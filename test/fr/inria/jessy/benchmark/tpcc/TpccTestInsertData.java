@@ -73,16 +73,16 @@ public class TpccTestInsertData extends TestCase{
 		
 		ExecutionHistory result;
 
-//		for(int i=1;i<=warehauses;i++){
+		for(int i=1;i<=warehauses;i++){
 			
-			id = new InsertData(jessy,5);
+			id = new InsertData(jessy,warehauses);
 		
 		
 			result = id.execute();
 		/* test execution */
 		assertEquals("Result", TransactionState.COMMITTED,
 				result.getTransactionState());
-//		}
+		}
 		jessy.close(this);
 	}
 	
