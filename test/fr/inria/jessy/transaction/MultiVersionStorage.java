@@ -7,6 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.Jessy;
+import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.entity.SampleEntityClass;
 
@@ -33,7 +34,7 @@ public class MultiVersionStorage {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		jessy = LocalJessy.getInstance();
+		jessy = JessyFactory.getLocalJessy();
 		jessy.addEntity(SampleEntityClass.class);
 		
 	}

@@ -15,6 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.inria.jessy.DistributedJessy;
+import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.consistency.distributed.nmsi.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.consistency.distributed.nmsi.transaction.SampleTransactionMultiObj1;
 import fr.inria.jessy.consistency.distributed.nmsi.transaction.SampleTransactionMultiObj2;
@@ -61,7 +62,7 @@ public class MultiObjNMSITest extends TestCase {
 	@Before
 	public void setUp() throws Exception {
 		PropertyConfigurator.configure("log4j.properties");
-		jessy = DistributedJessy.getInstance();
+		jessy = JessyFactory.getDistributedJessy();
 
 		// First, we have to define the entities read or written inside the
 		// transaction

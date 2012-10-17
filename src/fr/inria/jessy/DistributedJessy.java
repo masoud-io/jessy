@@ -164,7 +164,7 @@ public class DistributedJessy extends Jessy {
 		}
 	}
 
-	public static synchronized DistributedJessy getInstance() {
+	static synchronized DistributedJessy getInstance() {
 		if (distributedJessy == null) {
 			try {
 				distributedJessy = new DistributedJessy();

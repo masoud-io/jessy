@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.benchmark.tpcc.entities.Customer;
 import fr.inria.jessy.benchmark.tpcc.entities.District;
@@ -42,7 +43,7 @@ public class TpccTestPayment {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		jessy = LocalJessy.getInstance();
+		jessy =JessyFactory.getLocalJessy();
 
 		jessy.addEntity(Warehouse.class);
 		jessy.addEntity(District.class);

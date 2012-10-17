@@ -27,7 +27,7 @@ public class LocalJessy extends Jessy {
 		super();
 	}
 
-	public static synchronized LocalJessy getInstance() throws Exception {
+	static synchronized LocalJessy getInstance() throws Exception {
 		if (localJessy == null) {
 			localJessy = new LocalJessy();
 		}

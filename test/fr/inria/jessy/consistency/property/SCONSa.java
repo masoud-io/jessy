@@ -13,6 +13,7 @@ import org.junit.Test;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
+import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -37,7 +38,7 @@ public class SCONSa extends TestCase {
 	@Before
 	public void setUp() throws Exception {
 		PropertyConfigurator.configure("log4j.properties");
-		jessy = DistributedJessy.getInstance();
+		jessy = JessyFactory.getDistributedJessy();
 
 		// First, we have to define the entities read or written inside the
 		// transaction

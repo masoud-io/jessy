@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.consistency.distributed.nmsi.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.consistency.distributed.nmsi.transaction.SampleTransactionSingleObj1;
@@ -45,7 +46,7 @@ public class SingleObjNMSITest extends TestCase {
 	@Before
 	public void setUp() throws Exception {
 		PropertyConfigurator.configure("log4j.properties");	
-		jessy = LocalJessy.getInstance();
+		jessy = JessyFactory.getLocalJessy();
 
 		// First, we have to define the entities read or written inside the
 		// transaction
