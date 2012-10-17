@@ -64,7 +64,7 @@ public class Measurements
       /**
        * Create a new object with the specified properties.
        */
-	public Measurements(Properties props)
+	private Measurements(Properties props)
 	{
 		data=new HashMap<String,OneMeasurement>();
 		
@@ -80,7 +80,7 @@ public class Measurements
 		}
 	}
 	
-	OneMeasurement constructOneMeasurement(String name)
+	private OneMeasurement constructOneMeasurement(String name)
 	{
 		if (histogram)
 		{

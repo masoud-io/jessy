@@ -105,7 +105,7 @@ public class DistributedJessy extends Jessy {
 		clientProcessingResponseTime.setFormat("%a");
 	}
 
-	public DistributedJessy() throws Exception {
+	private DistributedJessy() throws Exception {
 		super();
 		try {
 

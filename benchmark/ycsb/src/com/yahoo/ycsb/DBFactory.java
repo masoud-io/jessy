@@ -46,7 +46,10 @@ public class DBFactory
 	 
 	 ret.setProperties(properties);
 
-	 return new DBWrapper(ret);
+
+//	 Now the wrapper to collect measurements is moved in Jessy. Ycsb do not need anymore to pass 
+//	 through this wrapper 
+	 return ret;
       }
       
 }
