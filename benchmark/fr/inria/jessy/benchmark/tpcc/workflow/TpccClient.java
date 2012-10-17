@@ -5,6 +5,8 @@ import org.apache.log4j.PropertyConfigurator;
 
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
+import fr.inria.jessy.JessyFactory;
+import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.benchmark.tpcc.Delivery;
 import fr.inria.jessy.benchmark.tpcc.NewOrder;
 import fr.inria.jessy.benchmark.tpcc.OrderStatus;
@@ -42,7 +44,8 @@ public class TpccClient {
 		this.districtNumber = districtNumber;
 
 		try {
-			jessy = DistributedJessy.getInstance();
+//			jessy = JessyFactory.getDistributedJessy();
+			jessy = JessyFactory.getLocalJessy();
 
 			jessy.addEntity(Warehouse.class);
 			jessy.addEntity(District.class);
@@ -179,7 +182,7 @@ public class TpccClient {
 
 	public static void main(String[] args) throws Exception {
 
-		TpccClient client = new TpccClient(4096, 4, 1);
+		TpccClient client = new TpccClient(4096, 10, 10);
 		client.execute();
 
 //		TODO cleanly close fractal
