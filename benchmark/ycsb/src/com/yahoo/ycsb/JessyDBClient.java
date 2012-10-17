@@ -14,6 +14,7 @@ import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
 
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
+import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
@@ -23,7 +24,7 @@ public class JessyDBClient extends DB {
 
 	private static Logger logger = Logger.getLogger(JessyDBClient.class);
 
-	private static boolean USE_DIST_JESSY = true;
+	private static boolean USE_DIST_JESSY = false;
 
 	private static Jessy jessy;
 
@@ -31,9 +32,9 @@ public class JessyDBClient extends DB {
 	static {
 		try {
 			if (USE_DIST_JESSY) {
-				jessy = DistributedJessy.getInstance();
+				jessy = JessyFactory.getDistributedJessy();
 			} else {
-				jessy = LocalJessy.getInstance();
+				jessy = JessyFactory.getLocalJessy();
 			}
 			jessy.addEntity(YCSBEntity.class);
 		} catch (Exception e) {
