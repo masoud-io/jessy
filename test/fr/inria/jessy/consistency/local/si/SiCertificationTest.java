@@ -11,8 +11,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
-import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.consistency.local.si.transaction.InitTransaction;
 import fr.inria.jessy.consistency.local.si.transaction.T1x;
 import fr.inria.jessy.consistency.local.si.transaction.T2x;
@@ -42,7 +42,7 @@ import fr.inria.jessy.vector.ScalarVector;
 public class SiCertificationTest {
 	
 	
-	LocalJessy jessy;
+	Jessy jessy;
 
 	/**
 	 * @throws java.lang.Exception

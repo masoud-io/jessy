@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.inria.jessy.DistributedJessy;
+import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.consistency.distributed.nmsi.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.consistency.distributed.nmsi.transaction.SampleTransactionMultiObj1;
@@ -46,7 +46,7 @@ import fr.inria.jessy.transaction.TransactionState;
  */
 public class MultiObjNMSITest extends TestCase {
 
-	DistributedJessy jessy;
+	Jessy jessy;
 
 	/**
 	 * @throws java.lang.Exception

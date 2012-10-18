@@ -7,8 +7,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
-import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.benchmark.tpcc.entities.Customer;
 import fr.inria.jessy.benchmark.tpcc.entities.District;
 import fr.inria.jessy.benchmark.tpcc.entities.History;
@@ -27,7 +27,7 @@ import fr.inria.jessy.transaction.TransactionState;
  */
 public class TpccTestInsertData extends TestCase{
 
-	LocalJessy jessy;
+	Jessy jessy;
 	InsertData id;
 	Warehouse wh;
 	District di;

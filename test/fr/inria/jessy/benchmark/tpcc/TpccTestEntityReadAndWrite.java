@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.benchmark.tpcc.entities.District;

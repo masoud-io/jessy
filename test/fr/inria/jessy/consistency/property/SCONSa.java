@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.entity.Sample2EntityClass;
@@ -30,7 +29,7 @@ import fr.inria.jessy.utils.Configuration;
  * 
  */
 public class SCONSa extends TestCase {
-	DistributedJessy jessy;
+	Jessy jessy;
 
 	/**
 	 * @throws java.lang.Exception

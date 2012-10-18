@@ -11,7 +11,6 @@ import org.apache.log4j.PropertyConfigurator;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.entity.Sample2EntityClass;
@@ -29,7 +28,7 @@ import fr.inria.jessy.transaction.TransactionState;
  * 
  */
 public class WCF extends TestCase {
-	DistributedJessy jessy;
+	Jessy jessy;
 
 	/**
 	 * @throws java.lang.Exception

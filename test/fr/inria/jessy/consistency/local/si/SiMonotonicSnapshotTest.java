@@ -12,8 +12,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.inria.jessy.Jessy; 
 import fr.inria.jessy.JessyFactory;
-import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.consistency.local.si.transaction.InitTransaction;
 import fr.inria.jessy.consistency.local.si.transaction.T1;
 import fr.inria.jessy.consistency.local.si.transaction.T2;
@@ -43,7 +43,7 @@ import fr.inria.jessy.vector.ScalarVector;
 
 public class SiMonotonicSnapshotTest {
 
-	LocalJessy jessy;
+	Jessy jessy;
 
 	/**
 	 * @throws java.lang.Exception

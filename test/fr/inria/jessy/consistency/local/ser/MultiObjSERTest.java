@@ -14,8 +14,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
-import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.consistency.local.nmsi.transaction.SampleEntityInitTransaction;
 import fr.inria.jessy.consistency.local.nmsi.transaction.SampleTransactionMultiObj1;
 import fr.inria.jessy.consistency.local.nmsi.transaction.SampleTransactionMultiObj2;
@@ -45,7 +45,7 @@ import fr.inria.jessy.transaction.TransactionState;
  */
 public class MultiObjSERTest extends TestCase {
 
-	LocalJessy jessy;
+	Jessy jessy;
 
 	/**
 	 * @throws java.lang.Exception

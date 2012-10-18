@@ -5,8 +5,8 @@ import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 
+import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
-import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.benchmark.tpcc.entities.Customer;
 import fr.inria.jessy.benchmark.tpcc.entities.District;
 import fr.inria.jessy.benchmark.tpcc.entities.History;
@@ -31,7 +31,8 @@ import fr.inria.jessy.transaction.Transaction;
  */
 public class TestInsertDataIntegrity extends TestCase {
 
-	LocalJessy jessy;
+//	LocalJessy jessy;
+	Jessy jessy;
 
 	@Before
 	public void setUp() throws Exception {
