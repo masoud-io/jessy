@@ -1,8 +1,7 @@
 package fr.inria.jessy.benchmark.tpcc;
 
+import java.util.Calendar;
 import java.util.Random;
-
-import org.joda.time.DateTime;
 
 /**
  * @author Wang Haiyun & ZHAO Guang
@@ -25,8 +24,7 @@ public class NURand {
 	private int y;
 	private int c;
 
-	private DateTime dt = new DateTime();  // current time
-	private Random rand_c = new Random(dt.getHourOfDay());
+	private Random rand_c = new Random(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
 	private Random rand = new Random(System.currentTimeMillis());
 
 	/* tpcc section 2.1.6 NURand(A,x,y) =  (((random(0,A)|random(x,y))+C)%(y-x+1))+x */
