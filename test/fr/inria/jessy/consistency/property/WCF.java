@@ -6,7 +6,6 @@ import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
 
-import org.antlr.grammar.v3.ANTLRv3Parser.throwsSpec_return;
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.Before;
 import org.junit.Test;
