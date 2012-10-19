@@ -17,8 +17,7 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
-
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import org.cliffc.high_scale_lib.NonBlockingHashtable;
 
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
@@ -102,9 +101,10 @@ public class DistributedTermination implements Learner {
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
 		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 
-		terminated = new ConcurrentLinkedHashMap.Builder<TransactionHandler, Integer>()
-				.maximumWeightedCapacity(1000) // FIXME works ???
-				.build();
+//		terminated = new ConcurrentLinkedHashMap.Builder<TransactionHandler, Integer>()
+//				.maximumWeightedCapacity(1000) // FIXME works ???
+//				.build();
+		terminated=new NonBlockingHashtable<TransactionHandler, Integer>();
 	}
 
 	/**
