@@ -49,7 +49,7 @@ public class DBFactory
 
 //	 Now the wrapper to collect measurements is moved in Jessy. Ycsb do not need anymore to pass 
 //	 through this wrapper 
-	 return ret;
+	 return new DBWrapper(ret);
       }
       
 }

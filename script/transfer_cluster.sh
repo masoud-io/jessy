@@ -1,5 +1,5 @@
 
-source /data/msaeida/workspace/Implementations/jessy/script/configuration.sh
+source /local/msaeida/workspace/Implementations/jessy/script/configuration.sh
 
 nodes=("msaeida@cluster.lip6.fr")
 

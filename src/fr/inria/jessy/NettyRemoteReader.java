@@ -51,19 +51,24 @@ public class NettyRemoteReader extends RemoteReader {
 
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
 
-		// pool.submit(new RemoteReadReplyTask());
-		// pool.submit(new RemoteReadRequestTask());
 		// With a LOW # of cores, contention is too expensive.
 		// Besides, we are already batching.
-		pool.submitMultiple(new InnerObjectFactory<RemoteReadRequestTask>(
-				RemoteReadRequestTask.class, NettyRemoteReader.class, this));
-		// pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
-		// RemoteReadReplyTask.class, RemoteReader.class, this));
 
-		if (JessyGroupManager.getInstance().isProxy())
+		if (JessyGroupManager.getInstance().isProxy()) {
 			cmanager = new UnicastClientManager(this);
-		else
+			
+			pool.submitMultiple(new InnerObjectFactory<RemoteReadRequestTask>(
+					RemoteReadRequestTask.class, NettyRemoteReader.class, this));
+			
+			// pool.submit(new RemoteReadRequestTask());
+		} else {
 			smanager = new UnicastServerManager(this);
+
+//			pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
+//					RemoteReadReplyTask.class, NettyRemoteReader.class, this),3);
+
+//			 pool.submit(new RemoteReadReplyTask());
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -79,16 +84,16 @@ public class NettyRemoteReader extends RemoteReader {
 	public void learnReadRequestMessage(ReadRequestMessage readRequestMessage,
 			Channel channel) {
 
-		// try {
-		// readRequestMessage.channel = channel;
-		// requestQ.put(readRequestMessage);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+//		 try {
+//		 readRequestMessage.channel = channel;
+//		 requestQ.put(readRequestMessage);
+//		 } catch (InterruptedException e) {
+//		 // TODO Auto-generated catch block
+//		 e.printStackTrace();
+//		 }
 
 		long start = System.nanoTime();
-		
+
 		List<ReadReply<JessyEntity>> replies = jessy.getDataStore().getAll(
 				readRequestMessage.getReadRequests());
 
@@ -149,7 +154,7 @@ public class NettyRemoteReader extends RemoteReader {
 
 					long start = System.nanoTime();
 
-//					remoteReadQ.drainTo(list);
+					// remoteReadQ.drainTo(list);
 
 					// Factorize read requests.
 					for (RemoteReadFuture remoteRead : list) {
@@ -275,13 +280,17 @@ public class NettyRemoteReader extends RemoteReader {
 
 	}
 
-	private ReadReply<JessyEntity> createFastYCSBReply(
+	private List<ReadReply<JessyEntity>> createFastYCSBReply(
 			ReadRequest<JessyEntity> rr) {
+		List<ReadReply<JessyEntity>> replies = new ArrayList<ReadReply<JessyEntity>>();
+
 		JessyEntity entity = new YCSBEntity(rr.getOneKey().getKeyValue()
 				.toString());
 		ReadReply<JessyEntity> reply = new ReadReply<JessyEntity>(entity,
 				rr.getReadRequestId());
-		return reply;
+
+		replies.add(reply);
+		return replies;
 
 	}
 

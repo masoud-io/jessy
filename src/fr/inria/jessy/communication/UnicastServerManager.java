@@ -3,6 +3,8 @@ package fr.inria.jessy.communication;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+import net.sourceforge.fractal.utils.ExecutorPool;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -17,9 +19,9 @@ public class UnicastServerManager {
 	public UnicastServerManager(final NettyRemoteReader learner) {
 
 		ChannelFactory factory = new NioServerSocketChannelFactory(
-				Executors.newCachedThreadPool(),
-				Executors.newCachedThreadPool());
-
+				ExecutorPool.getInstance().getExecutorService(),
+				ExecutorPool.getInstance().getExecutorService());
+//		Executors.newCachedThreadPool()
 		ServerBootstrap bootstrap = new ServerBootstrap(factory);
 
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {

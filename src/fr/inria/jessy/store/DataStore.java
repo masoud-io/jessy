@@ -84,7 +84,7 @@ public class DataStore {
 		envConfig.setAllowCreate(!readOnly);
 
 		envConfig.setTransactional(false);
-		envConfig.setTxnNoSyncVoid(true);
+//		envConfig.setTxnNoSyncVoid(true);
 		// envConfig.setTxnWriteNoSyncVoid(true);
 
 		// TODO database should be clean manually. EFFECT THE PERFORMANCE
@@ -94,7 +94,7 @@ public class DataStore {
 		// Influence the performance tremendously!
 		envConfig.setSharedCache(true); // Does not effect the performance much!
 		// TODO subject to change for optimization
-		// envConfig.setCachePercent(90);
+		 envConfig.setCachePercent(90);
 		
 		env = new Environment(envHome, envConfig);
 
