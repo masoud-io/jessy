@@ -40,6 +40,8 @@ import com.yahoo.ycsb.generator.ZipfianGenerator;
 import com.yahoo.ycsb.measurements.Measurements;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.MeasuredOperations;
+import fr.inria.jessy.ConstantPool.TransactionPhase;
 
 /**
  * The core benchmark scenario. Represents a set of clients doing simple CRUD
@@ -571,7 +573,7 @@ public class TransactionalWorkload extends Workload {
 
 		long en = System.currentTimeMillis();
 
-		Measurements.getMeasurements().measure("READ-MODIFY-WRITE",
+		Measurements.getMeasurements().measure(TransactionPhase.OVERALL,MeasuredOperations.YCSB_READ_MODIFY_WRITE,
 				(int) (en - st));
 	}
 

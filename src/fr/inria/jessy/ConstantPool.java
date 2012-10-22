@@ -108,19 +108,19 @@ public class ConstantPool {
 	 */
 	
 
-	/**
-	 * commit transaction
-	 */
-	public static enum CommitTransaction{
-		/**
-		 * Terminated without fails
-		 */
-		TERMINATED,
-		/**
-		 * Aborted (by client, by voting, by timeout etc...)
-		 */
-		OVERALL_ABORTED,
-	};
+//	/**
+//	 * commit transaction
+//	 */
+//	public static enum CommitTransaction{
+//		/**
+//		 * Terminated without fails
+//		 */
+//		TERMINATED,
+//		/**
+//		 * Aborted (by client, by voting, by timeout etc...)
+//		 */
+//		OVERALL_ABORTED,
+//	};
 	
 	/**
 	 * measurement phases
@@ -137,7 +137,135 @@ public class ConstantPool {
 		/**
 		 * Time to execute a transaction and terminate it
 		 */
-		COMBINED,
+		OVERALL,
+		/**
+		 * For non-transactional operations
+		 */
+		NOT_TRANSACTIONAL
 	};
 	
+	/**
+	 * measurement operations
+	 */
+	public static enum MeasuredOperations{
+		
+		/**
+		 * ENTITIES
+		 */
+		/**
+		 * Read
+		 */
+		READ,
+		/**
+		 * Write
+		 */
+		WRITE,
+		/**
+		 * vectorSize
+		 */
+		VECTOR_SIZE,
+		
+		
+		/**
+		 * TRANSACTIONS
+		 */
+		/**
+		 * Termination: committed
+		 */
+		COMMITTED,
+		/**
+		 * Termination: aborted by certification
+		 */
+		ABORTED_BY_CERTIFICATION,
+		/**
+		 * Termination: aborted by voting
+		 */
+		ABORTED_BY_VOTING,
+		/**
+		 * Termination: aborted by client
+		 */
+		ABORTED_BY_CLIENT,
+		/**
+		 * Termination: aborted by timeout
+		 */
+		ABORTED_BY_TIMEOUT,
+		/**
+		 * Termination: either aborted(for any reason) and committed
+		 */
+		TERMINATED,
+		/**
+		 * Termination: aborted for any reason
+		 */
+		ABORTED,	
+		/**
+		 * YCSB SPECIFIC, TODO: delete me once ycsb wrapper is not more used
+		 */
+		/**
+		 * scan: ycsb specific
+		 */
+		MIRROR_YCSB_SCAN,
+		/**
+		 * Update: ycsb specific
+		 */
+		MIRROR_YCSB_UPDATE,
+		/**
+		 * Insert: ycsb specific
+		 */
+		MIRROR_YCSB_INSERT,
+		/**
+		 * Read: ycsb specific
+		 */
+		MIRROR_YCSB_READ,
+		/**
+		 * Delete: ycsb specific
+		 */
+		MIRROR_YCSB_DELETE,
+		/**
+		 * Read-Modify-write: ycsb specific
+		 */
+		YCSB_READ_MODIFY_WRITE,
+	};
+
+	/**
+	 * define all transactions of TPC-C and ycsb. 
+	 * @author pcincilla
+	 *
+	 */
+	public static enum WorkloadTransactions {
+		
+		/**
+		 * TPC-C
+		 */
+		/**
+		 * New Order
+		 */
+		NO,
+		/**
+		 * Payment
+		 */
+		P,
+		/**
+		 * Order Status
+		 */
+		OS,
+		/**
+		 * Delivery
+		 */
+		D,
+		/**
+		 * Stock Level
+		 */
+		SL,
+		/**
+		 * YCSB
+		 */
+		/**
+		 * Readonly
+		 */
+		READONLY,
+		/**
+		 * Update
+		 */
+		UPDATE
+	};
 }

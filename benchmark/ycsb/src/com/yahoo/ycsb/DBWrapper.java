@@ -28,6 +28,9 @@ import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
 
+import fr.inria.jessy.ConstantPool.MeasuredOperations;
+import fr.inria.jessy.ConstantPool.TransactionPhase;
+
 /**
  * Wrapper around a "real" DB that measures latencies and counts return codes.
  */
@@ -89,8 +92,8 @@ public class DBWrapper extends DB {
 		long st = System.currentTimeMillis();
 		int res = _db.read(table, key, fields, result);
 		long en = System.currentTimeMillis();
-		_measurements.measure("READ", (int) (en - st));
-		_measurements.reportReturnCode("READ", res);
+		_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_READ, (int) (en - st));
+		_measurements.reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_READ, res);
 		return res;
 	}
 
@@ -116,8 +119,8 @@ public class DBWrapper extends DB {
 		long st = System.currentTimeMillis();
 		int res = _db.scan(table, startkey, recordcount, fields, result);
 		long en = System.currentTimeMillis();
-		_measurements.measure("SCAN", (int) (en - st));
-		_measurements.reportReturnCode("SCAN", res);
+		_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_SCAN, (int) (en - st));
+		_measurements.reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_SCAN, res);
 		return res;
 	}
 
@@ -138,8 +141,8 @@ public class DBWrapper extends DB {
 		long st = System.currentTimeMillis();
 		int res = _db.update(table, key, values);
 		long en = System.currentTimeMillis();
-		_measurements.measure("UPDATE", (int) (en - st));
-		_measurements.reportReturnCode("UPDATE", res);
+		_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_UPDATE, (int) (en - st));
+		_measurements.reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_UPDATE, res);
 		return res;
 	}
 
@@ -160,8 +163,8 @@ public class DBWrapper extends DB {
 		long st = System.currentTimeMillis();
 		int res = _db.insert(table, key, values);
 		long en = System.currentTimeMillis();
-		_measurements.measure("INSERT", (int) (en - st));
-		_measurements.reportReturnCode("INSERT", res);
+		_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_INSERT, (int) (en - st));
+		_measurements.reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_INSERT, res);
 		return res;
 	}
 
@@ -178,8 +181,8 @@ public class DBWrapper extends DB {
 		long st = System.currentTimeMillis();
 		int res = _db.delete(table, key);
 		long en = System.currentTimeMillis();
-		_measurements.measure("DELETE", (int) (en - st));
-		_measurements.reportReturnCode("DELETE", res);
+		_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_DELETE, (int) (en - st));
+		_measurements.reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_DELETE, res);
 		return res;
 	}
 
@@ -188,8 +191,8 @@ public class DBWrapper extends DB {
 		long st = System.currentTimeMillis();
 		int res = _db.readTransaction(readList);
 		long en = System.currentTimeMillis();
-		_measurements.measure("READ", (int) (en - st));
-		_measurements.reportReturnCode("READ", res);
+		_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_READ, (int) (en - st));
+		_measurements.reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_READ, res);
 		return res;
 	}
 
@@ -199,8 +202,8 @@ public class DBWrapper extends DB {
 		long st = System.currentTimeMillis();
 		int res = _db.updateTransaction(readList, updateList);
 		long en = System.currentTimeMillis();
-		_measurements.measure("UPDATE", (int) (en - st));
-		_measurements.reportReturnCode("UPDATE", res);
+		_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_UPDATE, (int) (en - st));
+		_measurements.reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_UPDATE, res);
 		return res;
 	}
 
@@ -209,8 +212,8 @@ public class DBWrapper extends DB {
 		long st = System.currentTimeMillis();
 		int res = _db.createTransaction(createRequest);
 		long en = System.currentTimeMillis();
-		_measurements.measure("INSERT", (int) (en - st));
-		_measurements.reportReturnCode("INSERT", res);
+		_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_INSERT, (int) (en - st));
+		_measurements.reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.MIRROR_YCSB_INSERT, res);
 		return res;
 	}
 

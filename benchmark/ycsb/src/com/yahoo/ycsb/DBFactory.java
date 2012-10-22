@@ -51,7 +51,7 @@ public class DBFactory
 //	 through this wrapper 
 //	 return ret;
 	 
-//	 classical ycsb mesurements
+////	 classic ycsb mesurements
 	 	 	 return new DBWrapper(ret);
       }
       

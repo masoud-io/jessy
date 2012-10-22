@@ -8,17 +8,16 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 
 import com.sleepycat.je.DatabaseException;
-import com.yahoo.ycsb.Client.YCSBTransactionType;
 import com.yahoo.ycsb.measurements.Measurements;
 import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
 
-import fr.inria.jessy.DistributedJessy;
+import fr.inria.jessy.ConstantPool.MeasuredOperations;
+import fr.inria.jessy.ConstantPool.TransactionPhase;
+import fr.inria.jessy.ConstantPool.WorkloadTransactions;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
-import fr.inria.jessy.LocalJessy;
-import fr.inria.jessy.ConstantPool.TransactionPhase;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;
@@ -27,7 +26,7 @@ public class JessyDBClient extends DB {
 
 	private static Logger logger = Logger.getLogger(JessyDBClient.class);
 
-	private static boolean USE_DIST_JESSY = true;
+	private static boolean USE_DIST_JESSY = false;
 
 	private static Jessy jessy;
 
@@ -163,14 +162,14 @@ public class JessyDBClient extends DB {
 			ExecutionHistory history = trans.execute();
 			long en=System.currentTimeMillis();
 			
-			Measurements.getMeasurements().measure(TransactionPhase.COMBINED+" "+TransactionState.COMMITTED.toString()+" "+YCSBTransactionType.READ, (int) (en - st));
+			Measurements.getMeasurements().measure(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, (int) (en - st));
 			
 			
 			if (history == null){
-				Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, -1);
+				Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, -1);
 				return -1;
 			}
-			Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, 0);
+			Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, 0);
 			if (history.getTransactionState() == TransactionState.COMMITTED) {
 				return 0;
 			} else
@@ -226,10 +225,15 @@ public class JessyDBClient extends DB {
 			ExecutionHistory history = trans.execute();
 			long en=System.currentTimeMillis();
 			
-			Measurements.getMeasurements().measure(TransactionPhase.COMBINED+" "+TransactionState.COMMITTED.toString()+" "+YCSBTransactionType.WRITE, (int) (en - st));
+			Measurements.getMeasurements().measure(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, (int) (en - st));
 			
-			if (history == null)
+			if (history == null){
+				Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, -1);
 				return -1;
+			}
+			else{
+				Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, 0);
+			}
 			if (history.getTransactionState() == TransactionState.COMMITTED) {
 				return 0;
 			} else
@@ -261,10 +265,10 @@ public class JessyDBClient extends DB {
 
 			ExecutionHistory history = trans.execute();
 			if (history == null){
-				Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, -1);
+//				Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, -1);
 				return -1;
 			}
-			Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, 0);
+//			Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, 0);
 			if (history.getTransactionState() == TransactionState.COMMITTED) {
 				return 0;
 			} else

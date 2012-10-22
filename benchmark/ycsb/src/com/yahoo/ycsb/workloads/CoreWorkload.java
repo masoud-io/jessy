@@ -29,6 +29,9 @@ import com.yahoo.ycsb.generator.UniformIntegerGenerator;
 import com.yahoo.ycsb.generator.ZipfianGenerator;
 import com.yahoo.ycsb.measurements.Measurements;
 
+import fr.inria.jessy.ConstantPool.MeasuredOperations;
+import fr.inria.jessy.ConstantPool.TransactionPhase;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
@@ -478,7 +481,7 @@ public class CoreWorkload extends Workload
 
 		long en=System.currentTimeMillis();
 		
-		Measurements.getMeasurements().measure("READ-MODIFY-WRITE", (int)(en-st));
+		Measurements.getMeasurements().measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.YCSB_READ_MODIFY_WRITE, (int)(en-st));
 	}
 	
 	public void doTransactionScan(DB db)

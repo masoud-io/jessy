@@ -1,5 +1,7 @@
 package fr.inria.jessy.benchmark.tpcc;
 
+import java.util.Properties;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -7,6 +9,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.yahoo.ycsb.measurements.Measurements;
+
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.benchmark.tpcc.entities.Customer;
@@ -20,6 +25,7 @@ import fr.inria.jessy.benchmark.tpcc.entities.Stock;
 import fr.inria.jessy.benchmark.tpcc.entities.Warehouse;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.utils.Configuration;
 
 /**
  * @author WANG Haiyun & ZHAO Guang
@@ -33,8 +39,14 @@ public class TpccTestInsertData extends TestCase{
 	District di;
 	Item it;
 	Customer cu;
-	
-	int warehauses=10;
+
+	static int _warehauses;
+
+	static {
+		final String warehouses = Configuration
+				.readConfig(ConstantPool.WAREHOUSES_NUMBER);
+		_warehauses= Integer.parseInt(warehouses);
+	}
 
 	/**
 	 * @throws java.lang.Exception
@@ -49,6 +61,11 @@ public class TpccTestInsertData extends TestCase{
 	 */
 	@Before
 	public void setUp() throws Exception {
+
+		Properties props = new Properties();
+		//		TODO ADD consistency, move to wrapper
+		Measurements.setProperties(props);
+
 		jessy =JessyFactory.getLocalJessy();
 		jessy.registerClient(this);
 
@@ -61,7 +78,7 @@ public class TpccTestInsertData extends TestCase{
 		jessy.addEntity(Order.class);
 		jessy.addEntity(New_order.class);
 		jessy.addEntity(Order_line.class);
-		
+
 	}
 
 	/**
@@ -71,20 +88,20 @@ public class TpccTestInsertData extends TestCase{
 	 */
 	@Test
 	public void testInsertData() throws Exception {
-		
+
 		ExecutionHistory result;
 
-		for(int i=1;i<=warehauses;i++){
-			
+		for(int i=1;i<=_warehauses;i++){
+
 			id = new InsertData(jessy,i);
-		
-		
+
+
 			result = id.execute();
-		/* test execution */
-		assertEquals("Result", TransactionState.COMMITTED,
-				result.getTransactionState());
+			/* test execution */
+			assertEquals("Result", TransactionState.COMMITTED,
+					result.getTransactionState());
 		}
 		jessy.close(this);
 	}
-	
+
 }

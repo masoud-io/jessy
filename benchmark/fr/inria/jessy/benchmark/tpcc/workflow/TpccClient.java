@@ -13,9 +13,10 @@ import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 import com.yahoo.ycsb.measurements.exporter.TextMeasurementsExporter;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.WorkloadTransactions;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
-import fr.inria.jessy.ConstantPool.CommitTransaction;
+import fr.inria.jessy.ConstantPool.MeasuredOperations;
 import fr.inria.jessy.ConstantPool.TransactionPhase;
 import fr.inria.jessy.benchmark.tpcc.Delivery;
 import fr.inria.jessy.benchmark.tpcc.NewOrder;
@@ -32,7 +33,6 @@ import fr.inria.jessy.benchmark.tpcc.entities.Order_line;
 import fr.inria.jessy.benchmark.tpcc.entities.Stock;
 import fr.inria.jessy.benchmark.tpcc.entities.Warehouse;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.utils.Configuration;
 
 public class TpccClient {
@@ -40,54 +40,31 @@ public class TpccClient {
 	Jessy jessy;
 	Measurements _measurements;
 
-	static int numberTransaction; /* number of Transactions to execute */
-	static int warehouseNumber;
-	int districtNumber;
+	static int _numberTransaction; /* number of Transactions to execute */
+	static int _warehouseNumber;
+	int _districtNumber;
 
 	int quotient = 0; /* for the number of NewOrder and Payment Transactions */
 	int rest = 0;
 	int i, j;
 
 	private static Logger logger = Logger.getLogger(TpccClient.class);
-	
+
 	static {
 		final String warehouses = Configuration
 				.readConfig(ConstantPool.WAREHOUSES_NUMBER);
 		logger.warn("Warehouse number is " + warehouses);
-		
-		warehouseNumber= Integer.parseInt(warehouses);
+
+		_warehouseNumber= Integer.parseInt(warehouses);
 	}
 
-	private static enum TransactionType {
-		/**
-		 * New Order
-		 */
-		NO,
-		/**
-		 * Payment
-		 */
-		P,
-		/**
-		 * Order Status
-		 */
-		OS,
-		/**
-		 * Delivery
-		 */
-		D,
-		/**
-		 * Stock Level
-		 */
-		SL
 
-	};
 
 	public TpccClient(int numberTransaction,/* int warehouseNumber,*/ int districtNumber) {
 		PropertyConfigurator.configure("log4j.properties");
 
-		this.numberTransaction = numberTransaction;
-		this.warehouseNumber = warehouseNumber;
-		this.districtNumber = districtNumber;
+		_numberTransaction = numberTransaction;
+		_districtNumber = districtNumber;
 
 		_measurements=Measurements.getMeasurements();
 		try {
@@ -122,11 +99,11 @@ public class TpccClient {
 		 * number = (int) Integer.valueOf(s);
 		 */
 
-		quotient = 10 * (numberTransaction / 23);
-		rest = numberTransaction % 23;
+		quotient = 10 * (_numberTransaction / 23);
+		rest = _numberTransaction % 23;
 
 		try {
-			if (this.numberTransaction < 23) {
+			if (_numberTransaction < 23) {
 
 				/* for the rest */
 				for (i = 1; i <= rest / 2; i++) {
@@ -195,71 +172,70 @@ public class TpccClient {
 	public void neworder() throws Exception {
 
 		logger.debug("executing NewOrder...");
-		NewOrder neworder = new NewOrder(jessy, this.warehouseNumber);
+		NewOrder neworder = new NewOrder(jessy, _warehouseNumber);
 		long st=System.currentTimeMillis();
 		ExecutionHistory eh = neworder.execute();
 		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionType.NO);
+		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.NO);
 	}
 
 	public void payment() throws Exception {
 
 		logger.debug("executing payment...");
-		Payment payment = new Payment(jessy, this.warehouseNumber);
+		Payment payment = new Payment(jessy, _warehouseNumber);
 		long st=System.currentTimeMillis();
 		ExecutionHistory eh = payment.execute();
 		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionType.P);
+		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.P);
 	}
 
 	public void orderstatus() throws Exception {
 
 		logger.debug("executing orderstatus...");
-		OrderStatus orderstatus = new OrderStatus(jessy, this.warehouseNumber);
+		OrderStatus orderstatus = new OrderStatus(jessy, _warehouseNumber);
 		long st=System.currentTimeMillis();
 		ExecutionHistory eh = orderstatus.execute();
 		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionType.OS);
+		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.OS);
 	}
 
 	public void delivery() throws Exception {
 
 		logger.debug("executing delivery...");
-		Delivery delivery = new Delivery(jessy, this.warehouseNumber);
+		Delivery delivery = new Delivery(jessy, _warehouseNumber);
 		long st=System.currentTimeMillis();
 		ExecutionHistory eh = delivery.execute();
 		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionType.D);
+		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.D);
 	}
 
 	public void stocklevel() throws Exception {
 
 		logger.debug("executing stocklevel...");
-		StockLevel stocklevel = new StockLevel(jessy, this.warehouseNumber, this.districtNumber);
+		StockLevel stocklevel = new StockLevel(jessy, _warehouseNumber, this._districtNumber);
 		long st=System.currentTimeMillis();
 		ExecutionHistory eh = stocklevel.execute();
 		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionType.SL);
+		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.SL);
 	}
 
 	public static void main(String[] args) throws Exception {
 
 		Properties props = new Properties();
-//			TODO ADD consistency, move to wrapper
-//			Measurements.setProperties(props); 
+		//			TODO ADD consistency, move to wrapper
 		Measurements.setProperties(props);
-		
+
 		TpccClient client = new TpccClient(100, /*10,*/ 10);
 		long st=System.currentTimeMillis();
 		client.execute();
 		long en=System.currentTimeMillis();
 
-		exportMeasurements(props, numberTransaction, en - st);
+		exportMeasurements(props, _numberTransaction, en - st);
 
 		//		TODO cleanly close fractal
 		System.exit(0);
@@ -324,7 +300,7 @@ public class TpccClient {
 	 * @param en Transaction ending time
 	 * @param tt Transaction type
 	 */
-	private void fillStatistics(ExecutionHistory eh, long st, long en, TransactionType tt ) {
+	private void fillStatistics(ExecutionHistory eh, long st, long en, TransactionPhase phase, WorkloadTransactions tt ) {
 
 		int returnCode=0;
 		boolean committed=false;
@@ -334,40 +310,40 @@ public class TpccClient {
 		else{
 			switch (eh.getTransactionState()) {
 			case  COMMITTED:
-				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.COMMITTED.toString()+" "+tt, (int) (en - st));
+				_measurements.measure(phase, MeasuredOperations.COMMITTED, tt, (int) (en - st));
 				committed=true;
 				break;
 
 			case  ABORTED_BY_CERTIFICATION:
-				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.ABORTED_BY_VOTING.toString()+" "+tt, (int) (en - st));
+				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_CERTIFICATION,tt, (int) (en - st));
 				returnCode=-1;
 				break;
 
 			case  ABORTED_BY_VOTING:
-				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.ABORTED_BY_VOTING.toString()+" "+tt, (int) (en - st));
+				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_VOTING,tt, (int) (en - st));
 				returnCode=-1;
 				break;
 
 			case  ABORTED_BY_CLIENT:
-				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.ABORTED_BY_CLIENT.toString()+" "+tt, (int) (en - st));
+				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_CLIENT,tt, (int) (en - st));
 				returnCode=-1;
 				break;
 
 			case  ABORTED_BY_TIMEOUT:
-				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.ABORTED_BY_TIMEOUT.toString()+" "+tt, (int) (en - st));
+				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_TIMEOUT,tt, (int) (en - st));
 				returnCode=-1;
 				break;
 
 			default:
 				break;
 			}
-			
-			_measurements.measure(TransactionPhase.COMBINED+" "+CommitTransaction.TERMINATED.toString(), (int) (en - st));
+
+			_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.TERMINATED, (int) (en - st));
 			if(!committed){
-				_measurements.measure(TransactionPhase.COMBINED+" "+CommitTransaction.OVERALL_ABORTED.toString(), (int) (en - st));
+				_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.ABORTED, (int) (en - st));
 			}
 		}
-		_measurements.reportReturnCode(TransactionPhase.COMBINED+" "+tt, returnCode);
-		
+		_measurements.reportReturnCode(phase, MeasuredOperations.TERMINATED, tt, returnCode);
+
 	}
 }
