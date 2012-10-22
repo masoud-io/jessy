@@ -17,7 +17,7 @@ import fr.inria.jessy.entity.SampleEntityClass;
  * 
  */
 public class JessyTest {
-	LocalJessy jessy;
+	Jessy jessy;
 
 	/**
 	 * @throws java.lang.Exception
@@ -31,7 +31,7 @@ public class JessyTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		jessy = LocalJessy.getInstance();
+		jessy = JessyFactory.getLocalJessy();
 
 		// First, we have to define the entities read or written inside the
 		// transaction

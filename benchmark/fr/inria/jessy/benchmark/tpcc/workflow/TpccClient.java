@@ -1,12 +1,22 @@
 package fr.inria.jessy.benchmark.tpcc.workflow;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Properties;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import fr.inria.jessy.DistributedJessy;
+import com.yahoo.ycsb.measurements.Measurements;
+import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
+import com.yahoo.ycsb.measurements.exporter.TextMeasurementsExporter;
+
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.JessyFactory;
-import fr.inria.jessy.LocalJessy;
+import fr.inria.jessy.ConstantPool.CommitTransaction;
+import fr.inria.jessy.ConstantPool.TransactionPhase;
 import fr.inria.jessy.benchmark.tpcc.Delivery;
 import fr.inria.jessy.benchmark.tpcc.NewOrder;
 import fr.inria.jessy.benchmark.tpcc.OrderStatus;
@@ -21,13 +31,17 @@ import fr.inria.jessy.benchmark.tpcc.entities.Order;
 import fr.inria.jessy.benchmark.tpcc.entities.Order_line;
 import fr.inria.jessy.benchmark.tpcc.entities.Stock;
 import fr.inria.jessy.benchmark.tpcc.entities.Warehouse;
+import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.utils.Configuration;
 
 public class TpccClient {
 
 	Jessy jessy;
+	Measurements _measurements;
 
-	int numberTransaction; /* number of Transactions to execute */
-	int warehouseNumber;
+	static int numberTransaction; /* number of Transactions to execute */
+	static int warehouseNumber;
 	int districtNumber;
 
 	int quotient = 0; /* for the number of NewOrder and Payment Transactions */
@@ -35,16 +49,49 @@ public class TpccClient {
 	int i, j;
 
 	private static Logger logger = Logger.getLogger(TpccClient.class);
+	
+	static {
+		final String warehouses = Configuration
+				.readConfig(ConstantPool.WAREHOUSES_NUMBER);
+		logger.warn("Warehouse number is " + warehouses);
+		
+		warehouseNumber= Integer.parseInt(warehouses);
+	}
 
-	public TpccClient(int numberTransaction, int warehouseNumber, int districtNumber) {
+	private static enum TransactionType {
+		/**
+		 * New Order
+		 */
+		NO,
+		/**
+		 * Payment
+		 */
+		P,
+		/**
+		 * Order Status
+		 */
+		OS,
+		/**
+		 * Delivery
+		 */
+		D,
+		/**
+		 * Stock Level
+		 */
+		SL
+
+	};
+
+	public TpccClient(int numberTransaction,/* int warehouseNumber,*/ int districtNumber) {
 		PropertyConfigurator.configure("log4j.properties");
 
 		this.numberTransaction = numberTransaction;
 		this.warehouseNumber = warehouseNumber;
 		this.districtNumber = districtNumber;
 
+		_measurements=Measurements.getMeasurements();
 		try {
-//			jessy = JessyFactory.getDistributedJessy();
+			//			jessy = JessyFactory.getDistributedJessy();
 			jessy = JessyFactory.getLocalJessy();
 
 			jessy.addEntity(Warehouse.class);
@@ -149,44 +196,178 @@ public class TpccClient {
 
 		logger.debug("executing NewOrder...");
 		NewOrder neworder = new NewOrder(jessy, this.warehouseNumber);
-		neworder.execute();
+		long st=System.currentTimeMillis();
+		ExecutionHistory eh = neworder.execute();
+		long en=System.currentTimeMillis();
+
+		fillStatistics(eh, st, en, TransactionType.NO);
 	}
 
 	public void payment() throws Exception {
-		
+
 		logger.debug("executing payment...");
 		Payment payment = new Payment(jessy, this.warehouseNumber);
-		payment.execute();
+		long st=System.currentTimeMillis();
+		ExecutionHistory eh = payment.execute();
+		long en=System.currentTimeMillis();
+
+		fillStatistics(eh, st, en, TransactionType.P);
 	}
 
 	public void orderstatus() throws Exception {
-		
+
 		logger.debug("executing orderstatus...");
 		OrderStatus orderstatus = new OrderStatus(jessy, this.warehouseNumber);
-		orderstatus.execute();
+		long st=System.currentTimeMillis();
+		ExecutionHistory eh = orderstatus.execute();
+		long en=System.currentTimeMillis();
+
+		fillStatistics(eh, st, en, TransactionType.OS);
 	}
 
 	public void delivery() throws Exception {
 
 		logger.debug("executing delivery...");
 		Delivery delivery = new Delivery(jessy, this.warehouseNumber);
-		delivery.execute();
+		long st=System.currentTimeMillis();
+		ExecutionHistory eh = delivery.execute();
+		long en=System.currentTimeMillis();
+
+		fillStatistics(eh, st, en, TransactionType.D);
 	}
 
 	public void stocklevel() throws Exception {
 
 		logger.debug("executing stocklevel...");
 		StockLevel stocklevel = new StockLevel(jessy, this.warehouseNumber, this.districtNumber);
-		stocklevel.execute();
+		long st=System.currentTimeMillis();
+		ExecutionHistory eh = stocklevel.execute();
+		long en=System.currentTimeMillis();
+
+		fillStatistics(eh, st, en, TransactionType.SL);
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		TpccClient client = new TpccClient(4096, 10, 10);
+		Properties props = new Properties();
+//			TODO ADD consistency, move to wrapper
+//			Measurements.setProperties(props); 
+		Measurements.setProperties(props);
+		
+		TpccClient client = new TpccClient(100, /*10,*/ 10);
+		long st=System.currentTimeMillis();
 		client.execute();
+		long en=System.currentTimeMillis();
 
-//		TODO cleanly close fractal
+		exportMeasurements(props, numberTransaction, en - st);
+
+		//		TODO cleanly close fractal
 		System.exit(0);
 	}
 
+	/**
+	 * Exports the measurements to either sysout or a file using the exporter
+	 * loaded from conf.
+	 * @throws IOException Either failed to write to output stream or failed to close it.
+	 */
+	private static void exportMeasurements(Properties props, int opcount, long runtime)
+			throws IOException
+			{
+		MeasurementsExporter exporter = null;
+		try
+		{
+			// if no destination file is provided the results will be written to stdout
+			OutputStream out;
+			String exportFile = props.getProperty("exportfile");
+
+			if (exportFile == null)
+			{
+				out = System.err;
+			} else
+			{
+				out = new FileOutputStream(exportFile);
+			}
+
+			// if no exporter is provided the default text one will be used
+			String exporterStr = props.getProperty("exporter", "com.yahoo.ycsb.measurements.exporter.TextMeasurementsExporter");
+			try
+			{
+				exporter = (MeasurementsExporter) Class.forName(exporterStr).getConstructor(OutputStream.class).newInstance(out);
+			} catch (Exception e)
+			{
+				System.err.println("Could not find exporter " + exporterStr
+						+ ", will use default text reporter.");
+				e.printStackTrace();
+				exporter = new TextMeasurementsExporter(out);
+			}
+			//DataOutputStream dos = new DataOutputStream(new FileOutputStream("results"));
+			exporter.write("OVERALL", "RunTime(ms)", runtime);
+
+			double throughput = 1000.0 * ((double) opcount) / ((double) runtime);
+			exporter.write("OVERALL", "Throughput(ops/sec)", throughput);
+
+			Measurements.getMeasurements().exportMeasurements(exporter);
+		} finally
+		{
+			if (exporter != null)
+			{
+				exporter.close();	
+			}
+		}
+			}
+
+	/**
+	 * Used to take separate measurements on all TPC-C transactions types
+	 * 
+	 * @param eh Transaction ExecutionHistory
+	 * @param st Transaction starting time
+	 * @param en Transaction ending time
+	 * @param tt Transaction type
+	 */
+	private void fillStatistics(ExecutionHistory eh, long st, long en, TransactionType tt ) {
+
+		int returnCode=0;
+		boolean committed=false;
+		if(eh==null){
+			returnCode=-1;
+		}
+		else{
+			switch (eh.getTransactionState()) {
+			case  COMMITTED:
+				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.COMMITTED.toString()+" "+tt, (int) (en - st));
+				committed=true;
+				break;
+
+			case  ABORTED_BY_CERTIFICATION:
+				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.ABORTED_BY_VOTING.toString()+" "+tt, (int) (en - st));
+				returnCode=-1;
+				break;
+
+			case  ABORTED_BY_VOTING:
+				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.ABORTED_BY_VOTING.toString()+" "+tt, (int) (en - st));
+				returnCode=-1;
+				break;
+
+			case  ABORTED_BY_CLIENT:
+				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.ABORTED_BY_CLIENT.toString()+" "+tt, (int) (en - st));
+				returnCode=-1;
+				break;
+
+			case  ABORTED_BY_TIMEOUT:
+				_measurements.measure(TransactionPhase.COMBINED+" "+TransactionState.ABORTED_BY_TIMEOUT.toString()+" "+tt, (int) (en - st));
+				returnCode=-1;
+				break;
+
+			default:
+				break;
+			}
+			
+			_measurements.measure(TransactionPhase.COMBINED+" "+CommitTransaction.TERMINATED.toString(), (int) (en - st));
+			if(!committed){
+				_measurements.measure(TransactionPhase.COMBINED+" "+CommitTransaction.OVERALL_ABORTED.toString(), (int) (en - st));
+			}
+		}
+		_measurements.reportReturnCode(TransactionPhase.COMBINED+" "+tt, returnCode);
+		
+	}
 }

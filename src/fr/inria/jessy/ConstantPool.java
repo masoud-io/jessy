@@ -101,5 +101,43 @@ public class ConstantPool {
 	public static final String FRACTAL_FILE = "fractal_file";
 	public static final String CHECK_COMMUTAVITY = "check_commutativity";
 	public static final String REPLICATION_FACTOR = "replication_factor";
+	public static final String WAREHOUSES_NUMBER = "warehouses_number";
+	
+	/**
+	 * Measurements
+	 */
+	
 
+	/**
+	 * commit transaction
+	 */
+	public static enum CommitTransaction{
+		/**
+		 * Terminated without fails
+		 */
+		TERMINATED,
+		/**
+		 * Aborted (by client, by voting, by timeout etc...)
+		 */
+		OVERALL_ABORTED,
+	};
+	
+	/**
+	 * measurement phases
+	 */
+	public static enum TransactionPhase{
+		/**
+		 * Commit time
+		 */
+		TERMINATION,
+		/**
+		 * Time to execute a transaction (termination time non included)
+		 */
+		EXECUTION,
+		/**
+		 * Time to execute a transaction and terminate it
+		 */
+		COMBINED,
+	};
+	
 }

@@ -59,8 +59,11 @@ public class Delivery extends Transaction {
 						 * find the result and skip the loop
 						 */
 						j = district.getD_NEXT_O();
+						
+//						break;
 					}
-
+//					TODO fixme
+					break;
 				}
 
 				if (no == null) { /* no result, skip */

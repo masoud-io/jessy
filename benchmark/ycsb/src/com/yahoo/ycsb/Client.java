@@ -330,6 +330,17 @@ class ClientThread extends Thread
  */
 public class Client
 {
+	
+	static enum YCSBTransactionType {
+		/**
+		 * read transaction
+		 */
+		READ,
+		/**
+		 * write transaction
+		 */
+		WRITE
+	};
 
 	public static final String OPERATION_COUNT_PROPERTY="operationcount";
 
