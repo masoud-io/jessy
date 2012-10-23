@@ -23,6 +23,10 @@ import java.util.Properties;
 
 import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 
+import fr.inria.jessy.ConstantPool.MeasuredOperations;
+import fr.inria.jessy.ConstantPool.TransactionPhase;
+import fr.inria.jessy.ConstantPool.WorkloadTransactions;
+
 /**
  * Collects latency measurements, and reports them when requested.
  * 
@@ -91,11 +95,31 @@ public class Measurements
 			return new OneMeasurementTimeSeries(name,_props);
 		}
 	}
+	
+	/**
+	 * Call the measure function with an operation part of the static set of operations defined in the CostantPool
+	 * @param operation
+	 * @param latency
+	 */
+	public synchronized void measure(TransactionPhase phase, MeasuredOperations operation, int latency){
+		measure(phase.toString()+"_"+operation.toString(), latency);
+	}
+	
+	/**
+	 * Call the measure function with an operation part of the static set of operations defined in the CostantPool and a 
+	 * transaction type
+	 * @param operation
+	 * @param latency
+	 */
+	public synchronized void measure(TransactionPhase phase, MeasuredOperations operation, WorkloadTransactions t, int latency){
+		measure(phase.toString()+"_"+operation.toString()+"_"+t, latency);
+	}
+	
 
       /**
        * Report a single value of a single metric. E.g. for read latency, operation="READ" and latency is the measured value.
        */
-	public synchronized void measure(String operation, int latency)
+	private synchronized void measure(String operation, int latency)
 	{
 		if (!data.containsKey(operation))
 		{
@@ -118,11 +142,32 @@ public class Measurements
 			e.printStackTrace(System.out);
 		}
 	}
+	
+	/**
+	 * Call the reportReturnCode function with an operation part of the static set of operations defined in the CostantPool and a 
+	 * transaction type
+	 * @param operation
+	 * @param code
+	 */
+	public void reportReturnCode(TransactionPhase phase, MeasuredOperations operation, int code){
+		reportReturnCode(phase.toString()+"_"+operation.toString(), code);
+	}
+	
+	/**
+	 * Call the reportReturnCode function with an operation part of the static set of operations defined in the CostantPool
+	 * 
+	 * @param operation
+	 * @param t
+	 * @param code
+	 */
+	public void reportReturnCode(TransactionPhase phase,MeasuredOperations operation, WorkloadTransactions t, int code){
+		reportReturnCode(phase.toString()+"_"+operation.toString()+"_"+t, code);
+	}
 
       /**
        * Report a return code for a single DB operaiton.
        */
-	public void reportReturnCode(String operation, int code)
+	private void reportReturnCode(String operation, int code)
 	{
 		if (!data.containsKey(operation))
 		{

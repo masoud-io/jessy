@@ -23,4 +23,4 @@ fractal_file=myfractal.xml
 check_commutativity=true
 
 #nomber of warehouses in TPC-C. 10 is the default
-warehouses_number = 10
+warehouses_number = 1
