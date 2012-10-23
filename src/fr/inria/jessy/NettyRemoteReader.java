@@ -1,5 +1,6 @@
 package fr.inria.jessy;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 
 import org.jboss.netty.channel.Channel;
 
+import com.yahoo.ycsb.Utils;
 import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.communication.JessyGroupManager;
@@ -21,6 +23,7 @@ import fr.inria.jessy.communication.UnicastClientManager;
 import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;
+import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
@@ -57,15 +60,15 @@ public class NettyRemoteReader extends RemoteReader {
 		if (JessyGroupManager.getInstance().isProxy()) {
 			cmanager = new UnicastClientManager(this);
 			
-			pool.submitMultiple(new InnerObjectFactory<RemoteReadRequestTask>(
-					RemoteReadRequestTask.class, NettyRemoteReader.class, this));
+//			pool.submitMultiple(new InnerObjectFactory<RemoteReadRequestTask>(
+//					RemoteReadRequestTask.class, NettyRemoteReader.class, this),2);
 			
-			// pool.submit(new RemoteReadRequestTask());
+			 pool.submit(new RemoteReadRequestTask());
 		} else {
 			smanager = new UnicastServerManager(this);
 
 //			pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
-//					RemoteReadReplyTask.class, NettyRemoteReader.class, this),3);
+//					RemoteReadReplyTask.class, NettyRemoteReader.class, this),2);
 
 //			 pool.submit(new RemoteReadReplyTask());
 		}
@@ -79,8 +82,29 @@ public class NettyRemoteReader extends RemoteReader {
 		RemoteReadFuture remoteRead = new RemoteReadFuture(readRequest);
 		remoteReadQ.put(remoteRead);
 		return remoteRead;
+//		return sendRequest(readRequest);
 	}
 
+	private  <E extends JessyEntity> RemoteReadFuture sendRequest(ReadRequest<E> readRequest){
+
+		long start = System.nanoTime();
+
+		RemoteReadFuture remoteRead = new RemoteReadFuture(readRequest);
+		
+
+			Set<Group> dests = jessy.partitioner.resolve(readRequest);
+			ArrayList<ReadRequest<JessyEntity>> toSend=new ArrayList<ReadRequest<JessyEntity>>(1);
+			toSend.add((ReadRequest<JessyEntity>) readRequest);
+			
+			cmanager.unicast(
+					new ReadRequestMessage(toSend), dests.iterator().next().members().iterator().next());
+			
+			pendingRemoteReads.put(readRequest.getReadRequestId(),
+					remoteRead);
+			
+			return remoteRead;
+	}
+	
 	public void learnReadRequestMessage(ReadRequestMessage readRequestMessage,
 			Channel channel) {
 
@@ -96,7 +120,7 @@ public class NettyRemoteReader extends RemoteReader {
 
 		List<ReadReply<JessyEntity>> replies = jessy.getDataStore().getAll(
 				readRequestMessage.getReadRequests());
-
+//		List<ReadReply<JessyEntity>> replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
 		serverLookupTime.add(System.nanoTime() - start);
 
 		start = System.nanoTime();
@@ -154,7 +178,7 @@ public class NettyRemoteReader extends RemoteReader {
 
 					long start = System.nanoTime();
 
-					// remoteReadQ.drainTo(list);
+					 remoteReadQ.drainTo(list);
 
 					// Factorize read requests.
 					for (RemoteReadFuture remoteRead : list) {
@@ -172,7 +196,7 @@ public class NettyRemoteReader extends RemoteReader {
 							if (toSend.get(dest) == null)
 								toSend.put(
 										dest,
-										new ArrayList<ReadRequest<JessyEntity>>());
+										new ArrayList<ReadRequest<JessyEntity>>(1));
 							toSend.get(dest).add(rr);
 						}
 
@@ -215,12 +239,17 @@ public class NettyRemoteReader extends RemoteReader {
 				ReadRequestMessage readRequestMessage;
 				try {
 					readRequestMessage = requestQ.take();
+					long start=System.nanoTime();
 					List<ReadReply<JessyEntity>> replies = jessy.getDataStore()
 							.getAll(readRequestMessage.getReadRequests());
-
+//					List<ReadReply<JessyEntity>> replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
+					serverLookupTime.add(System.nanoTime() - start);
+					
+					start=System.nanoTime();
 					readRequestMessage.channel.write(new ReadReplyMessage(
 							replies));
-
+					
+					serverSendingTime.add(System.nanoTime() - start);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -284,8 +313,14 @@ public class NettyRemoteReader extends RemoteReader {
 			ReadRequest<JessyEntity> rr) {
 		List<ReadReply<JessyEntity>> replies = new ArrayList<ReadReply<JessyEntity>>();
 
+		String data = Utils.ASCIIString(1000);
+		HashMap<String, String> tmp=new HashMap<String, String>();
+		tmp.put("1", data);
+
 		JessyEntity entity = new YCSBEntity(rr.getOneKey().getKeyValue()
-				.toString());
+				.toString(),tmp);
+		
+		
 		ReadReply<JessyEntity> reply = new ReadReply<JessyEntity>(entity,
 				rr.getReadRequestId());
 

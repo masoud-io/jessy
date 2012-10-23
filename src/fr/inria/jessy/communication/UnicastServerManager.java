@@ -1,7 +1,6 @@
 package fr.inria.jessy.communication;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
 
 import net.sourceforge.fractal.utils.ExecutorPool;
 
@@ -14,14 +13,15 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 import fr.inria.jessy.NettyRemoteReader;
 
-public class UnicastServerManager {	
+public class UnicastServerManager {
 
 	public UnicastServerManager(final NettyRemoteReader learner) {
 
-		ChannelFactory factory = new NioServerSocketChannelFactory(
-				ExecutorPool.getInstance().getExecutorService(),
-				ExecutorPool.getInstance().getExecutorService());
-//		Executors.newCachedThreadPool()
+		ChannelFactory factory = new NioServerSocketChannelFactory(ExecutorPool
+				.getInstance().getExecutorService(), ExecutorPool.getInstance()
+				.getExecutorService(), Runtime.getRuntime()
+				.availableProcessors() - 1);
+
 		ServerBootstrap bootstrap = new ServerBootstrap(factory);
 
 		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
@@ -33,9 +33,6 @@ public class UnicastServerManager {
 
 		bootstrap.setOption("child.tcpNoDelay", true);
 		bootstrap.setOption("child.keepAlive", true);
-		
-		bootstrap.setOption("sendBufferSize", 1048576); 
-		bootstrap.setOption("receiveBufferSize", 1048576);
 
 		bootstrap.bind(new InetSocketAddress(4256));
 

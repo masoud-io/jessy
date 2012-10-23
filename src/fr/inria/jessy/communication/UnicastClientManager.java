@@ -2,10 +2,10 @@ package fr.inria.jessy.communication;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.concurrent.Executors;
 
 import net.sourceforge.fractal.membership.Membership;
 import net.sourceforge.fractal.multicast.MulticastMessage;
+import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -41,8 +41,9 @@ public class UnicastClientManager {
 		int port = 4256;
 
 		ChannelFactory factory = new NioClientSocketChannelFactory(
-				Executors.newCachedThreadPool(),
-				Executors.newCachedThreadPool());
+				ExecutorPool.getInstance().getExecutorService(),
+				ExecutorPool.getInstance().getExecutorService(),Runtime.getRuntime()
+				.availableProcessors()-1);
 
 		ClientBootstrap bootstrap = new ClientBootstrap(factory);
 
@@ -54,9 +55,6 @@ public class UnicastClientManager {
 		bootstrap.setOption("tcpNoDelay", true);
 		bootstrap.setOption("keepAlive", true);
 		
-		bootstrap.setOption("sendBufferSize", 1048576); 
-		bootstrap.setOption("receiveBufferSize", 1048576);
-
 		// Connect to the server, wait for the connection and get back the
 		// channel
 		return bootstrap.connect(new InetSocketAddress(host, port))
