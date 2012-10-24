@@ -38,6 +38,7 @@ public class ModuloPartitioner implements Partitioner {
 		if (readRequest.isOneKeyRequest()) {
 			ret.add(resolve(readRequest.getOneKey().getKeyValue().toString()));
 		} else {
+			//TODO
 			return null;
 		}
 

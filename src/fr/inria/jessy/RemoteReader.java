@@ -20,6 +20,10 @@ import fr.inria.jessy.store.ReadRequest;
  * read request via function {@link RemoteReader#remoteRead(ReadRequest)} and
  * returns a Future encapsulating a JessyEntity.
  * 
+ * * TODO: put the ExecutorPool inside Jessy (?)
+ * 
+ * TODO: suppress or garbage-collect cancelled requests.
+ * 
  * @author Masoud Saeida Ardekani
  * 
  */
@@ -28,9 +32,8 @@ public abstract class RemoteReader {
 
 	protected static Logger logger = Logger.getLogger(RemoteReader.class);
 
-	protected static ValueRecorder batching_ReadRequest, batching,
-			serverLookupTime, serverSendingTime, serverAnsweringTime,
-			clientAskingTime;
+	protected static ValueRecorder batching, serverLookupTime,
+			serverSendingTime, serverAnsweringTime, clientAskingTime;
 
 	static {
 		serverLookupTime = new ValueRecorder(
@@ -53,8 +56,6 @@ public abstract class RemoteReader {
 		clientAskingTime.setFormat("%a");
 
 		batching = new ValueRecorder("RemoteReader#batching)");
-		batching_ReadRequest = new ValueRecorder(
-				"RemoteReader#batching_ReadRequest)");
 	}
 
 	protected DistributedJessy jessy;

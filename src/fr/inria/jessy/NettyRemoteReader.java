@@ -1,6 +1,5 @@
 package fr.inria.jessy;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import net.sourceforge.fractal.membership.Group;
-import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 
 import org.jboss.netty.channel.Channel;
 
@@ -23,7 +21,6 @@ import fr.inria.jessy.communication.UnicastClientManager;
 import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;
-import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
@@ -32,14 +29,9 @@ import fr.inria.jessy.store.ReadRequest;
  * This class implements {@link RemoteReader} by using Netty package for
  * performing unicast operations.
  * 
- * TODO: put the ExecutorPool inside Jessy (?) TODO: suppress or garbage-collect
- * cancelled requests.
- * 
- * @author Pierre Sutra
  * @author Masoud Saeida Ardekani
  */
 
-// FIXME fix parametrized types.
 // TODO CAUTION: this implementation is not fault tolerant
 
 public class NettyRemoteReader extends RemoteReader {
@@ -54,23 +46,31 @@ public class NettyRemoteReader extends RemoteReader {
 
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
 
-		// With a LOW # of cores, contention is too expensive.
-		// Besides, we are already batching.
-
 		if (JessyGroupManager.getInstance().isProxy()) {
 			cmanager = new UnicastClientManager(this);
-			
-//			pool.submitMultiple(new InnerObjectFactory<RemoteReadRequestTask>(
-//					RemoteReadRequestTask.class, NettyRemoteReader.class, this),2);
-			
-			 pool.submit(new RemoteReadRequestTask());
+
+			// The fastest way to handle client messages is to put them in a
+			// queue, and only one thread tries to take them from the queue and
+			// process them.
+
+			// pool.submitMultiple(new
+			// InnerObjectFactory<RemoteReadRequestTask>(
+			// RemoteReadRequestTask.class, NettyRemoteReader.class, this),2);
+
+			pool.submit(new RemoteReadRequestTask());
 		} else {
 			smanager = new UnicastServerManager(this);
 
-//			pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
-//					RemoteReadReplyTask.class, NettyRemoteReader.class, this),2);
+			// The fastest way to execute read requests at the server is to
+			// handle requests in the same thread delivering them to the remote
+			// reader. In other words, this approach is better than having a
+			// separate thread handling them. Another advantage is that with
+			// this approach, CPU can be consumed hundred percent.
 
-//			 pool.submit(new RemoteReadReplyTask());
+			// pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
+			// RemoteReadReplyTask.class, NettyRemoteReader.class, this),2);
+
+			// pool.submit(new RemoteReadReplyTask());
 		}
 	}
 
@@ -82,45 +82,25 @@ public class NettyRemoteReader extends RemoteReader {
 		RemoteReadFuture remoteRead = new RemoteReadFuture(readRequest);
 		remoteReadQ.put(remoteRead);
 		return remoteRead;
-//		return sendRequest(readRequest);
 	}
 
-	private  <E extends JessyEntity> RemoteReadFuture sendRequest(ReadRequest<E> readRequest){
-
-		long start = System.nanoTime();
-
-		RemoteReadFuture remoteRead = new RemoteReadFuture(readRequest);
-		
-
-			Set<Group> dests = jessy.partitioner.resolve(readRequest);
-			ArrayList<ReadRequest<JessyEntity>> toSend=new ArrayList<ReadRequest<JessyEntity>>(1);
-			toSend.add((ReadRequest<JessyEntity>) readRequest);
-			
-			cmanager.unicast(
-					new ReadRequestMessage(toSend), dests.iterator().next().members().iterator().next());
-			
-			pendingRemoteReads.put(readRequest.getReadRequestId(),
-					remoteRead);
-			
-			return remoteRead;
-	}
-	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void learnReadRequestMessage(ReadRequestMessage readRequestMessage,
 			Channel channel) {
 
-//		 try {
-//		 readRequestMessage.channel = channel;
-//		 requestQ.put(readRequestMessage);
-//		 } catch (InterruptedException e) {
-//		 // TODO Auto-generated catch block
-//		 e.printStackTrace();
-//		 }
+		// try {
+		// readRequestMessage.channel = channel;
+		// requestQ.put(readRequestMessage);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
 
 		long start = System.nanoTime();
 
 		List<ReadReply<JessyEntity>> replies = jessy.getDataStore().getAll(
 				readRequestMessage.getReadRequests());
-//		List<ReadReply<JessyEntity>> replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
+		// List<ReadReply<JessyEntity>>
+		// replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
 		serverLookupTime.add(System.nanoTime() - start);
 
 		start = System.nanoTime();
@@ -129,9 +109,8 @@ public class NettyRemoteReader extends RemoteReader {
 		serverSendingTime.add(System.nanoTime() - start);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void learnReadReplyMessage(ReadReplyMessage msg) {
-
-		long start = System.nanoTime();
 
 		List<ReadReply> list = msg.getReadReplies();
 		batching.add(list.size());
@@ -178,7 +157,7 @@ public class NettyRemoteReader extends RemoteReader {
 
 					long start = System.nanoTime();
 
-					 remoteReadQ.drainTo(list);
+					remoteReadQ.drainTo(list);
 
 					// Factorize read requests.
 					for (RemoteReadFuture remoteRead : list) {
@@ -196,7 +175,8 @@ public class NettyRemoteReader extends RemoteReader {
 							if (toSend.get(dest) == null)
 								toSend.put(
 										dest,
-										new ArrayList<ReadRequest<JessyEntity>>(1));
+										new ArrayList<ReadRequest<JessyEntity>>(
+												1));
 							toSend.get(dest).add(rr);
 						}
 
@@ -204,9 +184,7 @@ public class NettyRemoteReader extends RemoteReader {
 
 					// Send them.
 					for (Group dest : toSend.keySet()) {
-						int swid = dest.members().iterator().next(); // FIXME
-																		// improve
-																		// this.
+						int swid = dest.getRandom();
 						cmanager.unicast(
 								new ReadRequestMessage(toSend.get(dest)), swid);
 					}
@@ -225,102 +203,49 @@ public class NettyRemoteReader extends RemoteReader {
 
 	public class RemoteReadReplyTask implements Runnable {
 
-		// private Map<Integer, List<ReadRequest<JessyEntity>>> pendingRequests;
-
 		public RemoteReadReplyTask() {
-			// pendingRequests = new HashMap<Integer,
-			// List<ReadRequest<JessyEntity>>>();
 		}
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public void run() {
 
 			while (true) {
 				ReadRequestMessage readRequestMessage;
 				try {
 					readRequestMessage = requestQ.take();
-					long start=System.nanoTime();
+					long start = System.nanoTime();
 					List<ReadReply<JessyEntity>> replies = jessy.getDataStore()
 							.getAll(readRequestMessage.getReadRequests());
-//					List<ReadReply<JessyEntity>> replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
+					// List<ReadReply<JessyEntity>>
+					// replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
 					serverLookupTime.add(System.nanoTime() - start);
-					
-					start=System.nanoTime();
+
+					start = System.nanoTime();
 					readRequestMessage.channel.write(new ReadReplyMessage(
 							replies));
-					
+
 					serverSendingTime.add(System.nanoTime() - start);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 
-			// Collection<ReadRequestMessage> msgs = new
-			// ArrayList<ReadRequestMessage>();
-			//
-			// while (true) {
-			//
-			// try {
-			// long start = System.nanoTime();
-			//
-			// pendingRequests.clear();
-			// msgs.clear();
-			//
-			// msgs.add(requestQ.take());
-			// requestQ.drainTo(msgs);
-			//
-			//
-			// for (ReadRequestMessage m : msgs) {
-			// if (!pendingRequests.containsKey(m.source)) {
-			// pendingRequests.put(m.source,
-			// new ArrayList<ReadRequest<JessyEntity>>());
-			// }
-			// pendingRequests.get(m.source).addAll(
-			// m.getReadRequests());
-			// }
-			//
-			// logger.debug("got" + pendingRequests);
-			//
-			// for (Integer dest : pendingRequests.keySet()) {
-			// batching_ReadRequest.add(pendingRequests.get(dest).size());
-			// List<ReadReply<JessyEntity>> replies = jessy
-			// .getDataStore().getAll(
-			// pendingRequests.get(dest));
-			// if (replies.isEmpty()) {
-			// logger.warn("read requests " + pendingRequests
-			// + " failed");
-			// }
-			//
-			// // smanager.unicast(new ReadReplyMessage(replies),
-			// // dest);
-			// // remoteReadStream.unicast(new ReadReplyMessage(replies),
-			// // dest);
-			// }
-			//
-			// serverAnsweringTime.add(System.nanoTime()-start);
-			//
-			// } catch (Exception e) {
-			// e.printStackTrace();
-			// }
-			//
-			// }
 		}
 
 	}
 
+	@SuppressWarnings("unused")
 	private List<ReadReply<JessyEntity>> createFastYCSBReply(
 			ReadRequest<JessyEntity> rr) {
 		List<ReadReply<JessyEntity>> replies = new ArrayList<ReadReply<JessyEntity>>();
 
 		String data = Utils.ASCIIString(1000);
-		HashMap<String, String> tmp=new HashMap<String, String>();
+		HashMap<String, String> tmp = new HashMap<String, String>();
 		tmp.put("1", data);
 
 		JessyEntity entity = new YCSBEntity(rr.getOneKey().getKeyValue()
-				.toString(),tmp);
-		
-		
+				.toString(), tmp);
+
 		ReadReply<JessyEntity> reply = new ReadReply<JessyEntity>(entity,
 				rr.getReadRequestId());
 

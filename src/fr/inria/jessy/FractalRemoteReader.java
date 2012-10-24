@@ -31,9 +31,6 @@ import fr.inria.jessy.store.ReadRequest;
  * This class implements {@link RemoteReader} by using Netty package for
  * performing unicast operations.
  * 
- * TODO: put the ExecutorPool inside Jessy (?) TODO: suppress or garbage-collect
- * cancelled requests.
- * 
  * @author Pierre Sutra
  * @author Masoud Saeida Ardekani
  */
@@ -60,15 +57,15 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
 
-		
 		pool.submit(new RemoteReadReplyTask());
 		pool.submit(new RemoteReadRequestTask());
 		// With a LOW # of cores, contention is too expensive.
 		// Besides, we are already batching.
-//		 pool.submitMultiple( new InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
-//		 RemoteReader.class, this));
-//		 pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
-//		 RemoteReadReplyTask.class, RemoteReader.class, this));
+		// pool.submitMultiple( new
+		// InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
+		// RemoteReader.class, this));
+		// pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
+		// RemoteReadReplyTask.class, RemoteReader.class, this));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -83,12 +80,12 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 
 	@SuppressWarnings("unchecked")
 	public void learn(Stream s, Serializable v) {
-		
+
 		if (v instanceof ReadRequestMessage) {
-			
+
 			try {
 				requestQ.put((ReadRequestMessage) v);
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -96,7 +93,7 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 		} else {
 
 			long start = System.nanoTime();
-			
+
 			List<ReadReply> list = ((ReadReplyMessage) v).getReadReplies();
 			batching.add(list.size());
 
@@ -108,7 +105,7 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 					logger.info("received an incorrect reply or request already served");
 					continue;
 				}
-				
+
 				if (pendingRemoteReads.get(reply.getReadRequestId())
 						.mergeReply(reply))
 					pendingRemoteReads.remove(reply.getReadRequestId());
@@ -140,9 +137,9 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 					toSend.clear();
 					list.clear();
 					list.add(remoteReadQ.take());
-					
+
 					long start = System.nanoTime();
-					
+
 					remoteReadQ.drainTo(list);
 
 					// Factorize read requests.
@@ -175,8 +172,8 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 						remoteReadStream.unicast(
 								new ReadRequestMessage(toSend.get(dest)), swid);
 					}
-					
-					clientAskingTime.add(System.nanoTime()-start);
+
+					clientAskingTime.add(System.nanoTime() - start);
 
 				}
 
@@ -198,21 +195,20 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 
 		@SuppressWarnings("unchecked")
 		public void run() {
-		
+
 			Collection<ReadRequestMessage> msgs = new ArrayList<ReadRequestMessage>();
-		
+
 			while (true) {
-		
+
 				try {
 					long start = System.nanoTime();
-		
+
 					pendingRequests.clear();
 					msgs.clear();
-		
+
 					msgs.add(requestQ.take());
 					requestQ.drainTo(msgs);
-					
-					
+
 					for (ReadRequestMessage m : msgs) {
 						if (!pendingRequests.containsKey(m.source)) {
 							pendingRequests.put(m.source,
@@ -221,11 +217,10 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 						pendingRequests.get(m.source).addAll(
 								m.getReadRequests());
 					}
-		
+
 					logger.debug("got" + pendingRequests);
-		
+
 					for (Integer dest : pendingRequests.keySet()) {
-						batching_ReadRequest.add(pendingRequests.get(dest).size());
 						List<ReadReply<JessyEntity>> replies = jessy
 								.getDataStore().getAll(
 										pendingRequests.get(dest));
@@ -233,27 +228,30 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 							logger.warn("read requests " + pendingRequests
 									+ " failed");
 						}
-						
+
 						remoteReadStream.unicast(new ReadReplyMessage(replies),
 								dest);
 					}
-					
-					serverAnsweringTime.add(System.nanoTime()-start);
-		
+
+					serverAnsweringTime.add(System.nanoTime() - start);
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-		
+
 			}
 		}
 
 	}
-	
-	private ReadReply<JessyEntity> createFastYCSBReply(ReadRequest<JessyEntity> rr){
-		JessyEntity entity=new YCSBEntity(rr.getOneKey().getKeyValue().toString());
-		ReadReply<JessyEntity> reply=new ReadReply<JessyEntity>(entity,rr.getReadRequestId());
+
+	private ReadReply<JessyEntity> createFastYCSBReply(
+			ReadRequest<JessyEntity> rr) {
+		JessyEntity entity = new YCSBEntity(rr.getOneKey().getKeyValue()
+				.toString());
+		ReadReply<JessyEntity> reply = new ReadReply<JessyEntity>(entity,
+				rr.getReadRequestId());
 		return reply;
-		
+
 	}
 
 }
