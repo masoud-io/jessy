@@ -61,11 +61,11 @@ public class JessyWrapper extends Jessy{
 			E res = _jessy.performRead(entityClass, keyName, keyValue, readSet);
 			long en = System.currentTimeMillis();
 
-			_measurements.measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, (int) (en - st));
+			_measurements.measure(TransactionPhase.OW, MeasuredOperations.READ, (int) (en - st));
 			if(res==null){
 				ReturnCode=-1;
 			}
-			_measurements.reportReturnCode(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, ReturnCode);
+			_measurements.reportReturnCode(TransactionPhase.OW, MeasuredOperations.READ, ReturnCode);
 
 			return res;
 		}
@@ -90,11 +90,11 @@ public class JessyWrapper extends Jessy{
 			Collection<E> res = _jessy.performRead(entityClass, keys, readSet);
 			long en = System.currentTimeMillis();
 
-			_measurements.measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, (int) (en - st));
+			_measurements.measure(TransactionPhase.OW, MeasuredOperations.READ, (int) (en - st));
 			if(res==null){
 				ReturnCode=-1;
 			}
-			_measurements.reportReturnCode(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, ReturnCode);
+			_measurements.reportReturnCode(TransactionPhase.OW, MeasuredOperations.READ, ReturnCode);
 
 			return res;
 		}
@@ -121,37 +121,37 @@ public class JessyWrapper extends Jessy{
 				boolean committed=false;
 				switch (res.getTransactionState()) {
 				case  COMMITTED:
-					_measurements.measure(TransactionPhase.TERMINATION, MeasuredOperations.COMMITTED, (int) (en - st));
+					_measurements.measure(TransactionPhase.TER, MeasuredOperations.COMMITTED, (int) (en - st));
 					committed=true;
 					break;
 
 				case  ABORTED_BY_CERTIFICATION:
-					_measurements.measure(TransactionPhase.TERMINATION, MeasuredOperations.ABORTED_BY_CERTIFICATION, (int) (en - st));
+					_measurements.measure(TransactionPhase.TER, MeasuredOperations.ABORTED_BY_CERTIFICATION, (int) (en - st));
 					break;
 
 				case  ABORTED_BY_VOTING:
-					_measurements.measure(TransactionPhase.TERMINATION, MeasuredOperations.ABORTED_BY_VOTING, (int) (en - st));
+					_measurements.measure(TransactionPhase.TER, MeasuredOperations.ABORTED_BY_VOTING, (int) (en - st));
 					break;
 
 				case  ABORTED_BY_CLIENT:
-					_measurements.measure(TransactionPhase.TERMINATION, MeasuredOperations.ABORTED_BY_CLIENT, (int) (en - st));
+					_measurements.measure(TransactionPhase.TER, MeasuredOperations.ABORTED_BY_CLIENT, (int) (en - st));
 					break;
 
 				case  ABORTED_BY_TIMEOUT:
-					_measurements.measure(TransactionPhase.TERMINATION, MeasuredOperations.ABORTED_BY_TIMEOUT, (int) (en - st));
+					_measurements.measure(TransactionPhase.TER, MeasuredOperations.ABORTED_BY_TIMEOUT, (int) (en - st));
 					break;
 
 				default:
 					break;
 				}
 
-				_measurements.measure(TransactionPhase.TERMINATION, MeasuredOperations.TERMINATED, (int) (en - st));
+				_measurements.measure(TransactionPhase.TER, MeasuredOperations.TERMINATED, (int) (en - st));
 				if(!committed){
-					_measurements.measure(TransactionPhase.TERMINATION, MeasuredOperations.ABORTED, (int) (en - st));
+					_measurements.measure(TransactionPhase.TER, MeasuredOperations.ABORTED, (int) (en - st));
 				}
 
 			}
-			_measurements.reportReturnCode(TransactionPhase.TERMINATION, MeasuredOperations.TERMINATED, returnCode);
+			_measurements.reportReturnCode(TransactionPhase.TER, MeasuredOperations.TERMINATED, returnCode);
 
 			return res;
 		}
@@ -174,7 +174,7 @@ public class JessyWrapper extends Jessy{
 			_jessy.performNonTransactionalWrite(entity);
 			long en = System.currentTimeMillis();
 
-			_measurements.measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.WRITE, (int) (en - st));
+			_measurements.measure(TransactionPhase.OW, MeasuredOperations.WRITE, (int) (en - st));
 		}
 	}
 
@@ -204,12 +204,12 @@ public class JessyWrapper extends Jessy{
 			ExecutionHistory res = _jessy.abortTransaction(transactionHandler);
 			long en = System.currentTimeMillis();
 
-			_measurements.measure(TransactionPhase.EXECUTION, MeasuredOperations.ABORTED_BY_CLIENT, (int) (en - st));
+			_measurements.measure(TransactionPhase.EXE, MeasuredOperations.ABORTED_BY_CLIENT, (int) (en - st));
 			//		TODO is res null if the abort fails? abort can fail?
 			if(res==null){
 				ReturnCode=-1;
 			}
-			_measurements.reportReturnCode(TransactionPhase.EXECUTION, MeasuredOperations.ABORTED_BY_CLIENT, ReturnCode);
+			_measurements.reportReturnCode(TransactionPhase.EXE, MeasuredOperations.ABORTED_BY_CLIENT, ReturnCode);
 
 			return res;
 		}
@@ -279,11 +279,11 @@ public class JessyWrapper extends Jessy{
 			E res = _jessy.read(entityClass, keyValue);
 			long en = System.currentTimeMillis();
 
-			_measurements.measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, (int) (en - st));
+			_measurements.measure(TransactionPhase.OW, MeasuredOperations.READ, (int) (en - st));
 			if(res==null){
 				ReturnCode=-1;
 			}
-			_measurements.reportReturnCode(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, ReturnCode);
+			_measurements.reportReturnCode(TransactionPhase.OW, MeasuredOperations.READ, ReturnCode);
 
 			return res;
 		}
@@ -303,11 +303,11 @@ public class JessyWrapper extends Jessy{
 			Collection<E> res = _jessy.read(transactionHandler, entityClass, keys);
 			long en = System.currentTimeMillis();
 
-			_measurements.measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, (int) (en - st));
+			_measurements.measure(TransactionPhase.OW, MeasuredOperations.READ, (int) (en - st));
 			if(res==null){
 				ReturnCode=-1;
 			}
-			_measurements.reportReturnCode(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, ReturnCode);
+			_measurements.reportReturnCode(TransactionPhase.OW, MeasuredOperations.READ, ReturnCode);
 
 			return res;
 		}
@@ -327,15 +327,15 @@ public class JessyWrapper extends Jessy{
 			E res = _jessy.read(transactionHandler, entityClass, keyValue);
 			long en = System.currentTimeMillis();
 
-			_measurements.measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, (int) (en - st));
+			_measurements.measure(TransactionPhase.OW, MeasuredOperations.READ, (int) (en - st));
 			if(res==null){
 				ReturnCode=-1;
 			}
 			else{
-				_measurements.measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.VECTOR_SIZE, res.getLocalVector().size());
+				_measurements.measure(TransactionPhase.OW, MeasuredOperations.VECTOR_SIZE, res.getLocalVector().size());
 
 			}
-			_measurements.reportReturnCode(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.READ, ReturnCode);
+			_measurements.reportReturnCode(TransactionPhase.OW, MeasuredOperations.READ, ReturnCode);
 
 			return res;
 		}
@@ -373,7 +373,7 @@ public class JessyWrapper extends Jessy{
 			long st = System.currentTimeMillis();
 			_jessy.write(entity);
 			long en = System.currentTimeMillis();
-			_measurements.measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.WRITE, (int) (en - st));
+			_measurements.measure(TransactionPhase.OW, MeasuredOperations.WRITE, (int) (en - st));
 		}
 	}
 
@@ -389,7 +389,7 @@ public class JessyWrapper extends Jessy{
 			long st = System.currentTimeMillis();
 			_jessy.write(transactionHandler, entity);
 			long en = System.currentTimeMillis();
-			_measurements.measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.WRITE, (int) (en - st));
+			_measurements.measure(TransactionPhase.OW, MeasuredOperations.WRITE, (int) (en - st));
 		}
 	}
 

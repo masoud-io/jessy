@@ -488,7 +488,7 @@ public class CoreWorkload extends Workload
 
 			long en=System.currentTimeMillis();
 
-			Measurements.getMeasurements().measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.YCSB_READ_MODIFY_WRITE, (int)(en-st));
+			Measurements.getMeasurements().measure(TransactionPhase.OW, MeasuredOperations.YCSB_READ_MODIFY_WRITE, (int)(en-st));
 		}
 	}
 
