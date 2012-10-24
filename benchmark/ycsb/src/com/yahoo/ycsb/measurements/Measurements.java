@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.ConstantPool.MeasuredOperations;
 import fr.inria.jessy.ConstantPool.TransactionPhase;
 import fr.inria.jessy.ConstantPool.WorkloadTransactions;
@@ -42,6 +43,14 @@ public class Measurements
 	static Measurements singleton=null;
 	
 	static Properties measurementproperties=null;
+	
+	public static final boolean _operationWideMeasurement = (fr.inria.jessy.utils.Configuration
+			.readConfig(ConstantPool.OPERATION_WIDE_MEASUREMENTS).equals("false")) ? false
+			: true;
+	
+	public static final boolean _transactionWideMeasurement = (fr.inria.jessy.utils.Configuration
+			.readConfig(ConstantPool.TRANSACTION_WIDE_MEASUREMENTS).equals("false")) ? false
+			: true;
 	
 	public static void setProperties(Properties props)
 	{

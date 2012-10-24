@@ -5,7 +5,7 @@
 #"si2" snapshot isolation with Atomic-Multicast to every group
 #"nmsi2" non-monotonic snapshot isolation with GMUVector from [Peluso2012] 
 #"us2" Update serializability with GMUVector from [Peluso2012]
-consistency_type = si
+consistency_type = nmsi
 #partitioner type: "keyspace" | "modulo" | "replicatedModulo"
 partitioner_type = modulo
 
@@ -24,3 +24,9 @@ check_commutativity=true
 
 #nomber of warehouses in TPC-C. 10 is the default
 warehouses_number = 1
+
+#measurements
+#swich on/off all operation wide measurements
+operation_wide_measurements = false
+#swich on/off all transaction wide measurements
+transaction_wide_measurements = true

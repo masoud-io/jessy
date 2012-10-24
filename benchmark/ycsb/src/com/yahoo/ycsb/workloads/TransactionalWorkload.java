@@ -348,9 +348,9 @@ public class TransactionalWorkload extends Workload {
 			int opcount = Integer.parseInt(p
 					.getProperty(Client.OPERATION_COUNT_PROPERTY));
 			int expectednewkeys = (int) (((double) opcount) * insertproportion * 2.0); // 2
-																						// is
-																						// fudge
-																						// factor
+			// is
+			// fudge
+			// factor
 
 			keychooser = new ScrambledZipfianGenerator(recordcount
 					+ expectednewkeys);
@@ -565,16 +565,23 @@ public class TransactionalWorkload extends Workload {
 
 		// do the transaction
 
-		long st = System.currentTimeMillis();
+		if(!Measurements._transactionWideMeasurement){
+			db.read(table, keyname, fields, new HashMap<String, String>());
 
-		db.read(table, keyname, fields, new HashMap<String, String>());
+			db.update(table, keyname, values);
+		}
+		else{
+			long st = System.currentTimeMillis();
 
-		db.update(table, keyname, values);
+			db.read(table, keyname, fields, new HashMap<String, String>());
 
-		long en = System.currentTimeMillis();
+			db.update(table, keyname, values);
 
-		Measurements.getMeasurements().measure(TransactionPhase.OVERALL,MeasuredOperations.YCSB_READ_MODIFY_WRITE,
-				(int) (en - st));
+			long en = System.currentTimeMillis();
+
+			Measurements.getMeasurements().measure(TransactionPhase.OVERALL,MeasuredOperations.YCSB_READ_MODIFY_WRITE,
+					(int) (en - st));
+		}
 	}
 
 	public void doTransactionScan(DB db) {

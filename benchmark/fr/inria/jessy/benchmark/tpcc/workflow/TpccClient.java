@@ -173,55 +173,86 @@ public class TpccClient {
 
 		logger.debug("executing NewOrder...");
 		NewOrder neworder = new NewOrder(jessy, _warehouseNumber);
-		long st=System.currentTimeMillis();
-		ExecutionHistory eh = neworder.execute();
-		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.NO);
+		if(!Measurements._transactionWideMeasurement){
+			neworder.execute();
+		}
+		else{
+			long st=System.currentTimeMillis();
+			ExecutionHistory eh = neworder.execute();
+			long en=System.currentTimeMillis();
+
+			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.NO);
+		}
 	}
 
 	public void payment() throws Exception {
 
 		logger.debug("executing payment...");
 		Payment payment = new Payment(jessy, _warehouseNumber);
-		long st=System.currentTimeMillis();
-		ExecutionHistory eh = payment.execute();
-		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.P);
+		if(!Measurements._transactionWideMeasurement){
+			payment.execute();
+		}
+		else{
+			long st=System.currentTimeMillis();
+			ExecutionHistory eh = payment.execute();
+			long en=System.currentTimeMillis();
+
+			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.P);
+		}
 	}
 
 	public void orderstatus() throws Exception {
 
 		logger.debug("executing orderstatus...");
 		OrderStatus orderstatus = new OrderStatus(jessy, _warehouseNumber);
-		long st=System.currentTimeMillis();
-		ExecutionHistory eh = orderstatus.execute();
-		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.OS);
+		if(!Measurements._transactionWideMeasurement){
+			orderstatus.execute();
+		}
+		else{
+			long st=System.currentTimeMillis();
+			ExecutionHistory eh = orderstatus.execute();
+			long en=System.currentTimeMillis();
+
+			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.OS);
+		}
 	}
 
 	public void delivery() throws Exception {
 
 		logger.debug("executing delivery...");
 		Delivery delivery = new Delivery(jessy, _warehouseNumber);
-		long st=System.currentTimeMillis();
-		ExecutionHistory eh = delivery.execute();
-		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.D);
+		if(!Measurements._transactionWideMeasurement){
+			delivery.execute();
+		}
+		else{
+			long st=System.currentTimeMillis();
+			ExecutionHistory eh = delivery.execute();
+			long en=System.currentTimeMillis();
+
+			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.D);
+		}
+
 	}
 
 	public void stocklevel() throws Exception {
 
 		logger.debug("executing stocklevel...");
 		StockLevel stocklevel = new StockLevel(jessy, _warehouseNumber, this._districtNumber);
-		long st=System.currentTimeMillis();
-		ExecutionHistory eh = stocklevel.execute();
-		long en=System.currentTimeMillis();
 
-		fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.SL);
+		if(!Measurements._transactionWideMeasurement){
+			stocklevel.execute();
+		}
+		else{
+			long st=System.currentTimeMillis();
+			ExecutionHistory eh = stocklevel.execute();
+			long en=System.currentTimeMillis();
+
+			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.SL);
+		}
 	}
 
 	public static void main(String[] args) throws Exception {

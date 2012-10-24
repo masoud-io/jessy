@@ -78,7 +78,7 @@ public class CoreWorkload extends Workload
 	 * The name of the property for the number of fields in a record.
 	 */
 	public static final String FIELD_COUNT_PROPERTY="fieldcount";
-	
+
 	/**
 	 * Default number of fields in a record.
 	 */
@@ -90,7 +90,7 @@ public class CoreWorkload extends Workload
 	 * The name of the property for the length of a field in bytes.
 	 */
 	public static final String FIELD_LENGTH_PROPERTY="fieldlength";
-	
+
 	/**
 	 * The default length of a field in bytes.
 	 */
@@ -102,7 +102,7 @@ public class CoreWorkload extends Workload
 	 * The name of the property for deciding whether to read one field (false) or all fields (true) of a record.
 	 */
 	public static final String READ_ALL_FIELDS_PROPERTY="readallfields";
-	
+
 	/**
 	 * The default value for the readallfields property.
 	 */
@@ -114,7 +114,7 @@ public class CoreWorkload extends Workload
 	 * The name of the property for deciding whether to write one field (false) or all fields (true) of a record.
 	 */
 	public static final String WRITE_ALL_FIELDS_PROPERTY="writeallfields";
-	
+
 	/**
 	 * The default value for the writeallfields property.
 	 */
@@ -127,7 +127,7 @@ public class CoreWorkload extends Workload
 	 * The name of the property for the proportion of transactions that are reads.
 	 */
 	public static final String READ_PROPORTION_PROPERTY="readproportion";
-	
+
 	/**
 	 * The default proportion of transactions that are reads.	
 	 */
@@ -137,7 +137,7 @@ public class CoreWorkload extends Workload
 	 * The name of the property for the proportion of transactions that are updates.
 	 */
 	public static final String UPDATE_PROPORTION_PROPERTY="updateproportion";
-	
+
 	/**
 	 * The default proportion of transactions that are updates.
 	 */
@@ -147,7 +147,7 @@ public class CoreWorkload extends Workload
 	 * The name of the property for the proportion of transactions that are inserts.
 	 */
 	public static final String INSERT_PROPORTION_PROPERTY="insertproportion";
-	
+
 	/**
 	 * The default proportion of transactions that are inserts.
 	 */
@@ -157,27 +157,27 @@ public class CoreWorkload extends Workload
 	 * The name of the property for the proportion of transactions that are scans.
 	 */
 	public static final String SCAN_PROPORTION_PROPERTY="scanproportion";
-	
+
 	/**
 	 * The default proportion of transactions that are scans.
 	 */
 	public static final String SCAN_PROPORTION_PROPERTY_DEFAULT="0.0";
-	
+
 	/**
 	 * The name of the property for the proportion of transactions that are read-modify-write.
 	 */
 	public static final String READMODIFYWRITE_PROPORTION_PROPERTY="readmodifywriteproportion";
-	
+
 	/**
 	 * The default proportion of transactions that are scans.
 	 */
 	public static final String READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT="0.0";
-	
+
 	/**
 	 * The name of the property for the the distribution of requests across the keyspace. Options are "uniform", "zipfian" and "latest"
 	 */
 	public static final String REQUEST_DISTRIBUTION_PROPERTY="requestdistribution";
-	
+
 	/**
 	 * The default distribution of requests across the keyspace
 	 */
@@ -187,32 +187,32 @@ public class CoreWorkload extends Workload
 	 * The name of the property for the max scan length (number of records)
 	 */
 	public static final String MAX_SCAN_LENGTH_PROPERTY="maxscanlength";
-	
+
 	/**
 	 * The default max scan length.
 	 */
 	public static final String MAX_SCAN_LENGTH_PROPERTY_DEFAULT="1000";
-	
+
 	/**
 	 * The name of the property for the scan length distribution. Options are "uniform" and "zipfian" (favoring short scans)
 	 */
 	public static final String SCAN_LENGTH_DISTRIBUTION_PROPERTY="scanlengthdistribution";
-	
+
 	/**
 	 * The default max scan length.
 	 */
 	public static final String SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT="uniform";
-	
+
 	/**
 	 * The name of the property for the order to insert records. Options are "ordered" or "hashed"
 	 */
 	public static final String INSERT_ORDER_PROPERTY="insertorder";
-	
+
 	/**
 	 * Default insert order.
 	 */
 	public static final String INSERT_ORDER_PROPERTY_DEFAULT="hashed";
-	
+
 	IntegerGenerator keysequence;
 
 	DiscreteGenerator operationchooser;
@@ -222,13 +222,13 @@ public class CoreWorkload extends Workload
 	Generator fieldchooser;
 
 	CounterGenerator transactioninsertkeysequence;
-	
+
 	IntegerGenerator scanlength;
-	
+
 	boolean orderedinserts;
 
 	int recordcount;
-	
+
 	/**
 	 * Initialize the scenario. 
 	 * Called once, in the main client thread, before any operations are started.
@@ -247,12 +247,12 @@ public class CoreWorkload extends Workload
 		String requestdistrib=p.getProperty(REQUEST_DISTRIBUTION_PROPERTY,REQUEST_DISTRIBUTION_PROPERTY_DEFAULT);
 		int maxscanlength=Integer.parseInt(p.getProperty(MAX_SCAN_LENGTH_PROPERTY,MAX_SCAN_LENGTH_PROPERTY_DEFAULT));
 		String scanlengthdistrib=p.getProperty(SCAN_LENGTH_DISTRIBUTION_PROPERTY,SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
-		
+
 		int insertstart=Integer.parseInt(p.getProperty(INSERT_START_PROPERTY,INSERT_START_PROPERTY_DEFAULT));
-		
+
 		readallfields=Boolean.parseBoolean(p.getProperty(READ_ALL_FIELDS_PROPERTY,READ_ALL_FIELDS_PROPERTY_DEFAULT));
 		writeallfields=Boolean.parseBoolean(p.getProperty(WRITE_ALL_FIELDS_PROPERTY,WRITE_ALL_FIELDS_PROPERTY_DEFAULT));
-		
+
 		if (p.getProperty(INSERT_ORDER_PROPERTY,INSERT_ORDER_PROPERTY_DEFAULT).compareTo("hashed")==0)
 		{
 			orderedinserts=false;
@@ -278,12 +278,12 @@ public class CoreWorkload extends Workload
 		{
 			operationchooser.addValue(insertproportion,"INSERT");
 		}
-		
+
 		if (scanproportion>0)
 		{
 			operationchooser.addValue(scanproportion,"SCAN");
 		}
-		
+
 		if (readmodifywriteproportion>0)
 		{
 			operationchooser.addValue(readmodifywriteproportion,"READMODIFYWRITE");
@@ -302,10 +302,10 @@ public class CoreWorkload extends Workload
 			//of the test. that is, we'll predict the number of inserts, and tell the scrambled zipfian generator the number of existing keys
 			//plus the number of predicted keys as the total keyspace. then, if the generator picks a key that hasn't been inserted yet, will
 			//just ignore it and pick another key. this way, the size of the keyspace doesn't change from the perspective of the scrambled zipfian generator
-			
+
 			int opcount=Integer.parseInt(p.getProperty(Client.OPERATION_COUNT_PROPERTY));
 			int expectednewkeys=(int)(((double)opcount)*insertproportion*2.0); //2 is fudge factor
-			
+
 			keychooser=new ScrambledZipfianGenerator(recordcount+expectednewkeys);
 		}
 		else if (requestdistrib.compareTo("latest")==0)
@@ -318,7 +318,7 @@ public class CoreWorkload extends Workload
 		}
 
 		fieldchooser=new UniformIntegerGenerator(0,fieldcount-1);
-		
+
 		if (scanlengthdistrib.compareTo("uniform")==0)
 		{
 			scanlength=new UniformIntegerGenerator(1,maxscanlength);
@@ -390,7 +390,7 @@ public class CoreWorkload extends Workload
 		{
 			doTransactionReadModifyWrite(db);
 		}
-		
+
 		return true;
 	}
 
@@ -403,7 +403,7 @@ public class CoreWorkload extends Workload
 			keynum=keychooser.nextInt();
 		}
 		while (keynum>transactioninsertkeysequence.lastInt());
-		
+
 		if (!orderedinserts)
 		{
 			keynum=Utils.hash(keynum);
@@ -423,7 +423,7 @@ public class CoreWorkload extends Workload
 
 		db.read(table,keyname,fields,new HashMap<String,String>());
 	}
-	
+
 	public void doTransactionReadModifyWrite(DB db)
 	{
 		//choose a random key
@@ -433,7 +433,7 @@ public class CoreWorkload extends Workload
 			keynum=keychooser.nextInt();
 		}
 		while (keynum>transactioninsertkeysequence.lastInt());
-		
+
 		if (!orderedinserts)
 		{
 			keynum=Utils.hash(keynum);
@@ -450,40 +450,48 @@ public class CoreWorkload extends Workload
 			fields=new HashSet<String>();
 			fields.add(fieldname);
 		}
-		
+
 		HashMap<String,String> values=new HashMap<String,String>();
 
 		if (writeallfields)
 		{
-		   //new data for all the fields
-		   for (int i=0; i<fieldcount; i++)
-		   {
-		      String fieldname="field"+i;
-		      String data=Utils.ASCIIString(fieldlength);		   
-		      values.put(fieldname,data);
-		   }
+			//new data for all the fields
+			for (int i=0; i<fieldcount; i++)
+			{
+				String fieldname="field"+i;
+				String data=Utils.ASCIIString(fieldlength);		   
+				values.put(fieldname,data);
+			}
 		}
 		else
 		{
-		   //update a random field
-		   String fieldname="field"+fieldchooser.nextString();
-		   String data=Utils.ASCIIString(fieldlength);		   
-		   values.put(fieldname,data);
+			//update a random field
+			String fieldname="field"+fieldchooser.nextString();
+			String data=Utils.ASCIIString(fieldlength);		   
+			values.put(fieldname,data);
 		}
 
 		//do the transaction
-		
-		long st=System.currentTimeMillis();
 
-		db.read(table,keyname,fields,new HashMap<String,String>());
-		
-		db.update(table,keyname,values);
+		if(!Measurements._operationWideMeasurement){
+			db.read(table,keyname,fields,new HashMap<String,String>());
 
-		long en=System.currentTimeMillis();
-		
-		Measurements.getMeasurements().measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.YCSB_READ_MODIFY_WRITE, (int)(en-st));
+			db.update(table,keyname,values);
+		}
+		else{
+
+			long st=System.currentTimeMillis();
+
+			db.read(table,keyname,fields,new HashMap<String,String>());
+
+			db.update(table,keyname,values);
+
+			long en=System.currentTimeMillis();
+
+			Measurements.getMeasurements().measure(TransactionPhase.NOT_TRANSACTIONAL, MeasuredOperations.YCSB_READ_MODIFY_WRITE, (int)(en-st));
+		}
 	}
-	
+
 	public void doTransactionScan(DB db)
 	{
 		//choose a random key
@@ -499,7 +507,7 @@ public class CoreWorkload extends Workload
 			keynum=Utils.hash(keynum);
 		}
 		String startkeyname="user"+keynum;
-		
+
 		//choose a random scan length
 		int len=scanlength.nextInt();
 
@@ -537,20 +545,20 @@ public class CoreWorkload extends Workload
 
 		if (writeallfields)
 		{
-		   //new data for all the fields
-		   for (int i=0; i<fieldcount; i++)
-		   {
-		      String fieldname="field"+i;
-		      String data=Utils.ASCIIString(fieldlength);		   
-		      values.put(fieldname,data);
-		   }
+			//new data for all the fields
+			for (int i=0; i<fieldcount; i++)
+			{
+				String fieldname="field"+i;
+				String data=Utils.ASCIIString(fieldlength);		   
+				values.put(fieldname,data);
+			}
 		}
 		else
 		{
-		   //update a random field
-		   String fieldname="field"+fieldchooser.nextString();
-		   String data=Utils.ASCIIString(fieldlength);		   
-		   values.put(fieldname,data);
+			//update a random field
+			String fieldname="field"+fieldchooser.nextString();
+			String data=Utils.ASCIIString(fieldlength);		   
+			values.put(fieldname,data);
 		}
 
 		db.update(table,keyname,values);
@@ -565,7 +573,7 @@ public class CoreWorkload extends Workload
 			keynum=Utils.hash(keynum);
 		}
 		String dbkey="user"+keynum;
-		
+
 		HashMap<String,String> values=new HashMap<String,String>();
 		for (int i=0; i<fieldcount; i++)
 		{

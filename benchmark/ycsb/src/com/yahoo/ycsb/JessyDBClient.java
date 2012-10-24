@@ -46,17 +46,17 @@ public class JessyDBClient extends DB {
 
 	public JessyDBClient() {
 		super();
-//		 try {
-//		 if (USE_DIST_JESSY) {
-////		 jessy = DistributedJessy.getInstance();
-//			 jessy=new DistributedJessy();
-//		 } else {
-////		 jessy = LocalJessy.getInstance();
-//		 }
-//		 jessy.addEntity(YCSBEntity.class);
-//		 } catch (Exception e) {
-//		 e.printStackTrace();
-//		 }
+		//		 try {
+		//		 if (USE_DIST_JESSY) {
+		////		 jessy = DistributedJessy.getInstance();
+		//			 jessy=new DistributedJessy();
+		//		 } else {
+		////		 jessy = LocalJessy.getInstance();
+		//		 }
+		//		 jessy.addEntity(YCSBEntity.class);
+		//		 } catch (Exception e) {
+		//		 e.printStackTrace();
+		//		 }
 	}
 
 	@Override
@@ -154,26 +154,41 @@ public class JessyDBClient extends DB {
 							e.printStackTrace();
 						}
 					}
-					
+
 					return commitTransaction();
 				}
 			};
-			long st=System.currentTimeMillis();
-			ExecutionHistory history = trans.execute();
-			long en=System.currentTimeMillis();
-			
-			Measurements.getMeasurements().measure(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, (int) (en - st));
-			
-			
-			if (history == null){
-				Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, -1);
-				return -1;
+
+			if(!Measurements._transactionWideMeasurement){
+				ExecutionHistory history = trans.execute();
+
+				if (history == null){
+					return -1;
+				}
+				if (history.getTransactionState() == TransactionState.COMMITTED) {
+					return 0;
+				} else
+					return -1;
 			}
-			Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, 0);
-			if (history.getTransactionState() == TransactionState.COMMITTED) {
-				return 0;
-			} else
-				return -1;
+			else{
+
+				long st=System.currentTimeMillis();
+				ExecutionHistory history = trans.execute();
+				long en=System.currentTimeMillis();
+
+				Measurements.getMeasurements().measure(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, (int) (en - st));
+
+
+				if (history == null){
+					Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, -1);
+					return -1;
+				}
+				Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, 0);
+				if (history.getTransactionState() == TransactionState.COMMITTED) {
+					return 0;
+				} else
+					return -1;
+			}
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -221,24 +236,37 @@ public class JessyDBClient extends DB {
 				}
 			};
 
-			long st=System.currentTimeMillis();
-			ExecutionHistory history = trans.execute();
-			long en=System.currentTimeMillis();
-			
-			Measurements.getMeasurements().measure(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, (int) (en - st));
-			
-			if (history == null){
-				Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, -1);
-				return -1;
+			if(!Measurements._transactionWideMeasurement){
+				ExecutionHistory history = trans.execute();
+
+				if (history == null){
+					return -1;
+				}
+				if (history.getTransactionState() == TransactionState.COMMITTED) {
+					return 0;
+				} else
+					return -1;
 			}
 			else{
-				Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, 0);
-			}
-			if (history.getTransactionState() == TransactionState.COMMITTED) {
-				return 0;
-			} else
-				return -1;
 
+				long st=System.currentTimeMillis();
+				ExecutionHistory history = trans.execute();
+				long en=System.currentTimeMillis();
+
+				Measurements.getMeasurements().measure(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, (int) (en - st));
+
+				if (history == null){
+					Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, -1);
+					return -1;
+				}
+				else{
+					Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, 0);
+				}
+				if (history.getTransactionState() == TransactionState.COMMITTED) {
+					return 0;
+				} else
+					return -1;
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -265,10 +293,10 @@ public class JessyDBClient extends DB {
 
 			ExecutionHistory history = trans.execute();
 			if (history == null){
-//				Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, -1);
+				//				Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, -1);
 				return -1;
 			}
-//			Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, 0);
+			//			Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, 0);
 			if (history.getTransactionState() == TransactionState.COMMITTED) {
 				return 0;
 			} else

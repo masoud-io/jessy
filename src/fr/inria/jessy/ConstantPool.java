@@ -102,6 +102,8 @@ public class ConstantPool {
 	public static final String CHECK_COMMUTAVITY = "check_commutativity";
 	public static final String REPLICATION_FACTOR = "replication_factor";
 	public static final String WAREHOUSES_NUMBER = "warehouses_number";
+	public static final String OPERATION_WIDE_MEASUREMENTS = "operation_wide_measurements";
+	public static final String TRANSACTION_WIDE_MEASUREMENTS = "transaction_wide_measurements";
 	
 	/**
 	 * Measurements
