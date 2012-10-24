@@ -110,40 +110,26 @@ public class ConstantPool {
 	 */
 	
 
-//	/**
-//	 * commit transaction
-//	 */
-//	public static enum CommitTransaction{
-//		/**
-//		 * Terminated without fails
-//		 */
-//		TERMINATED,
-//		/**
-//		 * Aborted (by client, by voting, by timeout etc...)
-//		 */
-//		OVERALL_ABORTED,
-//	};
-	
 	/**
 	 * measurement phases
 	 */
 	public static enum TransactionPhase{
 		/**
-		 * Commit time
+		 * Transaction Wide, Termination Phase
 		 */
-		TERMINATION,
+		TER,
 		/**
-		 * Time to execute a transaction (termination time non included)
+		 * Transaction Wide, Execution Phase
 		 */
-		EXECUTION,
+		EXE,
 		/**
-		 * Time to execute a transaction and terminate it
+		 * Transaction Wide, Execution AND Termination Phase
 		 */
 		OVERALL,
 		/**
-		 * For non-transactional operations
+		 * Operation Wide Parameter 
 		 */
-		NOT_TRANSACTIONAL
+		OW
 	};
 	
 	/**
@@ -152,25 +138,13 @@ public class ConstantPool {
 	public static enum MeasuredOperations{
 		
 		/**
-		 * ENTITIES
-		 */
-		/**
-		 * Read
+		 * Operation Wide Parameters to be measure.
 		 */
 		READ,
-		/**
-		 * Write
-		 */
 		WRITE,
-		/**
-		 * vectorSize
-		 */
 		VECTOR_SIZE,
 		
 		
-		/**
-		 * TRANSACTIONS
-		 */
 		/**
 		 * Termination: committed
 		 */
