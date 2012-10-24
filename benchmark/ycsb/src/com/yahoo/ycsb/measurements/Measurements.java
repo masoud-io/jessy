@@ -99,7 +99,7 @@ public class Measurements
 	/**
 	 * Call the measure function with an operation part of the static set of operations defined in the CostantPool
 	 * @param operation
-	 * @param latency
+	 * @param latency 
 	 */
 	public synchronized void measure(TransactionPhase phase, MeasuredOperations operation, int latency){
 		measure(phase.toString()+"_"+operation.toString(), latency);
