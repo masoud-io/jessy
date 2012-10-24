@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
-import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 import org.cliffc.high_scale_lib.NonBlockingHashtable;
@@ -64,14 +63,9 @@ public abstract class Jessy {
 
 	protected static SimpleCounter totalReadCount;
 	
-	private static ValueRecorder vectorSize;
-
 	static{
 		failedReadCount = new SimpleCounter("Jessy#failedReadCount");
 		totalReadCount = new SimpleCounter("Jessy#ReadCount");
-		vectorSize = new ValueRecorder(
-		"Jessy#vectorSize");
-		vectorSize.setFormat("%M");
 	}
 	
 	//
@@ -229,7 +223,6 @@ public abstract class Jessy {
 		}
 
 		if (entity != null) {
-			vectorSize.add(entity.getLocalVector().size());
 			executionHistory.addReadEntity(entity);
 			return entity;
 		} else {

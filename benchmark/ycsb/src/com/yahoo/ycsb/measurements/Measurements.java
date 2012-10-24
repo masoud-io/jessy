@@ -27,6 +27,7 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.ConstantPool.MeasuredOperations;
 import fr.inria.jessy.ConstantPool.TransactionPhase;
 import fr.inria.jessy.ConstantPool.WorkloadTransactions;
+import fr.inria.jessy.transaction.ExecutionHistory;
 
 /**
  * Collects latency measurements, and reports them when requested.
@@ -217,5 +218,60 @@ public class Measurements
 		}
 		
 		return ret;
+	}
+	
+	/**
+	 * Used to take separate measurements on all transactions types accordingly with the result of a transaction
+	 * 
+	 * @param eh Transaction ExecutionHistory
+	 * @param st Transaction starting time
+	 * @param en Transaction ending time
+	 * @param tt Transaction type
+	 */
+	public void fillStatistics(ExecutionHistory eh, long st, long en, TransactionPhase phase, WorkloadTransactions tt ) {
+
+		int returnCode=0;
+		boolean committed=false;
+		if(eh==null){
+			returnCode=-1;
+		}
+		else{
+			switch (eh.getTransactionState()) {
+			case  COMMITTED:
+				measure(phase, MeasuredOperations.COMMITTED, tt, (int) (en - st));
+				committed=true;
+				break;
+
+			case  ABORTED_BY_CERTIFICATION:
+				measure(phase, MeasuredOperations.ABORTED_BY_CERTIFICATION,tt, (int) (en - st));
+				returnCode=-1;
+				break;
+
+			case  ABORTED_BY_VOTING:
+				measure(phase, MeasuredOperations.ABORTED_BY_VOTING,tt, (int) (en - st));
+				returnCode=-1;
+				break;
+
+			case  ABORTED_BY_CLIENT:
+				measure(phase, MeasuredOperations.ABORTED_BY_CLIENT,tt, (int) (en - st));
+				returnCode=-1;
+				break;
+
+			case  ABORTED_BY_TIMEOUT:
+				measure(phase, MeasuredOperations.ABORTED_BY_TIMEOUT,tt, (int) (en - st));
+				returnCode=-1;
+				break;
+
+			default:
+				break;
+			}
+
+			measure(TransactionPhase.OVERALL, MeasuredOperations.TERMINATED, (int) (en - st));
+			if(!committed){
+				measure(TransactionPhase.OVERALL, MeasuredOperations.ABORTED, (int) (en - st));
+			}
+		}
+		reportReturnCode(phase, MeasuredOperations.TERMINATED, tt, returnCode);
+
 	}
 }

@@ -2,6 +2,7 @@ package com.yahoo.ycsb;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
@@ -154,41 +155,30 @@ public class JessyDBClient extends DB {
 							e.printStackTrace();
 						}
 					}
-
 					return commitTransaction();
 				}
 			};
 
-			if(!Measurements._transactionWideMeasurement){
-				ExecutionHistory history = trans.execute();
+			ExecutionHistory history = null;
 
-				if (history == null){
-					return -1;
-				}
-				if (history.getTransactionState() == TransactionState.COMMITTED) {
-					return 0;
-				} else
-					return -1;
+			if(!Measurements._transactionWideMeasurement){
+				history = trans.execute();
 			}
 			else{
 
 				long st=System.currentTimeMillis();
-				ExecutionHistory history = trans.execute();
+				history = trans.execute();
 				long en=System.currentTimeMillis();
 
-				Measurements.getMeasurements().measure(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, (int) (en - st));
-
-
-				if (history == null){
-					Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, -1);
-					return -1;
-				}
-				Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.READONLY, 0);
-				if (history.getTransactionState() == TransactionState.COMMITTED) {
-					return 0;
-				} else
-					return -1;
+				Measurements.getMeasurements().fillStatistics(history, st, en, TransactionPhase.OVERALL, WorkloadTransactions.READONLY);
 			}
+			if (history == null){
+				return -1;
+			}
+			if (history.getTransactionState() == TransactionState.COMMITTED) {
+				return 0;
+			} else
+				return -1;
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -236,37 +226,29 @@ public class JessyDBClient extends DB {
 				}
 			};
 
-			if(!Measurements._transactionWideMeasurement){
-				ExecutionHistory history = trans.execute();
+			ExecutionHistory history = null;
 
-				if (history == null){
-					return -1;
-				}
-				if (history.getTransactionState() == TransactionState.COMMITTED) {
-					return 0;
-				} else
-					return -1;
+			if(!Measurements._transactionWideMeasurement){
+				history = trans.execute();
 			}
 			else{
 
 				long st=System.currentTimeMillis();
-				ExecutionHistory history = trans.execute();
+				history = trans.execute();
 				long en=System.currentTimeMillis();
 
-				Measurements.getMeasurements().measure(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, (int) (en - st));
+				Measurements.getMeasurements().fillStatistics(history, st, en, TransactionPhase.OVERALL, WorkloadTransactions.UPDATE);
 
-				if (history == null){
-					Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, -1);
-					return -1;
-				}
-				else{
-					Measurements.getMeasurements().reportReturnCode(TransactionPhase.OVERALL, MeasuredOperations.COMMITTED, WorkloadTransactions.UPDATE, 0);
-				}
-				if (history.getTransactionState() == TransactionState.COMMITTED) {
-					return 0;
-				} else
-					return -1;
 			}
+			if (history == null){
+				return -1;
+			}
+			if (history.getTransactionState() == TransactionState.COMMITTED) {
+				return 0;
+			} else
+				return -1;
+
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

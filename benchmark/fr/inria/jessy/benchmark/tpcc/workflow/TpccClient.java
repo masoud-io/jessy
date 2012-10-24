@@ -182,7 +182,7 @@ public class TpccClient {
 			ExecutionHistory eh = neworder.execute();
 			long en=System.currentTimeMillis();
 
-			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.NO);
+			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.NO);
 		}
 	}
 
@@ -199,7 +199,7 @@ public class TpccClient {
 			ExecutionHistory eh = payment.execute();
 			long en=System.currentTimeMillis();
 
-			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.P);
+			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.P);
 		}
 	}
 
@@ -216,7 +216,7 @@ public class TpccClient {
 			ExecutionHistory eh = orderstatus.execute();
 			long en=System.currentTimeMillis();
 
-			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.OS);
+			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.OS);
 		}
 	}
 
@@ -233,7 +233,7 @@ public class TpccClient {
 			ExecutionHistory eh = delivery.execute();
 			long en=System.currentTimeMillis();
 
-			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.D);
+			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.D);
 		}
 
 	}
@@ -251,7 +251,7 @@ public class TpccClient {
 			ExecutionHistory eh = stocklevel.execute();
 			long en=System.currentTimeMillis();
 
-			fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.SL);
+			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.SL);
 		}
 	}
 
@@ -323,58 +323,58 @@ public class TpccClient {
 		}
 			}
 
-	/**
-	 * Used to take separate measurements on all TPC-C transactions types
-	 * 
-	 * @param eh Transaction ExecutionHistory
-	 * @param st Transaction starting time
-	 * @param en Transaction ending time
-	 * @param tt Transaction type
-	 */
-	private void fillStatistics(ExecutionHistory eh, long st, long en, TransactionPhase phase, WorkloadTransactions tt ) {
-
-		int returnCode=0;
-		boolean committed=false;
-		if(eh==null){
-			returnCode=-1;
-		}
-		else{
-			switch (eh.getTransactionState()) {
-			case  COMMITTED:
-				_measurements.measure(phase, MeasuredOperations.COMMITTED, tt, (int) (en - st));
-				committed=true;
-				break;
-
-			case  ABORTED_BY_CERTIFICATION:
-				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_CERTIFICATION,tt, (int) (en - st));
-				returnCode=-1;
-				break;
-
-			case  ABORTED_BY_VOTING:
-				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_VOTING,tt, (int) (en - st));
-				returnCode=-1;
-				break;
-
-			case  ABORTED_BY_CLIENT:
-				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_CLIENT,tt, (int) (en - st));
-				returnCode=-1;
-				break;
-
-			case  ABORTED_BY_TIMEOUT:
-				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_TIMEOUT,tt, (int) (en - st));
-				returnCode=-1;
-				break;
-
-			default:
-				break;
-			}
-
-			_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.TERMINATED, (int) (en - st));
-			if(!committed){
-				_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.ABORTED, (int) (en - st));
-			}
-		}
-		_measurements.reportReturnCode(phase, MeasuredOperations.TERMINATED, tt, returnCode);
-
-	}
+//	/**
+//	 * Used to take separate measurements on all transactions types accordingly with the result of a transaction
+//	 * 
+//	 * @param eh Transaction ExecutionHistory
+//	 * @param st Transaction starting time
+//	 * @param en Transaction ending time
+//	 * @param tt Transaction type
+//	 */
+//	private void fillStatistics(ExecutionHistory eh, long st, long en, TransactionPhase phase, WorkloadTransactions tt ) {
+//
+//		int returnCode=0;
+//		boolean committed=false;
+//		if(eh==null){
+//			returnCode=-1;
+//		}
+//		else{
+//			switch (eh.getTransactionState()) {
+//			case  COMMITTED:
+//				_measurements.measure(phase, MeasuredOperations.COMMITTED, tt, (int) (en - st));
+//				committed=true;
+//				break;
+//
+//			case  ABORTED_BY_CERTIFICATION:
+//				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_CERTIFICATION,tt, (int) (en - st));
+//				returnCode=-1;
+//				break;
+//
+//			case  ABORTED_BY_VOTING:
+//				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_VOTING,tt, (int) (en - st));
+//				returnCode=-1;
+//				break;
+//
+//			case  ABORTED_BY_CLIENT:
+//				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_CLIENT,tt, (int) (en - st));
+//				returnCode=-1;
+//				break;
+//
+//			case  ABORTED_BY_TIMEOUT:
+//				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_TIMEOUT,tt, (int) (en - st));
+//				returnCode=-1;
+//				break;
+//
+//			default:
+//				break;
+//			}
+//
+//			_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.TERMINATED, (int) (en - st));
+//			if(!committed){
+//				_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.ABORTED, (int) (en - st));
+//			}
+//		}
+//		_measurements.reportReturnCode(phase, MeasuredOperations.TERMINATED, tt, returnCode);
+//
+//	}
 }

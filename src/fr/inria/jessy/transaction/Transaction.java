@@ -24,8 +24,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 	private static ValueRecorder transactionExecutionTime;
 	private static ValueRecorder transactionTerminationTime;
-	private static ValueRecorder transactionReadOperatinTime;
-	
 
 	static {
 		// Performance measuring facilities
@@ -39,11 +37,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 				"Transaction#transactionTerminationTime(ms)");
 		transactionTerminationTime.setFormat("%a");
 		transactionTerminationTime.setFactor(1000000);
-		
-		transactionReadOperatinTime = new ValueRecorder(
-				"Transaction#transactionReadOperatinTime(ms)");
-		transactionReadOperatinTime.setFormat("%a");
-		transactionReadOperatinTime.setFactor(1000000);
 		
 		retryCommitOnAbort = readConfig();
 	}
@@ -84,7 +77,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 			throws Exception {
 		long start=System.nanoTime();
 		E entity = jessy.read(transactionHandler, entityClass, keyValue);
-		transactionReadOperatinTime.add(System.nanoTime()-start);
 		// if (entity != null)
 		// entity.setPrimaryKey(null);
 		return entity;
