@@ -342,8 +342,8 @@ echo "" >> $outputFilename;
 }
 
 echo "building measurements file..." 
-collectMeasurementStrings &>> stoutsterr
-collectMeasurements &> stoutsterr
+collectMeasurementStrings &> stoutsterr
+collectMeasurements &>> stoutsterr
 printParameters &>> stoutsterr
 printClientsMeasurements &>> stoutsterr
 collectServersMeasurements &>> stoutsterr
