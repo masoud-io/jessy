@@ -212,7 +212,7 @@ do
 
 	    echo "using ${t} thread(s) per machine is finished. Collecting stats"   
 	    collectStats >>  ${scriptdir}/results/${servercount}.txt
-
+		source collectMeasurements.sh
 	    sleep 10
 	    
 	done
