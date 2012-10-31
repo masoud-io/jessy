@@ -24,6 +24,7 @@ import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
+import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 
 /**
  * This class implements {@link RemoteReader} by using Netty package for
@@ -46,16 +47,16 @@ public class NettyRemoteReader extends RemoteReader {
 
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
 
-		if (JessyGroupManager.getInstance().isProxy()) {
+		if (JessyGroupManager.getInstance().isProxy()) {	
 			cmanager = new UnicastClientManager(this);
 
 			// The fastest way to handle client messages is to put them in a
 			// queue, and only one thread tries to take them from the queue and
 			// process them.
 
-			// pool.submitMultiple(new
-			// InnerObjectFactory<RemoteReadRequestTask>(
-			// RemoteReadRequestTask.class, NettyRemoteReader.class, this),2);
+//			 pool.submitMultiple(new
+//			 InnerObjectFactory<RemoteReadRequestTask>(
+//			 RemoteReadRequestTask.class, NettyRemoteReader.class, this),4);
 
 			pool.submit(new RemoteReadRequestTask());
 		} else {
@@ -82,6 +83,27 @@ public class NettyRemoteReader extends RemoteReader {
 		RemoteReadFuture remoteRead = new RemoteReadFuture(readRequest);
 		remoteReadQ.put(remoteRead);
 		return remoteRead;
+//		return sendRequest(readRequest);
+	}
+	
+	private  <E extends JessyEntity> RemoteReadFuture sendRequest(ReadRequest<E> readRequest){
+
+		long start = System.nanoTime();
+
+		RemoteReadFuture remoteRead = new RemoteReadFuture(readRequest);
+		
+
+			Set<Group> dests = jessy.partitioner.resolve(readRequest);
+			ArrayList<ReadRequest<JessyEntity>> toSend=new ArrayList<ReadRequest<JessyEntity>>(1);
+			toSend.add((ReadRequest<JessyEntity>) readRequest);
+			
+			cmanager.unicast(
+					new ReadRequestMessage(toSend), dests.iterator().next().members().iterator().next());
+			
+			pendingRemoteReads.put(readRequest.getReadRequestId(),
+					remoteRead);
+			
+			return remoteRead;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

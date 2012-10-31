@@ -25,7 +25,7 @@ import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
-
+import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 /**
  * 
  * This class implements {@link RemoteReader} by using Netty package for
@@ -61,11 +61,11 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 		pool.submit(new RemoteReadRequestTask());
 		// With a LOW # of cores, contention is too expensive.
 		// Besides, we are already batching.
-		// pool.submitMultiple( new
-		// InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
-		// RemoteReader.class, this));
-		// pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
-		// RemoteReadReplyTask.class, RemoteReader.class, this));
+//		 pool.submitMultiple( new
+//		 InnerObjectFactory<RemoteReadRequestTask>(RemoteReadRequestTask.class,
+//				 FractalRemoteReader.class, this));
+//		 pool.submitMultiple(new InnerObjectFactory<RemoteReadReplyTask>(
+//		 RemoteReadReplyTask.class, FractalRemoteReader.class, this));
 	}
 
 	@SuppressWarnings("unchecked")
