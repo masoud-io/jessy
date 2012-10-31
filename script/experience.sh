@@ -180,7 +180,7 @@ do
 	    echo "Loading phase ..."
 	    ${SSHCMD} ${clients[0]} "${scriptdir}/client.sh" > ${scriptdir}/loading
 
-	    sleep 20
+	    sleep 60
 
 	# 2 - Benchmarking phase
 
