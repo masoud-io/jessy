@@ -118,7 +118,7 @@ function collectStats(){
 	    executionTime=`echo "${tmp}+${executionTime}"| sed 's/E/*10^/g'`;	    
 	fi
 
-	tmp=`grep -a "transactionTerminationTime" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
+	tmp=`grep -a "jessy#transactionTerminationTime" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
 	if [ -n "${tmp}" ]; then
 	    terminationTime=`echo "${tmp}+${terminationTime}"| sed 's/E/*10^/g'`;	    
 	fi

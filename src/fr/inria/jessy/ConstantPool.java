@@ -31,6 +31,8 @@ public class ConstantPool {
 	public static final String JESSY_ALL_SERVERS_GROUP = "JALLSERVERS";
 	public static final int JESSY_ALL_SERVERS_PORT = 4481;
 
+	public static final int JESSY_NETTY_REMOTE_READER_PORT=4249;
+	
 	public static final int GROUP_SIZE = 1;
 
 	/**
