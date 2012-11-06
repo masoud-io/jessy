@@ -101,12 +101,12 @@ function collectMeasurements(){
 
 						*"Operations"*)
 							operations=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+1]=$(echo "scale=5;${commandsLongArray[$arrayIndex+1]} + ${operations}" | bc);
+							commandsLongArray[arrayIndex+1]=$(echo "scale=5;${commandsLongArray[$arrayIndex+1] + ${operations}}" | bc);
 							#echo "using index" $(($arrayIndex + 1)) ", operations: " $operations;
 					    ;;
 						*"AverageLatency"*)
 							latency=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+2]=$(echo "scale=5;${commandsLongArray[$arrayIndex+2]} + ${latency} " | bc);
+							commandsLongArray[arrayIndex+2]=$(echo "scale=5;${commandsLongArray[$arrayIndex+2] + ${latency}} " | bc);
 							#echo "using index" $(($arrayIndex + 2)) ", latency: " $latency ;
 					    ;;
 						*"MinLatency"*)
