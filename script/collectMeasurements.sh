@@ -83,12 +83,12 @@ function collectMeasurements(){
 
 				if [[ $line == *"[OVERALL], RunTime(ms)"* ]]; then
 					time=`echo $line | gawk -F',' '{print $3}'`;
-					runTime=$(echo "scale=10;$runTime+$time" | bc);
+					runTime=$(echo "scale=5;$runTime+$time" | bc);
 				fi
 
 				if [[ $line == *"[OVERALL], Throughput(ops/sec)"* ]]; then
 					th=`echo $line | gawk -F',' '{print $3}'`;
-					throughput=$(echo "scale=10;$runTime+$th" | bc);
+					throughput=$(echo "scale=5;$runTime+$th" | bc);
 				fi
 
 				if [[ $line == *$command* ]]; then
@@ -101,42 +101,42 @@ function collectMeasurements(){
 
 						*"Operations"*)
 							operations=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+1]=$(echo "scale=10;${commandsLongArray[$arrayIndex+1]} + ${operations}" | bc);
+							commandsLongArray[arrayIndex+1]=$(echo "scale=5;${commandsLongArray[$arrayIndex+1]} + ${operations}" | bc);
 							#echo "using index" $(($arrayIndex + 1)) ", operations: " $operations;
 					    ;;
 						*"AverageLatency"*)
 							latency=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+2]=$(echo "scale=10;${commandsLongArray[$arrayIndex+2]} + ${latency} " | bc);
+							commandsLongArray[arrayIndex+2]=$(echo "scale=5;${commandsLongArray[$arrayIndex+2]} + ${latency} " | bc);
 							#echo "using index" $(($arrayIndex + 2)) ", latency: " $latency ;
 					    ;;
 						*"MinLatency"*)
 							minLatency=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+3]=$(echo "scale=10;${commandsLongArray[$arrayIndex+3] + ${minLatency}}" | bc);
+							commandsLongArray[arrayIndex+3]=$(echo "scale=5;${commandsLongArray[$arrayIndex+3] + ${minLatency}}" | bc);
 							#echo "using index" $(($arrayIndex + 3)) ", minLatency: " $minLatency ;
 					    ;;
 						*"MaxLatency"*)
 							maxLatency=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+4]=$(echo "scale=10;${commandsLongArray[$arrayIndex+4] + ${maxLatency}}" | bc);
+							commandsLongArray[arrayIndex+4]=$(echo "scale=5;${commandsLongArray[$arrayIndex+4] + ${maxLatency}}" | bc);
 							#echo "using index" $(($arrayIndex + 4)) ", maxLatency: " $maxLatency ;
 					    ;;
 						*"95thPercentileLatency"*)
 							NFthPercentileLatency=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+5]=$(echo "scale=10;${commandsLongArray[$arrayIndex+5] + ${NFthPercentileLatency}}" | bc);
+							commandsLongArray[arrayIndex+5]=$(echo "scale=5;${commandsLongArray[$arrayIndex+5] + ${NFthPercentileLatency}}" | bc);
 							#echo "using index" $(($arrayIndex + 5)) ", NFthPercentileLatency: " $NFthPercentileLatency ;
 					    ;;
 						*"99thPercentileLatency"*)
 							NNthPercentileLatency=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+6]=$(echo "scale=10;${commandsLongArray[$arrayIndex+6] + ${NNthPercentileLatency}}" | bc);
+							commandsLongArray[arrayIndex+6]=$(echo "scale=5;${commandsLongArray[$arrayIndex+6] + ${NNthPercentileLatency}}" | bc);
 							#echo "using index" $(($arrayIndex + 6)) ", NNthPercentileLatency: " $NNthPercentileLatency ;
 					    ;;
 						*"Return=0"*)
 							return=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+7]=$(echo "scale=10;${commandsLongArray[$arrayIndex+7] + ${return}}" | bc);
+							commandsLongArray[arrayIndex+7]=$(echo "scale=5;${commandsLongArray[$arrayIndex+7] + ${return}}" | bc);
 							#echo "using index" $(($arrayIndex + 6)) ", NNthPercentileLatency: " $NNthPercentileLatency ;
 					    ;;
 						*"1000"*)
 							mille=`echo $line | gawk -F',' '{print $3}'`;
-							commandsLongArray[arrayIndex+8]=$(echo "scale=10;${commandsLongArray[$arrayIndex+8] + ${mille}}" | bc);
+							commandsLongArray[arrayIndex+8]=$(echo "scale=5;${commandsLongArray[$arrayIndex+8] + ${mille}}" | bc);
 							#echo "using index" $(($arrayIndex + 7)) ", mille: " $mille ;
 					    ;;
 					esac
@@ -155,7 +155,7 @@ function printClientsMeasurements(){
 #parameters
 
 c=${#clients[@]};
-runTime=$(echo "scale=10;$runTime / $c" | bc);
+runTime=$(echo "scale=5;$runTime / $c" | bc);
 
 echo "************** CLIENT SIDE MEASUREMENTS  **************" >> $outputFilename;
 echo "" >> $outputFilename;
@@ -298,15 +298,15 @@ function collectServersMeasurements(){
     updateLatency=`echo "scale=2;(${updateLatency})/${#clients[@]}" | bc`;
     readLatency=`echo "scale=2;(${readLatency})/${#clients[@]}" | bc`;
 
-    failedTerminationRatio=`echo "scale=10;(${failedTerminationRatio})/${#clients[@]}" | bc`;
-    failedExecutionRatio=`echo "scale=10;(${failedExecutionRatio})/${#clients[@]}" | bc`;
+    failedTerminationRatio=`echo "scale=5;(${failedTerminationRatio})/${#clients[@]}" | bc`;
+    failedExecutionRatio=`echo "scale=5;(${failedExecutionRatio})/${#clients[@]}" | bc`;
 
-    failedReadsRatio=`echo "scale=10;(${failedReadsRatio})/${#clients[@]}" | bc`;
-    timeoutRatio=`echo "scale=10;(${timeoutRatio})/${#clients[@]}" | bc`;
+    failedReadsRatio=`echo "scale=5;(${failedReadsRatio})/${#clients[@]}" | bc`;
+    timeoutRatio=`echo "scale=5;(${timeoutRatio})/${#clients[@]}" | bc`;
 
-    executionTime=`echo "scale=10;(${executionTime})/${#clients[@]}" | bc`;
-    terminationTime=`echo "scale=10;(${terminationTime})/${#clients[@]}" | bc`;
-    certificationTime=`echo "scale=10;(${certificationTime})/${#servers[@]}" | bc`;
+    executionTime=`echo "scale=5;(${executionTime})/${#clients[@]}" | bc`;
+    terminationTime=`echo "scale=5;(${terminationTime})/${#clients[@]}" | bc`;
+    certificationTime=`echo "scale=5;(${certificationTime})/${#servers[@]}" | bc`;
 }
 
 function printServersMeasurements(){
