@@ -173,7 +173,7 @@ echo 'done'
 
 echo ""
 echo "**************************************************************************************"
-echo "*** grid5kLaucher: myfractal and configuration.sh are done, lauching experience... ***"
+echo "*** grid5kLaucher: myfractal and configuration.sh are done, launching experience... ***"
 echo "**************************************************************************************"
 
 ./experience.sh
