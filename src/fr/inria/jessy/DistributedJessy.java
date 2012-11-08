@@ -57,7 +57,6 @@ public class DistributedJessy extends Jessy {
 	private static Logger logger = Logger.getLogger(DistributedJessy.class);
 	private static DistributedJessy distributedJessy = null;
 
-	private static SimpleCounter remoteReads;
 	private static TimeRecorder NonTransactionalWriteRequestTime;
 
 	private static SimpleCounter executionCount = new SimpleCounter(
@@ -91,7 +90,6 @@ public class DistributedJessy extends Jessy {
 
 	static {
 		// Performance measuring facilities
-		remoteReads = new SimpleCounter("Jessy#RemoteReads");
 		NonTransactionalWriteRequestTime = new TimeRecorder(
 				"Jessy#NonTransactionalWriteRequestTime");
 		
@@ -105,7 +103,7 @@ public class DistributedJessy extends Jessy {
 		clientProcessingResponseTime.setFormat("%a");
 	}
 
-	private DistributedJessy() throws Exception {
+	public DistributedJessy() throws Exception {
 		super();
 		try {
 
@@ -164,7 +162,7 @@ public class DistributedJessy extends Jessy {
 		}
 	}
 
-	static synchronized DistributedJessy getInstance() {
+	public static synchronized DistributedJessy getInstance() {
 		if (distributedJessy == null) {
 			try {
 				distributedJessy = new DistributedJessy();
@@ -191,12 +189,10 @@ public class DistributedJessy extends Jessy {
 					+ " for request " + readRequest);
 			readReply = getDataStore().get(readRequest);
 			result = readReply.getEntity().iterator().next();
-
 		} else {
 
 			logger.debug("performing remote read on " + keyValue
 					+ " for request " + readRequest);
-			remoteReads.incr();
 
 			Future<ReadReply<E>> future;
 			boolean isDone = false;
@@ -215,8 +211,7 @@ public class DistributedJessy extends Jessy {
 							ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
 
 					if (readReply != null && readReply.getEntity() != null
-							&& readReply.getEntity().iterator().hasNext()
-							&& readReply.getEntity().iterator().next() != null) { // FIXME
+							&& readReply.getEntity().iterator().hasNext()) {
 
 						logger.debug("read " + readRequest + " is successfull ");
 						result = readReply.getEntity().iterator().next();
@@ -230,16 +225,19 @@ public class DistributedJessy extends Jessy {
 								: false;
 					}
 
-				} catch (TimeoutException te) {
+				} catch (TimeoutException te) {					
 					/*
 					 * Nothing to do. The message should have been lost. Retry
 					 * again.
 					 */
+					failedReadCount.incr();
 				} catch (InterruptedException ie) {
-					logger.error("InterruptedException happened in the remote reader");
+					logger.error("InterruptedException happened in the remote reader" + ie.getCause());
+					failedReadCount.incr();
 					isDone = true;
 				} catch (ExecutionException ee) {
-					logger.error("ExecutionException happened in the remote reader");
+					logger.error("ExecutionException happened in the remote reader" + ee.getCause());
+					failedReadCount.incr();
 					isDone = true;
 				}
 
@@ -267,7 +265,6 @@ public class DistributedJessy extends Jessy {
 		} else {
 			logger.debug("performing remote read on " + keys + " for request "
 					+ readRequest);
-			remoteReads.incr();
 
 			Future<ReadReply<E>> future;
 			boolean isDone = false;
@@ -413,7 +410,6 @@ public class DistributedJessy extends Jessy {
 
 		activeClients.remove(object);
 		if (activeClients.size() == 0) {
-
 			ratioFailedTermination.setFormat("%t");
 			ratioFailedTermination
 					.add((Double.valueOf(abortByVoteCount.toString())

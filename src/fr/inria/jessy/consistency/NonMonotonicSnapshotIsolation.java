@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunication;
+import fr.inria.jessy.store.BerkeleyDBDataStore;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;

@@ -11,8 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
-import fr.inria.jessy.JessyFactory;
 import fr.inria.jessy.entity.Sample2EntityClass;
 import fr.inria.jessy.entity.SampleEntityClass;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -21,7 +21,7 @@ import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.utils.Configuration;
 
 /**
- * This testcase tests all consistency criterion whether they ensure SCONSa or
+ * This test case tests all consistency criterion whether they ensure SCONSa or
  * not. While NMSI, SER, and RC do not ensure SCONSa, PSI and SI must ensure
  * SCONSa.
  * 
@@ -37,7 +37,7 @@ public class SCONSa extends TestCase {
 	@Before
 	public void setUp() throws Exception {
 		PropertyConfigurator.configure("log4j.properties");
-		jessy = JessyFactory.getDistributedJessy();
+		jessy = new DistributedJessy();
 
 		// First, we have to define the entities read or written inside the
 		// transaction
