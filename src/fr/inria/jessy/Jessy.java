@@ -82,7 +82,7 @@ public abstract class Jessy {
 	NonBlockingHashtable<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	protected List<Class<? extends JessyEntity>> entityClasses;
 
-	protected Jessy() throws Exception {
+	public Jessy() throws Exception {
 
 		dataStore = DataStoreFactory.getDataStoreInstance();
 		consistency = ConsistencyFactory.initConsistency(dataStore);
