@@ -9,6 +9,7 @@ import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
+import fr.inria.jessy.store.BerkeleyDBDataStore;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.termination.Vote;

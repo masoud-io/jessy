@@ -20,7 +20,6 @@ import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
-import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;

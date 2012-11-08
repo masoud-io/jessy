@@ -3,6 +3,7 @@ package fr.inria.jessy.consistency;
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.store.BerkeleyDBDataStore;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.utils.Configuration;
 

@@ -31,7 +31,7 @@ public class ConstantPool {
 	public static final String JESSY_ALL_SERVERS_GROUP = "JALLSERVERS";
 	public static final int JESSY_ALL_SERVERS_PORT = 4481;
 
-	public static final int JESSY_NETTY_REMOTE_READER_PORT=4249;
+	public static final int JESSY_NETTY_REMOTE_READER_PORT=4250;
 	
 	public static final int GROUP_SIZE = 1;
 
@@ -87,8 +87,8 @@ public class ConstantPool {
 	/**
 	 * Number of read/update operations in update transaction in YCSB 
 	 */
-	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=0;
-	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=4;
+	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=3;
+	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=1;
 	
 	
 	
@@ -96,6 +96,7 @@ public class ConstantPool {
 	 * Config.property file constants
 	 */
 	public static final String CONFIG_PROPERTY = "config.property";
+	public static final String DATA_STORE_TYPE = "datastore_type";
 	public static final String VECTOR_TYPE = "vector_type";
 	public static final String CONSISTENCY_TYPE = "consistency_type";
 	public static final String PARTITIONER_TYPE = "partitioner_type";

@@ -1,6 +1,5 @@
 package fr.inria.jessy;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,7 +8,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
-import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 import org.cliffc.high_scale_lib.NonBlockingHashtable;
@@ -20,6 +18,7 @@ import com.sleepycat.persist.model.SecondaryKey;
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.DataStore;
+import fr.inria.jessy.store.DataStoreFactory;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -63,17 +62,12 @@ public abstract class Jessy {
 	protected static SimpleCounter failedReadCount;
 
 	protected static SimpleCounter totalReadCount;
-	
-	private static ValueRecorder vectorSize;
 
-	static{
+	static {
 		failedReadCount = new SimpleCounter("Jessy#failedReadCount");
 		totalReadCount = new SimpleCounter("Jessy#ReadCount");
-		vectorSize = new ValueRecorder(
-		"Jessy#vectorSize");
-		vectorSize.setFormat("%M");
 	}
-	
+
 	//
 	// OBJECT FIELDS
 	//
@@ -82,21 +76,15 @@ public abstract class Jessy {
 	Consistency consistency;
 
 	protected Set<Object> activeClients = new HashSet<Object>();
-	
-	private ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
-	// Map<AtomicInteger, EntitySet> committedWritesets;
+	private ExecutionMode transactionalAccess = ExecutionMode.UNDEFINED;
 
 	NonBlockingHashtable<TransactionHandler, ExecutionHistory> handler2executionHistory;
 	protected List<Class<? extends JessyEntity>> entityClasses;
 
 	protected Jessy() throws Exception {
 
-		File environmentHome = new File(System.getProperty("user.dir"));
-		boolean readOnly = false;
-		String storeName = "store";
-
-		dataStore = new DataStore(environmentHome, readOnly, storeName);
+		dataStore = DataStoreFactory.getDataStoreInstance();
 		consistency = ConsistencyFactory.initConsistency(dataStore);
 
 		handler2executionHistory = new NonBlockingHashtable<TransactionHandler, ExecutionHistory>();
@@ -229,7 +217,6 @@ public abstract class Jessy {
 		}
 
 		if (entity != null) {
-			vectorSize.add(entity.getLocalVector().size());
 			executionHistory.addReadEntity(entity);
 			return entity;
 		} else {
