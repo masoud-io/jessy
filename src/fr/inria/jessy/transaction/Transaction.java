@@ -22,29 +22,40 @@ import fr.inria.jessy.store.ReadRequestKey;
 public abstract class Transaction implements Callable<ExecutionHistory> {
 	private static Logger logger = Logger.getLogger(Transaction.class);
 
-	private static ValueRecorder transactionExecutionTime;
-	private static ValueRecorder transactionTerminationTime;
+	private static ValueRecorder transactionExecutionTime_ReadOlny;
+	private static ValueRecorder transactionExecutionTime_Update;
+	private static ValueRecorder transactionTerminationTime_ReadOnly;
+	private static ValueRecorder transactionTerminationTime_Update;
 	private static ValueRecorder transactionReadOperatinTime;
-	
 
 	static {
 		// Performance measuring facilities
 
-		transactionExecutionTime = new ValueRecorder(
-				"Transaction#transactionExecutionTime(ms)");
-		transactionExecutionTime.setFormat("%a");
-		transactionExecutionTime.setFactor(1000000);
-		
-		transactionTerminationTime = new ValueRecorder(
-				"Transaction#transactionTerminationTime(ms)");
-		transactionTerminationTime.setFormat("%a");
-		transactionTerminationTime.setFactor(1000000);
-		
+		transactionExecutionTime_ReadOlny = new ValueRecorder(
+				"Transaction#transactionExecutionTime_ReadOlny(ms)");
+		transactionExecutionTime_ReadOlny.setFormat("%a");
+		transactionExecutionTime_ReadOlny.setFactor(1000000);
+
+		transactionExecutionTime_Update = new ValueRecorder(
+				"Transaction#transactionExecutionTime_Update(ms)");
+		transactionExecutionTime_Update.setFormat("%a");
+		transactionExecutionTime_Update.setFactor(1000000);
+
+		transactionTerminationTime_ReadOnly = new ValueRecorder(
+				"Transaction#transactionTerminationTime_ReadOnly(ms)");
+		transactionTerminationTime_ReadOnly.setFormat("%a");
+		transactionTerminationTime_ReadOnly.setFactor(1000000);
+
+		transactionTerminationTime_Update = new ValueRecorder(
+				"Transaction#transactionTerminationTime_Update(ms)");
+		transactionTerminationTime_Update.setFormat("%a");
+		transactionTerminationTime_Update.setFactor(1000000);
+
 		transactionReadOperatinTime = new ValueRecorder(
 				"Transaction#transactionReadOperatinTime(ms)");
 		transactionReadOperatinTime.setFormat("%a");
 		transactionReadOperatinTime.setFactor(1000000);
-		
+
 		retryCommitOnAbort = readConfig();
 	}
 
@@ -82,9 +93,9 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 */
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
 			throws Exception {
-		long start=System.nanoTime();
+		long start = System.nanoTime();
 		E entity = jessy.read(transactionHandler, entityClass, keyValue);
-		transactionReadOperatinTime.add(System.nanoTime()-start);
+		transactionReadOperatinTime.add(System.nanoTime() - start);
 		// if (entity != null)
 		// entity.setPrimaryKey(null);
 		return entity;
@@ -98,7 +109,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public <E extends JessyEntity> void write(E entity)
 			throws NullPointerException {
 		entity.setPrimaryKey(null);
-		
+
 		jessy.write(transactionHandler, entity);
 		isQuery = false;
 	}
@@ -118,23 +129,28 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 * FIXME Can it happen to abort a transaction indefinitely?
 	 */
 	public ExecutionHistory commitTransaction() {
-		transactionExecutionTime.add(System.nanoTime() - executionStartTime);
 
-		long startterm=System.nanoTime();
-		
+		if (isQuery)
+			transactionExecutionTime_ReadOlny.add(System.nanoTime()
+					- executionStartTime);
+		else
+			transactionExecutionTime_Update.add(System.nanoTime()
+					- executionStartTime);
+
+		long startterm = System.nanoTime();
+
 		ExecutionHistory executionHistory = jessy
 				.commitTransaction(transactionHandler);
 
 		if (executionHistory.getTransactionState() != TransactionState.COMMITTED
 				&& retryCommitOnAbort) {
-			
+
 			try {
 
-				logger.warn( "Re-executing aborted "
-					     + (isQuery?"(query)":"" )
-					     +" transaction "
-					     + executionHistory.getTransactionHandler());
-				
+				logger.warn("Re-executing aborted "
+						+ (isQuery ? "(query)" : "") + " transaction "
+						+ executionHistory.getTransactionHandler());
+
 				/*
 				 * Garbage collect the older execution. We do not need it
 				 * anymore.
@@ -147,7 +163,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 				this.transactionHandler = jessy.startTransaction();
 
 				executionHistory = execute();
-			
+
 			} catch (Exception e) {
 				// FIXME abort properly
 				e.printStackTrace();
@@ -156,7 +172,14 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		}
 
 		jessy.garbageCollectTransaction(transactionHandler);
-		transactionTerminationTime.add(System.nanoTime() - startterm);
+
+		if (isQuery)
+			transactionTerminationTime_ReadOnly.add(System.nanoTime()
+					- startterm);
+		else
+			transactionTerminationTime_Update.add(System.nanoTime()
+					- startterm);
+
 		return executionHistory;
 	}
 
@@ -179,7 +202,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public static boolean getRetryCommitOnAbort() {
 		return Transaction.retryCommitOnAbort;
 	}
-
 
 	private static boolean readConfig() {
 		try {
