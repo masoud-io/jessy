@@ -1,7 +1,8 @@
 #!/bin/bash
 
-source /home/msaeidaardekani/jessy/scripts/configuration.sh
-
+#source /home/msaeidaardekani/jessy/scripts/configuration.sh
+source /home/msaeida/jessy_script/configuration.sh
+ 
 function stopExp(){
     let sc=${#servers[@]}-1
     for j in `seq 0 $sc`
@@ -44,12 +45,17 @@ function collectStats(){
     failedExecutionRatio=0;
     failedReadsRatio=0;
     timeoutRatio=0;
-    executionTime=0;
-    terminationTime=0;
-    certificationTime=0;
+    executionTime_readonly=0;
+    executionTime_update=0;
+    terminationTime_readonly=0;
+    terminationTime_update=0;
+    
+    certificationTime_readonly=0;
+    certificationTime_update=0;
+    
 
 	if ! [ -s "${scriptdir}/results/${servercount}.txt" ]; then
-	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tOverall_Throughput\tCommitted_Throughput\tupdateLatency\treadLatency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tTransaction_Execution_Time\tTransaction_Termination_Time\tCertification_Time"
+	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tOverall_Throughput\tCommitted_Throughput\tupdateTran_Latency\treadonlyTran_Latency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tCertificationLatency_UpdateTran\tCertificationLatency_readonlyTran\tExecutionLatency_UpdateTran\tTerminationLatency_UpdateTran\tExecutionLatency_ReadOnlyTran\tTerminationLatency_ReadOnlyTran"
 	fi
 
     let scount=${#servers[@]}-1
@@ -57,11 +63,16 @@ function collectStats(){
     do
 	server=${servers[$j]}
 
-	tmp=`grep -a "certificationTime" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
+	tmp=`grep -a "certificationTime_readonly" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
 	if [ -n "${tmp}" ]; then
-	    certificationTime=`echo "${tmp}+${certificationTime}"| sed 's/E/*10^/g'`;	    
+	    certificationTime_readonly=`echo "${tmp}+${certificationTime_readonly}"| sed 's/E/*10^/g'`;	    
 	fi
 
+	tmp=`grep -a "certificationTime_update" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
+	if [ -n "${tmp}" ]; then
+	    certificationTime_update=`echo "${tmp}+${certificationTime_update}"| sed 's/E/*10^/g'`;	    
+	fi
+	
     done
 
 
@@ -113,14 +124,26 @@ function collectStats(){
 	    timeoutRatio=`echo "${tmp}+${timeoutRatio}"| sed 's/E/*10^/g'`;	    
 	fi
 
-	tmp=`grep -a "transactionExecutionTime" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
+	####################################################################################################
+	####################################START OF PROBES IN TRANSACTION##################################
+	tmp=`grep -a "transactionExecutionTime_ReadOlny" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
 	if [ -n "${tmp}" ]; then
-	    executionTime=`echo "${tmp}+${executionTime}"| sed 's/E/*10^/g'`;	    
+	    executionTime_readonly=`echo "${tmp}+${executionTime_readonly}"| sed 's/E/*10^/g'`;	    
+	fi
+	
+	tmp=`grep -a "transactionExecutionTime_Update" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
+	if [ -n "${tmp}" ]; then
+	    executionTime_update=`echo "${tmp}+${executionTime_update}"| sed 's/E/*10^/g'`;	    
 	fi
 
-	tmp=`grep -a "jessy#transactionTerminationTime" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
+	tmp=`grep -a "transactionTerminationTime_ReadOnly" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
 	if [ -n "${tmp}" ]; then
-	    terminationTime=`echo "${tmp}+${terminationTime}"| sed 's/E/*10^/g'`;	    
+	    terminationTime_readonly=`echo "${tmp}+${terminationTime_readonly}"| sed 's/E/*10^/g'`;	    
+	fi
+	
+	tmp=`grep -a "transactionTerminationTime_Update" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
+	if [ -n "${tmp}" ]; then
+	    terminationTime_update=`echo "${tmp}+${terminationTime_update}"| sed 's/E/*10^/g'`;	    
 	fi
 
     done
@@ -138,12 +161,16 @@ function collectStats(){
     failedReadsRatio=`echo "scale=10;(${failedReadsRatio})/${#clients[@]}" | ${bc}`;
     timeoutRatio=`echo "scale=10;(${timeoutRatio})/${#clients[@]}" | ${bc}`;
 
-    executionTime=`echo "scale=10;(${executionTime})/${#clients[@]}" | ${bc}`;
-    terminationTime=`echo "scale=10;(${terminationTime})/${#clients[@]}" | ${bc}`;
-    certificationTime=`echo "scale=10;(${certificationTime})/${#servers[@]}" | ${bc}`;
+    certificationTime_readonly=`echo "scale=10;(${certificationTime_readonly})/${#servers[@]}" | ${bc}`;
+    certificationTime_update=`echo "scale=10;(${certificationTime_update})/${#servers[@]}" | ${bc}`;
+
+    executionTime_readonly=`echo "scale=10;(${executionTime_readonly})/${#clients[@]}" | ${bc}`;
+    executionTime_update=`echo "scale=10;(${executionTime_update})/${#clients[@]}" | ${bc}`;
+    terminationTime_readonly=`echo "scale=10;(${terminationTime_readonly})/${#clients[@]}" | ${bc}`;
+    terminationTime_update=`echo "scale=10;(${terminationTime_update})/${#clients[@]}" | ${bc}`;
 
     
-    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${overallThroughput}\t${committedThroughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime}\t${terminationTime}\t${certificationTime}"
+    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${overallThroughput}\t${committedThroughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${certificationTime_update}\t${certificationTime_readonly}\t${executionTime_update}\t${terminationTime_update}\t${executionTime_readonly}\t${terminationTime_readonly}"
 
 }
 

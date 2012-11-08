@@ -26,6 +26,7 @@ import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
 
@@ -45,9 +46,7 @@ public class DistributedTermination implements Learner {
 
 	private static ValueRecorder concurrentCollectionsSize; 
 
-	private static ValueRecorder certificationTime;
-
-	private static ValueRecorder transactionTerminationTime;
+	private static ValueRecorder certificationTime_readonly,certificationTime_update;
 
 	private DistributedJessy jessy;
 
@@ -79,14 +78,13 @@ public class DistributedTermination implements Learner {
 				"DistributedTermination#concurrentCollectionSize");
 		concurrentCollectionsSize.setFormat("%M");
 		
-		certificationTime = new ValueRecorder("Jessy#certificationTime(ms)");
-		certificationTime.setFormat("%a");
-		certificationTime.setFactor(1000000);
-
-		transactionTerminationTime = new ValueRecorder(
-				"Jessy#transactionTerminationTime(ms)");
-		transactionTerminationTime.setFormat("%a");
-		transactionTerminationTime.setFactor(1000000);
+		certificationTime_readonly = new ValueRecorder("Jessy#certificationTime_readonly(ms)");
+		certificationTime_readonly.setFormat("%a");
+		certificationTime_readonly.setFactor(1000000);
+		
+		certificationTime_update = new ValueRecorder("Jessy#certificationTime_update(ms)");
+		certificationTime_update.setFormat("%a");
+		certificationTime_update.setFactor(1000000);
 
 	}
 
@@ -293,9 +291,9 @@ public class DistributedTermination implements Learner {
 			 */
 			if (concernedKeys.size() == 0) {
 				
-				transactionTerminationTime.add(System.nanoTime() - start);
 				executionHistory.changeState(TransactionState.COMMITTED);
 				result = TransactionState.COMMITTED;
+				certificationTime_readonly.add(System.nanoTime() - start);
 				
 			}else{
 
@@ -338,9 +336,6 @@ public class DistributedTermination implements Learner {
 				 */
 				result = vq.waitVoteResult(destGroups);
 
-				if (result == TransactionState.COMMITTED)
-					transactionTerminationTime.add(System.nanoTime() - start);
-				
 			}
 
 			if (!executionHistory.isCertifyAtCoordinator()){
@@ -448,9 +443,15 @@ public class DistributedTermination implements Learner {
 							+ msg.getExecutionHistory().getTransactionHandler()
 							+ " , result is " + state);
 					
-					if (state == TransactionState.COMMITTED)
-						certificationTime.add(System.nanoTime()
+					if (state == TransactionState.COMMITTED){
+
+						if (msg.getExecutionHistory().getTransactionType()==TransactionType.READONLY_TRANSACTION)
+							certificationTime_readonly.add(System.nanoTime()
 								- msg.getExecutionHistory().getStartCertification());
+						else
+							certificationTime_update.add(System.nanoTime()
+									- msg.getExecutionHistory().getStartCertification());
+					}
 
 					msg.getExecutionHistory().changeState(state);
 
