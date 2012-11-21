@@ -176,7 +176,7 @@ public class UpdateSerializability extends Consistency {
 	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
 			ConcernedKeysTarget target) {
 		Set<String> keys = new HashSet<String>();
-		if (target == ConcernedKeysTarget.ATOMIC_MULTICAST) {
+		if (target == ConcernedKeysTarget.TERMINATION_CAST) {
 			if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 				/*
 				 * If the transaction is readonly, it is not needed to be atomic
@@ -197,6 +197,16 @@ public class UpdateSerializability extends Consistency {
 				keys.addAll(executionHistory.getCreateSet().getKeys());
 				return keys;
 			}
+		} else if (target == ConcernedKeysTarget.SEND_VOTES) {
+			/*
+			 * Since the transaction is sent to all jessy instances replicating
+			 * an object read/written by the transaction, all of them should
+			 * participate in the voting phase, and send their votes.
+			 */
+			keys.addAll(executionHistory.getReadSet().getKeys());
+			keys.addAll(executionHistory.getWriteSet().getKeys());
+			keys.addAll(executionHistory.getCreateSet().getKeys());
+			return keys;
 		} else {
 			/*
 			 * For exchanging votes, it is only needed to send the result of the

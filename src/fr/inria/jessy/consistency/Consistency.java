@@ -9,7 +9,7 @@ import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
-import fr.inria.jessy.store.BerkeleyDBDataStore;
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.termination.Vote;
@@ -17,7 +17,7 @@ import fr.inria.jessy.transaction.termination.Vote;
 public abstract class Consistency {
 
 	public static enum ConcernedKeysTarget {
-		ATOMIC_MULTICAST, EXCHANGE_VOTES
+		TERMINATION_CAST, RECEIVE_VOTES, SEND_VOTES
 	};
 
 	protected DataStore store;
@@ -135,4 +135,29 @@ public abstract class Consistency {
 	public boolean isVotePiggybackRequired() {
 		return votePiggybackRequired;
 	}
+
+	/**
+	 * Returns a set of groups which the coordinator should expect to receive
+	 * votes from. Normally, it is the same as the set of destinations of the
+	 * {@link TerminateTransactionRequestMessage}. However, for
+	 * {@link SnapshotIsolationWithMulticast} and {@link SnapshotIsolation},
+	 * while the destination is all jessy server instances, the voters to the
+	 * coordinator are only those that have modified something inside the
+	 * transaction. This is because under snapshot isolation, the algorithm is
+	 * not genuine. Thus, while the transaction should be send to all server
+	 * instances, the coordinator does not need to receive yes from all jessy
+	 * server instance.
+	 * 
+	 * 
+	 * @param termincationRequestReceivers
+	 *            the set used for sending the
+	 *            {@link TerminateTransactionRequestMessage}
+	 * @return
+	 */
+	public Set<String> getVotersToCoordinator(
+			Set<String> termincationRequestReceivers,
+			ExecutionHistory executionHistory) {
+		return termincationRequestReceivers;
+	}
+
 }

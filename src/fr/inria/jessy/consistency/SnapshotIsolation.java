@@ -72,6 +72,9 @@ public class SnapshotIsolation extends Consistency {
 		JessyEntity lastComittedEntity;
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
 
+			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+				continue;
+			
 			try {
 
 				lastComittedEntity = store
@@ -131,8 +134,7 @@ public class SnapshotIsolation extends Consistency {
 		int newVersion = 0;
 		// WARNING: there is a cast to ScalarVector
 		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
-			newVersion = ScalarVector.lastCommittedTransactionSeqNumber
-					.incrementAndGet();
+			newVersion = ScalarVector.incrementAndGetLastCommittedSeqNumber();
 		} else {
 			for (JessyEntity je : executionHistory.getCreateSet().getEntities()) {
 				((ScalarVector) je.getLocalVector()).update(newVersion);
@@ -145,16 +147,52 @@ public class SnapshotIsolation extends Consistency {
 
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ "COMMITED, lastCommittedTransactionSeqNumber:"
-				+ ScalarVector.lastCommittedTransactionSeqNumber.get());
+				+ ScalarVector.getLastCommittedSeqNumber());
 	}
 
 	@Override
 	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
 			ConcernedKeysTarget target) {
-		Set<String> keys = new HashSet<String>();
-		keys.addAll(executionHistory.getWriteSet().getKeys());
-		keys.addAll(executionHistory.getCreateSet().getKeys());
-		return keys;
+		Set<String> keys = new HashSet<String>(4);
+		if (target == ConcernedKeysTarget.TERMINATION_CAST) {
+
+			/*
+			 * If it is a read-only transaction, we return an empty set. But if
+			 * it is not an empty set, then we have to return a set that
+			 * contains a key every group. We do this to simulate the atomic
+			 * broadcast behaviour. Because, later, this transaction will atomic
+			 * multicast to all the groups.
+			 */
+			if (executionHistory.getWriteSet().size() == 0
+					&& executionHistory.getCreateSet().size() == 0)
+				return new HashSet<String>(0);
+
+			// TODO this is an ad-hoc way that only works for Modulo
+			// Partitioner.
+			// It add arbitrary keys such that there is one key for each replica
+			// group. Thus, the transaction will atomic multicast to all replica
+			// groups.
+
+			for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
+				keys.add("" + i);
+			}
+
+			return keys;
+		} else if (target == ConcernedKeysTarget.SEND_VOTES) {
+			keys.addAll(executionHistory.getWriteSet().getKeys());
+			keys.addAll(executionHistory.getCreateSet().getKeys());
+			return keys;
+		} else {
+			// TODO this is an ad-hoc way that only works for Modulo
+			// Partitioner.
+			// It add arbitrary keys such that there is one key for each replica
+			// group. Thus, the transaction will atomic multicast to all replica
+			// groups.
+			for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
+				keys.add("" + i);
+			}
+			return keys;
+		}
 	}
 
 	@Override
@@ -166,6 +204,17 @@ public class SnapshotIsolation extends Consistency {
 
 		}
 		return terminationCommunication;
+	}
+	
+	@Override
+	public Set<String> getVotersToCoordinator(
+			Set<String> termincationRequestReceivers,
+			ExecutionHistory executionHistory) {
+		Set<String> keys = new HashSet<String>();
+		keys.addAll(executionHistory.getWriteSet().getKeys());
+		keys.addAll(executionHistory.getCreateSet().getKeys());
+
+		return keys;
 	}
 
 }

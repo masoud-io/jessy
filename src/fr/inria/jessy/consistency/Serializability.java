@@ -72,6 +72,10 @@ public class Serializability extends Consistency {
 		 * Firstly, the writeSet is checked.
 		 */
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
+			
+//			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+//				continue;
+			
 			try {
 				lastComittedEntity = store
 						.get(new ReadRequest<JessyEntity>(
@@ -101,6 +105,10 @@ public class Serializability extends Consistency {
 		 * Secondly, the readSet is checked.
 		 */
 		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
+			
+//			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+//				continue;
+			
 			try {
 				lastComittedEntity = store
 						.get(new ReadRequest<JessyEntity>(
@@ -157,11 +165,16 @@ public class Serializability extends Consistency {
 	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
 			ConcernedKeysTarget target) {
 		Set<String> keys = new HashSet<String>();
-		if (target == ConcernedKeysTarget.ATOMIC_MULTICAST) {
+		if (target == ConcernedKeysTarget.TERMINATION_CAST ) {
 			keys.addAll(executionHistory.getReadSet().getKeys());
 			keys.addAll(executionHistory.getWriteSet().getKeys());
 			keys.addAll(executionHistory.getCreateSet().getKeys());
-		} else {
+		}else if(target == ConcernedKeysTarget.SEND_VOTES){
+			keys.addAll(executionHistory.getReadSet().getKeys());
+			keys.addAll(executionHistory.getWriteSet().getKeys());
+			keys.addAll(executionHistory.getCreateSet().getKeys());
+		}
+		else {
 			keys.addAll(executionHistory.getWriteSet().getKeys());
 			keys.addAll(executionHistory.getCreateSet().getKeys());
 		}

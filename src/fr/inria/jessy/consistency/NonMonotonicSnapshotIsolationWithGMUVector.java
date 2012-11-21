@@ -227,7 +227,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
 				.getPartitioner()
 				.resolveNames(
 						getConcerningKeys(executionHistory,
-								ConcernedKeysTarget.EXCHANGE_VOTES)));
+								ConcernedKeysTarget.RECEIVE_VOTES)));
 		for (String index : dest) {
 			commitVC.setValue(index, xactVN);
 		}

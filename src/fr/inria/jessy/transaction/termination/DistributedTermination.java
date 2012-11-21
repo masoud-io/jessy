@@ -24,6 +24,7 @@ import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
+import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
@@ -44,9 +45,10 @@ public class DistributedTermination implements Learner {
 	private static Logger logger = Logger
 			.getLogger(DistributedTermination.class);
 
-	private static ValueRecorder concurrentCollectionsSize; 
+	private static ValueRecorder concurrentCollectionsSize;
 
-	private static ValueRecorder certificationTime_readonly,certificationTime_update;
+	private static ValueRecorder certificationTime_readonly,
+			certificationTime_update;
 
 	private DistributedJessy jessy;
 
@@ -77,12 +79,14 @@ public class DistributedTermination implements Learner {
 		concurrentCollectionsSize = new ValueRecorder(
 				"DistributedTermination#concurrentCollectionSize");
 		concurrentCollectionsSize.setFormat("%M");
-		
-		certificationTime_readonly = new ValueRecorder("Jessy#certificationTime_readonly(ms)");
+
+		certificationTime_readonly = new ValueRecorder(
+				"Jessy#certificationTime_readonly(ms)");
 		certificationTime_readonly.setFormat("%a");
 		certificationTime_readonly.setFactor(1000000);
-		
-		certificationTime_update = new ValueRecorder("Jessy#certificationTime_update(ms)");
+
+		certificationTime_update = new ValueRecorder(
+				"Jessy#certificationTime_update(ms)");
 		certificationTime_update.setFormat("%a");
 		certificationTime_update.setFactor(1000000);
 
@@ -99,10 +103,11 @@ public class DistributedTermination implements Learner {
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
 		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 
-//		terminated = new ConcurrentLinkedHashMap.Builder<TransactionHandler, Integer>()
-//				.maximumWeightedCapacity(1000) // FIXME works ???
-//				.build();
-		terminated=new NonBlockingHashtable<TransactionHandler, Integer>();
+		// terminated = new ConcurrentLinkedHashMap.Builder<TransactionHandler,
+		// Integer>()
+		// .maximumWeightedCapacity(1000) // FIXME works ???
+		// .build();
+		terminated = new NonBlockingHashtable<TransactionHandler, Integer>();
 	}
 
 	/**
@@ -162,6 +167,19 @@ public class DistributedTermination implements Learner {
 
 	}
 
+	private VotingQuorum getOrCreateVotingQuorums(TransactionHandler transactionHandler) {
+		VotingQuorum vq = votingQuorums.putIfAbsent(
+				transactionHandler,
+				new VotingQuorum(transactionHandler));
+		if (vq == null) {
+			logger.debug("creating voting quorum for "
+					+ transactionHandler);
+			vq = votingQuorums.get(transactionHandler);
+		}
+		
+		return vq;
+	}
+	
 	/**
 	 * Upon receiving a new certification vote, it is added to the
 	 * votingQuorums.
@@ -169,14 +187,7 @@ public class DistributedTermination implements Learner {
 	 * @param vote
 	 */
 	private void addVote(Vote vote) {
-		VotingQuorum vq = votingQuorums.putIfAbsent(
-				vote.getTransactionHandler(),
-				new VotingQuorum(vote.getTransactionHandler()));
-		if (vq == null) {
-			logger.debug("creating voting quorum for "
-					+ vote.getTransactionHandler());
-			vq = votingQuorums.get(vote.getTransactionHandler());
-		}
+		VotingQuorum vq = getOrCreateVotingQuorums(vote.getTransactionHandler());
 
 		try {
 			jessy.getConsistency().voteReceived(vote);
@@ -266,6 +277,19 @@ public class DistributedTermination implements Learner {
 
 	}
 
+	/**
+	 * Runs at the transaction Coordinator upon receiving a transaction for
+	 * termination. It first gets destination groups for atomic
+	 * multicast/broadcast, and then cast a
+	 * {@link TerminateTransactionRequestMessage} to the destination groups. If
+	 * the destination group is empty, it means that the transaction can commit
+	 * right away without further synchronization. For example, in case of NMSI,
+	 * SI, US, or RC, read-only transaction can commit right away without
+	 * synchronization.
+	 * 
+	 * @author Masoud Saeida Ardekani
+	 * 
+	 */
 	private class AtomicMulticastTask implements Callable<TransactionState> {
 
 		private ExecutionHistory executionHistory;
@@ -282,7 +306,7 @@ public class DistributedTermination implements Learner {
 			HashSet<String> destGroups = new HashSet<String>();
 			Set<String> concernedKeys = jessy.getConsistency()
 					.getConcerningKeys(executionHistory,
-							ConcernedKeysTarget.ATOMIC_MULTICAST);
+							ConcernedKeysTarget.TERMINATION_CAST);
 
 			/*
 			 * If there is no concerning key, it means that the transaction can
@@ -290,55 +314,61 @@ public class DistributedTermination implements Learner {
 			 * consistency.
 			 */
 			if (concernedKeys.size() == 0) {
-				
+
 				executionHistory.changeState(TransactionState.COMMITTED);
 				result = TransactionState.COMMITTED;
 				certificationTime_readonly.add(System.nanoTime() - start);
-				
-			}else{
+
+			} else {
 
 				executionHistory.setCoordinator(JessyGroupManager.getInstance()
 						.getSourceId());
 
-				destGroups.addAll(jessy.partitioner.resolveNames(concernedKeys));
+				destGroups
+						.addAll(jessy.partitioner.resolveNames(concernedKeys));
 				if (destGroups.contains(group.name())) {
 					executionHistory.setCertifyAtCoordinator(true);
 				} else {
 					executionHistory.setCertifyAtCoordinator(false);
 				}
 
-				votingQuorums.put(executionHistory.getTransactionHandler(),
-						new VotingQuorum(executionHistory.getTransactionHandler()));
+				votingQuorums.put(
+						executionHistory.getTransactionHandler(),
+						new VotingQuorum(executionHistory
+								.getTransactionHandler()));
 
 				/*
-				 * gets the pointer for the transaction's VotingQuorum because the
-				 * votingQuorums might be garbage collected by another thread after
-				 * multicasting this transaction.
+				 * gets the pointer for the transaction's VotingQuorum because
+				 * the votingQuorums might be garbage collected by another
+				 * thread after multicasting this transaction.
 				 */
 				VotingQuorum vq = votingQuorums.get(executionHistory
 						.getTransactionHandler());
 
 				logger.debug("A node in Group " + group
 						+ " send a termination message "
-						+ executionHistory.getTransactionHandler().getId() + " to "
-						+ destGroups);
+						+ executionHistory.getTransactionHandler().getId()
+						+ " to " + destGroups);
 				/*
 				 * Atomic multicast the transaction.
 				 */
 				executionHistory.clearReadValues();
-				terminationCommunication.sendTerminateTransactionRequestMessage(
-						new TerminateTransactionRequestMessage(executionHistory,
-								destGroups, group.name(), JessyGroupManager
-								.getInstance().getSourceId()), destGroups);
+				terminationCommunication
+						.sendTerminateTransactionRequestMessage(
+								new TerminateTransactionRequestMessage(
+										executionHistory, destGroups, group
+												.name(), JessyGroupManager
+												.getInstance().getSourceId()),
+								destGroups);
 
 				/*
 				 * Wait here until the result of the transaction is known.
 				 */
-				result = vq.waitVoteResult(destGroups);
+				result = vq.waitVoteResult(jessy.getConsistency().getVotersToCoordinator(destGroups,executionHistory));
 
 			}
 
-			if (!executionHistory.isCertifyAtCoordinator()){
+			if (!executionHistory.isCertifyAtCoordinator()) {
 				garbageCollect(executionHistory.getTransactionHandler());
 			}
 
@@ -404,11 +434,16 @@ public class DistributedTermination implements Learner {
 				 * from all nodes replicating the concerned keys, and then
 				 * returns without performing anything.
 				 */
-				Set<String> dest = new HashSet<String>();
-				dest.addAll(jessy.partitioner.resolveNames(jessy
+				Set<String> voteReceivers =	jessy.partitioner.resolveNames(jessy
 						.getConsistency().getConcerningKeys(
 								msg.getExecutionHistory(),
-								ConcernedKeysTarget.EXCHANGE_VOTES)));
+								ConcernedKeysTarget.RECEIVE_VOTES));
+				
+				
+				Set<String> voteSenders =jessy.partitioner.resolveNames(jessy
+						.getConsistency().getConcerningKeys(
+								msg.getExecutionHistory(),
+								ConcernedKeysTarget.SEND_VOTES)); 
 
 				/*
 				 * if true, it means that it must wait for the vote from the
@@ -417,12 +452,14 @@ public class DistributedTermination implements Learner {
 				 * instance which only replicates an object read by the
 				 * transaction should send its vote, and return.
 				 */
-				boolean replicateWrittenObjects = (dest.contains(group.name())) ? true
+				boolean voteReceiver = (voteReceivers.contains(group.name())) ? true
 						: false;
-				{
+				
+				
+				if (voteSenders.contains(group.name())){
 
-					dest.remove(group.name());
-					VoteMessage voteMsg = new VoteMessage(vote, dest,
+					voteReceivers.remove(group.name());
+					VoteMessage voteMsg = new VoteMessage(vote, voteReceivers,
 							group.name(), JessyGroupManager.getInstance()
 									.getSourceId());
 
@@ -430,27 +467,33 @@ public class DistributedTermination implements Learner {
 							.getExecutionHistory().isCertifyAtCoordinator(),
 							msg.getExecutionHistory().getCoordinator());
 
-					addVote(vote);
 				}
 
-				if (replicateWrittenObjects) {
+				if (voteReceiver) {
+					
+					if (voteSenders.contains(group.name()))
+						addVote(vote);
+					else
+						getOrCreateVotingQuorums(vote.getTransactionHandler());
 					
 					TransactionState state = votingQuorums.get(
 							msg.getExecutionHistory().getTransactionHandler())
-							.waitVoteResult(dest);
+							.waitVoteResult(voteSenders);
 
 					logger.debug("got voting quorum for "
 							+ msg.getExecutionHistory().getTransactionHandler()
 							+ " , result is " + state);
-					
-					if (state == TransactionState.COMMITTED){
 
-						if (msg.getExecutionHistory().getTransactionType()==TransactionType.READONLY_TRANSACTION)
+					if (state == TransactionState.COMMITTED) {
+
+						if (msg.getExecutionHistory().getTransactionType() == TransactionType.READONLY_TRANSACTION)
 							certificationTime_readonly.add(System.nanoTime()
-								- msg.getExecutionHistory().getStartCertification());
+									- msg.getExecutionHistory()
+											.getStartCertification());
 						else
 							certificationTime_update.add(System.nanoTime()
-									- msg.getExecutionHistory().getStartCertification());
+									- msg.getExecutionHistory()
+											.getStartCertification());
 					}
 
 					msg.getExecutionHistory().changeState(state);
