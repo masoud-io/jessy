@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
+
 import com.sleepycat.je.DatabaseException;
 
 import fr.inria.jessy.vector.CompactVector;
@@ -26,6 +28,15 @@ import fr.inria.jessy.vector.Vector;
  */
 public class HashMapDataStore implements DataStore {
 
+	private static SimpleCounter neverCompatible = new SimpleCounter(
+			"HashMapDataStore#NEVER_COMPATIBLE");
+	
+	private static SimpleCounter tryNext = new SimpleCounter(
+			"HashMapDataStore#TRY_NEXT");
+	
+	private static SimpleCounter foundKey = new SimpleCounter(
+			"HashMapDataStore#FOUND_KET");
+	
 	ConcurrentHashMap<String, ArrayList> store;
 
 	public HashMapDataStore() {
@@ -83,24 +94,38 @@ public class HashMapDataStore implements DataStore {
 			}
 
 			int index = tmp.size() - 1;
-			E entity = tmp.get(index--);
+			E entity = (E) tmp.get(index--).clone();
 
 			if (readSet == null) {
+				foundKey.incr();
 				return new ReadReply<E>(entity, readRequest.getReadRequestId());
 			}
 
 			while (entity != null) {
-				if (entity.getLocalVector().isCompatible(readSet) == Vector.CompatibleResult.COMPATIBLE) {
+				Vector.CompatibleResult compatibleResult=entity.getLocalVector().isCompatible(readSet);
+				
+				
+				if (compatibleResult == Vector.CompatibleResult.COMPATIBLE) {
+					foundKey.incr();
 					return new ReadReply<E>(entity,
 							readRequest.getReadRequestId());
 				} else {
-					if (entity.getLocalVector().isCompatible(readSet) == Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
+					if (compatibleResult == Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
+						tryNext.incr();
 						if (index == -1)
 							break;
-						entity = tmp.get(index--);
+						entity = (E)tmp.get(index--).clone();
 					} else {
 						// NEVER_COMPATIBLE
-						break;
+						neverCompatible.incr();
+						
+						/*
+						 * Instead of returning null to the client, and retry again, since we are sure that the decision can
+						 * be made now, we call get again to return the correct version.
+						 * Note that {@link Vector.CompatibleResult.NEVER_COMPATIBLE} is only used in the Snapshot Isolation consistency.
+						 */
+						return get(readRequest);
+//						break;
 					}
 				}
 			}

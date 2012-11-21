@@ -18,8 +18,20 @@ import com.sleepycat.persist.model.Persistent;
 @Persistent
 public class ScalarVector<K> extends Vector<K> implements Externalizable {
 
-	public static AtomicInteger lastCommittedTransactionSeqNumber = new AtomicInteger(
+	private static  AtomicInteger lastCommittedTransactionSeqNumber = new AtomicInteger(
 			0);
+	
+	public synchronized static int incrementAndGetLastCommittedSeqNumber(){
+		synchronized (lastCommittedTransactionSeqNumber) {
+			int result=lastCommittedTransactionSeqNumber.incrementAndGet();
+				lastCommittedTransactionSeqNumber.notifyAll();	
+				return result;
+		}
+	}
+	
+	public static int getLastCommittedSeqNumber(){
+		return lastCommittedTransactionSeqNumber.get();
+	}
 
 	/**
 	 * needed by BerkleyDB
@@ -64,13 +76,14 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 			/**
 			 * In order to have a snapshot we must know the
 			 * committedTransactionSeqNumber at witch a transaction start (its
-			 * snapshot). Previously this information was keeped on the
+			 * snapshot). Previously this information was kept on the
 			 * {@link TransactionHandler}. After Pierre have remove it we take
 			 * lastCommittedTransactionSeqNumber from the first read. For this
 			 * reason we promote the vector of the first read to the
 			 * lastCommittedTransactionSeqNumber
 			 */
 			this.update(lastCommittedTransactionSeqNumber.get());
+			
 			return CompatibleResult.COMPATIBLE;
 		} else {
 
@@ -79,10 +92,22 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 			/**
 			 * this site has not received yet the required version
 			 */
+			
 			if (otherValue > lastCommittedTransactionSeqNumber.get()) {
+				
+				while (otherValue>lastCommittedTransactionSeqNumber.get()){
+					synchronized (lastCommittedTransactionSeqNumber) {
+						try {
+							lastCommittedTransactionSeqNumber.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}	
+
+					}
+				}
 				return CompatibleResult.NEVER_COMPATIBLE;
 			}
-
+			
 			Integer selfValue = getValue(selfKey);
 
 			if (selfValue <= otherValue) {

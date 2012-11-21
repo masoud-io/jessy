@@ -2,7 +2,6 @@ package fr.inria.jessy.transaction.termination;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -78,11 +77,11 @@ public class VotingQuorum {
 		}
 		
 		if( result == TransactionState.COMMITTING ){
-			logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed. Groups are: " + groups + " . voterssize is: " + voters.size());
+			logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed. Groups are: " + groups + " . voters are : " + voters);
 			return TransactionState.COMMITTED;
 		}
 		
-		logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting. Groups are: " + groups + " . voterssize is: " + voters.size());
+		logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting. Groups are: " + groups + " . voters are : " + voters);
 		return TransactionState.ABORTED_BY_VOTING;
 	}
 

@@ -252,7 +252,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 		alreadyNotified.addAll(manager.getPartitioner().resolveNames(
 				getConcerningKeys(executionHistory,
-						ConcernedKeysTarget.EXCHANGE_VOTES)));
+						ConcernedKeysTarget.RECEIVE_VOTES)));
 
 		/*
 		 * Compute the set of jessy groups that have not receive the vector.

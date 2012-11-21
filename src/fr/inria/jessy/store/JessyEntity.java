@@ -27,15 +27,22 @@ import fr.inria.jessy.vector.VectorFactory;
 // FIXME transient field ?
 
 @Persistent
-public abstract class JessyEntity implements Externalizable {
+public abstract class JessyEntity implements Externalizable, Cloneable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
 
 	private Vector<String> localVector;
+	
 	private boolean removed = true;
 
+	@PrimaryKey(sequence = "Jessy_Sequence")
+	private PrimaryKeyType primaryKey;
+
+	@SecondaryKey(relate = MANY_TO_ONE)
+	private String secondaryKey;
+	
 	@SuppressWarnings("unused")
 	private JessyEntity() {
 	}
@@ -57,12 +64,6 @@ public abstract class JessyEntity implements Externalizable {
 	public void removoe() {
 		this.removed = true;
 	}
-
-	@PrimaryKey(sequence = "Jessy_Sequence")
-	private PrimaryKeyType primaryKey;
-
-	@SecondaryKey(relate = MANY_TO_ONE)
-	private String secondaryKey;
 
 	/**
 	 * @param primaryKey
@@ -106,6 +107,24 @@ public abstract class JessyEntity implements Externalizable {
 		out.writeObject(secondaryKey);
 		out.writeObject(localVector);
 
+	}
+	
+	public JessyEntity clone() {		
+		JessyEntity je=null;
+		
+		try {
+			je = (JessyEntity) super.clone();
+			je.localVector=this.localVector.clone();
+			je.removed=this.removed;
+			je.primaryKey=this.primaryKey;
+			je.secondaryKey=this.secondaryKey;
+			
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return je;
 	}
 
 }
