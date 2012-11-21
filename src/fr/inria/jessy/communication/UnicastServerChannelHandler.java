@@ -19,13 +19,13 @@ public class UnicastServerChannelHandler extends SimpleChannelHandler {
 
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-		ReadRequestMessage msg = (ReadRequestMessage) e.getMessage();
-		learner.learnReadRequestMessage(msg, e.getChannel());
-
+			ReadRequestMessage msg = (ReadRequestMessage) e.getMessage();
+			learner.learnReadRequestMessage(msg, e.getChannel());
 	}
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-		System.out.println(e.toString());
+		System.out.println("UnicastServerChannelHandler: " + e.toString());
+		e.getCause().printStackTrace();
 	}
 }
