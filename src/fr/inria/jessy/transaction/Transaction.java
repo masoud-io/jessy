@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
@@ -22,6 +23,9 @@ import fr.inria.jessy.store.ReadRequestKey;
 public abstract class Transaction implements Callable<ExecutionHistory> {
 	private static Logger logger = Logger.getLogger(Transaction.class);
 
+	public static SimpleCounter totalCount = new SimpleCounter(
+			"Transaction#TotalTransactions");
+	
 	private static ValueRecorder transactionExecutionTime_ReadOlny;
 	private static ValueRecorder transactionExecutionTime_Update;
 	private static ValueRecorder transactionTerminationTime_ReadOnly;
@@ -72,6 +76,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		this.transactionHandler = jessy.startTransaction();
 		this.isQuery = true;
 		executionStartTime = System.nanoTime();
+		totalCount.incr();
 	}
 
 	/**
@@ -133,9 +138,11 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		if (isQuery)
 			transactionExecutionTime_ReadOlny.add(System.nanoTime()
 					- executionStartTime);
-		else
+		else{
 			transactionExecutionTime_Update.add(System.nanoTime()
 					- executionStartTime);
+//			logger.warn("execution of update transaction is finished: " + transactionHandler.toString());
+		}
 
 		long startterm = System.nanoTime();
 
@@ -149,7 +156,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 				logger.warn("Re-executing aborted "
 						+ (isQuery ? "(query)" : "") + " transaction "
-						+ executionHistory.getTransactionHandler());
+						+ executionHistory.getTransactionHandler() + " . Reason : " + executionHistory.getTransactionState() );
 
 				/*
 				 * Garbage collect the older execution. We do not need it

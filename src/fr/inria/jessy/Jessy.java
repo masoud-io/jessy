@@ -189,8 +189,10 @@ public abstract class Jessy {
 			throw new NullPointerException("Transaction has not been started");
 		}
 
-		E entity;
-		entity = executionHistory.getWriteEntity(keyValue);
+		E entity=null;
+		
+		if (ConstantPool.CHECK_IF_HAS_BEEN_READ)
+			entity = executionHistory.getWriteEntity(keyValue);
 
 		// we first check it this entity has been updated in this transaction
 		// before!
@@ -198,7 +200,8 @@ public abstract class Jessy {
 
 			// if the entity has not been updated, we check if it has been read
 			// in the same transaction before.
-			entity = executionHistory.getReadEntity(keyValue);
+			if (ConstantPool.CHECK_IF_HAS_BEEN_WRITTEN)
+				entity = executionHistory.getReadEntity(keyValue);
 
 			if (entity == null) {
 
@@ -357,8 +360,14 @@ public abstract class Jessy {
 					 */
 				}
 			}
-			if (tmp != null)
-				entity.setLocalVector(tmp.getLocalVector());
+			if (tmp != null){
+				entity.setLocalVector(tmp.getLocalVector().clone());
+			}
+			else
+			{
+				//TODO what if it has not been read before?
+				throw new NullPointerException("The entity you are trying to write has not been read yet!");
+			}
 			executionHistory.addWriteEntity(entity);
 		}
 	}
