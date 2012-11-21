@@ -53,8 +53,7 @@ public class ConstantPool {
 	 * the read request might be lost, upon the timeout, a new read request
 	 * should be sent out to a jessy instance replicating the entity.
 	 */
-	public static final long JESSY_REMOTE_READER_TIMEOUT = 5000;
-	public static final long JESSY_REMOTE_READER_NUMBER_RETRY = 3;
+	public static final long JESSY_REMOTE_READER_TIMEOUT = 50000;
 	public static final TimeUnit JESSY_REMOTE_READER_TIMEOUT_TYPE = TimeUnit.MILLISECONDS;
 
 	/**
@@ -76,7 +75,7 @@ public class ConstantPool {
 	 * The timeout (in millisecond) and the number of times to retry a read upon
 	 * returning a null value from the server.
 	 */
-	public static final long JESSY_READ_RETRY_TIMEOUT = 2;
+	public static final long JESSY_READ_RETRY_TIMEOUT = 1;
 	public static final short JESSY_READ_RETRY_TIMES = 3;
 
 	/**
@@ -90,7 +89,13 @@ public class ConstantPool {
 	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=3;
 	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=1;
 	
-	
+	/**
+	 * These two variables are used in {@link Jessy} to prevent checking for objects that have been
+	 *  read/written previously by the same transaction. Of course in real system, they should be true.
+	 *  But, for the sake of performance we set them to false.  
+	 */
+	public static final boolean CHECK_IF_HAS_BEEN_READ=false;
+	public static final boolean CHECK_IF_HAS_BEEN_WRITTEN=false;
 	
 	/**
 	 * Config.property file constants

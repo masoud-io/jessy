@@ -192,7 +192,7 @@ public class DistributedJessy extends Jessy {
 		} else {
 
 			logger.debug("performing remote read on " + keyValue
-					+ " for request " + readRequest);
+					+ " for request " + readRequest.getOneKey().getKeyValue());
 
 			Future<ReadReply<E>> future;
 			boolean isDone = false;
@@ -217,26 +217,21 @@ public class DistributedJessy extends Jessy {
 						result = readReply.getEntity().iterator().next();
 						remoteReaderLatency.add(System.nanoTime()-start);
 						isDone = true;
-
-					} else {
-						logger.debug("request " + readRequest + " failed");
-						failedReadCount.incr();
-						isDone = tries == ConstantPool.JESSY_REMOTE_READER_NUMBER_RETRY ? true
-								: false;
-					}
+					} 
 
 				} catch (TimeoutException te) {					
 					/*
 					 * Nothing to do. The message should have been lost. Retry
 					 * again.
 					 */
+					logger.error("TimeoutException happened in Distributed Jessy (Perform Read)" + te.getCause());
 					failedReadCount.incr();
 				} catch (InterruptedException ie) {
-					logger.error("InterruptedException happened in the remote reader" + ie.getCause());
+					logger.error("InterruptedException happened in Distributed Jessy (Perform Read)" + ie.getCause());
 					failedReadCount.incr();
 					isDone = true;
 				} catch (ExecutionException ee) {
-					logger.error("ExecutionException happened in the remote reader" + ee.getCause());
+					logger.error("ExecutionException happened in Distributed Jessy (Perform Read)" + ee.getCause());
 					failedReadCount.incr();
 					isDone = true;
 				}
