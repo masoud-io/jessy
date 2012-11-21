@@ -77,7 +77,7 @@ public class SiMonotonicSnapshotTest {
 
 		ExecutionHistory result0 = futureInit.get();
 		assertEquals(TransactionState.COMMITTED, result0.getTransactionState());
-		assertEquals(0, ScalarVector.lastCommittedTransactionSeqNumber.get());
+		assertEquals(0, ScalarVector.getLastCommittedSeqNumber());
 
 		Future<ExecutionHistory> future1;
 		Future<ExecutionHistory> future2;

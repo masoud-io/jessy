@@ -25,7 +25,7 @@ public class T3x extends Transaction{
 			
 			SampleEntityClass se=read(SampleEntityClass.class, "1");	
 			
-			logger.debug("lastCommittedTransactionSeqNumber:"+ScalarVector.lastCommittedTransactionSeqNumber.get()+" "+se.getLocalVector());
+			logger.debug("lastCommittedTransactionSeqNumber:"+ScalarVector.getLastCommittedSeqNumber()+" "+se.getLocalVector());
 			se.setData("3x");
 			
 			logger.debug("transaction T3x started with SelfValue:"+se.getLocalVector().getSelfValue()+" "+se.getLocalVector());
