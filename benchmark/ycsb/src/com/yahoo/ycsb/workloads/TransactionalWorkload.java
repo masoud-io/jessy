@@ -40,8 +40,6 @@ import com.yahoo.ycsb.generator.ZipfianGenerator;
 import com.yahoo.ycsb.measurements.Measurements;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.ConstantPool.MeasuredOperations;
-import fr.inria.jessy.ConstantPool.TransactionPhase;
 
 /**
  * The core benchmark scenario. Represents a set of clients doing simple CRUD
@@ -329,7 +327,7 @@ public class TransactionalWorkload extends Workload {
 
 		transactioninsertkeysequence = new CounterGenerator(recordcount);
 		if (requestdistrib.compareTo("uniform") == 0) {
-			keychooser = new UniformIntegerGenerator(0, recordcount - 1);
+			keychooser = new UniformIntegerGenerator(0, recordcount - 1 -10); //-10 is added by masoud to prevent requesting for keys that miraclously are not in the system (last keys usually are not there.)
 		} else if (requestdistrib.compareTo("zipfian") == 0) {
 			// it does this by generating a random "next key" in part by taking
 			// the modulus over the number of keys
@@ -348,9 +346,9 @@ public class TransactionalWorkload extends Workload {
 			int opcount = Integer.parseInt(p
 					.getProperty(Client.OPERATION_COUNT_PROPERTY));
 			int expectednewkeys = (int) (((double) opcount) * insertproportion * 2.0); // 2
-			// is
-			// fudge
-			// factor
+																						// is
+																						// fudge
+																						// factor
 
 			keychooser = new ScrambledZipfianGenerator(recordcount
 					+ expectednewkeys);
@@ -565,23 +563,16 @@ public class TransactionalWorkload extends Workload {
 
 		// do the transaction
 
-		if(!Measurements._transactionWideMeasurement){
-			db.read(table, keyname, fields, new HashMap<String, String>());
+		long st = System.currentTimeMillis();
 
-			db.update(table, keyname, values);
-		}
-		else{
-			long st = System.currentTimeMillis();
+		db.read(table, keyname, fields, new HashMap<String, String>());
 
-			db.read(table, keyname, fields, new HashMap<String, String>());
+		db.update(table, keyname, values);
 
-			db.update(table, keyname, values);
+		long en = System.currentTimeMillis();
 
-			long en = System.currentTimeMillis();
-
-			Measurements.getMeasurements().measure(TransactionPhase.OVERALL,MeasuredOperations.YCSB_READ_MODIFY_WRITE,
-					(int) (en - st));
-		}
+		Measurements.getMeasurements().measure("READ-MODIFY-WRITE",
+				(int) (en - st));
 	}
 
 	public void doTransactionScan(DB db) {

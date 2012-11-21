@@ -31,7 +31,7 @@ public class JessyTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		jessy = JessyFactory.getLocalJessy();
+		jessy = DistributedJessy.getInstance();
 
 		// First, we have to define the entities read or written inside the
 		// transaction

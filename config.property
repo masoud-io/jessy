@@ -2,13 +2,13 @@
 #the hooks are defined in ConstantPool.java!!!
 
 # datastore_type: "hashmap" | "berkeleydb"
-datastore_type = hashmap
+datastore_type = berkeleydb
 
 #consistency type: "nmsi" | "si" | "ser" | "rc" | "psi" | "us" | 
 #"si2" snapshot isolation with Atomic-Multicast to every group
 #"nmsi2" non-monotonic snapshot isolation with GMUVector from [Peluso2012] 
 #"us2" Update serializability with GMUVector from [Peluso2012]
-consistency_type = nmsi2
+consistency_type = si2
 
 #partitioner type: "keyspace" | "modulo" | "replicatedModulo"
 partitioner_type = modulo
@@ -19,7 +19,7 @@ replication_factor = 1
 #retry to execute and commit the transaction upon its abort.
 #re-execution happens only if the transaction is aborted by the certification and not by the client.
 # retry_commit : "true" | "false"
-retry_commit=true
+retry_commit=false
 
 fractal_file=myfractal.xml
 

@@ -431,6 +431,12 @@ public class Client
 				exporter = new TextMeasurementsExporter(out);
 			}
 			//DataOutputStream dos = new DataOutputStream(new FileOutputStream("results"));
+			try {
+				Thread.currentThread().sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			exporter.write("OVERALL", "RunTime(ms)", runtime);
 			
 			double throughput = 1000.0 * ((double) opcount) / ((double) runtime);

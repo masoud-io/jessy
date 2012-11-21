@@ -1,23 +1,10 @@
 package fr.inria.jessy.benchmark.tpcc.workflow;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import com.yahoo.ycsb.measurements.Measurements;
-import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
-import com.yahoo.ycsb.measurements.exporter.TextMeasurementsExporter;
-
-import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.ConstantPool.WorkloadTransactions;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
-import fr.inria.jessy.JessyFactory;
-import fr.inria.jessy.ConstantPool.MeasuredOperations;
-import fr.inria.jessy.ConstantPool.TransactionPhase;
 import fr.inria.jessy.benchmark.tpcc.Delivery;
 import fr.inria.jessy.benchmark.tpcc.NewOrder;
 import fr.inria.jessy.benchmark.tpcc.OrderStatus;
@@ -32,17 +19,14 @@ import fr.inria.jessy.benchmark.tpcc.entities.Order;
 import fr.inria.jessy.benchmark.tpcc.entities.Order_line;
 import fr.inria.jessy.benchmark.tpcc.entities.Stock;
 import fr.inria.jessy.benchmark.tpcc.entities.Warehouse;
-import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.utils.Configuration;
 
 public class TpccClient {
 
 	Jessy jessy;
-	Measurements _measurements;
 
-	static int _numberTransaction; /* number of Transactions to execute */
-	static int _warehouseNumber;
-	int _districtNumber;
+	int numberTransaction; /* number of Transactions to execute */
+	int warehouseNumber;
+	int districtNumber;
 
 	int quotient = 0; /* for the number of NewOrder and Payment Transactions */
 	int rest = 0;
@@ -50,26 +34,16 @@ public class TpccClient {
 
 	private static Logger logger = Logger.getLogger(TpccClient.class);
 
-	static {
-		final String warehouses = Configuration
-				.readConfig(ConstantPool.WAREHOUSES_NUMBER);
-		logger.warn("Warehouse number is " + warehouses);
-
-		_warehouseNumber= Integer.parseInt(warehouses);
-	}
-
-
-
-	public TpccClient(int numberTransaction,/* int warehouseNumber,*/ int districtNumber) {
+	public TpccClient(int numberTransaction, int warehouseNumber, int districtNumber) {
 		PropertyConfigurator.configure("log4j.properties");
 
-		_numberTransaction = numberTransaction;
-		_districtNumber = districtNumber;
+		this.numberTransaction = numberTransaction;
+		this.warehouseNumber = warehouseNumber;
+		this.districtNumber = districtNumber;
 
-		_measurements=Measurements.getMeasurements();
 		try {
-			//			jessy = JessyFactory.getDistributedJessy();
-			jessy = JessyFactory.getLocalJessy();
+//			jessy = JessyFactory.getDistributedJessy();
+			jessy = DistributedJessy.getInstance();
 
 			jessy.addEntity(Warehouse.class);
 			jessy.addEntity(District.class);
@@ -99,11 +73,11 @@ public class TpccClient {
 		 * number = (int) Integer.valueOf(s);
 		 */
 
-		quotient = 10 * (_numberTransaction / 23);
-		rest = _numberTransaction % 23;
+		quotient = 10 * (numberTransaction / 23);
+		rest = numberTransaction % 23;
 
 		try {
-			if (_numberTransaction < 23) {
+			if (this.numberTransaction < 23) {
 
 				/* for the rest */
 				for (i = 1; i <= rest / 2; i++) {
@@ -172,209 +146,45 @@ public class TpccClient {
 	public void neworder() throws Exception {
 
 		logger.debug("executing NewOrder...");
-		NewOrder neworder = new NewOrder(jessy, _warehouseNumber);
-
-		if(!Measurements._transactionWideMeasurement){
-			neworder.execute();
-		}
-		else{
-			long st=System.currentTimeMillis();
-			ExecutionHistory eh = neworder.execute();
-			long en=System.currentTimeMillis();
-
-			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.NO);
-		}
+		NewOrder neworder = new NewOrder(jessy, this.warehouseNumber);
+		neworder.execute();
 	}
 
 	public void payment() throws Exception {
-
+		
 		logger.debug("executing payment...");
-		Payment payment = new Payment(jessy, _warehouseNumber);
-
-		if(!Measurements._transactionWideMeasurement){
-			payment.execute();
-		}
-		else{
-			long st=System.currentTimeMillis();
-			ExecutionHistory eh = payment.execute();
-			long en=System.currentTimeMillis();
-
-			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.P);
-		}
+		Payment payment = new Payment(jessy, this.warehouseNumber);
+		payment.execute();
 	}
 
 	public void orderstatus() throws Exception {
-
+		
 		logger.debug("executing orderstatus...");
-		OrderStatus orderstatus = new OrderStatus(jessy, _warehouseNumber);
-
-		if(!Measurements._transactionWideMeasurement){
-			orderstatus.execute();
-		}
-		else{
-			long st=System.currentTimeMillis();
-			ExecutionHistory eh = orderstatus.execute();
-			long en=System.currentTimeMillis();
-
-			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.OS);
-		}
+		OrderStatus orderstatus = new OrderStatus(jessy, this.warehouseNumber);
+		orderstatus.execute();
 	}
 
 	public void delivery() throws Exception {
 
 		logger.debug("executing delivery...");
-		Delivery delivery = new Delivery(jessy, _warehouseNumber);
-
-		if(!Measurements._transactionWideMeasurement){
-			delivery.execute();
-		}
-		else{
-			long st=System.currentTimeMillis();
-			ExecutionHistory eh = delivery.execute();
-			long en=System.currentTimeMillis();
-
-			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.D);
-		}
-
+		Delivery delivery = new Delivery(jessy, this.warehouseNumber);
+		delivery.execute();
 	}
 
 	public void stocklevel() throws Exception {
 
 		logger.debug("executing stocklevel...");
-		StockLevel stocklevel = new StockLevel(jessy, _warehouseNumber, this._districtNumber);
-
-		if(!Measurements._transactionWideMeasurement){
-			stocklevel.execute();
-		}
-		else{
-			long st=System.currentTimeMillis();
-			ExecutionHistory eh = stocklevel.execute();
-			long en=System.currentTimeMillis();
-
-			_measurements.fillStatistics(eh, st, en, TransactionPhase.OVERALL, WorkloadTransactions.SL);
-		}
+		StockLevel stocklevel = new StockLevel(jessy, this.warehouseNumber, this.districtNumber);
+		stocklevel.execute();
 	}
 
 	public static void main(String[] args) throws Exception {
 
-		Properties props = new Properties();
-		//			TODO ADD consistency, move to wrapper
-		Measurements.setProperties(props);
-
-		TpccClient client = new TpccClient(100, /*10,*/ 10);
-		long st=System.currentTimeMillis();
+		TpccClient client = new TpccClient(4096, 10, 10);
 		client.execute();
-		long en=System.currentTimeMillis();
 
-		exportMeasurements(props, _numberTransaction, en - st);
-
-		//		TODO cleanly close fractal
+//		TODO cleanly close fractal
 		System.exit(0);
 	}
 
-	/**
-	 * Exports the measurements to either sysout or a file using the exporter
-	 * loaded from conf.
-	 * @throws IOException Either failed to write to output stream or failed to close it.
-	 */
-	private static void exportMeasurements(Properties props, int opcount, long runtime)
-			throws IOException
-			{
-		MeasurementsExporter exporter = null;
-		try
-		{
-			// if no destination file is provided the results will be written to stdout
-			OutputStream out;
-			String exportFile = props.getProperty("exportfile");
-
-			if (exportFile == null)
-			{
-				out = System.err;
-			} else
-			{
-				out = new FileOutputStream(exportFile);
-			}
-
-			// if no exporter is provided the default text one will be used
-			String exporterStr = props.getProperty("exporter", "com.yahoo.ycsb.measurements.exporter.TextMeasurementsExporter");
-			try
-			{
-				exporter = (MeasurementsExporter) Class.forName(exporterStr).getConstructor(OutputStream.class).newInstance(out);
-			} catch (Exception e)
-			{
-				System.err.println("Could not find exporter " + exporterStr
-						+ ", will use default text reporter.");
-				e.printStackTrace();
-				exporter = new TextMeasurementsExporter(out);
-			}
-			//DataOutputStream dos = new DataOutputStream(new FileOutputStream("results"));
-			exporter.write("OVERALL", "RunTime(ms)", runtime);
-
-			double throughput = 1000.0 * ((double) opcount) / ((double) runtime);
-			exporter.write("OVERALL", "Throughput(ops/sec)", throughput);
-
-			Measurements.getMeasurements().exportMeasurements(exporter);
-		} finally
-		{
-			if (exporter != null)
-			{
-				exporter.close();	
-			}
-		}
-			}
-
-//	/**
-//	 * Used to take separate measurements on all transactions types accordingly with the result of a transaction
-//	 * 
-//	 * @param eh Transaction ExecutionHistory
-//	 * @param st Transaction starting time
-//	 * @param en Transaction ending time
-//	 * @param tt Transaction type
-//	 */
-//	private void fillStatistics(ExecutionHistory eh, long st, long en, TransactionPhase phase, WorkloadTransactions tt ) {
-//
-//		int returnCode=0;
-//		boolean committed=false;
-//		if(eh==null){
-//			returnCode=-1;
-//		}
-//		else{
-//			switch (eh.getTransactionState()) {
-//			case  COMMITTED:
-//				_measurements.measure(phase, MeasuredOperations.COMMITTED, tt, (int) (en - st));
-//				committed=true;
-//				break;
-//
-//			case  ABORTED_BY_CERTIFICATION:
-//				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_CERTIFICATION,tt, (int) (en - st));
-//				returnCode=-1;
-//				break;
-//
-//			case  ABORTED_BY_VOTING:
-//				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_VOTING,tt, (int) (en - st));
-//				returnCode=-1;
-//				break;
-//
-//			case  ABORTED_BY_CLIENT:
-//				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_CLIENT,tt, (int) (en - st));
-//				returnCode=-1;
-//				break;
-//
-//			case  ABORTED_BY_TIMEOUT:
-//				_measurements.measure(phase, MeasuredOperations.ABORTED_BY_TIMEOUT,tt, (int) (en - st));
-//				returnCode=-1;
-//				break;
-//
-//			default:
-//				break;
-//			}
-//
-//			_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.TERMINATED, (int) (en - st));
-//			if(!committed){
-//				_measurements.measure(TransactionPhase.OVERALL, MeasuredOperations.ABORTED, (int) (en - st));
-//			}
-//		}
-//		_measurements.reportReturnCode(phase, MeasuredOperations.TERMINATED, tt, returnCode);
-//
-//	}
 }

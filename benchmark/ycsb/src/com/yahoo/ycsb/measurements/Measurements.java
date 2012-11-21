@@ -23,8 +23,6 @@ import java.util.Properties;
 
 import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 
-import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.ConstantPool.MeasuredOperations;
 import fr.inria.jessy.ConstantPool.TransactionPhase;
 import fr.inria.jessy.ConstantPool.WorkloadTransactions;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -44,14 +42,6 @@ public class Measurements
 	static Measurements singleton=null;
 	
 	static Properties measurementproperties=null;
-	
-	public static final boolean _operationWideMeasurement = (fr.inria.jessy.utils.Configuration
-			.readConfig(ConstantPool.OPERATION_WIDE_MEASUREMENTS).equals("false")) ? false
-			: true;
-	
-	public static final boolean _transactionWideMeasurement = (fr.inria.jessy.utils.Configuration
-			.readConfig(ConstantPool.TRANSACTION_WIDE_MEASUREMENTS).equals("false")) ? false
-			: true;
 	
 	public static void setProperties(Properties props)
 	{
@@ -105,31 +95,11 @@ public class Measurements
 			return new OneMeasurementTimeSeries(name,_props);
 		}
 	}
-	
-	/**
-	 * Call the measure function with an operation part of the static set of operations defined in the CostantPool
-	 * @param operation
-	 * @param latency 
-	 */
-	public synchronized void measure(TransactionPhase phase, MeasuredOperations operation, int latency){
-		measure(phase.toString()+"_"+operation.toString(), latency);
-	}
-	
-	/**
-	 * Call the measure function with an operation part of the static set of operations defined in the CostantPool and a 
-	 * transaction type
-	 * @param operation
-	 * @param latency
-	 */
-	public synchronized void measure(TransactionPhase phase, MeasuredOperations operation, WorkloadTransactions t, int latency){
-		measure(phase.toString()+"_"+operation.toString()+"_"+t, latency);
-	}
-	
 
       /**
        * Report a single value of a single metric. E.g. for read latency, operation="READ" and latency is the measured value.
        */
-	private synchronized void measure(String operation, int latency)
+	public synchronized void measure(String operation, int latency)
 	{
 		if (!data.containsKey(operation))
 		{
@@ -152,32 +122,11 @@ public class Measurements
 			e.printStackTrace(System.out);
 		}
 	}
-	
-	/**
-	 * Call the reportReturnCode function with an operation part of the static set of operations defined in the CostantPool and a 
-	 * transaction type
-	 * @param operation
-	 * @param code
-	 */
-	public void reportReturnCode(TransactionPhase phase, MeasuredOperations operation, int code){
-		reportReturnCode(phase.toString()+"_"+operation.toString(), code);
-	}
-	
-	/**
-	 * Call the reportReturnCode function with an operation part of the static set of operations defined in the CostantPool
-	 * 
-	 * @param operation
-	 * @param t
-	 * @param code
-	 */
-	public void reportReturnCode(TransactionPhase phase,MeasuredOperations operation, WorkloadTransactions t, int code){
-		reportReturnCode(phase.toString()+"_"+operation.toString()+"_"+t, code);
-	}
 
       /**
        * Report a return code for a single DB operaiton.
        */
-	private void reportReturnCode(String operation, int code)
+	public void reportReturnCode(String operation, int code)
 	{
 		if (!data.containsKey(operation))
 		{
@@ -229,49 +178,50 @@ public class Measurements
 	 * @param tt Transaction type
 	 */
 	public void fillStatistics(ExecutionHistory eh, long st, long en, TransactionPhase phase, WorkloadTransactions tt ) {
+return ;
 
-		int returnCode=0;
-		boolean committed=false;
-		if(eh==null){
-			returnCode=-1;
-		}
-		else{
-			switch (eh.getTransactionState()) {
-			case  COMMITTED:
-				measure(phase, MeasuredOperations.COMMITTED, tt, (int) (en - st));
-				committed=true;
-				break;
-
-			case  ABORTED_BY_CERTIFICATION:
-				measure(phase, MeasuredOperations.ABORTED_BY_CERTIFICATION,tt, (int) (en - st));
-				returnCode=-1;
-				break;
-
-			case  ABORTED_BY_VOTING:
-				measure(phase, MeasuredOperations.ABORTED_BY_VOTING,tt, (int) (en - st));
-				returnCode=-1;
-				break;
-
-			case  ABORTED_BY_CLIENT:
-				measure(phase, MeasuredOperations.ABORTED_BY_CLIENT,tt, (int) (en - st));
-				returnCode=-1;
-				break;
-
-			case  ABORTED_BY_TIMEOUT:
-				measure(phase, MeasuredOperations.ABORTED_BY_TIMEOUT,tt, (int) (en - st));
-				returnCode=-1;
-				break;
-
-			default:
-				break;
-			}
-
-			measure(TransactionPhase.OVERALL, MeasuredOperations.TERMINATED, (int) (en - st));
-			if(!committed){
-				measure(TransactionPhase.OVERALL, MeasuredOperations.ABORTED, (int) (en - st));
-			}
-		}
-		reportReturnCode(phase, MeasuredOperations.TERMINATED, tt, returnCode);
+//		int returnCode=0;
+//		boolean committed=false;
+//		if(eh==null){
+//			returnCode=-1;
+//		}
+//		else{
+//			switch (eh.getTransactionState()) {
+//			case  COMMITTED:
+//				measure(phase, MeasuredOperations.COMMITTED, tt, (int) (en - st));
+//				committed=true;
+//				break;
+//
+//			case  ABORTED_BY_CERTIFICATION:
+//				measure(phase, MeasuredOperations.ABORTED_BY_CERTIFICATION,tt, (int) (en - st));
+//				returnCode=-1;
+//				break;
+//
+//			case  ABORTED_BY_VOTING:
+//				measure(phase, MeasuredOperations.ABORTED_BY_VOTING,tt, (int) (en - st));
+//				returnCode=-1;
+//				break;
+//
+//			case  ABORTED_BY_CLIENT:
+//				measure(phase, MeasuredOperations.ABORTED_BY_CLIENT,tt, (int) (en - st));
+//				returnCode=-1;
+//				break;
+//
+//			case  ABORTED_BY_TIMEOUT:
+//				measure(phase, MeasuredOperations.ABORTED_BY_TIMEOUT,tt, (int) (en - st));
+//				returnCode=-1;
+//				break;
+//
+//			default:
+//				break;
+//			}
+//
+//			measure(TransactionPhase.OVERALL, MeasuredOperations.TERMINATED, (int) (en - st));
+//			if(!committed){
+//				measure(TransactionPhase.OVERALL, MeasuredOperations.ABORTED, (int) (en - st));
+//			}
+//		}
+//		reportReturnCode(phase, MeasuredOperations.TERMINATED, tt, returnCode);
 
 	}
 }

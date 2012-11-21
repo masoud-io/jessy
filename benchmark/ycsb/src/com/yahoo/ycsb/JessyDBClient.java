@@ -9,16 +9,13 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 
 import com.sleepycat.je.DatabaseException;
-import com.yahoo.ycsb.measurements.Measurements;
 import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
 
-import fr.inria.jessy.ConstantPool.MeasuredOperations;
-import fr.inria.jessy.ConstantPool.TransactionPhase;
-import fr.inria.jessy.ConstantPool.WorkloadTransactions;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
-import fr.inria.jessy.JessyFactory;
+import fr.inria.jessy.LocalJessy;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;
@@ -27,17 +24,17 @@ public class JessyDBClient extends DB {
 
 	private static Logger logger = Logger.getLogger(JessyDBClient.class);
 
-	private static boolean USE_DIST_JESSY = false;
+	private static boolean USE_DIST_JESSY = true;
 
 	private static Jessy jessy;
 
-	// FIXME merge this into init
+//	 FIXME merge this into init
 	static {
 		try {
 			if (USE_DIST_JESSY) {
-				jessy = JessyFactory.getDistributedJessy();
+				jessy = DistributedJessy.getInstance();
 			} else {
-				jessy = JessyFactory.getLocalJessy();
+				jessy = LocalJessy.getInstance();
 			}
 			jessy.addEntity(YCSBEntity.class);
 		} catch (Exception e) {
@@ -45,20 +42,20 @@ public class JessyDBClient extends DB {
 		}
 	}
 
-	public JessyDBClient() {
-		super();
-		//		 try {
-		//		 if (USE_DIST_JESSY) {
-		////		 jessy = DistributedJessy.getInstance();
-		//			 jessy=new DistributedJessy();
-		//		 } else {
-		////		 jessy = LocalJessy.getInstance();
-		//		 }
-		//		 jessy.addEntity(YCSBEntity.class);
-		//		 } catch (Exception e) {
-		//		 e.printStackTrace();
-		//		 }
-	}
+//	public JessyDBClient() {
+//		super();
+//		 try {
+//		 if (USE_DIST_JESSY) {
+////		 jessy = DistributedJessy.getInstance();
+//			 jessy=new DistributedJessy(Thread.currentThread().getId());
+//		 } else {
+//		 jessy = LocalJessy.getInstance();
+//		 }
+//		 jessy.addEntity(YCSBEntity.class);
+//		 } catch (Exception e) {
+//		 e.printStackTrace();
+//		 }
+//	}
 
 	@Override
 	public void init() {
@@ -146,7 +143,7 @@ public class JessyDBClient extends DB {
 						try {
 							YCSBEntity en = read(YCSBEntity.class, request.key);
 							if (en == null) {
-								logger.error("Read Operation for: "
+								logger.error("Read Operation (r-o txs) for: "
 										+ request.key + " failed.");
 								return null;
 							}
@@ -159,22 +156,9 @@ public class JessyDBClient extends DB {
 				}
 			};
 
-			ExecutionHistory history = null;
-
-			if(!Measurements._transactionWideMeasurement){
-				history = trans.execute();
-			}
-			else{
-
-				long st=System.currentTimeMillis();
-				history = trans.execute();
-				long en=System.currentTimeMillis();
-
-				Measurements.getMeasurements().fillStatistics(history, st, en, TransactionPhase.OVERALL, WorkloadTransactions.READONLY);
-			}
-			if (history == null){
+			ExecutionHistory history = trans.execute();
+			if (history == null)
 				return -1;
-			}
 			if (history.getTransactionState() == TransactionState.COMMITTED) {
 				return 0;
 			} else
@@ -199,8 +183,11 @@ public class JessyDBClient extends DB {
 					for (YCSBTransactionalReadRequest request : readList) {
 						try {
 							YCSBEntity en = read(YCSBEntity.class, request.key);
-							if (en == null)
+							if (en == null){
+								logger.error("Read Operation (update txs) for: "
+										+ request.key + " failed.");								
 								return null;
+							}
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -210,8 +197,11 @@ public class JessyDBClient extends DB {
 					for (YCSBTransactionalUpdateRequest request : updateList) {
 						try {
 							YCSBEntity en = read(YCSBEntity.class, request.key);
-							if (en == null)
+							if (en == null){
+								logger.error("Read Operation (update txs-seond part) for: "
+										+ request.key + " failed.");								
 								return null;
+							}
 
 							en.setFields(request.values);
 							write(en);
@@ -226,28 +216,13 @@ public class JessyDBClient extends DB {
 				}
 			};
 
-			ExecutionHistory history = null;
-
-			if(!Measurements._transactionWideMeasurement){
-				history = trans.execute();
-			}
-			else{
-
-				long st=System.currentTimeMillis();
-				history = trans.execute();
-				long en=System.currentTimeMillis();
-
-				Measurements.getMeasurements().fillStatistics(history, st, en, TransactionPhase.OVERALL, WorkloadTransactions.UPDATE);
-
-			}
-			if (history == null){
+			ExecutionHistory history = trans.execute();
+			if (history == null)
 				return -1;
-			}
 			if (history.getTransactionState() == TransactionState.COMMITTED) {
 				return 0;
 			} else
 				return -1;
-
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -274,11 +249,8 @@ public class JessyDBClient extends DB {
 			};
 
 			ExecutionHistory history = trans.execute();
-			if (history == null){
-				//				Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, -1);
+			if (history == null)
 				return -1;
-			}
-			//			Measurements.getMeasurements().reportReturnCode(TransactionPhase.COMBINED+" "+YCSBTransactionType.READ, 0);
 			if (history.getTransactionState() == TransactionState.COMMITTED) {
 				return 0;
 			} else
