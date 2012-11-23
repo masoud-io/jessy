@@ -22,6 +22,7 @@ import sun.misc.SignalHandler;
 
 import com.yahoo.ycsb.YCSBEntity;
 
+import fr.inria.jessy.ConstantPool.UNICAST_MODE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
@@ -111,7 +112,13 @@ public class DistributedJessy extends Jessy {
 
 			distributedTermination = new DistributedTermination(this);
 
-			remoteReader = new NettyRemoteReader(this);
+			if (ConstantPool.JESSY_REMOTE_READ_UNICST_MODE==UNICAST_MODE.FRACTAL){
+				remoteReader = new FractalRemoteReader(this);
+			}
+			else{
+				
+				remoteReader = new NettyRemoteReader(this);
+			}
 
 			// FIXME
 			super.addEntity(YCSBEntity.class);

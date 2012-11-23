@@ -16,7 +16,7 @@ import fr.inria.jessy.NettyRemoteReader;
 
 public class UnicastServerManager {
 
-	public UnicastServerManager(final NettyRemoteReader learner) {
+	public UnicastServerManager(final UnicastLearner learner, int port) {
 
 		ChannelFactory factory = new NioServerSocketChannelFactory();
 
@@ -38,8 +38,7 @@ public class UnicastServerManager {
 
 		String host = JessyGroupManager.getInstance().getMembership()
 				.adressOf(JessyGroupManager.getInstance().getSourceId());
-		bootstrap.bind(new InetSocketAddress(host,
-				ConstantPool.JESSY_NETTY_REMOTE_READER_PORT));
+		bootstrap.bind(new InetSocketAddress(host, port));
 
 	}
 
