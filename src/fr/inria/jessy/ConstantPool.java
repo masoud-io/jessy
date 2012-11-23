@@ -17,6 +17,10 @@ public class ConstantPool {
 	public static enum EXECUTION_MODE {
 		SERVER, PROXY
 	}
+	
+	public static enum UNICAST_MODE{
+		FRACTAL, NETTY
+	}
 
 	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for
 																	// marshalling/unmarshalling
@@ -32,6 +36,10 @@ public class ConstantPool {
 	public static final int JESSY_ALL_SERVERS_PORT = 4481;
 
 	public static final int JESSY_NETTY_REMOTE_READER_PORT=4250;
+	public static final int JESSY_NETTY_VOTING_PHASE_PORT=4251;
+	
+	public static final UNICAST_MODE JESSY_REMOTE_READ_UNICST_MODE=UNICAST_MODE.NETTY;
+	public static final UNICAST_MODE JESSY_VOTING_PHASE_UNICST_MODE=UNICAST_MODE.NETTY;
 	
 	public static final int GROUP_SIZE = 1;
 

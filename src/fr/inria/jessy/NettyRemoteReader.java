@@ -17,6 +17,7 @@ import com.yahoo.ycsb.Utils;
 import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.communication.UnicastLearner;
 import fr.inria.jessy.communication.UnicastClientManager;
 import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
@@ -24,7 +25,6 @@ import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
-import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 
 /**
  * This class implements {@link RemoteReader} by using Netty package for
@@ -35,7 +35,7 @@ import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 
 // TODO CAUTION: this implementation is not fault tolerant
 
-public class NettyRemoteReader extends RemoteReader {
+public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 
 	private BlockingQueue<ReadRequestMessage> requestQ;
 
@@ -48,7 +48,8 @@ public class NettyRemoteReader extends RemoteReader {
 		requestQ = new LinkedBlockingDeque<ReadRequestMessage>();
 
 		if (JessyGroupManager.getInstance().isProxy()) {	
-			cmanager = new UnicastClientManager(this);
+			cmanager = new UnicastClientManager(this,ConstantPool.JESSY_NETTY_REMOTE_READER_PORT, JessyGroupManager.getInstance()
+					.getAllReplicaGroup().members());
 
 			// The fastest way to handle client messages is to put them in a
 			// queue, and only one thread tries to take them from the queue and
@@ -60,7 +61,7 @@ public class NettyRemoteReader extends RemoteReader {
 
 			pool.submit(new RemoteReadRequestTask());
 		} else {
-			smanager = new UnicastServerManager(this);
+			smanager = new UnicastServerManager(this, ConstantPool.JESSY_NETTY_REMOTE_READER_PORT);
 
 			// The fastest way to execute read requests at the server is to
 			// handle requests in the same thread delivering them to the remote
@@ -106,8 +107,17 @@ public class NettyRemoteReader extends RemoteReader {
 			return remoteRead;
 	}
 
+	@Override
+	public void receiveMessage(Object message, Channel channel) {
+
+		if (message instanceof ReadRequestMessage)
+			learnReadRequestMessage((ReadRequestMessage)message, channel);
+		else if  (message instanceof ReadReplyMessage)
+			learnReadReplyMessage((ReadReplyMessage)message);
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void learnReadRequestMessage(ReadRequestMessage readRequestMessage,
+	private  void learnReadRequestMessage(ReadRequestMessage readRequestMessage,
 			Channel channel) {
 
 		// try {
@@ -132,7 +142,7 @@ public class NettyRemoteReader extends RemoteReader {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void learnReadReplyMessage(ReadReplyMessage msg) {
+	private void learnReadReplyMessage(ReadReplyMessage msg) {
 
 		List<ReadReply> list = msg.getReadReplies();
 		batching.add(list.size());
