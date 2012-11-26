@@ -48,18 +48,22 @@ function collectMeasurements(){
 	propertyIndex=-1;
 	arrayIndex=1;
 
+	isRuntimeCalculated="false";
+	isThroughputCalculated="false";
+
 	for command in "${commandsArray[@]}"
 	do
 		commandOccourrence=0;
 		propertyIndex=$(($propertyIndex+1));
 		arrayIndex=$(($propertyIndex * 10));
-		#echo "propertyIndex:" $propertyIndex
-		#echo "-----------------------------"
-		#echo "ciclo esterno"
-		#echo "processing " $command
-		#echo "arrayIndex:" $arrayIndex
-		#echo "array: " ${commandsLongArray[@]}
-		#echo "-----------------------------"
+		echo "propertyIndex:" $propertyIndex
+		echo "-----------------------------"
+		echo "ciclo esterno"
+		echo "processing " $command
+		echo "arrayIndex:" $arrayIndex
+		echo "array: " ${commandsLongArray[@]}
+		echo "runtime:" $runTime
+		echo "-----------------------------"
 
 		commandsLongArray[arrayIndex]=0;
 		commandsLongArray[arrayIndex+1]=0;
@@ -78,17 +82,18 @@ function collectMeasurements(){
 		do
 			client=${clients[$i]}
 			setted=0;
+
 			while read line
 			do
 
-				if [[ $line == *"[OVERALL], RunTime(ms)"* ]]; then
+				if [[ $line == *"[OVERALL], RunTime(ms)"* && $isRuntimeCalculated == "false" ]]; then
 					time=`echo $line | gawk -F',' '{print $3}'`;
 					runTime=$(echo "scale=5;$runTime+$time" | bc);
 				fi
 
-				if [[ $line == *"[OVERALL], Throughput(ops/sec)"* ]]; then
+				if [[ $line == *"[OVERALL], Throughput(ops/sec)"* && $isThroughputCalculated == "false" ]]; then
 					th=`echo $line | gawk -F',' '{print $3}'`;
-					throughput=$(echo "scale=5;$runTime+$th" | bc);
+					throughput=$(echo "scale=5;$throughput+$th" | bc);
 				fi
 
 				if [[ $line == *$command* ]]; then
@@ -144,6 +149,9 @@ function collectMeasurements(){
 			done < $client
 			commandsLongArray[arrayIndex]=$command;
 			commandsLongArray[arrayIndex+9]=${commandOccourrence};
+
+			isRuntimeCalculated="true";
+			isThroughputCalculated="true";
 		done
 	done
 #echo "finalArray: " ${commandsLongArray[@]}
