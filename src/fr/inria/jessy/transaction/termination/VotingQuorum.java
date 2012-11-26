@@ -3,6 +3,8 @@ package fr.inria.jessy.transaction.termination;
 import java.util.Collection;
 import java.util.HashSet;
 
+import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
+
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.transaction.TransactionHandler;
@@ -26,6 +28,15 @@ import fr.inria.jessy.transaction.TransactionState;
 public class VotingQuorum {
 
 	private static Logger logger = Logger.getLogger(VotingQuorum.class);
+	
+	private static ValueRecorder votingPhase_Latency;
+	
+	static {
+		votingPhase_Latency = new ValueRecorder(
+				"VotingQuorum#votingPhase_Latency(ms)");
+		votingPhase_Latency.setFormat("%a");
+		votingPhase_Latency.setFactor(1000000);
+	}
 	
 	private TransactionState result = TransactionState.COMMITTING;
 	private TransactionHandler transactionHandler;
@@ -67,6 +78,8 @@ public class VotingQuorum {
 		
 		logger.debug("waiting vote for "+transactionHandler);
 		
+		long start=System.nanoTime();
+		
 		while( result == TransactionState.COMMITTING
 			   && voters.size() < groups.size() ){
 			try {
@@ -75,6 +88,8 @@ public class VotingQuorum {
 				e.printStackTrace();
 			}
 		}
+		
+		votingPhase_Latency.add(System.nanoTime()-start);
 		
 		if( result == TransactionState.COMMITTING ){
 			logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed. Groups are: " + groups + " . voters are : " + voters);

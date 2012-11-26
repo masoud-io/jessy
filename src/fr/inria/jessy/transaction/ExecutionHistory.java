@@ -43,6 +43,8 @@ public class ExecutionHistory implements Messageable {
 	 * receive back the {@link TerminationResult}.
 	 */
 	private boolean certifyAtCoordinator;
+	private int coordinatorSwid;	
+	private String coodinatorHost;
 
 	private TransactionState transactionState = TransactionState.NOT_STARTED;
 
@@ -53,7 +55,6 @@ public class ExecutionHistory implements Messageable {
 	private EntitySet createSet;
 	private EntitySet writeSet;
 	private EntitySet readSet;
-	private int coordinator;
 
 	/**
 	 * Start time (in nano) of the transaction upon A-Delivering to a server.
@@ -152,12 +153,12 @@ public class ExecutionHistory implements Messageable {
 		this.certifyAtCoordinator = certifyAtCoordinator;
 	}
 
-	public void setCoordinator(int coordinator) {
-		this.coordinator = coordinator;
+	public void setCoordinatorSwid(int coordinator) {
+		this.coordinatorSwid = coordinator;
 	}
 
-	public int getCoordinator() {
-		return coordinator;
+	public int getCoordinatorSwid() {
+		return coordinatorSwid;
 	}
 
 	public void setStartCertification(long startCertification) {
@@ -174,13 +175,24 @@ public class ExecutionHistory implements Messageable {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	public void setCoordinatorHost(String host){
+		this.coodinatorHost=host;
+	}
+	
+	public String getCoordinatorHost(){
+		return coodinatorHost;
+	}
+	
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 
 		transactionHandler = (TransactionHandler) in.readObject();
-		certifyAtCoordinator = in.readBoolean();
 		transactionState = (TransactionState) in.readObject();
+		certifyAtCoordinator = in.readBoolean();
+		if (!certifyAtCoordinator){
+			coordinatorSwid = in.readInt();
+			coodinatorHost=(String) in.readObject();
+		}
 
 		createSet = (EntitySet) in.readObject();
 		if(createSet == null ) createSet = new EntitySet();
@@ -191,14 +203,17 @@ public class ExecutionHistory implements Messageable {
 		readSet = (EntitySet) in.readObject();
 		if(readSet == null ) readSet = new EntitySet();
 
-		coordinator = in.readInt();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 
 		out.writeObject(transactionHandler);
-		out.writeBoolean(certifyAtCoordinator);
 		out.writeObject(transactionState);
+		out.writeBoolean(certifyAtCoordinator);
+		if (!certifyAtCoordinator){
+			out.writeInt(coordinatorSwid);
+			out.writeObject(coodinatorHost);
+		}
 
 		if(createSet.size()==0)
 			out.writeObject(null);
@@ -215,8 +230,6 @@ public class ExecutionHistory implements Messageable {
 			out.writeObject(null);
 		else
 			out.writeObject(readSet);
-
-		out.writeInt(coordinator);
 
 	}
 

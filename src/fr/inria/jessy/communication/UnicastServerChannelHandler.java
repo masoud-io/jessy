@@ -5,22 +5,17 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 
-import fr.inria.jessy.NettyRemoteReader;
-import fr.inria.jessy.communication.message.ReadRequestMessage;
-
 public class UnicastServerChannelHandler extends SimpleChannelHandler {
 
-	NettyRemoteReader learner;
+	UnicastLearner learner;
 
-
-	public UnicastServerChannelHandler(NettyRemoteReader learner) {
+	public UnicastServerChannelHandler(UnicastLearner learner) {
 		this.learner = learner;
 	}
 
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-			ReadRequestMessage msg = (ReadRequestMessage) e.getMessage();
-			learner.learnReadRequestMessage(msg, e.getChannel());
+		learner.receiveMessage(e.getMessage(), e.getChannel());
 	}
 
 	@Override
