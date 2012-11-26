@@ -37,11 +37,32 @@ declare -a param=("$@")
 next=0
 i=0
 reservation="";
+
+
+echo 'synchronizing keys and data...'
+for i in `seq 1 $clustersNumber`;
+do
+	nodeName=${param[$next]}
+	echo "synchronizing "$nodeName"..."
+
+	rsync -a -f"+ */" -f"- *" ../../jessy/scripts $nodeName.grid5000.fr:~/jessy	
+
+#	sync --delete -avz ~/.ssh --exclude known_hosts $nodeName.grid5000.fr:
+#	rsync --delete -avz ../../jessy $nodeName.grid5000.fr:~/
+	rsync --delete -az ./* $nodeName.grid5000.fr:~/jessy/scripts/
+
+	next=$(($next+3))
+done
+
+next=0
+
+
 for i in `seq 1 $clustersNumber`;
 	do
 		clusters[$i]=${param[$next]}
 		nodesNumber=$((${param[$next+1]}+${param[$next+2]}))
-		reservation="$reservation ${param[$next]}:rdef=/nodes=$nodesNumber,"
+		#reservation="$reservation ${param[$next]}:rdef=/nodes=$nodesNumber,"
+		reservation="$reservation ${param[$next]}:rdef=/nodes=$nodesNumber/core=4,"
 
 		next=$(($next+3))
 		i=$(($i+1))
@@ -53,7 +74,8 @@ reservation=${reservation%?}
 echo "starting grid5kLaucher..."
 echo ""
 echo "reserving nodes..."
-oargridsub -t allow_classic_ssh -w '0:05:00' $reservation > tmp
+#oargridsub -t allow_classic_ssh -w '0:05:00' $reservation > tmp
+oargridsub -w '0:15:00' $reservation > tmp
 echo "done"
 
 
@@ -85,7 +107,7 @@ do
 
 	nodeName=${param[$next]}
 	serverNumber=${param[$next+1]}
-        clientNumber=${param[$next+2]}
+    clientNumber=${param[$next+2]}
 
 	echo ""
 	echo "**********************"
@@ -147,25 +169,25 @@ export OAR_JOB_KEY_FILE=$OAR_JOB_KEY_PATH
 echo 'exported oarJobKeyFile ' $OAR_JOB_KEY_PATH
 
 
-echo 'synchronizing keys and data...'
-next=0
-for i in `seq 1 $clustersNumber`;
-do
-        nodeName=${param[$next]}
-	echo "synchronizing "$nodeName"..."
+#echo 'synchronizing keys and data...'
+#next=0
+#for i in `seq 1 $clustersNumber`;
+#do
+#        nodeName=${param[$next]}
+#	echo "synchronizing "$nodeName"..."
+#
+#	rsync -a -f"+ */" -f"- *" ../../jessy/scripts $nodeName.grid5000.fr:~/jessy	
+#
+##	sync --delete -avz ~/.ssh --exclude known_hosts $nodeName.grid5000.fr:
+##	rsync --delete -avz ../../jessy $nodeName.grid5000.fr:~/
+#	rsync --delete -az ./* $nodeName.grid5000.fr:~/jessy/scripts/
+#
+#	next=$(($next+3))
+#done
 
-	rsync -a -f"+ */" -f"- *" ../../jessy/scripts $nodeName.grid5000.fr:~/jessy	
-
-#	sync --delete -avz ~/.ssh --exclude known_hosts $nodeName.grid5000.fr:
-#	rsync --delete -avz ../../jessy $nodeName.grid5000.fr:~/
-	rsync --delete -az ./* $nodeName.grid5000.fr:~/jessy/scripts/
-
-	next=$(($next+3))
-done
-
-#rsync --delete -avz ~/.ssh --exclude known_hosts lille.grid5000.fr:
-#rsync --delete -avz ./* lille.grid5000.fr:./jessy/scripts/
-echo 'done'
+##rsync --delete -avz ~/.ssh --exclude known_hosts lille.grid5000.fr:
+##rsync --delete -avz ./* lille.grid5000.fr:./jessy/scripts/
+#echo 'done'
 
 #echo "sleeping 60 sec before run experience..."
 #sleep 60

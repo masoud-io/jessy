@@ -1,7 +1,9 @@
 #!/bin/bash
 
-source  /home/msaeida/jessy_script/configuration.sh
+source /home/pcincilla/workspaces/jessyGit/jessy/script/configuration.sh
 hostname=`hostname`;
+stout=${hostname}".stout"
+sterr=${hostname}".sterr"
 
 if [[ ${workloadType} == "-load"  ]];
 then
@@ -54,6 +56,9 @@ fi;
 cd ${workingdir};
 
 export CLASSPATH=${classpath}
-java  -Xms1000m -Xmx2000m -XX:+UseConcMarkSweepGC com.yahoo.ycsb.Client ${workloadType} -db ${clientclass} -s -threads ${nthreads} -P ${workingdir}/workload 1> ${scriptdir}/${hostname} 2>&1
+java  -Xms1000m -Xmx2000m -XX:+UseConcMarkSweepGC com.yahoo.ycsb.Client ${workloadType} -db ${clientclass} -s -threads ${nthreads} -P ${workingdir}/workload 1> ${scriptdir}/$stout 2>${scriptdir}/$sterr
 
+cat ${scriptdir}/$stout >>  ${scriptdir}/${hostname}
+echo "" >>  ${scriptdir}/${hostname}
+cat ${scriptdir}/$sterr >>  ${scriptdir}/${hostname}
 cd ${scriptdir};

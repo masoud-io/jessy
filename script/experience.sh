@@ -227,6 +227,7 @@ do
 		do
 			scpServer=${servers[${ii}]}
 			scp ${scpServer}:~/jessy/scripts/${scpServer} .
+#			echo "scp command:" ${scpServer}":~/jessy/scripts/"${scpServer}
 		done
 
 		let cc=${#clients[@]}-1
@@ -234,6 +235,8 @@ do
 		do
 			scpClient=${clients[${ii}]}
 			scp ${scpClient}:~/jessy/scripts/${scpClient} .
+			scp ${scpClient}:~/jessy/scripts/${scpClient}.stout .
+			scp ${scpClient}:~/jessy/scripts/${scpClient}.sterr .
 		done
 	fi
 
