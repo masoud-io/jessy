@@ -17,6 +17,7 @@ function collectMeasurementStrings(){
 	for i in `seq 0 $e`
 	do
 		client=${clients[$i]}
+		clientMeasurements=$client".sterr"
 		while read line
 		do
 			if [[ $line == '['*']'* ]]; then
@@ -33,7 +34,7 @@ function collectMeasurementStrings(){
 					fi
 				fi					
 			fi
-		done < $client
+		done < $clientMeasurements
 	done
 
 #echo "commandsArray: "${commandsArray[@]}
@@ -48,22 +49,46 @@ function collectMeasurements(){
 	propertyIndex=-1;
 	arrayIndex=1;
 
-	isRuntimeCalculated="false";
-	isThroughputCalculated="false";
+	let e=${#clients[@]}-1
+	for i in `seq 0 $e`
+	do
+		client=${clients[$i]}
+		
+		setted=0;
+		clientMeasurements=$client".sterr"
+
+		echo "processing "$clientMeasurements" file for [overall] measurements"
+
+		while read line
+		do
+			if [[ $line == *"[OVERALL], RunTime(ms)"* ]]; then
+				time=`echo $line | gawk -F',' '{print $3}'`;
+				runTime=$(echo "scale=5;$runTime+$time" | bc);
+			fi
+
+			if [[ $line == *"[OVERALL], Throughput(ops/sec)"* ]]; then
+				th=`echo $line | gawk -F',' '{print $3}'`;
+				throughput=$(echo "scale=5;$throughput+$th" | bc);
+			fi
+		done < $clientMeasurements
+	done
+
+	clientsNumber=$e+1
+
+	runTime=$(echo "scale=5;$runTime/$clientsNumber" | bc);
 
 	for command in "${commandsArray[@]}"
 	do
 		commandOccourrence=0;
 		propertyIndex=$(($propertyIndex+1));
 		arrayIndex=$(($propertyIndex * 10));
-		echo "propertyIndex:" $propertyIndex
-		echo "-----------------------------"
-		echo "ciclo esterno"
-		echo "processing " $command
-		echo "arrayIndex:" $arrayIndex
-		echo "array: " ${commandsLongArray[@]}
-		echo "runtime:" $runTime
-		echo "-----------------------------"
+#		echo "propertyIndex:" $propertyIndex
+#		echo "-----------------------------"
+#		echo "external loop"
+#		echo "processing " $command
+#		echo "arrayIndex:" $arrayIndex
+#		echo "array: " ${commandsLongArray[@]}
+#		echo "-----------------------------"
 
 		commandsLongArray[arrayIndex]=0;
 		commandsLongArray[arrayIndex+1]=0;
@@ -81,20 +106,12 @@ function collectMeasurements(){
 		for i in `seq 0 $e`
 		do
 			client=${clients[$i]}
+		
 			setted=0;
+			clientMeasurements=$client".sterr"
 
 			while read line
 			do
-
-				if [[ $line == *"[OVERALL], RunTime(ms)"* && $isRuntimeCalculated == "false" ]]; then
-					time=`echo $line | gawk -F',' '{print $3}'`;
-					runTime=$(echo "scale=5;$runTime+$time" | bc);
-				fi
-
-				if [[ $line == *"[OVERALL], Throughput(ops/sec)"* && $isThroughputCalculated == "false" ]]; then
-					th=`echo $line | gawk -F',' '{print $3}'`;
-					throughput=$(echo "scale=5;$throughput+$th" | bc);
-				fi
 
 				if [[ $line == *$command* ]]; then
 
@@ -146,12 +163,10 @@ function collectMeasurements(){
 					    ;;
 					esac
 				fi
-			done < $client
+			done < $clientMeasurements
 			commandsLongArray[arrayIndex]=$command;
 			commandsLongArray[arrayIndex+9]=${commandOccourrence};
 
-			isRuntimeCalculated="true";
-			isThroughputCalculated="true";
 		done
 	done
 #echo "finalArray: " ${commandsLongArray[@]}
