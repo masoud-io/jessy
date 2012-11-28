@@ -8,10 +8,10 @@ varyClusterDeployment=false
 avoidUnbalancedRuns=false
 
 minServers=1
-maxServers=6
+maxServers=3
 serverIncrement=1
 
-minClientsForEachServer=1
+minClientsForEachServer=2
 maxClientsForEachServer=2
 clientIncrement=1
 
@@ -20,3 +20,5 @@ clientsThreadIncrement="1"
 minClientsThread="2"
 maxClientsThread="2"
 
+# WARNING this override cons in configuration.sh
+consistency=("nmsi2") # "us" "psi") # "nmsi2" "us" "ser")
