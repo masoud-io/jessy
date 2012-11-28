@@ -50,6 +50,24 @@ function run {
 		done
 }
 
+function deployCluster {
+
+if [ "$varyClusterDeployment" == "true" ]; then
+#iterate over clusters
+	i=-1
+	for cluster in "${clusters[@]}"
+	do
+		i=$(( $i+1 ))
+		#clusters used for this execution
+		clusterInUse[$i]=$cluster
+		run
+	done
+else
+	clusterInUse=("${clusters[@]}")
+	run
+fi
+}
+
 clusterCombination=${#clusters[@]}
 
 serverCombinations=$((  $maxServers - $minServers + 1 ))
@@ -70,21 +88,26 @@ then
 	echo ""
    exit 
 fi
-
-
 echo ""
-if [ "$varyClusterDeployment" == "true" ]; then
-#iterate over clusters
-	i=-1
-	for cluster in "${clusters[@]}"
+
+
+#iterate over consistencies
+for cons in "${consistency[@]}"
+do
+	consistencyVector="cons=(\""$cons"\")"
+	sed -i "s/cons=.*/${consistencyVector}/g" configuration.sh
+
+	threads=`seq ${minClientsThread} ${clientsThreadIncrement} ${maxClientsThread}`
+	#iterate over threads
+	for t in ${threads}; 
 	do
-		i=$(( $i+1 ))
-		#clusters used for this execution
-		clusterInUse[$i]=$cluster
-		run
+		sed -i "s/client_thread_increment=.*/client_thread_increment=\"1\"/g" configuration.sh
+		sed -i "s/client_thread_glb=.*/client_thread_glb=\"${t}\"/g" configuration.sh
+		sed -i "s/client_thread_lub=.*/client_thread_lub=\"${t}\"/g" configuration.sh
+
+		echo "deployCluster, consistency: "$cons", threads:"$t
+		#sleep 30
+		deployCluster
 	done
-else
-	clusterInUse=("${clusters[@]}")
-	run
-fi
+done
 
