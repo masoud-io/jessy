@@ -68,7 +68,9 @@ else
 fi
 }
 
-clusterCombination=${#clusters[@]}
+consistencyCombinations=${#consistency[@]}
+
+threadCombinations=$(( $maxClientsThread - $minClientsThread +1 ))
 
 serverCombinations=$((  $maxServers - $minServers + 1 ))
 serverCombinations=$(( $serverCombinations /  $serverIncrement ))
@@ -77,10 +79,12 @@ clientCombinations=$(( $maxClientsForEachServer - $minClientsForEachServer +1 ))
 clientCombinations=$(( $clientCombinations /  $clientIncrement ))
 
 if [ $varyClusterDeployment == "true" ]; then
-	totalCombinations=$(( $clusterCombination * $serverCombinations * $clientCombinations ))
+	clusterCombination=${#clusters[@]}
 else
-	totalCombinations=$(( $serverCombinations * $clientCombinations ))
+	clusterCombination=1
 fi
+
+totalCombinations=$(( $consistencyCombinations * $threadCombinations * $clusterCombination * $serverCombinations * $clientCombinations ))
 
 read -p "with this configuration there will be generated around $totalCombinations runs on the grid. Are you sure to continue? " -n 1 -r
 if [[ $REPLY =~ ^[Nn]$ ]]
