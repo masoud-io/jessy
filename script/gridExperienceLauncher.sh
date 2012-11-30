@@ -30,6 +30,7 @@ function run {
 
 			if [[ "$avoidUnbalancedRuns" == "true" && $s -lt $cLen ]]; then
 				echo "    WARNING skipping run with "$s" servers on "$cLen " clusters"
+				iterations=$(( $iterations+1 ))
 			else
 				serverPerCluster=$(( $s/$cLen ))
 				clients=`seq ${minClientsForEachServer} ${clientIncrement} ${maxClientsForEachServer}`
@@ -41,6 +42,7 @@ function run {
 
 					if [[ "$avoidUnbalancedRuns" == "true" &&  $rest -gt 0 ]]; then
 						echo "    WARNING skipping unbalanced run with "$s" servers on "$cLen " clusters"
+						iterations=$(( $iterations+1 ))
 					else
 						for ciu in "${clusterInUse[@]}"
 						do
