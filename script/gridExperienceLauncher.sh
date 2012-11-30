@@ -144,7 +144,7 @@ do
 
 		echo ""
 		echo "******************************** Grid Experience: run " $iterations " of " $totalCombinations " ********************************"
-		echo "    deployCluster, consistency: "$cons", threads:"$t
+		echo "    consistency: "$cons", threads:"$t
 		#sleep 30
 		deployCluster
 	done
