@@ -3,6 +3,22 @@
 #sed -ie "s#^source.*#source $path/gridExperienceConfiguration.sh#g" gridExperienceConfiguration.sh
 source gridExperienceConfiguration.sh
 
+
+trap "stopExecution"  SIGINT SIGTERM
+
+path=$(pwd)
+
+function stopExecution(){
+        
+	read -p "the execution of Grid5kLauncher was interrupted. Interrupt the set of experiments? " -n 1 -r
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	echo ""
+   exit 
+fi
+echo ""
+}
+
 function run {
 
 		servers=`seq ${minServers} ${serverIncrement} ${maxServers}`
