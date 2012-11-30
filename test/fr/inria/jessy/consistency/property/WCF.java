@@ -19,9 +19,8 @@ import fr.inria.jessy.transaction.Transaction;
 import fr.inria.jessy.transaction.TransactionState;
 
 /**
- * This test case tests all consistency criterion whether they ensure SCONSa or
- * not. While NMSI, SER, and RC do not ensure SCONSa, PSI and SI must ensure
- * SCONSa.
+ * This test case tests all consistency criterion whether they ensure WCF or
+ * not. 
  * 
  * @author Masoud Saeida Ardekani
  * 
@@ -124,8 +123,6 @@ public class WCF extends TestCase {
 	/**
 	 * Read before {@code WriteTransaction1}, thus must abort.
 	 * 
-	 * @author msaeida
-	 * 
 	 */
 	private class WriteTransaction2 extends Transaction {
 
@@ -138,7 +135,6 @@ public class WCF extends TestCase {
 		public ExecutionHistory execute() {
 			try {
 				SampleEntityClass se = read(SampleEntityClass.class, "1");
-				System.out.println(se.getData());
 
 				Thread.sleep(1500);
 
