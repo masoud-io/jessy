@@ -43,9 +43,20 @@ echo -e "# Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients$para
 
 for f in *.mes; do 
 
-sed -i 's/\[OVERALL\], average RunTime(ms)/\[OVERALL\], average RunTime(ms),/g' *.mes
-sed -i 's/\[OVERALL\], Throughput(ops\/sec)/\[OVERALL\], Throughput(ops\/sec),/g' *.mes
-#sed -i 's/\[OVERALL\], pippo RunTime(ms)/\[OVERALL\], pippo RunTime(ms),/g' *.mes
+if grep -q ", average RunTime(ms)," "${f}" ; then
+#	echo "skip" $f
+else
+#	echo "add comma to runTime on" $f
+	sed -i 's/\[OVERALL\], average RunTime(ms)/\[OVERALL\], average RunTime(ms),/g' ${f}
+fi
+
+if grep -q ", Throughput(ops\/sec)," "${f}" ; then
+#	echo "skip" $f
+else
+#	echo "add comma to Throughput on" $f
+	sed -i 's/\[OVERALL\], Throughput(ops\/sec)/\[OVERALL\], Throughput(ops\/sec),/g' ${f}
+fi
+
 
 	line=$(sed -n "/Consistency:/p" $f);
 	consistency=`echo $line | gawk -F':' '{print $2}' | gawk '$1=$1'`;
