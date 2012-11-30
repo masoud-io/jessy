@@ -347,6 +347,24 @@ echo "Termination_Timeout_Ratio: " ${timeoutRatio} >> $outputFilename;
 echo "Transaction_Execution_Time: " ${executionTime} >> $outputFilename;
 echo "Transaction_Termination_Time: " ${terminationTime} >> $outputFilename;
 echo "Certification_Time: " ${certificationTime} >> $outputFilename;
+echo "" >> $outputFilename;
+}
+
+printOldMeasurements(){
+
+echo "************** OLD MEASUREMENTS  **************" >> $outputFilename;
+echo "" >> $outputFilename;
+
+let scount=${#servers[@]}-1
+    for j in `seq 0 $scount`
+    do
+		echo "" >> $outputFilename
+		server=${servers[$j]}
+		echo "**** server number "$j" measurements: ****" >> $outputFilename
+		echo "" >> $outputFilename
+		cat ${scriptdir}/${server} >> $outputFilename
+		echo "" >> $outputFilename
+	done
 }
 
 function printParameters(){
@@ -371,5 +389,7 @@ printParameters &>> stoutsterr
 printClientsMeasurements &>> stoutsterr
 collectServersMeasurements &>> stoutsterr
 printServersMeasurements
+printOldMeasurements
+
 echo "done."
 

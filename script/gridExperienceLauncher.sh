@@ -29,7 +29,7 @@ function run {
 			cLen=${#clusterInUse[@]}
 
 			if [[ "$avoidUnbalancedRuns" == "true" && $s -lt $cLen ]]; then
-				echo "WARNING skipping run with "$s" servers on "$cLen " clusters"
+				echo "    WARNING skipping run with "$s" servers on "$cLen " clusters"
 			else
 				serverPerCluster=$(( $s/$cLen ))
 				clients=`seq ${minClientsForEachServer} ${clientIncrement} ${maxClientsForEachServer}`
@@ -40,7 +40,7 @@ function run {
 					rest=$(( $s-$rest ))
 
 					if [[ "$avoidUnbalancedRuns" == "true" &&  $rest -gt 0 ]]; then
-						echo "WARNING skipping unbalanced run with "$s" servers on "$cLen " clusters"
+						echo "    WARNING skipping unbalanced run with "$s" servers on "$cLen " clusters"
 					else
 						for ciu in "${clusterInUse[@]}"
 						do
@@ -52,14 +52,26 @@ function run {
 							clientForCluster=$(( $c*$serverForThisLaunch ))
 							if [[ $clientForCluster == 0 && $serverForThisLaunch == 0 ]]; then
 								clientForCluster=1;
-								echo "Running one extra client in "$ciu" to avoid run with 0 servers and 0 clients"
+								echo "    Running one extra client in "$ciu" to avoid run with 0 servers and 0 clients"
 							fi
 							launchCommand="$launchCommand $ciu $serverForThisLaunch $clientForCluster"
 						done
 					fi
-				echo -e "calling grid5kLauncher on " $launchCommand" ...\n"
-				./grid5kLauncher.sh $launchCommand
-				echo "done."
+					iterations=$(( $iterations+1 ))
+					echo "    calling grid5kLauncher on " $launchCommand
+					echo "**************************************************************************************************"
+					echo ""
+					echo ""
+
+					./grid5kLauncher.sh $launchCommand
+					echo ""
+					echo ""
+					if [ $iterations -gt $totalCombinations ]; then
+						echo "***************************************** FINISH :) ***********************************************"
+					else
+						echo "******************************** Grid Experience: run " $iterations " of " $totalCombinations " *********************************"
+						echo "    deployCluster, consistency: "$cons", threads:"$t
+					fi
 				launchCommand=""
 				done
 			fi
@@ -83,6 +95,8 @@ else
 	run
 fi
 }
+
+iterations=1
 
 consistencyCombinations=${#consistency[@]}
 
@@ -109,6 +123,7 @@ then
    exit 
 fi
 echo ""
+echo "Ok. I will work, you can go for a beer"
 
 
 #iterate over consistencies
@@ -125,7 +140,9 @@ do
 		sed -i "s/client_thread_glb=.*/client_thread_glb=\"${t}\"/g" configuration.sh
 		sed -i "s/client_thread_lub=.*/client_thread_lub=\"${t}\"/g" configuration.sh
 
-		echo "deployCluster, consistency: "$cons", threads:"$t
+		echo ""
+		echo "******************************** Grid Experience: run " $iterations " of " $totalCombinations " ********************************"
+		echo "    deployCluster, consistency: "$cons", threads:"$t
 		#sleep 30
 		deployCluster
 	done
