@@ -80,7 +80,9 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 	@Override
 	public <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
 			ReadRequest<E> readRequest) throws InterruptedException {
-		logger.debug("creating task for " + readRequest);
+		if (ConstantPool.logging)
+			logger.debug("creating task for " + readRequest);
+		
 		RemoteReadFuture remoteRead = new RemoteReadFuture(readRequest);
 		remoteReadQ.put(remoteRead);
 		return remoteRead;
@@ -196,7 +198,9 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 
 						ReadRequest<JessyEntity> rr = remoteRead
 								.getReadRequest();
-						logger.debug("handling request" + rr.getReadRequestId());
+						
+						if (ConstantPool.logging)
+							logger.debug("handling request" + rr.getReadRequestId());
 
 						pendingRemoteReads.put(rr.getReadRequestId(),
 								remoteRead);

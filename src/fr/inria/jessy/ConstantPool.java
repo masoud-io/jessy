@@ -22,9 +22,9 @@ public class ConstantPool {
 		FRACTAL, NETTY
 	}
 
-	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for
-																	// marshalling/unmarshalling
-																	// facilities
+	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for marshalling unmarshalling facilities
+	
+	public static final boolean logging=false;
 
 	public static final String JESSY_EVERYBODY_GROUP = "JEVERYBODY";
 	public static final int JESSY_EVERYBODY_PORT = 4479;
@@ -85,6 +85,14 @@ public class ConstantPool {
 	 */
 	public static final long JESSY_READ_RETRY_TIMEOUT = 1;
 	public static final short JESSY_READ_RETRY_TIMES = 3;
+	
+	/**
+	 * Specifies the timeout for a voting quorum. 
+	 * If everything goes well, there is no need for this timeout, but because of a bug or some other failure, it can be the cast that a voting message does not deliver, thus, to be able to continue the execution, we define a voting timeout.
+	 * <p>
+	 * Note that this might violate the safety of the correctness criteria if some nodes receives the voting message, and some others does not receive it. 
+	 */
+	public static long JESSY_VOTING_QUORUM_TIMEOUT=8000;
 
 	/**
 	 * Number of read operations in Read-only transaction in YCSB 

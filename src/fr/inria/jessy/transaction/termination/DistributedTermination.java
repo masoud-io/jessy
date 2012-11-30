@@ -141,8 +141,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	public void receiveMessage(Object message, Channel channel) {
 		Vote vote = ((VoteMessage) message).getVote();
 
-		logger.debug("got a VoteMessage from " + vote.getVoterGroupName()
-				+ " for " + vote.getTransactionHandler().getId());
+		if (ConstantPool.logging)
+			logger.error("got a VoteMessage from " + vote.getVoterGroupName()
+					+ " for " + vote.getTransactionHandler().getId());
 
 		if (terminated.containsKey(vote.getTransactionHandler()))
 			return;
@@ -160,12 +161,13 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 			TerminateTransactionRequestMessage terminateRequestMessage = (TerminateTransactionRequestMessage) v;
 
-			logger.debug("got a TerminateTransactionRequestMessage for "
+			if (ConstantPool.logging)
+				logger.error("got a TerminateTransactionRequestMessage for "
 					+ terminateRequestMessage.getExecutionHistory()
-							.getTransactionHandler().getId());
+							.getTransactionHandler().getId() + " , read keys :" + terminateRequestMessage.getExecutionHistory().getReadSet().getKeys());
 
 			terminateRequestMessage.getExecutionHistory()
-					.setStartCertification(System.nanoTime());
+					.setStartCertification(System.nanoTime());			
 			synchronized (atomicDeliveredMessages) {
 				atomicDeliveredMessages.offer(terminateRequestMessage);
 			}
@@ -176,7 +178,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 			Vote vote = ((VoteMessage) v).getVote();
 
-			logger.debug("got a VoteMessage from " + vote.getVoterGroupName()
+			if (ConstantPool.logging)
+				logger.debug("got a VoteMessage from " + vote.getVoterGroupName()
 					+ " for " + vote.getTransactionHandler().getId());
 
 			if (terminated.containsKey(vote.getTransactionHandler()))
@@ -235,12 +238,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		ExecutionHistory executionHistory = msg.getExecutionHistory();
 
 		TransactionHandler th = executionHistory.getTransactionHandler();
-		logger.debug("handling termination result of " + th);
 		assert !terminated.containsKey(th);
 
 		if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
-			logger.debug("Applying modified entities of committed transaction "
-					+ th.getId());
 
 			/*
 			 * Prepare the transaction. I.e., update the vectors of modified
@@ -261,8 +261,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		}
 
 		if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
-			logger.debug("Applying modified entities of committed transaction "
-					+ th.getId());
 			/*
 			 * calls the postCommit method of the consistency criterion for post
 			 * commit actions. (e.g., propagating vectors)
@@ -284,8 +282,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	 *            The transactionHandler to be garbage collected.
 	 */
 	private void garbageCollect(TransactionHandler transactionHandler) {
-
-		logger.debug("garbage-collect for " + transactionHandler.getId());
 
 		terminationRequests.remove(transactionHandler);
 		votingQuorums.remove(transactionHandler);
@@ -341,6 +337,11 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 			} else {
 
+				if (ConstantPool.logging)
+					if (executionHistory.getTransactionType()==TransactionType.UPDATE_TRANSACTION){
+						logger.debug("***Staring certification of " + executionHistory.getTransactionHandler().getId());
+					}
+				
 				HashSet<String> destGroups = new HashSet<String>();
 				
 				destGroups
@@ -369,7 +370,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				VotingQuorum vq = votingQuorums.get(executionHistory
 						.getTransactionHandler());
 
-				logger.debug("A node in Group " + group
+				if (ConstantPool.logging)
+					logger.debug("A node in Group " + group
 						+ " send a termination message "
 						+ executionHistory.getTransactionHandler().getId()
 						+ " to " + destGroups);
@@ -395,6 +397,12 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			if (!executionHistory.isCertifyAtCoordinator()) {
 				garbageCollect(executionHistory.getTransactionHandler());
 			}
+			
+			if (ConstantPool.logging)
+				if (executionHistory.getTransactionType()==TransactionType.UPDATE_TRANSACTION){
+					logger.debug("***FINISHING certification of " + executionHistory.getTransactionHandler().getId());
+				}
+
 
 			return result;
 		}
@@ -438,6 +446,11 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					}
 				}
 
+				if (ConstantPool.logging)
+					if (msg.getExecutionHistory().getTransactionType()==TransactionType.UPDATE_TRANSACTION){
+						logger.error("Staring certification of " + msg.getExecutionHistory().getTransactionHandler().getId());
+					}
+				
 				jessy.setExecutionHistory(msg.getExecutionHistory());
 
 				Vote vote = jessy.getConsistency().createCertificationVote(
@@ -527,6 +540,11 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				handleTerminationResult(msg);
 				garbageCollect(msg.getExecutionHistory()
 						.getTransactionHandler());
+
+				if (ConstantPool.logging)
+					if (msg.getExecutionHistory().getTransactionType()==TransactionType.UPDATE_TRANSACTION){
+						logger.error("FINISHING certification of " + msg.getExecutionHistory().getTransactionHandler().getId());
+					}
 
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -11,9 +11,10 @@ public class CustomUUID {
 	private static AtomicLong localCounter = new AtomicLong(System.currentTimeMillis());
 	static {
 		try {
-			localIP = Long.parseLong(InetAddress.getLocalHost()
-					.getHostAddress().replace(".", ""));
-		} catch (UnknownHostException e) {
+//			localIP = Long.parseLong(InetAddress.getLocalHost()
+//					.getHostAddress().replace(".", ""));
+			localIP=			UUID.randomUUID().getLeastSignificantBits();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

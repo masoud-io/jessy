@@ -7,6 +7,7 @@ import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
 
@@ -41,6 +42,7 @@ public class VotingQuorum {
 	private TransactionState result = TransactionState.COMMITTING;
 	private TransactionHandler transactionHandler;
 	private Collection<String> voters;
+	private boolean notified=false;
 
 	public VotingQuorum(TransactionHandler th) {
 		transactionHandler = th;
@@ -58,12 +60,16 @@ public class VotingQuorum {
 	 * @param vote
 	 */
 	public synchronized void addVote(Vote vote) {
-		logger.debug("adding vote for "+transactionHandler+" for "+vote.getVoterGroupName()+" with result "+vote.isAborted());
+		if (ConstantPool.logging)
+			logger.debug("adding vote for "+transactionHandler+" for "+vote.getVoterGroupName()+" with result "+vote.isAborted());
+		
 		if (vote.isAborted() == false) {
 			result = TransactionState.ABORTED_BY_VOTING;
 		} else{
 			voters.add(vote.getVoterGroupName());
 		}
+		
+		notified=true;
 		notify();
 	}
 
@@ -76,14 +82,16 @@ public class VotingQuorum {
 	 */
 	public synchronized TransactionState waitVoteResult(Collection<String> groups) {
 		
-		logger.debug("waiting vote for "+transactionHandler);
-		
 		long start=System.nanoTime();
 		
 		while( result == TransactionState.COMMITTING
 			   && voters.size() < groups.size() ){
 			try {
-				wait();
+				notified=false;
+				wait(ConstantPool.JESSY_VOTING_QUORUM_TIMEOUT);
+				if (!notified){
+					return TransactionState.ABORTED_BY_TIMEOUT;
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -92,11 +100,13 @@ public class VotingQuorum {
 		votingPhase_Latency.add(System.nanoTime()-start);
 		
 		if( result == TransactionState.COMMITTING ){
-			logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed. Groups are: " + groups + " . voters are : " + voters);
+			if (ConstantPool.logging)
+				logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed. Groups are: " + groups + " . voters are : " + voters);
 			return TransactionState.COMMITTED;
 		}
 		
-		logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting. Groups are: " + groups + " . voters are : " + voters);
+		if (ConstantPool.logging)
+			logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting. Groups are: " + groups + " . voters are : " + voters);
 		return TransactionState.ABORTED_BY_VOTING;
 	}
 

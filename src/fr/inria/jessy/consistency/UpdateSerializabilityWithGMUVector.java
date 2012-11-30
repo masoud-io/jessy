@@ -13,10 +13,10 @@ import net.sourceforge.fractal.membership.Group;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
-import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -50,36 +50,33 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 		super(dataStore);
 	}
 
+	@SuppressWarnings("unchecked")
 	public boolean certify(ExecutionHistory executionHistory) {
 		TransactionType transactionType = executionHistory.getTransactionType();
 
-		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ transactionType.toString());
-		logger.debug("ReadSet Vector"
-				+ executionHistory.getReadSet().getCompactVector().toString());
-		logger.debug("CreateSet Vectors"
-				+ executionHistory.getCreateSet().getCompactVector().toString());
-		logger.debug("WriteSet Vectors"
-				+ executionHistory.getWriteSet().getCompactVector().toString());
+		if (ConstantPool.logging){
+			logger.debug(executionHistory.getTransactionHandler() + " >> "
+					+ transactionType.toString());
+			logger.debug("ReadSet Vector"
+					+ executionHistory.getReadSet().getCompactVector().toString());
+			logger.debug("CreateSet Vectors"
+					+ executionHistory.getCreateSet().getCompactVector().toString());
+			logger.debug("WriteSet Vectors"
+					+ executionHistory.getWriteSet().getCompactVector().toString());
+		}
 
 		/*
 		 * if the transaction is a read-only transaction, it commits right away.
 		 */
 		if (transactionType == TransactionType.READONLY_TRANSACTION) {
-			logger.debug(executionHistory.getTransactionHandler() + " >> "
-					+ transactionType.toString() + " >> COMMITTED");
 			return true;
 		}
 
 		/*
-		 * if the transaction is an initalization transaction, it first
-		 * increaments the vectors and then commits.
+		 * if the transaction is an initialization transaction, it first
+		 * increments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
-
-			logger.debug(executionHistory.getTransactionHandler() + " >> "
-					+ transactionType.toString()
-					+ " >> INIT_TRANSACTION COMMITTED");
 			return true;
 		}
 
@@ -92,32 +89,42 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 				executionHistory.getCreateSet());
 
 		JessyEntity lastComittedEntity;
+		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
+
+			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+				continue;
+
+			try {
+
+				lastComittedEntity = store
+						.get(new ReadRequest<JessyEntity>(
+								(Class<JessyEntity>) tmp.getClass(),
+								"secondaryKey", tmp.getKey(), null))
+						.getEntity().iterator().next();
+
+				/*
+				 * instead of locking, we simply checks against the latest
+				 * committed values
+				 */
+				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
+						.getLocalVector().getSelfValue()) {
+					if (ConstantPool.logging)
+						logger.debug("Certification fails (ReadSet) : Reads key "	+ tmp.getKey() + " with the vector "
+							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
+					return false;
+				}
+
+			} catch (NullPointerException e) {
+				// nothing to do.
+				// the key is simply not there.
+			}
+
+		}
+
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
 
-			try {
-
-				lastComittedEntity = store
-						.get(new ReadRequest<JessyEntity>(
-								(Class<JessyEntity>) tmp.getClass(),
-								"secondaryKey", tmp.getKey(), null))
-						.getEntity().iterator().next();
-
-				/*
-				 * instead of locking, we simply checks against the latest
-				 * committed values
-				 */
-				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getSelfValue())
-					return false;
-
-			} catch (NullPointerException e) {
-				// nothing to do.
-				// the key is simply not there.
-			}
-
-		}
-
-		for (JessyEntity tmp : executionHistory.getCreateSet().getEntities()) {
+			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+				continue;
 
 			try {
 
@@ -132,8 +139,12 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 				 * committed values
 				 */
 				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getSelfValue())
+						.getLocalVector().getSelfValue()) {
+					if (ConstantPool.logging)
+						logger.debug("Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
+							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
+				}
 
 			} catch (NullPointerException e) {
 				// nothing to do.
@@ -141,8 +152,6 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 			}
 
 		}
-		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ transactionType.toString() + " >> COMMITTED");
 
 		return true;
 	}
@@ -150,7 +159,6 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
-
 		return false;
 	}
 
@@ -165,13 +173,14 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 				|| certify(executionHistory);
 
 		GMUVector<String> prepVC = null;
-		if (isCommitted) {
+		if (isCommitted
+				&& executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
 			/*
 			 * We have to update the vector here, and send it over to the
 			 * others. Corresponds to line 20-22 of Algorithm 4
 			 */
 			prepVC = GMUVector.mostRecentVC.clone();
-			Integer prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
+			int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
 			prepVC.setValue(prepVC.getSelfKey(), prepVCAti);
 		}
 
@@ -186,12 +195,13 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 	/**
 	 * @inheritDoc
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void voteReceived(Vote vote) {
 		if (vote.getVotePiggyBack().getPiggyback() == null) {
 			/*
-			 * transaction has been terminated, thus a null piggyback is sent
-			 * along with the vote. no need for extra work.
+			 * transaction has been aborted, thus a null piggyback is sent along
+			 * with the vote. no need for extra work.
 			 */
 			return;
 		}
@@ -199,19 +209,18 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 		try {
 			if (vote.getVotePiggyBack() != null) {
 
-				GMUVector<String> vector = (GMUVector<String>) vote
+				GMUVector<String> commitVC = (GMUVector<String>) vote
 						.getVotePiggyBack().getPiggyback();
 
 				/*
 				 * Corresponds to line 19
 				 */
-				if (receivedVectors.contains(vote.getTransactionHandler()
-						.getId())) {
+				
+				GMUVector<String> receivedVector = receivedVectors.putIfAbsent(
+						vote.getTransactionHandler().getId(), commitVC);
+				if (receivedVector != null) {
 					receivedVectors.get(vote.getTransactionHandler().getId())
-							.update(vector);
-				} else {
-					receivedVectors.put(vote.getTransactionHandler().getId(),
-							vector);
+							.update(commitVC);
 				}
 			}
 		} catch (Exception ex) {
@@ -222,33 +231,54 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
 
-		/*
-		 * Corresponds to line 22
-		 */
 		GMUVector<String> commitVC = receivedVectors.get(executionHistory
 				.getTransactionHandler().getId());
-		Integer xactVN = 0;
-		for (Entry<String, Integer> entry : commitVC.getEntrySet()) {
-			if (entry.getValue() > xactVN)
-				xactVN = entry.getValue();
+
+		if (commitVC != null) {
+
+			/*
+			 * line 19 above is not complete. Though it calculates the max of all received votes, it does not consider the vectors of read items.
+			 * now we should take the max of commitVC with every thing we have read so far.
+			 */
+			for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
+				commitVC.update(tmp.getLocalVector());
+			}
+			
+			/*
+			 * Corresponds to line 22
+			 */
+			int xactVN = 0;
+			for (Entry<String, Integer> entry : commitVC.getEntrySet()) {
+				if (entry.getValue() > xactVN)
+					xactVN = entry.getValue();
+			}
+
+			/*
+			 * Corresponds to line 24
+			 */
+			Set<String> dest = new HashSet<String>(JessyGroupManager
+					.getInstance()
+					.getPartitioner()
+					.resolveNames(
+							getConcerningKeys(executionHistory,
+									ConcernedKeysTarget.RECEIVE_VOTES)));
+
+			/*
+			 * setup commitVC
+			 */
+			for (String index : dest) {
+				commitVC.setValue(index, xactVN);
+			}
+
+			/*
+			 * Assigning commitVC to the entities
+			 */
+			for (JessyEntity entity : executionHistory.getWriteSet()
+					.getEntities()) {
+				entity.setLocalVector(commitVC.clone());
+			}
 		}
 
-		/*
-		 * Corresponds to line 24
-		 */
-		Set<String> dest = new HashSet<String>(JessyGroupManager
-				.getInstance()
-				.getPartitioner()
-				.resolveNames(
-						getConcerningKeys(executionHistory,
-								ConcernedKeysTarget.RECEIVE_VOTES)));
-		for (String index : dest) {
-			commitVC.setValue(index, xactVN);
-		}
-
-		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
-			entity.setLocalVector(commitVC);
-		}
 	}
 
 	public void postCommit(ExecutionHistory executionHistory) {
@@ -261,18 +291,25 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 			 */
 			GMUVector<String> commitVC = receivedVectors.get(executionHistory
 					.getTransactionHandler().getId());
-			if (GMUVector.lastPrepSC.get() < commitVC.getSelfValue()) {
-				GMUVector.lastPrepSC.set(commitVC.getSelfValue());
+			if (GMUVector.lastPrepSC.get() < commitVC.getValue(manager.getMyGroup().name())) {
+				GMUVector.lastPrepSC.set(commitVC.getValue(manager.getMyGroup().name()));
 			}
+			
+			/*
+			 * Corresponds to line 31
+			 */
+			GMUVector.mostRecentVC=commitVC.clone();
 		}
+		
 
 		/*
 		 * Garbage collect the received vectors. We don't need them anymore.
 		 */
-		if (receivedVectors.contains(executionHistory.getTransactionHandler()
-				.getId()))
+		if (receivedVectors.containsKey(executionHistory
+				.getTransactionHandler().getId()))
 			receivedVectors.remove(executionHistory.getTransactionHandler()
 					.getId());
+
 	}
 
 	@Override
@@ -282,7 +319,7 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 		if (target == ConcernedKeysTarget.TERMINATION_CAST) {
 			if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 				/*
-				 * If the transaction is readonly, it is not needed to be atomic
+				 * If the transaction is read-only, it is not needed to be atomic
 				 * multicast by the coordinator. It simply commits since it has
 				 * read a consistent snapshot.
 				 */
@@ -313,7 +350,7 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 		} else {
 			/*
 			 * For exchanging votes, it is only needed to send the result of the
-			 * transaction to its writeset.
+			 * transaction to its write set.
 			 */
 			keys.addAll(executionHistory.getWriteSet().getKeys());
 			keys.addAll(executionHistory.getCreateSet().getKeys());

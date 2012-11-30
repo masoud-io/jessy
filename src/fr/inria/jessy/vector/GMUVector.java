@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sleepycat.persist.model.Persistent;
@@ -33,16 +32,22 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 
 	static {
 		lastPrepSC = new AtomicInteger(0);
-		mostRecentVC = new GMUVector<String>();
+		mostRecentVC = new GMUVector<String>(JessyGroupManager.getInstance().getMyGroup().name(), 0);
 	}
 
 	/**
 	 * Needed for BerkeleyDB
 	 */
 	public GMUVector() {
-		super((K) JessyGroupManager.getInstance().getMyGroup().name());
-		super.setValue((K) JessyGroupManager.getInstance().getMyGroup().name(),
-				0);
+		// super((K) JessyGroupManager.getInstance().getMyGroup().name());
+		// super.setValue((K)
+		// JessyGroupManager.getInstance().getMyGroup().name(),
+		// 0);
+	}
+
+	public GMUVector(K selfKey, Integer value) {
+		super(selfKey);
+		super.setValue(selfKey, value);
 	}
 
 	/**
