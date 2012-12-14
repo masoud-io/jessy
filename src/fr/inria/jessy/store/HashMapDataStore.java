@@ -28,15 +28,6 @@ import fr.inria.jessy.vector.Vector;
  */
 public class HashMapDataStore implements DataStore {
 
-	private static SimpleCounter neverCompatible = new SimpleCounter(
-			"HashMapDataStore#NEVER_COMPATIBLE");
-	
-	private static SimpleCounter tryNext = new SimpleCounter(
-			"HashMapDataStore#TRY_NEXT");
-	
-	private static SimpleCounter foundKey = new SimpleCounter(
-			"HashMapDataStore#FOUND_KET");
-	
 	ConcurrentHashMap<String, ArrayList> store;
 
 	public HashMapDataStore() {
@@ -97,7 +88,6 @@ public class HashMapDataStore implements DataStore {
 			E entity = (E) tmp.get(index--).clone();
 
 			if (readSet == null) {
-				foundKey.incr();
 				return new ReadReply<E>(entity, readRequest.getReadRequestId());
 			}
 
@@ -106,18 +96,15 @@ public class HashMapDataStore implements DataStore {
 				
 				
 				if (compatibleResult == Vector.CompatibleResult.COMPATIBLE) {
-					foundKey.incr();
 					return new ReadReply<E>(entity,
 							readRequest.getReadRequestId());
 				} else {
 					if (compatibleResult == Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
-						tryNext.incr();
 						if (index == -1)
 							break;
 						entity = (E)tmp.get(index--).clone();
 					} else {
 						// NEVER_COMPATIBLE
-						neverCompatible.incr();
 						
 						/*
 						 * Instead of returning null to the client, and retry again, since we are sure that the decision can

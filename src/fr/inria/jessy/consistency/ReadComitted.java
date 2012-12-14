@@ -5,6 +5,7 @@ import java.util.Set;
 
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;
+import net.sourceforge.fractal.utils.CollectionUtils;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.TrivialTerminationCommunication;
 import fr.inria.jessy.store.DataStore;
@@ -37,8 +38,12 @@ public class ReadComitted extends Consistency {
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
-
-		return checkCommutativity;
+		return true;
+	}
+	
+	@Override
+	public boolean applyingTransactionCommute() {
+		return true;
 	}
 
 	@Override

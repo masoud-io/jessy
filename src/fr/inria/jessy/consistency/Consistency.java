@@ -26,10 +26,6 @@ public abstract class Consistency {
 
 	protected static boolean votePiggybackRequired = false;
 
-	protected static final boolean checkCommutativity = (fr.inria.jessy.utils.Configuration
-			.readConfig(ConstantPool.CHECK_COMMUTAVITY).equals("false")) ? false
-			: true;
-
 	public Consistency(DataStore store) {
 		this.store = store;
 	}
@@ -52,9 +48,10 @@ public abstract class Consistency {
 	public abstract boolean certify(ExecutionHistory executionHistory);
 
 	/**
-	 * Returns true iff the certification of history1 and the ccertification of
+	 * Returns true iff the certification of history1 and the certification of
 	 * history2 commute according to the consistency criteria. That is
-	 * cert(hist1).cert(hist2) return the same value as cert(hist2).cert(hist1).
+	 * certification(hist1).certification(hist2) return the same value as 
+	 * certification(hist2).certification(hist1).
 	 * 
 	 * @param history1
 	 * @param history2
@@ -62,6 +59,14 @@ public abstract class Consistency {
 	 */
 	public abstract boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2);
+	
+	/**
+	 * Returns true iff the transaction can be applied to the data store 
+	 * without waiting for other concurrent transactions to be applied as they are atomically delivered.
+	 * 
+	 * @return
+	 */
+	public abstract boolean applyingTransactionCommute();
 
 	/**
 	 * Is called after the transaction certification outcome is true, and before
@@ -140,7 +145,7 @@ public abstract class Consistency {
 	 * Returns a set of groups which the coordinator should expect to receive
 	 * votes from. Normally, it is the same as the set of destinations of the
 	 * {@link TerminateTransactionRequestMessage}. However, for
-	 * {@link SnapshotIsolationWithMulticast} and {@link SnapshotIsolation},
+	 * {@link SnapshotIsolationWithMulticast} and {@link SnapshotIsolationWithBroadcast},
 	 * while the destination is all jessy server instances, the voters to the
 	 * coordinator are only those that have modified something inside the
 	 * transaction. This is because under snapshot isolation, the algorithm is

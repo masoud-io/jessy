@@ -1,31 +1,19 @@
 package fr.inria.jessy.consistency;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import net.sourceforge.fractal.Learner;
-import net.sourceforge.fractal.membership.Group;
-import net.sourceforge.fractal.utils.CollectionUtils;
-
-import org.apache.log4j.Logger;
-
-import fr.inria.jessy.communication.GenuineTerminationCommunication;
-import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.vector.VectorFactory;
 
-public class Serializability extends Consistency {
+public class UpdateSerializabilityWithDependenceVector extends UpdateSerializability {
 
-	private static Logger logger = Logger.getLogger(Serializability.class);
-
-	public Serializability(DataStore dateStore) {
+	public UpdateSerializabilityWithDependenceVector(DataStore dateStore) {
 		super(dateStore);
 	}
-
+	
 	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
 		TransactionType transactionType = executionHistory.getTransactionType();
@@ -38,6 +26,15 @@ public class Serializability extends Consistency {
 				+ executionHistory.getCreateSet().getCompactVector().toString());
 		logger.debug("WriteSet Vectors"
 				+ executionHistory.getWriteSet().getCompactVector().toString());
+
+		/*
+		 * if the transaction is a read-only transaction, it commits right away.
+		 */
+		if (transactionType == TransactionType.READONLY_TRANSACTION) {
+			logger.debug(executionHistory.getTransactionHandler() + " >> "
+					+ transactionType.toString() + " >> COMMITTED");
+			return true;
+		}
 
 		/*
 		 * if the transaction is an initalization transaction, it first
@@ -72,10 +69,6 @@ public class Serializability extends Consistency {
 		 * Firstly, the writeSet is checked.
 		 */
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
-			
-//			if (!manager.getPartitioner().isLocal(tmp.getKey()))
-//				continue;
-			
 			try {
 				lastComittedEntity = store
 						.get(new ReadRequest<JessyEntity>(
@@ -105,10 +98,6 @@ public class Serializability extends Consistency {
 		 * Secondly, the readSet is checked.
 		 */
 		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
-			
-//			if (!manager.getPartitioner().isLocal(tmp.getKey()))
-//				continue;
-			
 			try {
 				lastComittedEntity = store
 						.get(new ReadRequest<JessyEntity>(
@@ -141,17 +130,9 @@ public class Serializability extends Consistency {
 		return true;
 	}
 
-	@Override
-	public boolean certificationCommute(ExecutionHistory history1,
-			ExecutionHistory history2) {
-
-		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-				.getKeys(), history2.getReadSet().getKeys())
-				&& !CollectionUtils.isIntersectingWith(history2.getWriteSet()
-						.getKeys(), history1.getReadSet().getKeys());
-
-	}
-	
+	/**
+	 * With dependence vector, applying transactions can be done in parallel without any problem.
+	 */
 	@Override
 	public boolean applyingTransactionCommute() {
 		return true;
@@ -159,42 +140,17 @@ public class Serializability extends Consistency {
 
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
+		// updatedVector is a new vector. It will be used as a new
+		// vector for all modified vectors.
+		Vector<String> updatedVector = VectorFactory.getVector("");
+		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
+				executionHistory.getWriteSet().getCompactVector());
+
 		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
-			entity.getLocalVector().update(null, null);
+			updatedVector.setSelfKey(entity.getLocalVector().getSelfKey());
+			entity.setLocalVector(updatedVector.clone());
 		}
-	}
 
-	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
-			ConcernedKeysTarget target) {
-		Set<String> keys = new HashSet<String>();
-		if (target == ConcernedKeysTarget.TERMINATION_CAST ) {
-			keys.addAll(executionHistory.getReadSet().getKeys());
-			keys.addAll(executionHistory.getWriteSet().getKeys());
-			keys.addAll(executionHistory.getCreateSet().getKeys());
-		}else if(target == ConcernedKeysTarget.SEND_VOTES){
-			keys.addAll(executionHistory.getReadSet().getKeys());
-			keys.addAll(executionHistory.getWriteSet().getKeys());
-			keys.addAll(executionHistory.getCreateSet().getKeys());
-		}
-		else {
-			keys.addAll(executionHistory.getWriteSet().getKeys());
-			keys.addAll(executionHistory.getCreateSet().getKeys());
-		}
-		return keys;
-	}
-
-	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Learner learner) {
-		if (terminationCommunication == null)
-			/*
-			 * Do not return {@code TrivialTerminationCommunication} instance
-			 * because it may lead to <i>deadlock</i>.
-			 */
-			terminationCommunication = new GenuineTerminationCommunication(
-					group, learner);
-		return terminationCommunication;
 	}
 
 }

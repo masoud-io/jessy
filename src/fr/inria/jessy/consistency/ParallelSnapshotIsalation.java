@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
+import net.sourceforge.fractal.utils.CollectionUtils;
 import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.apache.log4j.Logger;
@@ -78,6 +79,14 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
+
+		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+				.getKeys(), history2.getWriteSet().getKeys());
+
+	}
+	
+	@Override
+	public boolean applyingTransactionCommute() {
 		return false;
 	}
 

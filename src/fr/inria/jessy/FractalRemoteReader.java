@@ -233,8 +233,6 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 								dest);
 					}
 
-					serverAnsweringTime.add(System.nanoTime() - start);
-
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
