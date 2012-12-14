@@ -135,12 +135,10 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 				readRequestMessage.getReadRequests());
 		// List<ReadReply<JessyEntity>>
 		// replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
-		serverLookupTime.add(System.nanoTime() - start);
 
 		start = System.nanoTime();
 		channel.write(new ReadReplyMessage(replies));
 
-		serverSendingTime.add(System.nanoTime() - start);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -254,13 +252,11 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 							.getAll(readRequestMessage.getReadRequests());
 					// List<ReadReply<JessyEntity>>
 					// replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
-					serverLookupTime.add(System.nanoTime() - start);
 
 					start = System.nanoTime();
 					readRequestMessage.channel.write(new ReadReplyMessage(
 							replies));
 
-					serverSendingTime.add(System.nanoTime() - start);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

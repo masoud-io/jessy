@@ -32,25 +32,9 @@ public abstract class RemoteReader {
 
 	protected static Logger logger = Logger.getLogger(RemoteReader.class);
 
-	protected static ValueRecorder batching, serverLookupTime,
-			serverSendingTime, serverAnsweringTime, clientAskingTime;
+	protected static ValueRecorder batching, clientAskingTime;
 
 	static {
-		serverLookupTime = new ValueRecorder(
-				"RemoteReader#serverLookupTime(ms)");
-		serverLookupTime.setFactor(1000000);
-		serverLookupTime.setFormat("%a");
-
-		serverSendingTime = new ValueRecorder(
-				"RemoteReader#serverSendingTime(ms)");
-		serverSendingTime.setFactor(1000000);
-		serverSendingTime.setFormat("%a");
-
-		serverAnsweringTime = new ValueRecorder(
-				"RemoteReader#serverAnsweringTime(ms)");
-		serverAnsweringTime.setFactor(1000000);
-		serverAnsweringTime.setFormat("%a");
-
 		clientAskingTime = new TimeRecorder("RemoteReader#clientAskingTime(ms)");
 		clientAskingTime.setFactor(1000000);
 		clientAskingTime.setFormat("%a");

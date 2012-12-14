@@ -28,6 +28,7 @@ import fr.inria.jessy.communication.UnicastLearner;
 import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
+import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
@@ -48,10 +49,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	private static Logger logger = Logger
 			.getLogger(DistributedTermination.class);
 
-	private static ValueRecorder concurrentCollectionsSize;
-
 	private static ValueRecorder certificationTime_readonly,
-			certificationTime_update;
+			certificationTime_update, certificationQueueingTime, applyingTransactionQueueingTime , votingTime, castLatency;
 	
 	private DistributedJessy jessy;
 
@@ -59,6 +58,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 	private TerminationCommunication terminationCommunication;
 	
+	@SuppressWarnings("unused")
 	private UnicastServerManager sManager;
 
 	private Group group;
@@ -71,33 +71,83 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	private ConcurrentHashMap<TransactionHandler, VotingQuorum> votingQuorums;
 
 	/**
-	 * Atomically delivered but not processed transactions
+	 * Atomically delivered but not processed transactions. This list is to ensure the certification safety and 
+	 * the safety of applying transactions to the data store.
+	 * Thus, two transaction from this list can be certified and perform voting phase, if they do not have any conflict with
+	 * all other concurrent transactions having been delivered before it as long as 
+	 * {@link Consistency#certificationCommute(ExecutionHistory, ExecutionHistory)} returns true.
+	 * Moreover, every transaction in this queue can execute without waiting as long as 
+	 * {@link Consistency#applyingTransactionCommute()} returns true.
+	 *  
 	 */
 	private LinkedList<TerminateTransactionRequestMessage> atomicDeliveredMessages;
-
+	
 	/**
 	 * Terminated transactions
 	 */
 	private Map<TransactionHandler, Integer> terminated;
 
+	private static boolean reInitProbes=true;
+	
 	static {
+		initProbesForInsertion();
+	}
+
+	public static void initProbesForInsertion(){
+		certificationTime_update = new ValueRecorder(
+				"DistributedTermination#certificationTime_Insert(ms)");
+		certificationTime_update.setFormat("%a");
+		certificationTime_update.setFactor(1000000);	
 		
-		concurrentCollectionsSize = new ValueRecorder(
-				"DistributedTermination#concurrentCollectionSize");
-		concurrentCollectionsSize.setFormat("%M");
+		certificationQueueingTime = new ValueRecorder(
+				"DistributedTermination#certificationQueueingTime_Insert(ms)");
+		certificationQueueingTime.setFormat("%a");
+		certificationQueueingTime.setFactor(1000000);
+		
+		applyingTransactionQueueingTime = new ValueRecorder(
+				"DistributedTermination#applyingTransactionQueueingTime_Insert(ms)");
+		applyingTransactionQueueingTime.setFormat("%a");
+		applyingTransactionQueueingTime.setFactor(1000000);
+		
+		votingTime = new ValueRecorder(
+				"DistributedTermination#votingTime(ms)");
+		votingTime.setFormat("%a");
+		
+		castLatency = new ValueRecorder(
+				"DistributedTermination#castLatency_Loading(ms)");
+		castLatency.setFormat("%a");
+	}
+	
+	public static void initProbesForExecution(){		
+		reInitProbes=false;
+		System.out.println("INITING");
 
 		certificationTime_readonly = new ValueRecorder(
-				"Jessy#certificationTime_readonly(ms)");
+				"DistributedTermination#certificationTime_readonly(ms)");
 		certificationTime_readonly.setFormat("%a");
 		certificationTime_readonly.setFactor(1000000);
 
 		certificationTime_update = new ValueRecorder(
-				"Jessy#certificationTime_update(ms)");
+				"DistributedTermination#certificationTime_update(ms)");
 		certificationTime_update.setFormat("%a");
-		certificationTime_update.setFactor(1000000);
+		certificationTime_update.setFactor(1000000);	
+		
+		certificationQueueingTime = new ValueRecorder(
+				"DistributedTermination#certificationQueueingTime_update(ms)");
+		certificationQueueingTime.setFormat("%a");
+		certificationQueueingTime.setFactor(1000000);
+		
+		applyingTransactionQueueingTime = new ValueRecorder(
+				"DistributedTermination#applyingTransactionQueueingTime_update(ms)");
+		applyingTransactionQueueingTime.setFormat("%a");
+		applyingTransactionQueueingTime.setFactor(1000000);
+
+		castLatency = new ValueRecorder(
+				"DistributedTermination#castLatency_Update_ReadOnly(ms)");
+		castLatency.setFormat("%a");
 
 	}
-
+	
 	public DistributedTermination(DistributedJessy j) {
 		jessy = j;
 		group = JessyGroupManager.getInstance().getMyGroup();
@@ -161,6 +211,12 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 			TerminateTransactionRequestMessage terminateRequestMessage = (TerminateTransactionRequestMessage) v;
 
+			castLatency.add(System.currentTimeMillis()-terminateRequestMessage.startCasting);
+			if (reInitProbes){
+				if (terminateRequestMessage.getExecutionHistory().getCreateSet().size()==0)
+					initProbesForExecution();
+			}
+			
 			if (ConstantPool.logging)
 				logger.error("got a TerminateTransactionRequestMessage for "
 					+ terminateRequestMessage.getExecutionHistory()
@@ -171,7 +227,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			synchronized (atomicDeliveredMessages) {
 				atomicDeliveredMessages.offer(terminateRequestMessage);
 			}
-
+			
 			pool.submit(new CertifyAndVoteTask(terminateRequestMessage));
 
 		} else { // VoteMessage
@@ -217,10 +273,13 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			
 			vq.addVote(vote);
 
+			if (JessyGroupManager.getInstance().isProxy()) {
+				votingTime.add(System.currentTimeMillis()-vote.startVoteTime);
+			}
 		} catch (Exception ex) {
 			/*
 			 * If here is reached, it means that a concurrent thread has already
-			 * garbage collected the vq. Thus it has become null. <p> No special
+			 * garbage collected the voting quorum. Thus it has become null. <p> No special
 			 * task is needed to be performed.
 			 */
 		}
@@ -259,7 +318,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			atomicDeliveredMessages.remove(msg);
 			atomicDeliveredMessages.notifyAll();
 		}
-
+		
 		if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
 			/*
 			 * calls the postCommit method of the consistency criterion for post
@@ -288,10 +347,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		terminated.put(transactionHandler, 0);
 
-		concurrentCollectionsSize.add(terminationRequests.size()
-				+ votingQuorums.size() + atomicDeliveredMessages.size()
-				+ terminated.size());
-
 	}
 
 	/**
@@ -317,7 +372,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		public TransactionState call() throws Exception {
 
-			long start = System.nanoTime();
 			TransactionState result;
 
 			Set<String> concernedKeys = jessy.getConsistency()
@@ -333,7 +387,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 				executionHistory.changeState(TransactionState.COMMITTED);
 				result = TransactionState.COMMITTED;
-				certificationTime_readonly.add(System.nanoTime() - start);
 
 			} else {
 
@@ -445,6 +498,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 							break;
 					}
 				}
+				
+				certificationQueueingTime.add(System.nanoTime()-msg.getExecutionHistory().getStartCertification());
 
 				if (ConstantPool.logging)
 					if (msg.getExecutionHistory().getTransactionType()==TransactionType.UPDATE_TRANSACTION){
@@ -460,13 +515,13 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				 * Computes a set of destinations for the votes, and sends out
 				 * the votes to all replicas <i>that replicate objects modified
 				 * inside the transaction</i>. The group this node belongs to is
-				 * ommitted.
+				 * omitted.
 				 * 
 				 * <p>
 				 * 
 				 * The votes will be sent to all concerned keys. Note that the
 				 * optimization to only send the votes to the nodes replicating
-				 * objects in the writeset is not included. Thus, for example,
+				 * objects in the write set is not included. Thus, for example,
 				 * under serializability, a node may wait to receive the votes
 				 * from all nodes replicating the concerned keys, and then
 				 * returns without performing anything.
@@ -489,13 +544,13 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				 * instance which only replicates an object read by the
 				 * transaction should send its vote, and return.
 				 */
-				boolean voteReceiver = (voteReceivers.contains(group.name())) ? true
-						: false;
+				boolean voteReceiver = voteReceivers.contains(group.name());
+				boolean voteSender=voteSenders.contains(group.name());
 				
-				
-				if (voteSenders.contains(group.name())){
+				if (voteSender){
 
 					voteReceivers.remove(group.name());
+					vote.startVoteTime=System.currentTimeMillis();
 					VoteMessage voteMsg = new VoteMessage(vote, voteReceivers,
 							group.name(), JessyGroupManager.getInstance()
 									.getSourceId());
@@ -521,26 +576,56 @@ public class DistributedTermination implements Learner, UnicastLearner {
 							+ msg.getExecutionHistory().getTransactionHandler()
 							+ " , result is " + state);
 
-					if (state == TransactionState.COMMITTED) {
-
-						if (msg.getExecutionHistory().getTransactionType() == TransactionType.READONLY_TRANSACTION)
-							certificationTime_readonly.add(System.nanoTime()
-									- msg.getExecutionHistory()
-											.getStartCertification());
-						else
-							certificationTime_update.add(System.nanoTime()
-									- msg.getExecutionHistory()
-											.getStartCertification());
-					}
-
 					msg.getExecutionHistory().changeState(state);
 
 				}
+				
+				long start=System.nanoTime();
+				synchronized (atomicDeliveredMessages) {
+					while (true) {
 
+						boolean isConflicting = false;
+
+						for (TerminateTransactionRequestMessage n : atomicDeliveredMessages) {
+							if (n.equals(msg)) {
+								break;
+							}
+							/*
+							 * This test is crucial to the application performance because it 
+							 * concurrently applies transactions to the data-store.
+							 * However, safety check for concurrency should only be performed in jessy replicas 
+							 * replicating objects modified inside the transaction (replicas(write-set(T)). 
+							 * Other replicas can safely proceed to the termination.
+							 * Note that voteReceiver is not enough because in SnapshotIsolation, 
+							 * all nodes receive the transactions. Thus, we also include the voteSender in the logical test.
+							 * 
+							 */
+							if (!jessy.getConsistency().applyingTransactionCommute() && voteSender && voteReceiver) {
+								isConflicting = true;
+								break;
+							}
+						}
+						if (isConflicting)
+							atomicDeliveredMessages.wait();
+						else
+							break;
+					}
+				}
+				applyingTransactionQueueingTime.add(System.nanoTime()-start);
+				
 				handleTerminationResult(msg);
 				garbageCollect(msg.getExecutionHistory()
 						.getTransactionHandler());
 
+				if (msg.getExecutionHistory().getTransactionType() == TransactionType.READONLY_TRANSACTION)
+					certificationTime_readonly.add(System.nanoTime()
+							- msg.getExecutionHistory()
+							.getStartCertification());
+				else if (voteReceiver && (msg.getExecutionHistory().getTransactionType() == TransactionType.UPDATE_TRANSACTION))
+					certificationTime_update.add(System.nanoTime()
+							- msg.getExecutionHistory()
+							.getStartCertification());
+				
 				if (ConstantPool.logging)
 					if (msg.getExecutionHistory().getTransactionType()==TransactionType.UPDATE_TRANSACTION){
 						logger.error("FINISHING certification of " + msg.getExecutionHistory().getTransactionHandler().getId());

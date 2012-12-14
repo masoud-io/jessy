@@ -8,15 +8,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.sourceforge.fractal.Learner;
-import net.sourceforge.fractal.membership.Group;
-
-import org.apache.log4j.Logger;
-
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -34,10 +27,7 @@ import fr.inria.jessy.vector.GMUVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
-
-	private static Logger logger = Logger
-			.getLogger(NonMonotonicSnapshotIsolationWithGMUVector.class);
+public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnapshotIsolation {
 
 	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
 
@@ -126,9 +116,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
 	}
 
 	@Override
-	public boolean certificationCommute(ExecutionHistory history1,
-			ExecutionHistory history2) {
-
+	public boolean applyingTransactionCommute() {
 		return false;
 	}
 
@@ -282,21 +270,5 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends Consistency {
 
 	}
 
-	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
-			ConcernedKeysTarget target) {
-		Set<String> keys = new HashSet<String>();
-			keys.addAll(executionHistory.getWriteSet().getKeys());
-			keys.addAll(executionHistory.getCreateSet().getKeys());
-			return keys;
-	}
 
-	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Learner learner) {
-		if (terminationCommunication == null)
-			terminationCommunication = new GenuineTerminationCommunication(
-					group, learner);
-		return terminationCommunication;
-	}
 }

@@ -8,15 +8,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.sourceforge.fractal.Learner;
-import net.sourceforge.fractal.membership.Group;
-
-import org.apache.log4j.Logger;
-
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -34,10 +27,7 @@ import fr.inria.jessy.vector.GMUVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class UpdateSerializabilityWithGMUVector extends Consistency {
-
-	private static Logger logger = Logger
-			.getLogger(UpdateSerializabilityWithGMUVector.class);
+public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 
 	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
 
@@ -49,7 +39,8 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 	public UpdateSerializabilityWithGMUVector(DataStore dataStore) {
 		super(dataStore);
 	}
-
+	
+	@Override
 	@SuppressWarnings("unchecked")
 	public boolean certify(ExecutionHistory executionHistory) {
 		TransactionType transactionType = executionHistory.getTransactionType();
@@ -156,9 +147,11 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 		return true;
 	}
 
+	/**
+	 * With GMUVector, it is not safe to apply transactions concurrently, and they should be applied as they are delivered. 
+	 */
 	@Override
-	public boolean certificationCommute(ExecutionHistory history1,
-			ExecutionHistory history2) {
+	public boolean applyingTransactionCommute() {
 		return false;
 	}
 
@@ -312,58 +305,5 @@ public class UpdateSerializabilityWithGMUVector extends Consistency {
 
 	}
 
-	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
-			ConcernedKeysTarget target) {
-		Set<String> keys = new HashSet<String>();
-		if (target == ConcernedKeysTarget.TERMINATION_CAST) {
-			if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
-				/*
-				 * If the transaction is read-only, it is not needed to be atomic
-				 * multicast by the coordinator. It simply commits since it has
-				 * read a consistent snapshot.
-				 */
-				return keys;
-			else {
-				/*
-				 * If it is not a read-only transaction, then the transaction
-				 * should atomic multicast to every process replicating an
-				 * object read or written by the transaction.
-				 * 
-				 * Note: Atomic multicasting to only write-set is not enough.
-				 */
-				keys.addAll(executionHistory.getReadSet().getKeys());
-				keys.addAll(executionHistory.getWriteSet().getKeys());
-				keys.addAll(executionHistory.getCreateSet().getKeys());
-				return keys;
-			}
-		} else if (target == ConcernedKeysTarget.SEND_VOTES) {
-			/*
-			 * Since the transaction is sent to all jessy instances replicating
-			 * an object read/written by the transaction, all of them should
-			 * participate in the voting phase, and send their votes.
-			 */
-			keys.addAll(executionHistory.getReadSet().getKeys());
-			keys.addAll(executionHistory.getWriteSet().getKeys());
-			keys.addAll(executionHistory.getCreateSet().getKeys());
-			return keys;
-		} else {
-			/*
-			 * For exchanging votes, it is only needed to send the result of the
-			 * transaction to its write set.
-			 */
-			keys.addAll(executionHistory.getWriteSet().getKeys());
-			keys.addAll(executionHistory.getCreateSet().getKeys());
-			return keys;
-		}
-	}
 
-	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Learner learner) {
-		if (terminationCommunication == null)
-			terminationCommunication = new GenuineTerminationCommunication(
-					group, learner);
-		return terminationCommunication;
-	}
 }
