@@ -37,9 +37,6 @@ import fr.inria.jessy.vector.VersionVector;
  * 
  * @author Masoud Saeida Ardekani
  * 
- *         TODO: Implementation is not fault tolerant. I.e., if an instance does
- *         not receive a sequence number, it will block!
- * 
  */
 public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
@@ -65,7 +62,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	/**
 	 * @inheritDoc
 	 * 
-	 *             According to the implementatin of VersionVector, commute in
+	 *             According to the implementation of VersionVector, commute in
 	 *             certification is not allowed.
 	 *             <p>
 	 *             Assume there are two servers s1 and s2 that replicate objects
@@ -93,6 +90,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	/**
 	 * @inheritDoc
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
 		TransactionType transactionType = executionHistory.getTransactionType();
@@ -116,8 +114,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		}
 
 		/*
-		 * if the transaction is an initalization transaction, it first
-		 * increaments the vectors and then commits.
+		 * if the transaction is an init transaction, it first
+		 * increments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
 
@@ -194,7 +192,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			}
 
 			/*
-			 * Get and remove the piggybacked sequence number. We do not need it
+			 * Get and remove the piggyback sequence number. We do not need it
 			 * anymore.
 			 */
 			pb = receivedPiggybacks.get(executionHistory
@@ -224,7 +222,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			 * updatedVector is a new vector. It will be used as a new vector
 			 * for all modified vectors.
 			 * 
-			 * <p> The update takes place according to Walter [Serrano2011]
+			 * <p> The update takes place according to the Walter system [Serrano2011]
 			 */
 
 			VersionVector<String> updatedVector = new VersionVector<String>(
@@ -364,7 +362,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 * <p>
 	 * Note that the first read cannot play this role because it might not write
 	 * on the same object, thus won't receive the vote request during
-	 * certifiaction.
+	 * certification.
 	 * 
 	 * @param executionHistory
 	 * @return
@@ -478,7 +476,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	}
 
 	/**
-	 * Update the committedVTS according to the received piggy backed sequence
+	 * Update the committedVTS according to the received piggyback sequence
 	 * number.
 	 * 
 	 */

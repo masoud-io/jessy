@@ -46,10 +46,10 @@ import fr.inria.jessy.transaction.TransactionState;
  */
 public class DistributedTermination implements Learner, UnicastLearner {
 
-	private static Logger logger = Logger
+	protected static Logger logger = Logger
 			.getLogger(DistributedTermination.class);
 
-	private static ValueRecorder certificationTime_readonly,
+	protected static ValueRecorder certificationTime_readonly,
 			certificationTime_update, certificationQueueingTime, applyingTransactionQueueingTime , votingTime, castLatency;
 	
 	private DistributedJessy jessy;
@@ -148,6 +148,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 	}
 	
+	ApplyTransactionsToDataStore applyTransactionsToDataStore;
+	
 	public DistributedTermination(DistributedJessy j) {
 		jessy = j;
 		group = JessyGroupManager.getInstance().getMyGroup();
@@ -159,13 +161,15 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
 		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 
-		// terminated = new ConcurrentLinkedHashMap.Builder<TransactionHandler,
-		// Integer>()
-		// .maximumWeightedCapacity(1000) // FIXME works ???
-		// .build();
 		terminated = new NonBlockingHashtable<TransactionHandler, Integer>();
 		
 		sManager=new UnicastServerManager(this, ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT);
+		
+		if (!jessy.getConsistency().applyingTransactionCommute()){
+			applyTransactionsToDataStore=new ApplyTransactionsToDataStore(this);
+			pool.submit(applyTransactionsToDataStore);
+		}
+			
 	}
 
 	/**
@@ -223,10 +227,28 @@ public class DistributedTermination implements Learner, UnicastLearner {
 							.getTransactionHandler().getId() + " , read keys :" + terminateRequestMessage.getExecutionHistory().getReadSet().getKeys());
 
 			terminateRequestMessage.getExecutionHistory()
-					.setStartCertification(System.nanoTime());			
-			synchronized (atomicDeliveredMessages) {
-				atomicDeliveredMessages.offer(terminateRequestMessage);
+					.setStartCertification(System.nanoTime());
+			
+			try{
+				synchronized (atomicDeliveredMessages) {				
+					TransactionHandler abortedTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousAbortedTransactionHandler();
+					if (abortedTransactionHandler!=null){
+						for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
+							if (req.getExecutionHistory().getTransactionHandler().equals(abortedTransactionHandler)){
+								garbageCollectJessyReplica(req);
+								applyTransactionsToDataStore.removeFromQueue(req);
+								break;
+							}
+						}
+
+					}
+					atomicDeliveredMessages.offer(terminateRequestMessage);
+				}
 			}
+			catch (Exception ex){
+				ex.printStackTrace();
+			}
+			
 			
 			pool.submit(new CertifyAndVoteTask(terminateRequestMessage));
 
@@ -291,8 +313,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	 * {@code Consistency#prepareToCommit(ExecutionHistory)} then its modified
 	 * entities are applied.
 	 */
-	private void handleTerminationResult(TerminateTransactionRequestMessage msg)
+	protected void handleTerminationResult(TerminateTransactionRequestMessage msg)
 			throws Exception {
+
 
 		ExecutionHistory executionHistory = msg.getExecutionHistory();
 
@@ -314,10 +337,11 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		}
 
-		synchronized (atomicDeliveredMessages) {
-			atomicDeliveredMessages.remove(msg);
-			atomicDeliveredMessages.notifyAll();
-		}
+		/*
+		 * We have to garbage collect at the server ASAP, because concurrent transactions can only
+		 * proceed after garbage collecting the current delivered transaction.
+		 */
+		garbageCollectJessyReplica(msg);
 		
 		if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
 			/*
@@ -327,26 +351,53 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			jessy.getConsistency().postCommit(executionHistory);
 		}
 
-		jessy.garbageCollectTransaction(executionHistory
-				.getTransactionHandler());
-
 	}
 
 	/**
 	 * Garbage collect all concurrent hash maps entries for the given
 	 * {@code transactionHandler}
-	 * 
+	 * This method is executed by both all Jessy instances. I.e., it is also executed at the jessy proxy.
 	 * 
 	 * @param transactionHandler
 	 *            The transactionHandler to be garbage collected.
 	 */
-	private void garbageCollect(TransactionHandler transactionHandler) {
+	private void garbageCollectJessyInstance(TransactionHandler transactionHandler) {
+		jessy.garbageCollectTransaction(transactionHandler);
+		
+		try{
 
-		terminationRequests.remove(transactionHandler);
-		votingQuorums.remove(transactionHandler);
+			terminationRequests.remove(transactionHandler);
+			votingQuorums.remove(transactionHandler);
 
-		terminated.put(transactionHandler, 0);
+			terminated.put(transactionHandler, 0);
+		}
+		catch(Exception ex){
+			System.out.println("Garbage collecting cannot be done!");
+		}
 
+	}
+	
+	/**
+	 * Garbage collect the TerminateTransactionRequestMessage at the jessy replica. I.e., all jessy instances that 
+	 * have delivered TerminateTransactionRequestMessage.
+	 * 
+	 * If jessy proxy does not replicate JessyEntities, this garbage collection should be executed at it.
+	 * 
+	 * @param TerminateTransactionRequestMessage message that should be garbage collected.
+	 */
+	private void garbageCollectJessyReplica(TerminateTransactionRequestMessage msg){
+		try{
+			synchronized (atomicDeliveredMessages) {
+				atomicDeliveredMessages.remove(msg);
+				atomicDeliveredMessages.notifyAll();
+			}
+		}
+		catch (Exception ex){
+			System.out.println("REMOVING FROM ATOMIC DELIVERED MESSAGES CANNOT BE DONE!");
+			ex.printStackTrace();
+		}
+
+		garbageCollectJessyInstance(msg.getExecutionHistory().getTransactionHandler());
 	}
 
 	/**
@@ -444,11 +495,14 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				 * Wait here until the result of the transaction is known.
 				 */
 				result = vq.waitVoteResult(jessy.getConsistency().getVotersToCoordinator(destGroups,executionHistory));
+				if (result==TransactionState.ABORTED_BY_TIMEOUT){
+					logger.error("Abort by timeout from votingQ " + executionHistory.getTransactionHandler());
+				}
 
 			}
 
 			if (!executionHistory.isCertifyAtCoordinator()) {
-				garbageCollect(executionHistory.getTransactionHandler());
+				garbageCollectJessyInstance(executionHistory.getTransactionHandler());
 			}
 			
 			if (ConstantPool.logging)
@@ -486,10 +540,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 								break;
 							}
 							if (!jessy.getConsistency().certificationCommute(
-									n.getExecutionHistory(),
-									msg.getExecutionHistory())) {
+									n.getExecutionHistory(), msg.getExecutionHistory())) {
 								isConflicting = true;
-								break;
+								break;									
 							}
 						}
 						if (isConflicting)
@@ -572,70 +625,96 @@ public class DistributedTermination implements Learner, UnicastLearner {
 							msg.getExecutionHistory().getTransactionHandler())
 							.waitVoteResult(voteSenders);
 
-					logger.debug("got voting quorum for "
-							+ msg.getExecutionHistory().getTransactionHandler()
-							+ " , result is " + state);
-
 					msg.getExecutionHistory().changeState(state);
+					
+					if (ConstantPool.logging)
+						logger.debug("got voting quorum for " + msg.getExecutionHistory().getTransactionHandler()
+								+ " , result is " + state);
+
+					/*
+					 * we can garbage collect right away, and exit.
+					 */
+					if (state==TransactionState.ABORTED_BY_VOTING || state ==TransactionState.ABORTED_BY_TIMEOUT){
+						garbageCollectJessyReplica(msg);
+						return;
+					}
 
 				}
 				
-				long start=System.nanoTime();
-				synchronized (atomicDeliveredMessages) {
-					while (true) {
+				msg.getExecutionHistory().setApplyingTransactionQueueingStartTime(System.nanoTime());
+				
+				if (!jessy.getConsistency().applyingTransactionCommute() && voteSender && voteReceiver)
+				{
+					/*
+					 * When applying transactions to the data-store does not commute, instead of waiting in this thread
+					 * until the condition holds, we add the transaction to a queue, return right away, and only ONE thread applies the transactions in FIFO order.
+					 * According to measurements, when update ratio is high, this solution improves the performance significantly.
+					 * 
+					 * Should be here in case this transaction modifying an object replicated here: NMSI-GMUVector, SI, PSI, US
+					 */
+					msg.getExecutionHistory().setVoteReceiver(voteReceiver);
+					applyTransactionsToDataStore.addToQueue(msg);
+					return;
+				}
+				else if (jessy.getConsistency().applyingTransactionCommute()) {
+					/*
+					 * Should be here in case this transaction modifying an object replicated here: RC, SER, NMSI-DependenceVector
+					 */
+					synchronized (atomicDeliveredMessages) {
+						while (true) {
 
-						boolean isConflicting = false;
+							boolean isConflicting = false;
 
-						for (TerminateTransactionRequestMessage n : atomicDeliveredMessages) {
-							if (n.equals(msg)) {
-								break;
+							for (TerminateTransactionRequestMessage n : atomicDeliveredMessages) {
+								if (n.equals(msg)) {
+									break;
+								}
+								/*
+								 * This test is crucial to the application performance because it 
+								 * concurrently applies transactions to the data-store.
+								 * However, safety check for concurrency should only be performed in jessy replicas 
+								 * replicating objects modified inside the transaction (replicas(write-set(T)). 
+								 * Other replicas can safely proceed to the termination.
+								 * Note that voteReceiver is not enough because in SnapshotIsolation, 
+								 * all nodes receive the transactions. Thus, we also include the voteSender in the logical test.
+								 * 
+								 */
+								if (!jessy.getConsistency().applyingTransactionCommute() && voteSender && voteReceiver) {
+									isConflicting = true;
+									break;
+								}
 							}
-							/*
-							 * This test is crucial to the application performance because it 
-							 * concurrently applies transactions to the data-store.
-							 * However, safety check for concurrency should only be performed in jessy replicas 
-							 * replicating objects modified inside the transaction (replicas(write-set(T)). 
-							 * Other replicas can safely proceed to the termination.
-							 * Note that voteReceiver is not enough because in SnapshotIsolation, 
-							 * all nodes receive the transactions. Thus, we also include the voteSender in the logical test.
-							 * 
-							 */
-							if (!jessy.getConsistency().applyingTransactionCommute() && voteSender && voteReceiver) {
-								isConflicting = true;
-								break;
+							if (isConflicting)
+							{
+								atomicDeliveredMessages.wait();
 							}
+							else
+								break;
 						}
-						if (isConflicting)
-							atomicDeliveredMessages.wait();
-						else
-							break;
 					}
 				}
-				applyingTransactionQueueingTime.add(System.nanoTime()-start);
+				applyingTransactionQueueingTime.add(System.nanoTime()-msg.getExecutionHistory().getApplyingTransactionQueueingStartTime());
 				
 				handleTerminationResult(msg);
-				garbageCollect(msg.getExecutionHistory()
-						.getTransactionHandler());
 
-				if (msg.getExecutionHistory().getTransactionType() == TransactionType.READONLY_TRANSACTION)
-					certificationTime_readonly.add(System.nanoTime()
-							- msg.getExecutionHistory()
-							.getStartCertification());
-				else if (voteReceiver && (msg.getExecutionHistory().getTransactionType() == TransactionType.UPDATE_TRANSACTION))
-					certificationTime_update.add(System.nanoTime()
-							- msg.getExecutionHistory()
-							.getStartCertification());
-				
-				if (ConstantPool.logging)
-					if (msg.getExecutionHistory().getTransactionType()==TransactionType.UPDATE_TRANSACTION){
-						logger.error("FINISHING certification of " + msg.getExecutionHistory().getTransactionHandler().getId());
-					}
+				measureCertificatioinTime(msg, voteReceiver);
 
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 		}
+	}
+	
+	protected void measureCertificatioinTime(TerminateTransactionRequestMessage msg, boolean voteReceiver){
+		if (msg.getExecutionHistory().getTransactionType() == TransactionType.READONLY_TRANSACTION)
+			certificationTime_readonly.add(System.nanoTime()
+					- msg.getExecutionHistory()
+					.getStartCertification());
+		else if (voteReceiver && (msg.getExecutionHistory().getTransactionType() == TransactionType.UPDATE_TRANSACTION))
+			certificationTime_update.add(System.nanoTime()
+					- msg.getExecutionHistory()
+					.getStartCertification());
 	}
 
 }

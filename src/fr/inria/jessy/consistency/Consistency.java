@@ -6,7 +6,6 @@ import java.util.Set;
 
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;
-import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;

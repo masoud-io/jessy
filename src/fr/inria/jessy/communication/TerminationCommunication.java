@@ -44,7 +44,8 @@ public abstract class TerminationCommunication {
 	public void sendVote(VoteMessage voteMessage,
 			boolean isCertifyAtCoordinator, int coordinatorSwid,
 			String coordinatorHost) {
-		
+
+		mCastStream.multicast(voteMessage);
 		if (!isCertifyAtCoordinator) {
 			if (ConstantPool.JESSY_VOTING_PHASE_UNICST_MODE == UNICAST_MODE.FRACTAL) {
 				mCastStream.unicast(voteMessage, coordinatorSwid,
@@ -54,7 +55,7 @@ public abstract class TerminationCommunication {
 				cManager.unicast(voteMessage, coordinatorSwid, coordinatorHost);
 			}
 		}
-		mCastStream.multicast(voteMessage);
+
 	}
 
 	/**

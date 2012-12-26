@@ -10,8 +10,16 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 
-//TODO COMMENT ME
-public class ExecutionHistory implements Messageable {
+/**
+ * This class characterizes the whole state of a transaction execution. It
+ * contains the read, write and create set of the transactions that are used
+ * during termination for certifying the transaction.
+ * 
+ * 
+ * @author Masoud Saeida Ardekani
+ * 
+ */
+public class ExecutionHistory extends ExecutionHistoryMeasurements implements Messageable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
@@ -34,6 +42,9 @@ public class ExecutionHistory implements Messageable {
 		INIT_TRANSACTION
 	};
 
+	/**
+	 * A unique id for identifying the transaction
+	 */
 	private TransactionHandler transactionHandler;
 
 	/**
@@ -43,7 +54,7 @@ public class ExecutionHistory implements Messageable {
 	 * receive back the {@link TerminationResult}.
 	 */
 	private boolean certifyAtCoordinator;
-	private int coordinatorSwid;	
+	private int coordinatorSwid;
 	private String coodinatorHost;
 
 	private TransactionState transactionState = TransactionState.NOT_STARTED;
@@ -55,11 +66,6 @@ public class ExecutionHistory implements Messageable {
 	private EntitySet createSet;
 	private EntitySet writeSet;
 	private EntitySet readSet;
-
-	/**
-	 * Start time (in nano) of the transaction upon A-Delivering to a server.
-	 */
-	private long startCertification;
 
 	// for fractal
 	@Deprecated
@@ -161,25 +167,17 @@ public class ExecutionHistory implements Messageable {
 		return coordinatorSwid;
 	}
 
-	public void setStartCertification(long startCertification) {
-		this.startCertification = startCertification;
-	}
-
-	public long getStartCertification() {
-		return startCertification;
-	}
-
-	public void clearReadValues(){
-		for (JessyEntity e:readSet.getEntities()){
+	public void clearReadValues() {
+		for (JessyEntity e : readSet.getEntities()) {
 			e.clearValue();
 		}
 	}
-	
-	public void setCoordinatorHost(String host){
-		this.coodinatorHost=host;
+
+	public void setCoordinatorHost(String host) {
+		this.coodinatorHost = host;
 	}
-	
-	public String getCoordinatorHost(){
+
+	public String getCoordinatorHost() {
 		return coodinatorHost;
 	}
 	
@@ -189,19 +187,22 @@ public class ExecutionHistory implements Messageable {
 		transactionHandler = (TransactionHandler) in.readObject();
 		transactionState = (TransactionState) in.readObject();
 		certifyAtCoordinator = in.readBoolean();
-		if (!certifyAtCoordinator){
+		if (!certifyAtCoordinator) {
 			coordinatorSwid = in.readInt();
-			coodinatorHost=(String) in.readObject();
+			coodinatorHost = (String) in.readObject();
 		}
 
 		createSet = (EntitySet) in.readObject();
-		if(createSet == null ) createSet = new EntitySet();
-		
+		if (createSet == null)
+			createSet = new EntitySet();
+
 		writeSet = (EntitySet) in.readObject();
-		if(writeSet == null ) writeSet = new EntitySet();
-		
+		if (writeSet == null)
+			writeSet = new EntitySet();
+
 		readSet = (EntitySet) in.readObject();
-		if(readSet == null ) readSet = new EntitySet();
+		if (readSet == null)
+			readSet = new EntitySet();
 
 	}
 
@@ -210,23 +211,22 @@ public class ExecutionHistory implements Messageable {
 		out.writeObject(transactionHandler);
 		out.writeObject(transactionState);
 		out.writeBoolean(certifyAtCoordinator);
-		if (!certifyAtCoordinator){
+		if (!certifyAtCoordinator) {
 			out.writeInt(coordinatorSwid);
 			out.writeObject(coodinatorHost);
 		}
 
-		if(createSet.size()==0)
+		if (createSet.size() == 0)
 			out.writeObject(null);
 		else
 			out.writeObject(createSet);
-			
-		
-		if(writeSet.size()==0)
+
+		if (writeSet.size() == 0)
 			out.writeObject(null);
 		else
 			out.writeObject(writeSet);
-		
-		if(readSet.size()==0)
+
+		if (readSet.size() == 0)
 			out.writeObject(null);
 		else
 			out.writeObject(readSet);

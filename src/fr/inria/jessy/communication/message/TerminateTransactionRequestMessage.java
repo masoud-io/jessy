@@ -10,34 +10,43 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
 public class TerminateTransactionRequestMessage extends WanAMCastMessage {
-	
+
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	public long startCasting;
+
 	// For Fractal
 	public TerminateTransactionRequestMessage() {
 	}
 
-	public TerminateTransactionRequestMessage(ExecutionHistory eh, Collection<String> dest, String gSource, int source) {
+	public TerminateTransactionRequestMessage(ExecutionHistory eh,
+			Collection<String> dest, String gSource, int source) {
 		super(eh, dest, gSource, source);
-		startCasting=System.currentTimeMillis();
+		startCasting = System.currentTimeMillis();
 	}
 
 	public ExecutionHistory getExecutionHistory() {
 		return (ExecutionHistory) serializable;
 	}
-	
+
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		super.readExternal(in);
-		startCasting=in.readLong();
+		startCasting = in.readLong();
 	}
-	
+
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		out.writeLong(startCasting);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		TerminateTransactionRequestMessage input = (TerminateTransactionRequestMessage) obj;
+
+		return this.getExecutionHistory().getTransactionHandler()
+				.equals(input.getExecutionHistory().getTransactionHandler());
+	}
 }

@@ -86,7 +86,16 @@ public class UnicastClientManager {
 					"Cannot identify the host name with swid from Fractal membership");
 		}
 
-		swid2Channel.get(swid).write(m);
+		Channel ch=swid2Channel.get(swid);
+		if (ch.isConnected()){
+			swid2Channel.get(swid).write(m);
+		}
+		else{
+			Membership membership = JessyGroupManager.getInstance()
+					.getMembership();
+			String host = membership.adressOf(swid);
+			swid2Channel.put(swid, createUnicastClientChannel(host, port));
+		}
 	}
 
 	public void unicast(Object m, int swid, String destinationHost) {
