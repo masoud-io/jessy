@@ -63,7 +63,30 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		retryCommitOnAbort = readConfig();
 	}
 
-	long executionStartTime;
+	/**
+	 * Start time of the execution phase in nanoseconds.
+	 * <p>
+	 * If the transaction aborts, the resulting transaction will again calculate the execution phase.
+	 * This is for the sake of simplicity and should not change the result. 
+	 */
+	private long executionStartTime;
+	
+	/**
+	 * Start time of the termination phase in nanoseconds.
+	 * <p>
+	 * If the transaction aborts, the resulting transaction will NOT calculate the termination phase of the resulting transaction.
+	 * The termination latency is only calculated for the main transaction from the starting of its termination until it commits when 
+	 * {@code Transaction#mainTransactionCommit} is zero. 
+	 */ 
+	private long terminationStartTime;
+	
+	/**
+	 * If zero, it means the commit is for the main transaction.
+	 * If greater than zero, it means the main transaction aborts, and this commit is for the resulting transaction.
+	 * This variable is crucial to compute the correct termination latency. In other words, termination latency is only computed for
+	 * the main transaction inside the commit method. 
+	 */
+	private int mainTransactionCommit=0;
 
 	private Jessy jessy;
 	private TransactionHandler transactionHandler;
@@ -131,20 +154,20 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 * defined to retryCommitOnAbort, it will do so, until it commits the
 	 * transaction.
 	 * 
-	 * FIXME Can it happen to abort a transaction indefinitely?
 	 */
 	public ExecutionHistory commitTransaction() {
-
+		if(mainTransactionCommit==0) 
+			terminationStartTime= System.nanoTime();
+		
+		mainTransactionCommit++;
+		
 		if (isQuery)
 			transactionExecutionTime_ReadOlny.add(System.nanoTime()
 					- executionStartTime);
 		else{
 			transactionExecutionTime_Update.add(System.nanoTime()
 					- executionStartTime);
-//			logger.warn("execution of update transaction is finished: " + transactionHandler.toString());
 		}
-
-		long startterm = System.nanoTime();
 
 		ExecutionHistory executionHistory = jessy
 				.commitTransaction(transactionHandler);
@@ -154,9 +177,10 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 			try {
 
-				logger.warn("Re-executing aborted "
-						+ (isQuery ? "(query)" : "") + " transaction "
-						+ executionHistory.getTransactionHandler() + " . Reason : " + executionHistory.getTransactionState() );
+				if (ConstantPool.logging)
+					logger.warn("Re-executing aborted "
+							+ (isQuery ? "(query)" : "") + " transaction "
+							+ executionHistory.getTransactionHandler() + " . Reason : " + executionHistory.getTransactionState() );
 
 				/*
 				 * Garbage collect the older execution. We do not need it
@@ -167,12 +191,15 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 				/*
 				 * must have a new handler.
 				 */
+				TransactionHandler oldHanlder=this.transactionHandler.clone();
 				this.transactionHandler = jessy.startTransaction();
-
+				this.transactionHandler.setPreviousAbortedTransactionHandler(oldHanlder);
+				reInitProbes();
+				mainTransactionCommit++;
 				executionHistory = execute();
+				mainTransactionCommit--;
 
 			} catch (Exception e) {
-				// FIXME abort properly
 				e.printStackTrace();
 			}
 
@@ -180,12 +207,14 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 		jessy.garbageCollectTransaction(transactionHandler);
 
-		if (isQuery)
-			transactionTerminationTime_ReadOnly.add(System.nanoTime()
-					- startterm);
-		else
-			transactionTerminationTime_Update.add(System.nanoTime()
-					- startterm);
+		mainTransactionCommit--;
+		if (mainTransactionCommit==0)
+			if (isQuery)
+				transactionTerminationTime_ReadOnly.add(System.nanoTime()
+						- terminationStartTime);
+			else
+				transactionTerminationTime_Update.add(System.nanoTime()
+						- terminationStartTime);
 
 		return executionHistory;
 	}
@@ -226,4 +255,11 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		return true;
 	}
 
+	/**
+	 * Since the transaction can abort, and re-executing the aborted transaction is performed inside the {@code Transaction#commitTransaction()}
+	 * we need to re set all the probes. Otherwise, the execution latency is not accurate since the start time is the very beginning of the transaction.
+	 */
+	private void reInitProbes(){
+		executionStartTime = System.nanoTime();
+	}
 }

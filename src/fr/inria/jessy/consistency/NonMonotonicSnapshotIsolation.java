@@ -17,7 +17,7 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 public abstract class NonMonotonicSnapshotIsolation extends Consistency {
 
 	protected static Logger logger = Logger
-			.getLogger(NonMonotonicSnapshotIsolationWithDependenceVector.class);
+			.getLogger(NonMonotonicSnapshotIsolation.class);
 
 	public NonMonotonicSnapshotIsolation(DataStore dataStore) {
 		super(dataStore);
@@ -29,7 +29,7 @@ public abstract class NonMonotonicSnapshotIsolation extends Consistency {
 
 		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
 				.getKeys(), history2.getWriteSet().getKeys());
-
+		
 	}
 
 	@Override
