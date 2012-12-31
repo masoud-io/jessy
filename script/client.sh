@@ -58,7 +58,7 @@ cd ${workingdir};
 export CLASSPATH=${classpath}
 java  -Xms1000m -Xmx2000m -XX:+UseConcMarkSweepGC com.yahoo.ycsb.Client ${workloadType} -db ${clientclass} -s -threads ${nthreads} -P ${workingdir}/workload 1> ${scriptdir}/$stout 2>${scriptdir}/$sterr
 
-cat ${scriptdir}/$stout >>  ${scriptdir}/${hostname}
+cat ${scriptdir}/$stout >  ${scriptdir}/${hostname}
 echo "" >>  ${scriptdir}/${hostname}
 cat ${scriptdir}/$sterr >>  ${scriptdir}/${hostname}
 cd ${scriptdir};

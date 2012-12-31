@@ -14,7 +14,9 @@ for s in ${nservers};
 do
 
 	client_machine_lub=`echo "scale=1;${s}*${client_machine_lub_multiplier}" | ${bc}`;
-	nclients=`seq ${s} ${client_machine_increment} ${client_machine_lub}`
+	client_machine_glb=`echo "scale=1;${s}*${client_machine_glb_multiplier}" | ${bc}`;
+
+	nclients=`seq ${client_machine_glb} ${client_machine_increment} ${client_machine_lub}`
     # Construct servers variable.
     svar="\"${nvar[0]}\""
     for i in `seq 1 $[${s}-1]`
@@ -59,4 +61,3 @@ do
    done
     
 done
-

@@ -2,7 +2,46 @@
 
 #source /home/msaeidaardekani/jessy/scripts/configuration.sh
 source /home/msaeida/jessy_script/configuration.sh
- 
+
+param=("$@")
+
+function fetchExecutionResult(){
+
+        input=$@
+
+                next=0
+                for i in `seq 1 $clustersNumber`;
+                do
+                        nodeName=${param[$next]}
+
+                        if [[ "$input" == *"$nodeName"* ]]; then
+                                echo 'Fetching execution result of ' $input ' from ' $nodeName
+                                scp ${nodeName}:~/jessy/scripts/${input} .
+                                break
+                        fi
+                next=$(($next+3))
+                done
+}
+
+
+function syncConfig(){
+        if $running_on_grid ; then
+
+                next=0
+                echo 'synchronizing keys and data...'
+                for i in `seq 1 $clustersNumber`;
+                do
+                        nodeName=${param[$next]}
+                        echo "synchronizing configuration in "$nodeName"..."
+
+                        rsync --delete -az ./configuration.sh $nodeName.grid5000.fr:~/jessy/scripts/configuration.sh
+
+                        next=$(($next+3))
+                done
+
+        fi
+}
+
 function stopExp(){
     let sc=${#servers[@]}-1
     for j in `seq 0 $sc`
@@ -49,13 +88,18 @@ function collectStats(){
     executionTime_update=0;
     terminationTime_readonly=0;
     terminationTime_update=0;
+    votingTime=0;
     
     certificationTime_readonly=0;
     certificationTime_update=0;
+    certificationQueueingTime=0;
+    applyingTransactionQueueingTime=0;
+    castingLatency=0;
+    votingQuorumLatency=0;
     
 
 	if ! [ -s "${scriptdir}/results/${servercount}.txt" ]; then
-	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tOverall_Throughput\tCommitted_Throughput\tupdateTran_Latency\treadonlyTran_Latency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tCertificationLatency_UpdateTran\tCertificationLatency_readonlyTran\tExecutionLatency_UpdateTran\tTerminationLatency_UpdateTran\tExecutionLatency_ReadOnlyTran\tTerminationLatency_ReadOnlyTran"
+	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tOverall_Throughput\tCommitted_Throughput\tupdateTran_Latency\treadonlyTran_Latency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tExecutionLatency_UpdateTran\tTerminationLatency_UpdateTran\tExecutionLatency_ReadOnlyTran\tTerminationLatency_ReadOnlyTran\tVoting_Time\tCertificationLatency_UpdateTran\tCertificationLatency_readonlyTran\tCertificationQueueingTime\tApplyingTransactionQueueingTime\tVoting_Quorum_Latency\tCasting_Latency"
 	fi
 
     let scount=${#servers[@]}-1
@@ -72,7 +116,28 @@ function collectStats(){
 	if [ -n "${tmp}" ]; then
 	    certificationTime_update=`echo "${tmp}+${certificationTime_update}"| sed 's/E/*10^/g'`;	    
 	fi
-	
+
+	tmp=`grep -a "certificationQueueingTime_update" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
+	if [ -n "${tmp}" ]; then
+	    certificationQueueingTime=`echo "${tmp}+${certificationQueueingTime}"| sed 's/E/*10^/g'`;	    
+	fi
+
+	tmp=`grep -a "applyingTransactionQueueingTime_update" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
+	if [ -n "${tmp}" ]; then
+	    applyingTransactionQueueingTime=`echo "${tmp}+${applyingTransactionQueueingTime}"| sed 's/E/*10^/g'`;	    
+	fi
+
+
+	tmp=`grep -a "castLatency_Update_ReadOnly" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
+	if [ -n "${tmp}" ]; then
+	    castingLatency=`echo "${tmp}+${castingLatency}"| sed 's/E/*10^/g'`;	    
+	fi
+
+	tmp=`grep -a "votingPhase_Latency" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
+	if [ -n "${tmp}" ]; then
+	    votingQuorumLatency=`echo "${tmp}+${votingQuorumLatency}"| sed 's/E/*10^/g'`;	    
+	fi
+
     done
 
 
@@ -146,9 +211,15 @@ function collectStats(){
 	    terminationTime_update=`echo "${tmp}+${terminationTime_update}"| sed 's/E/*10^/g'`;	    
 	fi
 
+	tmp=`grep -a "votingTime" ${scriptdir}/${client} | gawk -F':' '{print $2}'`;
+	if [ -n "${tmp}" ]; then
+	    votingTime=`echo "${tmp}+${votingTime}"| sed 's/E/*10^/g'`;	    
+	fi
+
+
     done
     
-    overallThroughput=`echo "scale=2;${overallThroughput}" | ${bc} `;
+    overallThroughput=`echo "scale=2;(${overallThroughput})/1" | ${bc} `;
     committedThroughput=`echo "scale=2;${committedThroughput}" | ${bc} `;
 
     updateLatency=`echo "scale=2;(${updateLatency})/${#clients[@]}" | ${bc}`;
@@ -161,26 +232,30 @@ function collectStats(){
     failedReadsRatio=`echo "scale=10;(${failedReadsRatio})/${#clients[@]}" | ${bc}`;
     timeoutRatio=`echo "scale=10;(${timeoutRatio})/${#clients[@]}" | ${bc}`;
 
-    certificationTime_readonly=`echo "scale=10;(${certificationTime_readonly})/${#servers[@]}" | ${bc}`;
-    certificationTime_update=`echo "scale=10;(${certificationTime_update})/${#servers[@]}" | ${bc}`;
+    certificationTime_readonly=`echo "scale=2;(${certificationTime_readonly})/${#servers[@]}" | ${bc}`;
+    certificationTime_update=`echo "scale=2;(${certificationTime_update})/${#servers[@]}" | ${bc}`;
+    certificationQueueingTime=`echo "scale=2;(${certificationQueueingTime})/${#servers[@]}" | ${bc}`;
+    applyingTransactionQueueingTime=`echo "scale=2;(${applyingTransactionQueueingTime})/${#servers[@]}" | ${bc}`;
+    castingLatency=`echo "scale=2;(${castingLatency})/${#servers[@]}" | ${bc}`;
+    votingQuorumLatency=`echo "scale=2;(${votingQuorumLatency})/${#servers[@]}" | ${bc}`;
 
-    executionTime_readonly=`echo "scale=10;(${executionTime_readonly})/${#clients[@]}" | ${bc}`;
-    executionTime_update=`echo "scale=10;(${executionTime_update})/${#clients[@]}" | ${bc}`;
-    terminationTime_readonly=`echo "scale=10;(${terminationTime_readonly})/${#clients[@]}" | ${bc}`;
-    terminationTime_update=`echo "scale=10;(${terminationTime_update})/${#clients[@]}" | ${bc}`;
 
+    executionTime_readonly=`echo "scale=2;(${executionTime_readonly})/${#clients[@]}" | ${bc}`;
+    executionTime_update=`echo "scale=2;(${executionTime_update})/${#clients[@]}" | ${bc}`;
+    terminationTime_readonly=`echo "scale=2;(${terminationTime_readonly})/${#clients[@]}" | ${bc}`;
+    terminationTime_update=`echo "scale=2;(${terminationTime_update})/${#clients[@]}" | ${bc}`;
+    votingTime=`echo "scale=2;(${votingTime})/${#clients[@]}" | ${bc}`;
     
-    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${overallThroughput}\t${committedThroughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${certificationTime_update}\t${certificationTime_readonly}\t${executionTime_update}\t${terminationTime_update}\t${executionTime_readonly}\t${terminationTime_readonly}"
+    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${overallThroughput}\t${committedThroughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime_update}\t${terminationTime_update}\t${executionTime_readonly}\t${terminationTime_readonly}\t${votingTime}\t${certificationTime_update}\t${certificationTime_readonly}\t${certificationQueueingTime}\t${applyingTransactionQueueingTime}\t${votingQuorumLatency}\t${castingLatency}"
 
 }
 
 trap "stopExp; wait; exit 255" SIGINT SIGTERM
 trap "dump; wait;" SIGQUIT
 
-
-# ##############
-# # Experience #
-# ##############
+ ##############
+ # Experience #
+ ##############
 let servercount=${#servers[@]}
 
 let consCount=${#cons[@]}-1
@@ -196,10 +271,20 @@ do
 	for t in ${thread}; 
 	do
 
+
+	#############WE LOOP HERE UNTIL CLAUNCHER_SUCCEED=1
+	CLAUNCHER_SUCCEED=3
+	while [ $CLAUNCHER_SUCCEED -eq 3 ]; do
 	# 0 - Starting the server
 
 	    echo "Starting servers ..."
 	    sed -i 's/-t/-load/g' configuration.sh
+	    sed -i "s/nthreads.*/nthreads=1/g" configuration.sh
+
+		syncConfig
+
+	    sleep 30
+
 	    ${scriptdir}/launcher.sh &
 
 
@@ -207,7 +292,7 @@ do
 	    echo "Loading phase ..."
 	    ${SSHCMD} ${clients[0]} "${scriptdir}/client.sh" > ${scriptdir}/loading
 
-	    sleep 60
+	    sleep 30
 
 	# 2 - Benchmarking phase
 
@@ -216,34 +301,44 @@ do
 
 	    sed -i "s/nthreads.*/nthreads=${t}/g" configuration.sh
 	    echo "using ${t} thread(s) per machine"   
-	    ${scriptdir}/clauncher.sh
+
+		syncConfig
+
+	    echo "Waiting Before Launching Clients"
+	    sleep 30
+	    echo "Launching Clients"
+
+	    /${scriptdir}/clauncher.sh
+	    CLAUNCHER_SUCCEED=$?
 
 	    stopExp
 
-	if $running_on_grid ; then
-		echo "trnasfering experiment files to the main launcher frontend..."
-		let sc=${#servers[@]}-1
-		for ii in `seq 0 $sc`;
-		do
-			scpServer=${servers[${ii}]}
-			scp ${scpServer}:~/jessy/scripts/${scpServer} .
-#			echo "scp command:" ${scpServer}":~/jessy/scripts/"${scpServer}
-		done
 
-		let cc=${#clients[@]}-1
-		for ii in `seq 0 $cc`;
-		do
-			scpClient=${clients[${ii}]}
-			scp ${scpClient}:~/jessy/scripts/${scpClient} .
-			scp ${scpClient}:~/jessy/scripts/${scpClient}.stout .
-			scp ${scpClient}:~/jessy/scripts/${scpClient}.sterr .
-		done
-	fi
+        if $running_on_grid ; then
+                sleep 30
+
+                echo "trnasfering experiment files to the main launcher frontend..."
+                let sc=${#servers[@]}-1
+                for ii in `seq 0 $sc`;
+                do
+                        scpServer=${servers[${ii}]}
+                        fetchExecutionResult ${scpServer}
+                done
+
+                let cc=${#clients[@]}-1
+                for ii in `seq 0 $cc`;
+                do
+                        scpClient=${clients[${ii}]}
+                        fetchExecutionResult ${scpClient}
+                done
+        fi
+
 
 	    echo "using ${t} thread(s) per machine is finished. Collecting stats"   
 	    collectStats >>  ${scriptdir}/results/${servercount}.txt
-		source collectMeasurements.sh
-	    sleep 10
+#               source collectMeasurements.sh
+
+	    sleep 30
 	    
 	done
 

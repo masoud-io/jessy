@@ -1,5 +1,9 @@
 #!/bin/sh
 
+#clauncher.sh timeout. Within this timeout, if the clauncher is not finished, it will be terminated and re-executed.
+#this is needed because jessy clients sometimes never finish.
+clauncherTimeout=2000
+
 #if it will be run on grid5k, set to true, otherwise, set to false.
 running_on_grid=false
 
@@ -29,8 +33,11 @@ server_machine_lub="2"
 # clients ( = client_machine * client_thread )
 client_machine_increment="1"
 
+#client_machine_glb = client_machine_lub_multiplier * number of servers
+client_machine_glb_multiplier="2" 
+
 #client_machine_lub = client_machine_lub_multiplier * number of servers
-client_machine_lub_multiplier="1" 
+client_machine_lub_multiplier="2" 
 
 client_thread_increment="1"
 client_thread_glb="2"
@@ -58,5 +65,5 @@ fi;
 if [[ ${system} == "jessy"  ]];
 then
     clientclass=com.yahoo.ycsb.JessyDBClient;
-    classpath=${scriptdir}/commons-lang.jar:${scriptdir}/log4j.jar:${scriptdir}/jessy.jar:${scriptdir}/fractal.jar:${scriptdir}/je.jar:${scriptdir}/concurrentlinkedhashmap.jar:${scriptdir}/netty.jar:${scriptdir}/high-scale-lib.jar;
+    classpath=${scriptdir}/commons-lang.jar:${scriptdir}/log4j.jar:${scriptdir}/jessy.jar:${scriptdir}/fractal.jar:${scriptdir}/je.jar:${scriptdir}/concurrentlinkedhashmap.jar:${scriptdir}/netty.jar:${scriptdir}/high-scale-lib.jar:${scriptdir}/db.jar;
 fi;
