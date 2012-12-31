@@ -1,6 +1,9 @@
 #config.properties
 #the hooks are defined in ConstantPool.java!!!
 
+# datastore_type: "hashmap" | "berkeleydb"
+datastore_type = hashmap
+
 #consistency type: "nmsi" | "si" | "ser" | "rc" | "psi" | "us" | 
 #"si2" snapshot isolation with Atomic-Multicast to every group
 #"nmsi2" non-monotonic snapshot isolation with GMUVector from [Peluso2012] 
