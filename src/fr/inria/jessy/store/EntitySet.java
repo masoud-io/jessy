@@ -92,7 +92,7 @@ public class EntitySet implements Messageable {
 		Iterator<? extends JessyEntity> itr = getEntities().iterator();
 		while (itr.hasNext()) {
 			JessyEntity temp = itr.next();
-			result = result + "--" + temp.getLocalVector();
+			result = result + "--" + temp.getKey() + "::" + temp.getLocalVector();
 		}
 
 		return result;

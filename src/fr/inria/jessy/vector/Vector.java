@@ -11,7 +11,7 @@ import com.sleepycat.persist.model.Persistent;
 import fr.inria.jessy.ConstantPool;
 
 @Persistent
-public abstract class Vector<K> extends ValueVector<K, Integer> implements
+public abstract class Vector<K> extends ValueVector<K, Integer> implements Cloneable,
 		Externalizable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;

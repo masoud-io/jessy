@@ -23,7 +23,7 @@ import fr.inria.jessy.communication.JessyGroupManager;
  * @param <K>
  */
 @Persistent
-public class VersionVector<K> extends Vector<K> implements Externalizable {
+public class VersionVector<K> extends Vector<K> implements Cloneable, Externalizable {
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
 	
@@ -66,9 +66,8 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 	/**
 	 * @inheritDoc
 	 * 
-	 *             TODO This implementation is not safe. It is only safe when
-	 *             all updated messages have been applied to local datastore!
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
@@ -111,5 +110,11 @@ public class VersionVector<K> extends Vector<K> implements Externalizable {
 			super.update(readSet);
 
 	}
+	
+	public VersionVector<K> clone() {
+		return (VersionVector<K>) super.clone();
+
+	}
+
 
 }

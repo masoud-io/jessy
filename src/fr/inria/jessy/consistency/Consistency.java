@@ -103,10 +103,22 @@ public abstract class Consistency {
 	public void postCommit(ExecutionHistory executionHistory) {
 		return;
 	}
+	
+	/**
+	 * Is called after a transaction aborts in a Jessy instance receiving votes regarding a transaction. 
+	 * This instance is usually the instance replicating an object modified inside the transactions. 
+	 * However, under SnapshotIsolation, all instances will receive votes, thus call this function.
+	 * 
+	 * @param executionHistory ExecutionHistory of the aborted transaction
+	 * @param vote The vote used during certification 
+	 */
+	public void postAbort(ExecutionHistory executionHistory, Vote Vote){
+		return;
+	}
 
 	/**
 	 * Is called after a vote is received, and before adding it to the voting
-	 * quorums.
+	 * quorum.
 	 */
 	public void voteReceived(Vote vote) {
 		return;
@@ -118,7 +130,7 @@ public abstract class Consistency {
 	 * 
 	 * <p>
 	 * A transaction can commit, if it receives a <i>yes</i> vote from at least
-	 * one jessy instance that replicates an object conerned by the transaction.
+	 * one jessy instance that replicates an object concerned by the transaction.
 	 * 
 	 * @param executionHistory
 	 * @return

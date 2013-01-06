@@ -7,6 +7,9 @@ import java.io.ObjectOutput;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.vector.VersionVector;
+
+import java.util.Comparator;
 
 /**
  * Used in the {@code Vote} for sending the new sequence number to the write
@@ -26,12 +29,18 @@ public class ParallelSnapshotIsolationPiggyback implements Externalizable {
 	public String wCoordinatorGroupName;
 
 	/**
-	 * Increamented sequenceNumber of the jessy instance of the group
+	 * Incremented sequenceNumber of the jessy instance of the group
 	 * {@code wCoordinatorGroupName}
 	 */
 	public Integer sequenceNumber;
 
 	public ExecutionHistory executionHistory;
+	
+	/**
+	 * This object is set to true if this piggyback is applied to {@link VersionVector#committedVTS}  
+	 * 
+	 */
+	public boolean isApplied =false;
 
 	@Deprecated
 	public ParallelSnapshotIsolationPiggyback() {
@@ -58,5 +67,17 @@ public class ParallelSnapshotIsolationPiggyback implements Externalizable {
 		out.writeObject(sequenceNumber);
 		out.writeObject(executionHistory);
 	}
+
+	
+	public static Comparator<ParallelSnapshotIsolationPiggyback> ParallelSnapshotIsolationPiggybackComparator=new Comparator<ParallelSnapshotIsolationPiggyback>(){
+
+		@Override
+		public int compare(ParallelSnapshotIsolationPiggyback o1,
+				ParallelSnapshotIsolationPiggyback o2) {
+			
+			return o1.sequenceNumber.compareTo(o2.sequenceNumber);
+		}
+		
+	};
 
 }

@@ -240,7 +240,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 						for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
 							if (req.getExecutionHistory().getTransactionHandler().equals(abortedTransactionHandler)){
 								garbageCollectJessyReplica(req);
-								applyTransactionsToDataStore.removeFromQueue(req);
+								if (applyTransactionsToDataStore!=null)
+									applyTransactionsToDataStore.removeFromQueue(req);
 								break;
 							}
 						}
@@ -651,6 +652,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					 * we can garbage collect right away, and exit.
 					 */
 					if (state==TransactionState.ABORTED_BY_VOTING || state ==TransactionState.ABORTED_BY_TIMEOUT){
+						jessy.getConsistency().postAbort(msg.getExecutionHistory(),vote);
 						measureCertificationTime(msg);
 						garbageCollectJessyReplica(msg);
 						return;
