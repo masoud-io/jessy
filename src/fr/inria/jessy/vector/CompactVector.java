@@ -29,7 +29,7 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	private List<K> keys;
 
 	/**
-	 * if true, then initliaze and serialize the
+	 * if true, then initialize and serialize the
 	 * {@code CompactVector#extraObject}, otherwise it skips the extraObject.
 	 */
 	private static boolean requireExtraObject;
@@ -48,7 +48,7 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 
 	public CompactVector() {
 		super(_bydefault);
-		keys = new ArrayList<K>();
+		keys = new ArrayList<K>(1);
 
 	}
 

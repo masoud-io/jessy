@@ -2,7 +2,6 @@ package com.yahoo.ycsb;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
@@ -28,7 +27,6 @@ public class JessyDBClient extends DB {
 
 	private static Jessy jessy;
 
-//	 FIXME merge this into init
 	static {
 		try {
 			if (USE_DIST_JESSY) {
@@ -41,21 +39,6 @@ public class JessyDBClient extends DB {
 			e.printStackTrace();
 		}
 	}
-
-//	public JessyDBClient() {
-//		super();
-//		 try {
-//		 if (USE_DIST_JESSY) {
-////		 jessy = DistributedJessy.getInstance();
-//			 jessy=new DistributedJessy(Thread.currentThread().getId());
-//		 } else {
-//		 jessy = LocalJessy.getInstance();
-//		 }
-//		 jessy.addEntity(YCSBEntity.class);
-//		 } catch (Exception e) {
-//		 e.printStackTrace();
-//		 }
-//	}
 
 	@Override
 	public void init() {
@@ -136,7 +119,7 @@ public class JessyDBClient extends DB {
 	public int readTransaction(final List<YCSBTransactionalReadRequest> readList) {
 		try {
 
-			Transaction trans = new Transaction(jessy) {
+			Transaction trans = new Transaction(jessy, readList.size(), 0,0) {
 				@Override
 				public ExecutionHistory execute() {
 					for (YCSBTransactionalReadRequest request : readList) {
@@ -148,7 +131,6 @@ public class JessyDBClient extends DB {
 								return null;
 							}
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -165,7 +147,6 @@ public class JessyDBClient extends DB {
 				return -1;
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return -1;
 		}
@@ -177,7 +158,7 @@ public class JessyDBClient extends DB {
 			final List<YCSBTransactionalUpdateRequest> updateList) {
 		try {
 
-			Transaction trans = new Transaction(jessy) {
+			Transaction trans = new Transaction(jessy, readList.size() + updateList.size(),updateList.size(),0 ) {
 				@Override
 				public ExecutionHistory execute() {
 					for (YCSBTransactionalReadRequest request : readList) {
@@ -189,7 +170,6 @@ public class JessyDBClient extends DB {
 								return null;
 							}
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -207,7 +187,6 @@ public class JessyDBClient extends DB {
 							write(en);
 
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -225,7 +204,6 @@ public class JessyDBClient extends DB {
 				return -1;
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return -1;
 		}
@@ -236,7 +214,7 @@ public class JessyDBClient extends DB {
 			final YCSBTransactionalCreateRequest createRequest) {
 		try {
 
-			Transaction trans = new Transaction(jessy) {
+			Transaction trans = new Transaction(jessy,0,0,1) {
 				@Override
 				public ExecutionHistory execute() {
 
@@ -257,7 +235,6 @@ public class JessyDBClient extends DB {
 				return -1;
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return -1;
 		}

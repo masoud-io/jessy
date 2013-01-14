@@ -236,4 +236,10 @@ public class Stock extends JessyEntity {
 		S_DATA = (String) in.readObject();
 
 	}
+
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
 }

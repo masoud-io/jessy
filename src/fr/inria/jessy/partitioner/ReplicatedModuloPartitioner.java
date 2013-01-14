@@ -175,7 +175,7 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 		
 	
 		//		ReplicatedModuloPartitioner assume that the group size is equal to 1, i.e. each group contains exactly one Jessy instance
-		if( ConstantPool.GROUP_SIZE!=1){
+		if( JessyGroupManager.getInstance().getGroupSize()!=1){
 			System.err.println("ReplicatedModuloPartitioner is used with GROUP_SIZE!=1, system will exit");
 			System.exit(1);
 		}	

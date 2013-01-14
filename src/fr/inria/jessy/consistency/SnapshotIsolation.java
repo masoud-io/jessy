@@ -21,6 +21,7 @@ public abstract class SnapshotIsolation extends Consistency {
 
 	public SnapshotIsolation(DataStore store) {
 		super(store);
+		Consistency.SEND_READSET_DURING_TERMINATION=false;
 	}
 
 	/**
@@ -31,15 +32,6 @@ public abstract class SnapshotIsolation extends Consistency {
 	public boolean certify(ExecutionHistory executionHistory) {
 
 		TransactionType transactionType = executionHistory.getTransactionType();
-
-		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ transactionType.toString());
-		logger.debug("ReadSet Vector"
-				+ executionHistory.getReadSet().getCompactVector().toString());
-		logger.debug("CreateSet Vectors"
-				+ executionHistory.getCreateSet().getCompactVector().toString());
-		logger.debug("WriteSet Vectors"
-				+ executionHistory.getWriteSet().getCompactVector().toString());
 
 		/*
 		 * if the transaction is a read-only transaction, it commits right away.
@@ -64,8 +56,8 @@ public abstract class SnapshotIsolation extends Consistency {
 		 * operations as update operations. Thus, we move them to the writeSet
 		 * List.
 		 */
-		executionHistory.getWriteSet().addEntity(
-				executionHistory.getCreateSet());
+		if (executionHistory.getCreateSet()!=null)
+			executionHistory.getWriteSet().addEntity(executionHistory.getCreateSet());
 
 		JessyEntity lastComittedEntity;
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
@@ -123,6 +115,7 @@ public abstract class SnapshotIsolation extends Consistency {
 	 * {@link lastCommittedTransactionSeqNumber} and {@link committedWritesets}
 	 * (3) the scalar vector of all updated or created entities
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void prepareToCommit(ExecutionHistory executionHistory) {
 

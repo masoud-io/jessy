@@ -24,8 +24,6 @@ import fr.inria.jessy.vector.VectorFactory;
  *         {@link String}
  */
 
-// FIXME transient field ?
-
 @Persistent
 public abstract class JessyEntity implements Externalizable, Cloneable {
 
@@ -92,9 +90,7 @@ public abstract class JessyEntity implements Externalizable, Cloneable {
 		this.localVector = localVector;
 	}
 
-	public void clearValue() {
-
-	}
+	public abstract void clearValue();
 
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
@@ -120,7 +116,6 @@ public abstract class JessyEntity implements Externalizable, Cloneable {
 			je.secondaryKey=this.secondaryKey;
 			
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

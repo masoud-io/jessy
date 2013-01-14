@@ -144,4 +144,10 @@ public class Warehouse extends JessyEntity {
 		W_TAX = (Double) in.readObject();
 		W_YTD = (Double) in.readObject();
 	}
+
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
 }

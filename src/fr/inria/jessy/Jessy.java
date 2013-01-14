@@ -419,6 +419,23 @@ public abstract class Jessy {
 				"Jessy has been accessed in non-transactional way. It cannot be accesesed transactionally");
 	}
 
+	public TransactionHandler startTransaction(int readOperations, int updateOperations, int createOperations) throws Exception {
+		if (transactionalAccess == ExecutionMode.UNDEFINED)
+			transactionalAccess = ExecutionMode.TRANSACTIONAL;
+
+		if (transactionalAccess == ExecutionMode.TRANSACTIONAL) {
+			TransactionHandler transactionHandler = new TransactionHandler();
+			ExecutionHistory executionHistory = new ExecutionHistory(
+					transactionHandler, readOperations, updateOperations, createOperations);
+			executionHistory.changeState(TransactionState.EXECUTING);
+			handler2executionHistory.put(transactionHandler, executionHistory);
+			return transactionHandler;
+
+		}
+		throw new Exception(
+				"Jessy has been accessed in non-transactional way. It cannot be accesesed transactionally");
+	}
+	
 	/**
 	 * Commit the open transaction, and garbage collect it.
 	 * 

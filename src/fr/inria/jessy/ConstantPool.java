@@ -2,6 +2,8 @@ package fr.inria.jessy;
 
 import java.util.concurrent.TimeUnit;
 
+import fr.inria.jessy.transaction.termination.DistributedTermination;
+
 import net.sourceforge.fractal.Messageable;
 
 /**
@@ -28,7 +30,7 @@ public class ConstantPool {
 	public static final int MAX_INTERGROUP_MESSAGE_DELAY = 3000;
 	public static final int CONSENSUS_LATENCY = 2000;
 	
-	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for marshaling unmarshaling facilities
+	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for marshalling unmarshalling facilities
 	
 	public static final boolean logging=false;
 
@@ -47,8 +49,6 @@ public class ConstantPool {
 	public static final UNICAST_MODE JESSY_REMOTE_READ_UNICST_MODE=UNICAST_MODE.NETTY;
 	public static final UNICAST_MODE JESSY_VOTING_PHASE_UNICST_MODE=UNICAST_MODE.NETTY;
 	
-	public static final int GROUP_SIZE = 1;
-
 	/**
 	 * Communication layer related constants
 	 */
@@ -73,6 +73,16 @@ public class ConstantPool {
 	public static final long JESSY_TRANSACTION_TERMINATION_TIMEOUT = 5000;
 	public static final TimeUnit JESSY_TRANSACTION_TERMINATION_TIMEOUT_TYPE = TimeUnit.MILLISECONDS;
 
+	/**
+	 * Specifies the size of <code>terminated</code> hashmap in {@link DistributedTermination}.
+	 * This hashmap is only used for checking newly received votes whether to add them to the voting quorum or not.
+	 * Of course, if the transaction is already terminated (some other members of a group already voted, 
+	 * thus the transaction is terminated), the vote shouldn't be added. 
+	 * However, choosing an infinite hashmap has its own memory problem. Thus, we should specify the size of the 
+	 * <code>terminated</code> hashmap.   
+	 */
+	public static final long JESSY_TERMINATED_TRANSACTIONS_LOG_SIZE=1000;
+		
 	/**
 	 * Specifies the threshold for ignoring the condition checks before applying
 	 * the propagation. NOTE: if the propagation is reliable broadcast, this
@@ -118,8 +128,8 @@ public class ConstantPool {
 	 * Config.property file constants
 	 */
 	public static final String CONFIG_PROPERTY = "config.property";
+	public static final String GROUP_SIZE = "group_size";
 	public static final String DATA_STORE_TYPE = "datastore_type";
-	public static final String VECTOR_TYPE = "vector_type";
 	public static final String CONSISTENCY_TYPE = "consistency_type";
 	public static final String PARTITIONER_TYPE = "partitioner_type";
 	public static final String RETRY_COMMIT = "retry_commit";

@@ -172,5 +172,11 @@ public class District extends JessyEntity {
 		D_YTD = (Double) in.readObject();
 		D_NEXT_O = (Integer) in.readObject();
 	}
+
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

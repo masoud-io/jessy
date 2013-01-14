@@ -26,22 +26,14 @@ public class Serializability extends Consistency {
 		super(dateStore);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean certify(ExecutionHistory executionHistory) {
 		TransactionType transactionType = executionHistory.getTransactionType();
 
-		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ transactionType.toString());
-		logger.debug("ReadSet Vector"
-				+ executionHistory.getReadSet().getCompactVector().toString());
-		logger.debug("CreateSet Vectors"
-				+ executionHistory.getCreateSet().getCompactVector().toString());
-		logger.debug("WriteSet Vectors"
-				+ executionHistory.getWriteSet().getCompactVector().toString());
-
 		/*
-		 * if the transaction is an initalization transaction, it first
-		 * increaments the vectors and then commits.
+		 * if the transaction is an initialization transaction, it first
+		 * increments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
 			for (JessyEntity tmp : executionHistory.getCreateSet()
@@ -63,75 +55,73 @@ public class Serializability extends Consistency {
 		 * If the transaction is not init, we consider the create operations as
 		 * update operations. Thus, we move them to the writeSet List.
 		 */
-		executionHistory.getWriteSet().addEntity(
-				executionHistory.getCreateSet());
+		if (executionHistory.getCreateSet()!=null)
+			executionHistory.getWriteSet().addEntity(executionHistory.getCreateSet());
 
 		JessyEntity lastComittedEntity;
 
 		/*
 		 * Firstly, the writeSet is checked.
 		 */
-		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
-			
-//			if (!manager.getPartitioner().isLocal(tmp.getKey()))
-//				continue;
-			
-			try {
-				lastComittedEntity = store
-						.get(new ReadRequest<JessyEntity>(
-								(Class<JessyEntity>) tmp.getClass(),
-								"secondaryKey", tmp.getKey(), null))
-						.getEntity().iterator().next();
+		if (executionHistory.getWriteSet()!=null){
+			for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
 
-				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
-					logger.warn("Certification fails for transaction "
-							+ executionHistory.getTransactionHandler().getId()
-							+ " because it has written " + tmp.getKey()
-							+ " with version " + tmp.getLocalVector()
-							+ " but the last committed version is : "
-							+ lastComittedEntity.getLocalVector());
-					return false;
+				try {
+					lastComittedEntity = store
+							.get(new ReadRequest<JessyEntity>(
+									(Class<JessyEntity>) tmp.getClass(),
+									"secondaryKey", tmp.getKey(), null))
+									.getEntity().iterator().next();
+
+					if (lastComittedEntity.getLocalVector().isCompatible(
+							tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
+						logger.warn("Certification fails for transaction "
+								+ executionHistory.getTransactionHandler().getId()
+								+ " because it has written " + tmp.getKey()
+								+ " with version " + tmp.getLocalVector()
+								+ " but the last committed version is : "
+								+ lastComittedEntity.getLocalVector());
+						return false;
+					}
+
+				} catch (NullPointerException e) {
+					// nothing to do.
+					// the key is simply not there.
 				}
 
-			} catch (NullPointerException e) {
-				// nothing to do.
-				// the key is simply not there.
 			}
-
 		}
 
 		/*
 		 * Secondly, the readSet is checked.
 		 */
-		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
-			
-//			if (!manager.getPartitioner().isLocal(tmp.getKey()))
-//				continue;
-			
-			try {
-				lastComittedEntity = store
-						.get(new ReadRequest<JessyEntity>(
-								(Class<JessyEntity>) tmp.getClass(),
-								"secondaryKey", tmp.getKey(), null))
-						.getEntity().iterator().next();
+		if (executionHistory.getReadSet()!=null){
+			for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
 
-				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
+				try {
+					lastComittedEntity = store
+							.get(new ReadRequest<JessyEntity>(
+									(Class<JessyEntity>) tmp.getClass(),
+									"secondaryKey", tmp.getKey(), null))
+									.getEntity().iterator().next();
 
-					logger.warn("Certification fails for transaction "
-							+ executionHistory.getTransactionHandler().getId()
-							+ " because it has written " + tmp.getKey()
-							+ " with version " + tmp.getLocalVector()
-							+ " but the last committed version is : "
-							+ lastComittedEntity.getLocalVector());
+					if (lastComittedEntity.getLocalVector().isCompatible(
+							tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 
-					return false;
+						logger.warn("Certification fails for transaction "
+								+ executionHistory.getTransactionHandler().getId()
+								+ " because it has written " + tmp.getKey()
+								+ " with version " + tmp.getLocalVector()
+								+ " but the last committed version is : "
+								+ lastComittedEntity.getLocalVector());
+
+						return false;
+					}
+
+				} catch (NullPointerException e) {
+					// nothing to do.
+					// the key is simply not there.
 				}
-
-			} catch (NullPointerException e) {
-				// nothing to do.
-				// the key is simply not there.
 			}
 
 		}
@@ -141,14 +131,30 @@ public class Serializability extends Consistency {
 		return true;
 	}
 
-	@Override
+	/**
+	 * TODO Consider all cases
+	 */
+	@Override	
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
-		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-				.getKeys(), history2.getReadSet().getKeys())
-				&& !CollectionUtils.isIntersectingWith(history2.getWriteSet()
-						.getKeys(), history1.getReadSet().getKeys());
+		boolean result=true;;
+		
+		if (history1.getReadSet()!=null && history2.getWriteSet()!=null){
+			result = !CollectionUtils.isIntersectingWith(history2.getWriteSet()
+					.getKeys(), history1.getReadSet().getKeys());
+		}
+		if (history1.getWriteSet()!=null && history2.getReadSet()!=null){
+			result = result && !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+					.getKeys(), history2.getReadSet().getKeys());
+		}
+		
+		return result;
+		
+//		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+//				.getKeys(), history2.getReadSet().getKeys())
+//				&& !CollectionUtils.isIntersectingWith(history2.getWriteSet()
+//						.getKeys(), history1.getReadSet().getKeys());
 
 	}
 	
@@ -173,13 +179,22 @@ public class Serializability extends Consistency {
 			keys.addAll(executionHistory.getWriteSet().getKeys());
 			keys.addAll(executionHistory.getCreateSet().getKeys());
 		}else if(target == ConcernedKeysTarget.SEND_VOTES){
-			keys.addAll(executionHistory.getReadSet().getKeys());
-			keys.addAll(executionHistory.getWriteSet().getKeys());
-			keys.addAll(executionHistory.getCreateSet().getKeys());
+			
+			if (executionHistory.getReadSet()!=null)
+				keys.addAll(executionHistory.getReadSet().getKeys());
+			
+			if (executionHistory.getWriteSet()!=null)
+				keys.addAll(executionHistory.getWriteSet().getKeys());
+			
+			if (executionHistory.getCreateSet()!=null)
+				keys.addAll(executionHistory.getCreateSet().getKeys());
 		}
 		else {
-			keys.addAll(executionHistory.getWriteSet().getKeys());
-			keys.addAll(executionHistory.getCreateSet().getKeys());
+			if (executionHistory.getWriteSet()!=null)
+				keys.addAll(executionHistory.getWriteSet().getKeys());
+			
+			if (executionHistory.getCreateSet()!=null)
+				keys.addAll(executionHistory.getCreateSet().getKeys());
 		}
 		return keys;
 	}

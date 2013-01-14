@@ -1,7 +1,5 @@
 package fr.inria.jessy.utils;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 

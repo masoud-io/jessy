@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.VersionVector;
 
@@ -104,8 +105,6 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 			 * 2)committedVTS[group]>sequenceNumber (in order to ensure that all
 			 * transactions are serially applied)
 			 */
-			CompactVector<String> startVTS = executionHistory.getReadSet()
-					.getCompactVector();
 
 			if (VersionVector.committedVTS
 					.getValue(pb.wCoordinatorGroupName) < pb.sequenceNumber - 1){
@@ -124,24 +123,33 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 				return;
 			}
 
-			if (VersionVector.committedVTS.compareTo(startVTS) < 0	) {
-				/*
-				 * We have to wait until committedVTS becomes updated through
-				 * propagation.
-				 */
-				if (ConstantPool.logging)
-					logger.error("**** Transaction "
-							+ pb.executionHistory.getTransactionHandler().getId() + " wants to update " + pb.wCoordinatorGroupName
-							+ " : " + pb.sequenceNumber + " while current sequence number is " + VersionVector.committedVTS.getValue(pb.wCoordinatorGroupName));
+			/*
+			 * Readset is null in case of init transaction. Thus, we need to ignore init transactions for this test.
+			 */
+			if (executionHistory.getTransactionType()!=TransactionType.INIT_TRANSACTION){
+				
+				CompactVector<String> startVTS = executionHistory.getReadSet()
+						.getCompactVector();
 
-				piggybackQueue.offer(pb);
+				if (VersionVector.committedVTS.compareTo(startVTS) < 0	) {
+					/*
+					 * We have to wait until committedVTS becomes updated through
+					 * propagation.
+					 */
+					if (ConstantPool.logging)
+						logger.error("**** Transaction "
+								+ pb.executionHistory.getTransactionHandler().getId() + " wants to update " + pb.wCoordinatorGroupName
+								+ " : " + pb.sequenceNumber + " while current sequence number is " + VersionVector.committedVTS.getValue(pb.wCoordinatorGroupName));
 
-				synchronized(VersionVector.committedVTS){
-					VersionVector.committedVTS.wait();
+					piggybackQueue.offer(pb);
+
+					synchronized(VersionVector.committedVTS){
+						VersionVector.committedVTS.wait();
+					}
+
+					return;
+
 				}
-
-				return;
-
 			}
 
 			synchronized (VersionVector.committedVTS) {

@@ -38,8 +38,14 @@ public class EntitySet implements Messageable {
 
 	private CompactVector<String> compactVector;
 
+	
 	public EntitySet() {
 		entities = new HashMap<String, JessyEntity>();
+		compactVector = new CompactVector<String>();
+	}
+	
+	public EntitySet(int initialCapacity) {
+		entities = new HashMap<String, JessyEntity>(initialCapacity);
 		compactVector = new CompactVector<String>();
 	}
 

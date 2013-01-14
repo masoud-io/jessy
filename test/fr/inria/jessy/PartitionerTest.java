@@ -15,6 +15,8 @@ public class PartitionerTest {
 	
 	@BeforeClass
 	public static void initGroups(){
+		int groupSize=1;
+		
 		Membership membership = new Membership();
 		membership.addNode(1,"1");
 		membership.addNode(2,"2");
@@ -23,7 +25,7 @@ public class PartitionerTest {
 		membership.dispatchPeers(
 				ConstantPool.JESSY_SERVER_GROUP,
 				ConstantPool.JESSY_SERVER_PORT,
-				ConstantPool.GROUP_SIZE);
+				groupSize);
 		partitioner = new KeySpacePartitioner(new Keyspace("test#for###the######fun",UNIFORM));
 	}
 	

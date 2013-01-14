@@ -101,6 +101,14 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		executionStartTime = System.nanoTime();
 		totalCount.incr();
 	}
+	
+	public Transaction(Jessy jessy, int readOperations, int updateOperations, int createOperations) throws Exception {
+		this.jessy = jessy;
+		this.transactionHandler = jessy.startTransaction(readOperations,updateOperations,createOperations);
+		this.isQuery = true;
+		executionStartTime = System.nanoTime();
+		totalCount.incr();
+	}
 
 	/**
 	 * Execute the transaction logic.

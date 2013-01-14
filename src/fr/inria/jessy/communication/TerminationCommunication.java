@@ -45,6 +45,7 @@ public abstract class TerminationCommunication {
 			boolean isCertifyAtCoordinator, int coordinatorSwid,
 			String coordinatorHost) {
 
+
 		mCastStream.multicast(voteMessage);
 		if (!isCertifyAtCoordinator) {
 			if (ConstantPool.JESSY_VOTING_PHASE_UNICST_MODE == UNICAST_MODE.FRACTAL) {

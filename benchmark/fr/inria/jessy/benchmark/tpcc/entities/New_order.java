@@ -81,6 +81,12 @@ public class New_order extends JessyEntity {
 		NO_D_ID = (String) in.readObject();
 		NO_W_ID = (String) in.readObject();
 	}
+
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
 }
 
 

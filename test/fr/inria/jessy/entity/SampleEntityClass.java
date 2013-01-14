@@ -54,5 +54,11 @@ public class SampleEntityClass extends JessyEntity {
 		super.readExternal(in);
 		data = (String) in.readObject();
 	}
+
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

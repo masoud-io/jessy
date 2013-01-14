@@ -11,8 +11,9 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar" sourcepath="/local/msaeida/JavaPackages/apache-log4j-1.2.16 (2)"/>
 	<classpathentry kind="lib" path="lib/netty-3.5.7.Final.jar" sourcepath="/local/msaeida/JavaPackages/netty-3.5.7.Final"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/high-scale-lib.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-mini-1.9.5.jar"/>
 	<classpathentry kind="lib" path="lib/db.jar"/>
+	<classpathentry kind="lib" path="lib/high-scale-lib.jar"/>
+	<classpathentry kind="lib" path="lib/concurrentlinkedhashmap-lru-1.3.2.jar" sourcepath="/local/msaeida/JavaPackages/concurrentlinkedhashmap/src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
