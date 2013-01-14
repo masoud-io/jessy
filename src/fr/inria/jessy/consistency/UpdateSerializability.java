@@ -28,10 +28,23 @@ public abstract class UpdateSerializability extends Consistency {
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
-		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-				.getKeys(), history2.getReadSet().getKeys())
-				&& !CollectionUtils.isIntersectingWith(history2.getWriteSet()
-						.getKeys(), history1.getReadSet().getKeys());
+		boolean result=true;;
+		
+		if (history1.getReadSet()!=null && history2.getWriteSet()!=null){
+			result = !CollectionUtils.isIntersectingWith(history2.getWriteSet()
+					.getKeys(), history1.getReadSet().getKeys());
+		}
+		if (history1.getWriteSet()!=null && history2.getReadSet()!=null){
+			result = result && !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+					.getKeys(), history2.getReadSet().getKeys());
+		}
+		
+		return result;
+		
+//		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+//				.getKeys(), history2.getReadSet().getKeys())
+//				&& !CollectionUtils.isIntersectingWith(history2.getWriteSet()
+//						.getKeys(), history1.getReadSet().getKeys());
 
 	}
 	
@@ -66,7 +79,9 @@ public abstract class UpdateSerializability extends Consistency {
 			 * an object read/written by the transaction, all of them should
 			 * participate in the voting phase, and send their votes.
 			 */
-			keys.addAll(executionHistory.getReadSet().getKeys());
+			if (executionHistory.getTransactionType()!=TransactionType.INIT_TRANSACTION)
+				keys.addAll(executionHistory.getReadSet().getKeys());
+			
 			keys.addAll(executionHistory.getWriteSet().getKeys());
 			keys.addAll(executionHistory.getCreateSet().getKeys());
 			return keys;

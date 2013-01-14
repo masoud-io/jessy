@@ -160,4 +160,10 @@ public class Order_line extends JessyEntity {
 		OL_AMOUNT = (Double) in.readObject();
 		OL_DIST_INFO = (String) in.readObject();
 	}
+
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
 }

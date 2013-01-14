@@ -135,4 +135,10 @@ public class Order extends JessyEntity {
 		O_OL_CNT = (Integer) in.readObject();
 		O_ALL_LOCAL = (Integer) in.readObject();
 	}
+
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
 }

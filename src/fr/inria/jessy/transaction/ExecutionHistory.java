@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import net.sourceforge.fractal.Messageable;
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 
@@ -58,6 +59,8 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 	private String coodinatorHost;
 
 	private TransactionState transactionState = TransactionState.NOT_STARTED;
+	
+	private TransactionType transactionType=null;
 
 	/**
 	 * readSet and writeSet to store read and written entities
@@ -72,10 +75,32 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 	public ExecutionHistory() {
 	}
 
+	
 	public ExecutionHistory(TransactionHandler th) {
 		readSet = new EntitySet();
 		writeSet = new EntitySet();
 		createSet = new EntitySet();
+		
+		transactionHandler = th;
+		certifyAtCoordinator = false;
+	}
+	
+	public ExecutionHistory(TransactionHandler th,  int readOperations, int updateOperations, int createOperations) {
+		readSet = new EntitySet(readOperations);
+
+		writeSet = new EntitySet(updateOperations);
+
+		createSet = new EntitySet(createOperations);
+		
+		if (createOperations > 0 && readOperations == 0 && updateOperations==0)
+			transactionType=TransactionType.INIT_TRANSACTION;
+		else if (updateOperations > 0 && readOperations == 0)
+			transactionType=TransactionType.BLIND_WRITE;
+		else if (updateOperations == 0 && createOperations==0)
+			transactionType=TransactionType.READONLY_TRANSACTION;
+		else
+			transactionType=TransactionType.UPDATE_TRANSACTION;
+		
 		transactionHandler = th;
 		certifyAtCoordinator = false;
 	}
@@ -121,16 +146,28 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 	}
 
 	public TransactionType getTransactionType() {
-		if (createSet.size() > 0 && readSet.size() == 0)
-			return TransactionType.INIT_TRANSACTION;
-		else if (writeSet.size() > 0 && readSet.size() == 0)
-			return TransactionType.BLIND_WRITE;
-		else if (writeSet.size() == 0)
-			return TransactionType.READONLY_TRANSACTION;
+		if (transactionType!=null)
+			return transactionType;
 		else
-			return TransactionType.UPDATE_TRANSACTION;
+			return setAndGetTransactionType();
 	}
 
+	private TransactionType setAndGetTransactionType(){
+		if (transactionType!=null)
+			return transactionType;
+		
+		if (createSet.size() > 0 && readSet.size() == 0)
+			transactionType= TransactionType.INIT_TRANSACTION;
+		else if (writeSet.size() > 0 && readSet.size() == 0)
+			transactionType= TransactionType.BLIND_WRITE;
+		else if (writeSet.size() == 0)
+			transactionType= TransactionType.READONLY_TRANSACTION;
+		else
+			transactionType= TransactionType.UPDATE_TRANSACTION;
+		
+		return transactionType;
+	}
+	
 	public TransactionState getTransactionState() {
 		return transactionState;
 	}
@@ -186,50 +223,62 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 
 		transactionHandler = (TransactionHandler) in.readObject();
 		transactionState = (TransactionState) in.readObject();
+		transactionType = (TransactionType) in.readObject();
+		
 		certifyAtCoordinator = in.readBoolean();
 		if (!certifyAtCoordinator) {
 			coordinatorSwid = in.readInt();
 			coodinatorHost = (String) in.readObject();
+		}		
+		
+		if(getTransactionType()==TransactionType.READONLY_TRANSACTION){
+			readSet = (EntitySet) in.readObject();
 		}
-
-		createSet = (EntitySet) in.readObject();
-		if (createSet == null)
-			createSet = new EntitySet();
-
-		writeSet = (EntitySet) in.readObject();
-		if (writeSet == null)
-			writeSet = new EntitySet();
-
-		readSet = (EntitySet) in.readObject();
-		if (readSet == null)
-			readSet = new EntitySet();
+		else if (getTransactionType()==TransactionType.UPDATE_TRANSACTION){
+			writeSet = (EntitySet) in.readObject();
+			createSet = (EntitySet) in.readObject();
+			if (Consistency.SEND_READSET_DURING_TERMINATION)
+				readSet = (EntitySet) in.readObject();
+		}
+		else if (getTransactionType()==TransactionType.INIT_TRANSACTION){
+			writeSet = (EntitySet) in.readObject();
+			createSet = (EntitySet) in.readObject();
+		}
+		else if (getTransactionType()==TransactionType.BLIND_WRITE){
+			writeSet = (EntitySet) in.readObject();
+		}
 
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
+		setAndGetTransactionType();
 
 		out.writeObject(transactionHandler);
 		out.writeObject(transactionState);
+		out.writeObject(transactionType);
+		
 		out.writeBoolean(certifyAtCoordinator);
 		if (!certifyAtCoordinator) {
 			out.writeInt(coordinatorSwid);
 			out.writeObject(coodinatorHost);
 		}
 
-		if (createSet.size() == 0)
-			out.writeObject(null);
-		else
-			out.writeObject(createSet);
-
-		if (writeSet.size() == 0)
-			out.writeObject(null);
-		else
-			out.writeObject(writeSet);
-
-		if (readSet.size() == 0)
-			out.writeObject(null);
-		else
+		if(getTransactionType()==TransactionType.READONLY_TRANSACTION){
 			out.writeObject(readSet);
+		}
+		else if (getTransactionType()==TransactionType.UPDATE_TRANSACTION){
+			out.writeObject(writeSet);
+			out.writeObject(createSet);
+			if (Consistency.SEND_READSET_DURING_TERMINATION)
+				out.writeObject(readSet);
+		}
+		else if (getTransactionType()==TransactionType.INIT_TRANSACTION){
+			out.writeObject(writeSet);
+			out.writeObject(createSet);
+		}
+		else if (getTransactionType()==TransactionType.BLIND_WRITE){
+			out.writeObject(writeSet);
+		}
 
 	}
 

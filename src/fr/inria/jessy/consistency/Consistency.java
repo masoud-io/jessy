@@ -18,6 +18,14 @@ public abstract class Consistency {
 	public static enum ConcernedKeysTarget {
 		TERMINATION_CAST, RECEIVE_VOTES, SEND_VOTES
 	};
+	
+	
+	/**
+	 * if set to true, the readset will be sent along with the writeset and createset to all jessy instances during the
+	 * termination phase. Otherwise, it will be avoided. Avoiding to send readset clearly affects the serialization and unserialization
+	 * costs. For example, this variable is set to false in RC and SI.
+	 */
+	public static boolean SEND_READSET_DURING_TERMINATION=true;
 
 	protected DataStore store;
 	protected TerminationCommunication terminationCommunication;

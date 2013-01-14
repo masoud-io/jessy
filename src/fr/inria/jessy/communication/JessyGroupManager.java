@@ -76,6 +76,11 @@ public class JessyGroupManager {
 	 * entity replicas
 	 */
 	private boolean isProxy;
+	
+	/**
+	 * The number of processes dedicated to each group.
+	 */
+	private int groupSize=0;
 
 	private JessyGroupManager() {
 
@@ -84,6 +89,8 @@ public class JessyGroupManager {
 			String fractalFile = Configuration
 					.readConfig(ConstantPool.FRACTAL_FILE);
 
+
+			
 			/*
 			 * Initialize Fractal and create the replica groups
 			 */
@@ -92,7 +99,7 @@ public class JessyGroupManager {
 			fractal.membership
 			.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP,
 					ConstantPool.JESSY_SERVER_PORT,
-					ConstantPool.GROUP_SIZE);
+					getGroupSize());
 			replicaGroups = new ArrayList<Group>(
 					fractal.membership
 							.allGroups(ConstantPool.JESSY_SERVER_GROUP));
@@ -207,5 +214,20 @@ public class JessyGroupManager {
 	
 	public Membership getMembership(){
 		return fractal.getMembership();
+	}
+	
+	public int getGroupSize(){
+		if (groupSize>0)
+			return groupSize;
+
+
+		String strGroupSize=Configuration.readConfig(ConstantPool.GROUP_SIZE);
+		if (strGroupSize==null || strGroupSize.equals(""))
+			groupSize=1;
+		else
+			groupSize= Integer.parseInt(strGroupSize);
+
+		return groupSize;
+
 	}
 }

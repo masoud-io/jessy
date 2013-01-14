@@ -95,7 +95,7 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,
 	 */
 
 	public ValueVector(V bydefault) {
-		this.map = new HashMap<K, V>();
+		this.map = new HashMap<K, V>(1);
 		this.bydefault = bydefault;
 	}
 

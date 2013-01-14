@@ -106,15 +106,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	public boolean certify(ExecutionHistory executionHistory) {
 		TransactionType transactionType = executionHistory.getTransactionType();
 
-		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ transactionType.toString());
-		logger.debug("ReadSet Vector"
-				+ executionHistory.getReadSet().getCompactVector().toString());
-		logger.debug("CreateSet Vectors"
-				+ executionHistory.getCreateSet().getCompactVector().toString());
-		logger.debug("WriteSet Vectors"
-				+ executionHistory.getWriteSet().getCompactVector().toString());
-
 		/*
 		 * if the transaction is a read-only transaction, it commits right away.
 		 */
@@ -164,7 +155,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 					logger.error("Aborting a transaction because for key " + tmp.getKey() + "local vector is "
 							+ tmp.getLocalVector()
 							+ " and last committed is "
-							+ lastComittedEntity.getLocalVector() + " for transaction" + executionHistory.getTransactionHandler() + " read set is " + executionHistory.getReadSet());
+							+ lastComittedEntity.getLocalVector() + " for transaction" + executionHistory.getTransactionHandler());
 
 					return false;
 				}

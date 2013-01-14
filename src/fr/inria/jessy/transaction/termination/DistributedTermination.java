@@ -17,8 +17,9 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
-import org.cliffc.high_scale_lib.NonBlockingHashtable;
 import org.jboss.netty.channel.Channel;
+
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
@@ -84,8 +85,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	
 	/**
 	 * Terminated transactions
-	 */
-	private Map<TransactionHandler, Integer> terminated;
+	 */	
+	private ConcurrentLinkedHashMap<UUID, Object> terminated;
+	private static final Object dummyObject=new Object();
 
 	private static boolean reInitProbes=true;
 	
@@ -165,7 +167,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
 		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 
-		terminated = new NonBlockingHashtable<TransactionHandler, Integer>();
+		terminated = new ConcurrentLinkedHashMap.Builder<UUID, Object>()
+				.maximumWeightedCapacity(ConstantPool.JESSY_TERMINATED_TRANSACTIONS_LOG_SIZE)
+				.build();
 		
 		sManager=new UnicastServerManager(this, ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT);
 		
@@ -203,7 +207,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			logger.error("got a VoteMessage from " + vote.getVoterGroupName()
 					+ " for " + vote.getTransactionHandler().getId());
 
-		if (terminated.containsKey(vote.getTransactionHandler()))
+		if (terminated.containsKey(vote.getTransactionHandler().getId()))
 			return;
 		addVote(vote);		
 	}
@@ -221,7 +225,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 			castLatency.add(System.currentTimeMillis()-terminateRequestMessage.startCasting);
 			if (reInitProbes){
-				if (terminateRequestMessage.getExecutionHistory().getCreateSet().size()==0)
+				if (terminateRequestMessage.getExecutionHistory().getCreateSet()==null ||
+						terminateRequestMessage.getExecutionHistory().getCreateSet().size()==0)
 					initProbesForExecution();
 			}
 			
@@ -265,7 +270,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				logger.debug("got a VoteMessage from " + vote.getVoterGroupName()
 					+ " for " + vote.getTransactionHandler().getId());
 
-			if (terminated.containsKey(vote.getTransactionHandler()))
+			if (terminated.containsKey(vote.getTransactionHandler().getId()))
 				return;
 			addVote(vote);
 
@@ -325,7 +330,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		ExecutionHistory executionHistory = msg.getExecutionHistory();
 
 		TransactionHandler th = executionHistory.getTransactionHandler();
-		assert !terminated.containsKey(th);
+		assert !terminated.containsKey(th.getId());
 
 		if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
 
@@ -361,7 +366,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	/**
 	 * Garbage collect all concurrent hash maps entries for the given
 	 * {@code transactionHandler}
-	 * This method is executed by both all Jessy instances. I.e., it is also executed at the jessy proxy.
+	 * This method is executed by both Jessy instances (Jessy Replica and Jessy Proxy).
 	 * 
 	 * @param transactionHandler
 	 *            The transactionHandler to be garbage collected.
@@ -374,7 +379,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			terminationRequests.remove(transactionHandler);
 			votingQuorums.remove(transactionHandler);
 
-			terminated.put(transactionHandler, 0);
+			terminated.put(transactionHandler.getId(),dummyObject);
 		}
 		catch(Exception ex){
 			System.out.println("Garbage collecting cannot be done!");

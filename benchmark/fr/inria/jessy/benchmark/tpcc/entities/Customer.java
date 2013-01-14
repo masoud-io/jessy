@@ -295,5 +295,11 @@ public class Customer extends JessyEntity implements Externalizable{
 		out.writeObject(C_DATA);
 	}
 
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }

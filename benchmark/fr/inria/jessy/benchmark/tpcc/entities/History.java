@@ -139,6 +139,12 @@ public class History extends JessyEntity {
 		H_DATA = (String) in.readObject();
 	}
 
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
 
 

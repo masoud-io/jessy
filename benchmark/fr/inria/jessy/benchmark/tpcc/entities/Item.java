@@ -107,4 +107,10 @@ public class Item extends JessyEntity {
 		I_DATA = (String) in.readObject();
 	}
 
+	@Override
+	public void clearValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

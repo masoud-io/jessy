@@ -23,8 +23,8 @@ retry_commit=true
 
 fractal_file=myfractal.xml
 
-#if true, commutative transaction will terminate in parallel.
-check_commutativity=true
+#group_size: Number of processes per group
+group_size = 1
 
 #nomber of warehouses in TPC-C. 10 is the default
 warehouses_number = 1
