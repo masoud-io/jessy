@@ -83,13 +83,24 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 *             orders on s1 and s2, and version vector cannot distinguish
 	 *             this re-ordering, it can lead to some strange behavior.
 	 *             (i.e., reading inconsistent snapshots!)
+	 *             
+	 *             <p>
+	 *             Note: if the group size is greater than 1, transactions cannot commute under any condition.
+	 *             Because, sequenceNumber is assigned to a transaction in {@link Consistency#createCertificationVote(ExecutionHistory)}.
+	 *             Now if two transactions T1 and T2 that does not have any conflict run in P1 and P2 (in group g1) concurrently,
+	 *             then they can end up having different sequence numbers in different jessy instances.
+	 *             For example, T1 and T2 can have sequenceNumbers 1 and 2 respectively in P1, and 
+	 *             they can have sequenceNumbers 2 and 1 in P2 respectively. 
 	 */
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
-		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-				.getKeys(), history2.getWriteSet().getKeys());
+		if (manager.getGroupSize()==1)		
+			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+					.getKeys(), history2.getWriteSet().getKeys());
+		else
+			return false;
 
 	}
 	
@@ -218,7 +229,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			 * Wait until its conditions holds true, and then update the
 			 * CommittedVTS
 			 */
-			applyPiggyback.get(pb.wCoordinatorGroupName).syncApply(pb);
+			applyPiggyback.get(pb.getwCoordinatorGroupName()).syncApply(pb);
 
 			/*
 			 * updatedVector is a new vector. It will be used as a new vector
@@ -227,9 +238,9 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			 * <p> The update takes place according to the Walter system [Serrano2011]
 			 */
 
-			int seqNo=pb.sequenceNumber;
+			int seqNo=pb.getSequenceNumber();
 			VersionVector<String> updatedVector = new VersionVector<String>(
-					pb.wCoordinatorGroupName, seqNo);
+					pb.getwCoordinatorGroupName(), seqNo);
 
 			for (JessyEntity entity : executionHistory.getWriteSet()
 					.getEntities()) {
@@ -285,6 +296,15 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		}
 	}
 	
+	/**
+	 * If the transaction is aborted, then send the piggyback to 
+	 * others, so they can update their commitVTS.
+	 * Otherwise, the execution will halt because they cannot apply newly received piggybacks
+	 * since this transaction's piggyback is missing.
+	 * 
+	 * For its self, it simply calls the learn method, and doesn't go through the network layer
+	 * because of performance issues.
+	 */
 	@Override
 	public void postAbort(ExecutionHistory executionHistory, Vote vote){
 		
@@ -297,13 +317,23 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		
 		Set<String> dest = new HashSet<String>();
 		for (Group group : manager.getReplicaGroups()){
-			dest.add(group.name());
+			if (!manager.getMyGroup().name().equals(group))
+				dest.add(group.name());
 		}
 		
 		ParallelSnapshotIsolationPropagateMessage msg = new ParallelSnapshotIsolationPropagateMessage(
 				pb, dest, manager.getMyGroup().name(),
 				manager.getSourceId());
+		/*
+		 * Send to every other groups except myself
+		 */
 		propagation.propagate(msg);
+		
+
+		/*
+		 * send to myself
+		 */
+		learn(null, msg);
 		
 	}
 
@@ -319,7 +349,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	public void learn(Stream s, Serializable v) {
 		if (v instanceof ParallelSnapshotIsolationPropagateMessage) {
 			ParallelSnapshotIsolationPropagateMessage msg = (ParallelSnapshotIsolationPropagateMessage) v;
-			applyPiggyback.get(msg.getParallelSnapshotIsolationPiggyback().wCoordinatorGroupName).asyncApply(msg.getParallelSnapshotIsolationPiggyback());
+			applyPiggyback.get(msg.getParallelSnapshotIsolationPiggyback().getwCoordinatorGroupName()).asyncApply(msg.getParallelSnapshotIsolationPiggyback());
 
 		}
 	}

@@ -5,7 +5,6 @@ import java.util.concurrent.PriorityBlockingQueue;
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.VersionVector;
@@ -29,6 +28,14 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 	}
 
 	public void asyncApply(ParallelSnapshotIsolationPiggyback piggyback) {
+		/*
+		 * If group size is greater than 1, then it can be the case where this node 
+		 * has already received a piggyback from another member of the group.
+		 * Thus, we can ignore this one. 
+		 */
+		if (VersionVector.committedVTS.getValue(piggyback.getwCoordinatorGroupName()) >= piggyback.getSequenceNumber()) {
+			return;
+		}
 		addToQueue(piggyback);
 	}
 
@@ -37,7 +44,7 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 		synchronized(piggyback){
 			try {
 				addToQueue(piggyback);
-				if (!piggyback.isApplied)
+				if (!piggyback.isApplied())
 					piggyback.wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -82,18 +89,18 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 		try{
 
 
-			if (VersionVector.committedVTS.getValue(pb.wCoordinatorGroupName) > pb.sequenceNumber) {
+			if (VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()) > pb.getSequenceNumber()) {
 				/*
 				 * If it has been applied before, ignore this one.
 				 * 
 				 * In theory, this if must never occur.
 				 */
-				logger.error("Transaction "+ pb.executionHistory.getTransactionHandler().getId()+ " wants to update "+ pb.wCoordinatorGroupName
-						+ " : "+ pb.sequenceNumber+ " while current sequence number is "+ VersionVector.committedVTS.getValue(pb.wCoordinatorGroupName));
+				if (ConstantPool.logging)
+					logger.error("Transaction "+ pb.getTransactionHandler().getId()+ " wants to update "+ pb.getwCoordinatorGroupName()
+							+ " : "+ pb.getSequenceNumber()+ " while current sequence number is "+ VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()));
 				return;
 			}
 
-			ExecutionHistory executionHistory = pb.executionHistory;
 
 			/*
 			 * Two conditions should be held before applying the updates. Figure 13
@@ -106,13 +113,13 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 			 * transactions are serially applied)
 			 */
 
-			if (VersionVector.committedVTS
-					.getValue(pb.wCoordinatorGroupName) < pb.sequenceNumber - 1){
+			if ((VersionVector.committedVTS
+					.getValue(pb.getwCoordinatorGroupName()) < pb.getSequenceNumber()- 1) && (piggybackQueue.size()<1000)){
 				
 				if (ConstantPool.logging)
 					logger.error("late sequence: Transaction "
-							+ pb.executionHistory.getTransactionHandler().getId() + " wants to update " + pb.wCoordinatorGroupName
-							+ " : " + pb.sequenceNumber + " while current sequence number is " + VersionVector.committedVTS.getValue(pb.wCoordinatorGroupName));
+							+ pb.getTransactionHandler().getId() + " wants to update " + pb.getwCoordinatorGroupName()
+							+ " : " + pb.getSequenceNumber()+ " while current sequence number is " + VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()));
 
 				piggybackQueue.offer(pb);
 
@@ -126,10 +133,9 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 			/*
 			 * Readset is null in case of init transaction. Thus, we need to ignore init transactions for this test.
 			 */
-			if (executionHistory.getTransactionType()!=TransactionType.INIT_TRANSACTION){
+			if (pb.getTransactionType()!=TransactionType.INIT_TRANSACTION){
 				
-				CompactVector<String> startVTS = executionHistory.getReadSet()
-						.getCompactVector();
+				CompactVector<String> startVTS = pb.getReadsetCompactVector();
 
 				if (VersionVector.committedVTS.compareTo(startVTS) < 0	) {
 					/*
@@ -138,8 +144,8 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 					 */
 					if (ConstantPool.logging)
 						logger.error("**** Transaction "
-								+ pb.executionHistory.getTransactionHandler().getId() + " wants to update " + pb.wCoordinatorGroupName
-								+ " : " + pb.sequenceNumber + " while current sequence number is " + VersionVector.committedVTS.getValue(pb.wCoordinatorGroupName));
+								+ pb.getTransactionHandler().getId() + " wants to update " + pb.getwCoordinatorGroupName()
+								+ " : " + pb.getSequenceNumber()+ " while current sequence number is " + VersionVector.committedVTS.getValue(pb. getwCoordinatorGroupName()));
 
 					piggybackQueue.offer(pb);
 
@@ -153,17 +159,17 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 			}
 
 			synchronized (VersionVector.committedVTS) {
-				if (VersionVector.committedVTS.getValue(pb.wCoordinatorGroupName) > pb.sequenceNumber) {
+				if (VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()) > pb.getSequenceNumber()) {
 					return;
 				}
-				VersionVector.committedVTS.setVector(pb.wCoordinatorGroupName,
-						(int)pb.sequenceNumber);
+				VersionVector.committedVTS.setVector(pb.getwCoordinatorGroupName(),
+						(int)pb.getSequenceNumber());
 
 				VersionVector.committedVTS.notifyAll();
 			}
 
 			synchronized(pb){
-				pb.isApplied=true;
+				pb.setApplied(true);
 				pb.notify();
 			}
 			
