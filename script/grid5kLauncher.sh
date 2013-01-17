@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 rm -f *.fr
 running_on_grid=true
 
@@ -21,6 +23,56 @@ function stopExecution(){
 
         exit
 }
+
+function reserveNodes(){
+
+reservationFail=true;
+increment=0
+
+next=$(date '+%Y-%m-%d %H:%M:%S')
+
+while [  $reservationFail == "true" ]; do
+        
+	echo "trying to reserve nodes at... ""$next"
+
+	oargridsub -w '0:05:00' $reservation -s "$next" > tmp
+
+	#retreving batch and grid reservation IDs
+	RES_ID=$(grep "Grid reservation id" tmp | cut -f2 -d=)
+	OAR_JOB_KEY_PATH=$(grep "SSH KEY" tmp | cut -b 25-)
+
+	if [ -z "$RES_ID" ]
+	then
+		increment=$(($increment+30))
+		next=$(date '+%Y-%m-%d %H:%M:%S' --date=' +'$increment' minutes')
+		next=${next//\"/}
+		next=${next//\'/}
+		echo 'clusters unavailable now, trying to reserve at... '$next
+   		echo ""
+	else
+	
+		now=$(date +%s)
+		next=$(date -d "$next" +%s)
+		next=${next//\"/}
+		next=${next//\'/}
+		timeToWait=$(( $next - $now ))
+		minutes=$(($timeToWait / 60))
+		echo "I will sleep for:" $minutes "minutes" #$(date -d @$timeToWait)
+		sleep $timeToWait
+
+	    reservationFail=false
+	fi
+done
+
+echo "done"
+
+}
+
+
+
+
+
+
 
 sed -ie "s#^source.*#source $path/configuration.sh#g" clauncher.sh
 sed -ie "s#^source.*#source $path/configuration.sh#g" console.sh
@@ -57,14 +109,18 @@ reservation=${reservation%?}
 
 echo "starting grid5kLaucher..."
 echo ""
-echo "reserving nodes..."
-oargridsub -v -w '0:05:00' $reservation > tmp
-echo "done"
+#echo "reserving nodes..."
+reserveNodes
 
-
+#oargridsub -w '0:05:00' $reservation > tmp
+#echo "done"
+#
 #retreving batch and grid reservation IDs
-RES_ID=$(grep "Grid reservation id" tmp | cut -f2 -d=)
-OAR_JOB_KEY_PATH=$(grep "SSH KEY" tmp | cut -b 25-)
+#RES_ID=$(grep "Grid reservation id" tmp | cut -f2 -d=)
+#OAR_JOB_KEY_PATH=$(grep "SSH KEY" tmp | cut -b 25-)
+
+
+
 
 rm myfractal.xml
 
