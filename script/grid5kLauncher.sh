@@ -31,32 +31,16 @@ sed -ie "s#^source.*#source $path/configuration.sh#g" launcher.sh
 sed -ie "s#^scriptdir=.*#scriptdir=$path#g" configuration.sh
 
 
-clustersNumber=$(($# / 3))
+export clustersNumber=$(($# / 3))
 
-declare -a param=("$@")
+export param=("$@")
 next=0
 i=0
 reservation="";
 
 
-echo 'synchronizing keys and data...'
-for i in `seq 1 $clustersNumber`;
-do
-	nodeName=${param[$next]}
-	echo "synchronizing "$nodeName"..."
-
-	rsync -a -f"+ */" -f"- *" ../../jessy/scripts $nodeName.grid5000.fr:~/jessy	
-
-#	sync --delete -avz ~/.ssh --exclude known_hosts $nodeName.grid5000.fr:
-#	rsync --delete -avz ../../jessy $nodeName.grid5000.fr:~/
-	rsync --delete -az ./* $nodeName.grid5000.fr:~/jessy/scripts/
-
-	next=$(($next+3))
-done
 
 next=0
-
-
 for i in `seq 1 $clustersNumber`;
 	do
 		clusters[$i]=${param[$next]}
@@ -74,16 +58,13 @@ reservation=${reservation%?}
 echo "starting grid5kLaucher..."
 echo ""
 echo "reserving nodes..."
-#oargridsub -t allow_classic_ssh -w '0:05:00' $reservation > tmp
-oargridsub -w '0:15:00' $reservation > tmp
+oargridsub -v -w '0:05:00' $reservation > tmp
 echo "done"
 
 
 #retreving batch and grid reservation IDs
 RES_ID=$(grep "Grid reservation id" tmp | cut -f2 -d=)
 OAR_JOB_KEY_PATH=$(grep "SSH KEY" tmp | cut -b 25-)
-#BATCH_ID=$(grep "batchId" tmp | cut -f2 -s -d=)
-#BATCH_ID=${BATCH_ID//[[:space:]]/}
 
 rm myfractal.xml
 
@@ -158,47 +139,33 @@ sed -i "s/servers=.*/${servers}/g" configuration.sh
 sed -i "s/clients=.*/${clients}/g" configuration.sh
 echo "configuration.sh file is done"
 
-#echo "sleeping 600 sec before remove machines and tmp"
-#sleep 600
-#echo "getUp"
-
 rm machines tmp
 
 export OAR_JOB_KEY_FILE=$OAR_JOB_KEY_PATH
 
 echo 'exported oarJobKeyFile ' $OAR_JOB_KEY_PATH
 
+next=0
+echo 'synchronizing keys and data...'
+for i in `seq 1 $clustersNumber`;
+do
+	nodeName=${param[$next]}
+	echo "synchronizing "$nodeName"..."
 
-#echo 'synchronizing keys and data...'
-#next=0
-#for i in `seq 1 $clustersNumber`;
-#do
-#        nodeName=${param[$next]}
-#	echo "synchronizing "$nodeName"..."
-#
-#	rsync -a -f"+ */" -f"- *" ../../jessy/scripts $nodeName.grid5000.fr:~/jessy	
-#
-##	sync --delete -avz ~/.ssh --exclude known_hosts $nodeName.grid5000.fr:
-##	rsync --delete -avz ../../jessy $nodeName.grid5000.fr:~/
-#	rsync --delete -az ./* $nodeName.grid5000.fr:~/jessy/scripts/
-#
-#	next=$(($next+3))
-#done
+	rsync -a -f"+ */" -f"- *" ../../jessy/scripts $nodeName.grid5000.fr:~/jessy	
 
-##rsync --delete -avz ~/.ssh --exclude known_hosts lille.grid5000.fr:
-##rsync --delete -avz ./* lille.grid5000.fr:./jessy/scripts/
-#echo 'done'
+	rsync --delete -az ./* $nodeName.grid5000.fr:~/jessy/scripts/
 
-#echo "sleeping 60 sec before run experience..."
-#sleep 60
-#echo "done."
+	next=$(($next+3))
+done
+
 
 echo ""
 echo "**************************************************************************************"
 echo "*** grid5kLaucher: myfractal and configuration.sh are done, launching experience... ***"
 echo "**************************************************************************************"
 
-./experience.sh
+./experience.sh ${param[*]}
 echo "******************************************************************************"
 echo "grid5kLaucher: done, deleting jobs"
 echo "******************************************************************************"
