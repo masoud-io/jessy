@@ -84,6 +84,20 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	private LinkedList<TerminateTransactionRequestMessage> atomicDeliveredMessages;
 	
 	/**
+	 * Automatically delivered, and still have not been certified (by calling {@link Consistency#createCertificationVote(ExecutionHistory)}).
+	 * This variable is passed to {@code Consistency#certificationCommute(ExecutionHistory, ExecutionHistory)}. 
+	 * The goal is to increase the concurrency of execution of concurrent transactions in (PSI/NMSI2/US2). 
+	 * In the mentioned consistencies, concurrent transactions can only call  {@link Consistency#createCertificationVote(ExecutionHistory)} 
+	 * if they are at the head of this list, otherwise, they should wait until all transactions preceding them
+	 * finished calling  {@link Consistency#createCertificationVote(ExecutionHistory)}. 
+	 * This requirement is MUST whenever <i>group_size > 1</i>.
+	 * In these cases, without satisfying this, concurrent non-conflicting transactions can run in different orders
+	 * in different members of a group. Thus, they assign different versions to the modified objects. Thus, 
+	 * modified objects commit with different versions in different members of a group.
+	 */
+	private LinkedList<TerminateTransactionRequestMessage> atomicDeliveredNotCertifiedMessages;
+	
+	/**
 	 * Terminated transactions
 	 */	
 	private ConcurrentLinkedHashMap<UUID, Object> terminated;
@@ -165,6 +179,10 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
+		
+		if (Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES)
+			atomicDeliveredNotCertifiedMessages= new LinkedList<TerminateTransactionRequestMessage>();
+		
 		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 
 		terminated = new ConcurrentLinkedHashMap.Builder<UUID, Object>()
@@ -239,6 +257,12 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					.setStartCertification(System.nanoTime());
 			
 			try{
+				if (Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES)
+				{
+					synchronized (atomicDeliveredNotCertifiedMessages) {		
+						atomicDeliveredNotCertifiedMessages.offer(terminateRequestMessage);
+					}
+				}
 				synchronized (atomicDeliveredMessages) {				
 					TransactionHandler abortedTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousAbortedTransactionHandler();
 					if (abortedTransactionHandler!=null){
@@ -537,6 +561,17 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 			try {
 
+				if (Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES){
+					synchronized (atomicDeliveredNotCertifiedMessages) {
+						while (true){
+							if (!atomicDeliveredNotCertifiedMessages.getFirst().equals(msg))
+								atomicDeliveredNotCertifiedMessages.wait();
+							else
+								break;
+						}
+					}
+				}
+				
 				/*
 				 * First, à la P-Store.
 				 */
@@ -573,6 +608,14 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 				Vote vote = jessy.getConsistency().createCertificationVote(
 						msg.getExecutionHistory());
+				
+				if (Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES)
+				{
+					synchronized (atomicDeliveredNotCertifiedMessages) {		
+						atomicDeliveredNotCertifiedMessages.remove(msg);
+						atomicDeliveredNotCertifiedMessages.notifyAll();
+					}
+				}
 
 				/*
 				 * Computes a set of destinations for the votes, and sends out

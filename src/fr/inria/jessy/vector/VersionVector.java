@@ -7,6 +7,7 @@ import com.sleepycat.persist.model.Persistent;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.persistence.FilePersistence;
 
 /**
  * A classical version vector. To be used by PSI.
@@ -31,9 +32,16 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 	 * this Vector plays the role of a vector assigned to each jessy server in
 	 * the system.
 	 */
-	public static ConcurrentVersionVector<String> committedVTS = new ConcurrentVersionVector<String>(
-			JessyGroupManager.getInstance().getMyGroup().name());
+	public static ConcurrentVersionVector<String> committedVTS;
 
+	static{
+		if (FilePersistence.loadFromDisk)
+			committedVTS= (ConcurrentVersionVector<String>) FilePersistence.readObject("VersionVector.committedVTS");
+		else
+			committedVTS = new ConcurrentVersionVector<String>(
+					JessyGroupManager.getInstance().getMyGroup().name());
+	}
+	
 	@Deprecated
 	public VersionVector() {
 	}

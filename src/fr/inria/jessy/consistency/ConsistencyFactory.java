@@ -3,7 +3,6 @@ package fr.inria.jessy.consistency;
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.store.BerkeleyDBDataStore;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.utils.Configuration;
 
@@ -13,36 +12,36 @@ public class ConsistencyFactory {
 
 	private static Consistency _instance;
 
-	private static String consistencyType;
+	private static String consistencyTypeName;
 
 	static {
-		consistencyType = Configuration
+		consistencyTypeName = Configuration
 				.readConfig(ConstantPool.CONSISTENCY_TYPE);
-		logger.warn("Consistency is " + consistencyType);
+		logger.warn("Consistency is " + consistencyTypeName);
 	}
 
 	public static Consistency initConsistency(DataStore dataStore) {
 		if (_instance != null)
 			return _instance;
 
-		if (consistencyType.equals("nmsi")) {
+		if (consistencyTypeName.equals("nmsi")) {
 			_instance = new NonMonotonicSnapshotIsolationWithDependenceVector(dataStore);
-		} else if (consistencyType.equals("nmsi2")) {
+		} else if (consistencyTypeName.equals("nmsi2")) {
 			_instance = new NonMonotonicSnapshotIsolationWithGMUVector(
 					dataStore);
-		} else if (consistencyType.equals("si")) {
+		} else if (consistencyTypeName.equals("si")) {
 			_instance = new SnapshotIsolationWithBroadcast(dataStore);
-		} else if (consistencyType.equals("si2")) {
+		} else if (consistencyTypeName.equals("si2")) {
 			_instance = new SnapshotIsolationWithMulticast(dataStore);
-		} else if (consistencyType.equals("ser")) {
+		} else if (consistencyTypeName.equals("ser")) {
 			_instance = new Serializability(dataStore);
-		} else if (consistencyType.equals("rc")) {
+		} else if (consistencyTypeName.equals("rc")) {
 			_instance = new ReadComitted(dataStore);
-		} else if (consistencyType.equals("psi")) {
+		} else if (consistencyTypeName.equals("psi")) {
 			_instance = new ParallelSnapshotIsalation(dataStore);
-		} else if (consistencyType.equals("us")) {
+		} else if (consistencyTypeName.equals("us")) {
 			_instance = new UpdateSerializabilityWithDependenceVector(dataStore);
-		} else if (consistencyType.equals("us2")) {
+		} else if (consistencyTypeName.equals("us2")) {
 			_instance = new UpdateSerializabilityWithGMUVector(dataStore);
 		}
 		return _instance;
@@ -51,4 +50,10 @@ public class ConsistencyFactory {
 	public static Consistency getConsistencyInstance() {
 		return _instance;
 	}
+
+	public static String getConsistencyTypeName() {
+		return consistencyTypeName;
+	}
+	
+	
 }

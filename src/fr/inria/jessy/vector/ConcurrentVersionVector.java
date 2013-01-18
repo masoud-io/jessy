@@ -29,6 +29,10 @@ public class ConcurrentVersionVector<K> implements Externalizable,
 	private ConcurrentHashMap<K, Integer> map;
 	private K selfKey;
 
+	public ConcurrentVersionVector(){
+		map = new ConcurrentHashMap<K, Integer>();
+	}
+	
 	public ConcurrentVersionVector(K selfKey) {
 		map = new ConcurrentHashMap<K, Integer>();
 		this.selfKey = selfKey;

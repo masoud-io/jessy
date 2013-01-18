@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.sourceforge.fractal.utils.CollectionUtils;
+
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.store.DataStore;
@@ -38,6 +40,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 
 	public UpdateSerializabilityWithGMUVector(DataStore dataStore) {
 		super(dataStore);
+		Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES=true;
 	}
 	
 	@Override
@@ -147,6 +150,23 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 		return true;
 	}
 
+	@Override
+	public boolean certificationCommute(ExecutionHistory history1,
+			ExecutionHistory history2) {
+
+			boolean result=true;
+			if (history1.getReadSet()!=null && history2.getWriteSet()!=null){
+				result = !CollectionUtils.isIntersectingWith(history2.getWriteSet()
+						.getKeys(), history1.getReadSet().getKeys());
+			}
+			if (history1.getWriteSet()!=null && history2.getReadSet()!=null){
+				result = result && !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+						.getKeys(), history2.getReadSet().getKeys());
+			}
+			return result;
+
+	}
+	
 	/**
 	 * With GMUVector, it is not safe to apply transactions concurrently, and they should be applied as they are delivered. 
 	 */

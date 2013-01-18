@@ -11,6 +11,7 @@ import com.sleepycat.persist.model.Persistent;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.persistence.FilePersistence;
 
 /**
  * @author Masoud Saeida Ardekani This class implements Vector used in
@@ -31,8 +32,15 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	public static GMUVector<String> mostRecentVC;
 
 	static {
-		lastPrepSC = new AtomicInteger(0);
-		mostRecentVC = new GMUVector<String>(JessyGroupManager.getInstance().getMyGroup().name(), 0);
+		if (FilePersistence.loadFromDisk){
+			lastPrepSC=(AtomicInteger)FilePersistence.readObject("GMUVector.lastPrepSC");
+			mostRecentVC=(GMUVector<String>) FilePersistence.readObject("GMUVector.mostRecentVC");
+		}
+		else
+		{
+			lastPrepSC = new AtomicInteger(0);
+			mostRecentVC = new GMUVector<String>(JessyGroupManager.getInstance().getMyGroup().name(), 0);
+		}
 	}
 
 	/**

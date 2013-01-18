@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
-
 import com.sleepycat.je.DatabaseException;
 
+import fr.inria.jessy.persistence.FilePersistence;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 
@@ -30,14 +29,17 @@ public class HashMapDataStore implements DataStore {
 
 	ConcurrentHashMap<String, ArrayList> store;
 
+	@SuppressWarnings("unchecked")
 	public HashMapDataStore() {
-		store = new ConcurrentHashMap<String, ArrayList>();
+		if (FilePersistence.loadFromDisk)
+			store= (ConcurrentHashMap<String, ArrayList>) FilePersistence.readObject("HashMapDataStore.store");
+		else 
+			store = new ConcurrentHashMap<String, ArrayList>();
 	}
 
 	@Override
 	public void close() throws DatabaseException {
-		// TODO Auto-generated method stub
-
+		FilePersistence.writeObject(store, "HashMapDataStore.store");
 	}
 
 	@Override
@@ -80,7 +82,7 @@ public class HashMapDataStore implements DataStore {
 
 			if (tmp == null) {
 				throw new NullPointerException("Object with key"
-						+ readRequest.getOneKey()
+						+ readRequest.getOneKey().getKeyValue()
 						+ " does not exist in the Data Store.");
 			}
 

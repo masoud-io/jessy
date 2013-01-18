@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.sourceforge.fractal.utils.CollectionUtils;
+
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.store.DataStore;
@@ -38,6 +40,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 
 	public NonMonotonicSnapshotIsolationWithGMUVector(DataStore dataStore) {
 		super(dataStore);
+		Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES=true;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -115,6 +118,14 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 		return true;
 	}
 
+	@Override
+	public boolean certificationCommute(ExecutionHistory history1,
+			ExecutionHistory history2) {
+
+			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+					.getKeys(), history2.getWriteSet().getKeys());
+	}
+	
 	@Override
 	public boolean applyingTransactionCommute() {
 		return false;

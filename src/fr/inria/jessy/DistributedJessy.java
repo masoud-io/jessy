@@ -31,6 +31,7 @@ import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.ParallelSnapshotIsolationPiggyback;
 import fr.inria.jessy.partitioner.Partitioner;
+import fr.inria.jessy.persistence.FilePersistence;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.Keyspace;
@@ -409,6 +410,7 @@ public class DistributedJessy extends Jessy {
 	}
 
 	public void close(Object object) {
+		logger.info("Closing Jesss ...");
 
 		activeClients.remove(object);
 		if (activeClients.size() == 0) {
@@ -443,8 +445,10 @@ public class DistributedJessy extends Jessy {
 
 			if (!JessyGroupManager.getInstance().isProxy()) {
 				super.close(this);
+				FilePersistence.saveJessy();
 				logger.info("Jessy is closed.");
 			}
+			
 		}
 	}
 
@@ -454,8 +458,29 @@ public class DistributedJessy extends Jessy {
 	 * @param args
 	 */
 	public static void main(String args[]) {
+		
 		try {
 			PropertyConfigurator.configure("log4j.properties");
+			
+			for (String str :args){
+				if (str.toLowerCase().contains("savetodisk")){
+					System.out.println("Will save the state into disk at exit.");
+					FilePersistence.saveToDisk=true;
+				}
+				else if (str.toLowerCase().contains("loadfromdisk")){
+					FilePersistence.loadFromDisk=true;
+					System.out.println("Will load the state from disk.");
+				}
+				else if (str.contains("/")){
+					FilePersistence.makeStorageDirectory(str);
+				}
+				
+			}
+			if ((FilePersistence.saveToDisk || FilePersistence.loadFromDisk) && FilePersistence.storageDirectory.equals("")){
+				System.out.println("Please provide the path for loading/saving.");
+			}
+			
+			
 			final DistributedJessy j = DistributedJessy.getInstance();
 			j.open();
 			SignalHandler sh = new SignalHandler() {
