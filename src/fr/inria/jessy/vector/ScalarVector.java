@@ -8,18 +8,30 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sleepycat.persist.model.Persistent;
 
+import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.persistence.FilePersistence;
+
 /**
  * 
- * @author pcincilla
+ * @author Pierpaolo Cincilla
+ * @author Masoud Saeida Ardekani
  * 
  * @param <K>
  */
 
 @Persistent
 public class ScalarVector<K> extends Vector<K> implements Externalizable {
-
-	private static  AtomicInteger lastCommittedTransactionSeqNumber = new AtomicInteger(
-			0);
+	
+	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
+	
+	public static  AtomicInteger lastCommittedTransactionSeqNumber;
+	
+	static{
+		if (FilePersistence.loadFromDisk)
+			lastCommittedTransactionSeqNumber=(AtomicInteger)FilePersistence.readObject("ScalarVector.lastCommittedTransactionSeqNumber");
+		else
+			lastCommittedTransactionSeqNumber = new AtomicInteger(0);
+	}
 	
 	public synchronized static int incrementAndGetLastCommittedSeqNumber(){
 		synchronized (lastCommittedTransactionSeqNumber) {

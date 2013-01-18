@@ -58,6 +58,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 	public ParallelSnapshotIsalation(DataStore store) {
 		super(store);
+		Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES=true;
 		receivedPiggybacks = new ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback>();
 		propagation = new MessagePropagation(this);
 		
@@ -96,11 +97,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
-		if (manager.getGroupSize()==1)		
 			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
 					.getKeys(), history2.getWriteSet().getKeys());
-		else
-			return false;
 
 	}
 	

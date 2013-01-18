@@ -26,6 +26,14 @@ public abstract class Consistency {
 	 * costs. For example, this variable is set to false in RC and SI.
 	 */
 	public static boolean SEND_READSET_DURING_TERMINATION=true;
+	
+	/**
+	 * 
+	 * if true, <code>atomicDeliveredNotCertifiedMessages</code> will be used.
+	 * Should only be true for NMSI2. US2, PSI.
+	 *  
+	 */
+	public static boolean TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES=false;
 
 	protected DataStore store;
 	protected TerminationCommunication terminationCommunication;
