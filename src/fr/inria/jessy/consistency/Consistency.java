@@ -11,6 +11,7 @@ import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
 
 public abstract class Consistency {
@@ -27,14 +28,6 @@ public abstract class Consistency {
 	 */
 	public static boolean SEND_READSET_DURING_TERMINATION=true;
 	
-	/**
-	 * 
-	 * if true, <code>atomicDeliveredNotCertifiedMessages</code> will be used.
-	 * Should only be true for NMSI2. US2, PSI.
-	 *  
-	 */
-	public static boolean TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES=false;
-
 	protected DataStore store;
 	protected TerminationCommunication terminationCommunication;
 	protected JessyGroupManager manager = JessyGroupManager.getInstance();
@@ -151,7 +144,7 @@ public abstract class Consistency {
 	 * @param executionHistory
 	 * @return
 	 */
-	public Vote createCertificationVote(ExecutionHistory executionHistory) {
+	public Vote createCertificationVote(ExecutionHistory executionHistory, Object object) {
 		/*
 		 * First, it needs to run the certification test on the received
 		 * execution history. A blind write always succeeds.
@@ -190,6 +183,24 @@ public abstract class Consistency {
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
 		return termincationRequestReceivers;
+	}
+	
+	/**
+	 * Is called by {@link DistributedTermination} upon delivering a Transaction for termination.
+	 * 
+	 * Details:
+	 * The goal is to increase the concurrency of execution of concurrent transactions in (PSI/NMSI2/US2). 
+	 * In the mentioned consistencies, concurrent transactions can only call  {@link Consistency#createCertificationVote(ExecutionHistory)} 
+	 * if they are at the head of this list, otherwise, they should wait until all transactions preceding them
+	 * finish calling  {@link Consistency#createCertificationVote(ExecutionHistory)}. 
+	 * This requirement is MUST whenever <i>group_size > 1</i>.
+	 * In these cases, without satisfying this, concurrent non-conflicting transactions can run in different orders
+	 * in different members of a group. Thus, they assign different versions to the modified objects. Thus, 
+	 * modified objects commit with different versions in different members of a group.
+	 * 
+	 */
+	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
+		
 	}
 
 }

@@ -12,6 +12,7 @@ import net.sourceforge.fractal.utils.CollectionUtils;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -40,7 +41,6 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 
 	public UpdateSerializabilityWithGMUVector(DataStore dataStore) {
 		super(dataStore);
-		Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES=true;
 	}
 	
 	@Override
@@ -176,33 +176,54 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 	}
 
 	@Override
-	public Vote createCertificationVote(ExecutionHistory executionHistory) {
-		/*
-		 * First, it needs to run the certification test on the received
-		 * execution history. A blind write always succeeds.
-		 */
-
-		boolean isCommitted = executionHistory.getTransactionType() == BLIND_WRITE
-				|| certify(executionHistory);
-
-		GMUVector<String> prepVC = null;
-		if (isCommitted
-				&& executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
-			/*
-			 * We have to update the vector here, and send it over to the
-			 * others. Corresponds to line 20-22 of Algorithm 4
-			 */
-			prepVC = GMUVector.mostRecentVC.clone();
-			int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
-			prepVC.setValue(prepVC.getSelfKey(), prepVCAti);
+	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
+		try{
+			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
+				GMUVector<String> prepVC = GMUVector.mostRecentVC.clone();
+				int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
+				prepVC.setValue(prepVC.getSelfKey(), prepVCAti);
+				
+				msg.setComputedObjectUponDelivery(prepVC);
+			}
 		}
+		catch (Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Vote createCertificationVote(ExecutionHistory executionHistory, Object object) {
+		try{
+			/*
+			 * First, it needs to run the certification test on the received
+			 * execution history. A blind write always succeeds.
+			 */
 
-		/*
-		 * Corresponds to line 23
-		 */
-		return new Vote(executionHistory.getTransactionHandler(), isCommitted,
-				JessyGroupManager.getInstance().getMyGroup().name(),
-				new VotePiggyback(prepVC));
+			boolean isCommitted = executionHistory.getTransactionType() == BLIND_WRITE
+					|| certify(executionHistory);
+
+			GMUVector<String> prepVC = null;
+			if (isCommitted
+					&& executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
+				/*
+				 * We have to update the vector here, and send it over to the
+				 * others. Corresponds to line 20-22 of Algorithm 4
+				 */
+				prepVC = (GMUVector<String>) object;
+			}
+
+			/*
+			 * Corresponds to line 23
+			 */
+			return new Vote(executionHistory.getTransactionHandler(), isCommitted,
+					JessyGroupManager.getInstance().getMyGroup().name(),
+					new VotePiggyback(prepVC));
+		}
+		catch (Exception ex){
+			ex.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -232,8 +253,9 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 				GMUVector<String> receivedVector = receivedVectors.putIfAbsent(
 						vote.getTransactionHandler().getId(), commitVC);
 				if (receivedVector != null) {
-					receivedVectors.get(vote.getTransactionHandler().getId())
-							.update(commitVC);
+					receivedVector.update(commitVC);
+//					receivedVectors.get(vote.getTransactionHandler().getId())
+//							.update(commitVC);
 				}
 			}
 		} catch (Exception ex) {

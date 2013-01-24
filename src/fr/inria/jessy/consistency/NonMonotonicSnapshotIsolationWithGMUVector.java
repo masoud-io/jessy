@@ -9,9 +9,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.sourceforge.fractal.utils.CollectionUtils;
-
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -40,7 +40,6 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 
 	public NonMonotonicSnapshotIsolationWithGMUVector(DataStore dataStore) {
 		super(dataStore);
-		Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES=true;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -103,7 +102,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
 						.getLocalVector().getSelfValue()) {
 					if (ConstantPool.logging)
-						logger.debug("Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
+						logger.error("Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
 				}
@@ -132,7 +131,24 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 	}
 
 	@Override
-	public Vote createCertificationVote(ExecutionHistory executionHistory) {
+	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
+		try{
+			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
+				GMUVector<String> prepVC = GMUVector.mostRecentVC.clone();
+				int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
+				prepVC.setValue(prepVC.getSelfKey(), prepVCAti);
+
+				msg.setComputedObjectUponDelivery(prepVC);
+			}
+		}
+		catch (Exception ex){
+
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Vote createCertificationVote(ExecutionHistory executionHistory, Object object) {
 		/*
 		 * First, it needs to run the certification test on the received
 		 * execution history. A blind write always succeeds.
@@ -148,9 +164,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 			 * We have to update the vector here, and send it over to the
 			 * others. Corresponds to line 20-22 of Algorithm 4
 			 */
-			prepVC = GMUVector.mostRecentVC.clone();
-			int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
-			prepVC.setValue(prepVC.getSelfKey(), prepVCAti);
+			prepVC = (GMUVector<String>) object;
 		}
 
 		/*
@@ -188,8 +202,9 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 				GMUVector<String> receivedVector = receivedVectors.putIfAbsent(
 						vote.getTransactionHandler().getId(), commitVC);
 				if (receivedVector != null) {
-					receivedVectors.get(vote.getTransactionHandler().getId())
-							.update(commitVC);
+					receivedVector.update(commitVC);
+//					receivedVectors.get(vote.getTransactionHandler().getId())
+//							.update(commitVC);
 				}
 			}
 		} catch (Exception ex) {

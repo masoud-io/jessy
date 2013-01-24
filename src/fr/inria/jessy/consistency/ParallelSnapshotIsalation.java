@@ -23,6 +23,7 @@ import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -58,7 +59,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 	public ParallelSnapshotIsalation(DataStore store) {
 		super(store);
-		Consistency.TRACK_ATOMIC_DELIVERED_NOT_CERTIFIED_MESSAGES=true;
 		receivedPiggybacks = new ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback>();
 		propagation = new MessagePropagation(this);
 		
@@ -377,11 +377,24 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	}
 
 	private static AtomicInteger tempSequenceNumber=new AtomicInteger(0);
+
+	@Override
+	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
+		if (isWCoordinator(msg.getExecutionHistory())) {
+			int sequenceNumber=0;
+			
+			if (msg.getExecutionHistory().getTransactionType()!=TransactionType.INIT_TRANSACTION)
+				sequenceNumber=tempSequenceNumber.incrementAndGet();
+			
+			msg.setComputedObjectUponDelivery(new Integer(sequenceNumber));
+		}
+	}
+	
 	/**
 	 * @inheritDoc
 	 */
 	@Override
-	public Vote createCertificationVote(ExecutionHistory executionHistory) {
+	public Vote createCertificationVote(ExecutionHistory executionHistory, Object object) {
 
 		boolean isAborted = executionHistory.getTransactionType() == BLIND_WRITE
 				|| certify(executionHistory);
@@ -393,10 +406,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		VotePiggyback vp = null;
 		if (isWCoordinator(executionHistory)) {
 
-			int sequenceNumber=0;
-			
-			if (executionHistory.getTransactionType()!=TransactionType.INIT_TRANSACTION)
-				sequenceNumber=tempSequenceNumber.incrementAndGet();
+			int sequenceNumber=(Integer)object;
 
 			vp = new VotePiggyback(new ParallelSnapshotIsolationPiggyback(
 					manager.getMyGroup().name(), sequenceNumber,
