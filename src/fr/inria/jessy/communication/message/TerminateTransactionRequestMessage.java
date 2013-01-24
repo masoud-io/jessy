@@ -14,7 +14,9 @@ public class TerminateTransactionRequestMessage extends WanAMCastMessage {
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	public long startCasting;
-
+	
+	private Object computedObjectUponDelivery;
+	
 	// For Fractal
 	public TerminateTransactionRequestMessage() {
 	}
@@ -49,4 +51,15 @@ public class TerminateTransactionRequestMessage extends WanAMCastMessage {
 		return this.getExecutionHistory().getTransactionHandler()
 				.equals(input.getExecutionHistory().getTransactionHandler());
 	}
+
+	public Object getComputedObjectUponDelivery() {
+		return computedObjectUponDelivery;
+	}
+
+	public void setComputedObjectUponDelivery(Object computedObjectUponDelivery) {
+		this.computedObjectUponDelivery = computedObjectUponDelivery;
+	}
+
+	
+	
 }

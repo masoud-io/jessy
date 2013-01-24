@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sourceforge.fractal.membership.Membership;
+import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -18,6 +19,8 @@ import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
 import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 
 public class UnicastClientManager {
+	private static ChannelFactory factory = new NioClientSocketChannelFactory(ExecutorPool.getInstance().getExecutorService(),
+			ExecutorPool.getInstance().getExecutorService(),Runtime.getRuntime().availableProcessors()/2);
 
 	private Map<Integer, Channel> swid2Channel = new HashMap<Integer, Channel>();
 
@@ -45,11 +48,11 @@ public class UnicastClientManager {
 		// TODO
 	}
 
+	
 	private Channel createUnicastClientChannel(String host, int port) {
 
 		try {
 
-			ChannelFactory factory = new NioClientSocketChannelFactory();
 
 			ClientBootstrap bootstrap = new ClientBootstrap(factory);
 
@@ -100,9 +103,9 @@ public class UnicastClientManager {
 
 	public void unicast(Object m, int swid, String destinationHost) {
 		try {
-			if (!swid2Channel.containsKey(swid)) {
+			if (!swid2Channel.containsKey(swid) || !swid2Channel.get(swid).isConnected()) {
 				synchronized (swid2Channel) {
-					if (!swid2Channel.containsKey(swid)) {
+					if (!swid2Channel.containsKey(swid) || !swid2Channel.get(swid).isConnected()) {
 						swid2Channel.put(
 								swid,
 								createUnicastClientChannel(destinationHost,
