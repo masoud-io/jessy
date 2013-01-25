@@ -285,5 +285,15 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 		return replies;
 
 	}
+	
+	@Override
+	public void closeProxyConnections(){
+			cmanager.close();
+	}
+
+	@Override
+	public void closeReplicaConnections(){
+			smanager.close();
+	}
 
 }

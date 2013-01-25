@@ -60,4 +60,11 @@ public abstract class RemoteReader {
 	public abstract <E extends JessyEntity> Future<ReadReply<E>> remoteRead(
 			ReadRequest<E> readRequest) throws InterruptedException;
 
+	public void closeProxyConnections(){
+		return;
+	}
+	
+	public void closeReplicaConnections(){
+		return;
+	}
 }

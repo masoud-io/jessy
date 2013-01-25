@@ -20,7 +20,7 @@ import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 
 public class UnicastClientManager {
 	private static ChannelFactory factory = new NioClientSocketChannelFactory(ExecutorPool.getInstance().getExecutorService(),
-			ExecutorPool.getInstance().getExecutorService(),Runtime.getRuntime().availableProcessors()/2);
+			ExecutorPool.getInstance().getExecutorService(),Runtime.getRuntime().availableProcessors());
 
 	private Map<Integer, Channel> swid2Channel = new HashMap<Integer, Channel>();
 
@@ -44,8 +44,12 @@ public class UnicastClientManager {
 		}
 	}
 
-	public void closeConnections() {
-		// TODO
+	public synchronized void close() {
+			for (Integer i: swid2Channel.keySet()){
+				swid2Channel.get(i).close();
+				swid2Channel.remove(i);
+			}
+			swid2Channel.clear();
 	}
 
 	
@@ -89,28 +93,48 @@ public class UnicastClientManager {
 					"Cannot identify the host name with swid from Fractal membership");
 		}
 
-		Channel ch=swid2Channel.get(swid);
-		if (ch.isConnected()){
-			swid2Channel.get(swid).write(m);
+		try{
+			Channel ch=swid2Channel.get(swid);
+			if (!ch.isConnected()){
+				ch.close().awaitUninterruptibly();
+				Membership membership = JessyGroupManager.getInstance()
+						.getMembership();
+				String host = membership.adressOf(swid);
+				ch=createUnicastClientChannel(host, port);
+				swid2Channel.put(swid,ch);
+			}
+			
+			if (ch.isConnected()){
+				swid2Channel.get(swid).write(m);
+			}
+			else{
+				System.out.println("Exception... Cannot create a connected channel. Unicast message is being dropped.");
+			}
+			
+
 		}
-		else{
-			Membership membership = JessyGroupManager.getInstance()
-					.getMembership();
-			String host = membership.adressOf(swid);
-			swid2Channel.put(swid, createUnicastClientChannel(host, port));
+		catch(Exception ex){
+			ex.printStackTrace();
 		}
 	}
 
 	public void unicast(Object m, int swid, String destinationHost) {
 		try {
-			if (!swid2Channel.containsKey(swid) || !swid2Channel.get(swid).isConnected()) {
+			Channel ch =swid2Channel.get(swid);
+			
+			if (ch==null || !ch.isConnected()) {
 				synchronized (swid2Channel) {
-					if (!swid2Channel.containsKey(swid) || !swid2Channel.get(swid).isConnected()) {
-						swid2Channel.put(
-								swid,
-								createUnicastClientChannel(destinationHost,
-										port));
-						System.out.println("Creating Connection "
+					
+					ch =swid2Channel.get(swid);
+					if (ch==null || !ch.isConnected()) {
+						
+						if (ch!=null && !ch.isConnected()){
+							ch.close().awaitUninterruptibly();
+						}
+						
+						ch=createUnicastClientChannel(destinationHost,port);
+						swid2Channel.put(swid,ch);
+						System.out.println("UnicastClientManager Is Creating Connection "
 								+ destinationHost);
 					}
 				}
