@@ -446,7 +446,12 @@ public class DistributedJessy extends Jessy {
 			if (!JessyGroupManager.getInstance().isProxy()) {
 				super.close(this);
 				FilePersistence.saveJessy();
+				remoteReader.closeReplicaConnections();
 				logger.info("Jessy is closed.");
+			}
+			else{
+				remoteReader.closeProxyConnections();
+				distributedTermination.closeConnections();
 			}
 			
 		}

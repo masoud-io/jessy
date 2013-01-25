@@ -413,7 +413,11 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		garbageCollectJessyInstance(msg.getExecutionHistory().getTransactionHandler());
 	}
-
+	
+	public void closeConnections(){
+		sManager.close();
+	}
+	
 	/**
 	 * Runs at the transaction Coordinator upon receiving a transaction for
 	 * termination. It first gets destination groups for atomic

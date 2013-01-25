@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -15,8 +16,10 @@ import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 
 public class UnicastServerManager {
 	private static ChannelFactory factory = new NioServerSocketChannelFactory(ExecutorPool.getInstance().getExecutorService(),
-			ExecutorPool.getInstance().getExecutorService(),Runtime.getRuntime().availableProcessors()/2);
+			ExecutorPool.getInstance().getExecutorService(),Runtime.getRuntime().availableProcessors());
 
+	private Channel channel;
+	
 	public UnicastServerManager(final UnicastLearner learner, int port) {
 
 
@@ -38,8 +41,11 @@ public class UnicastServerManager {
 
 		String host = JessyGroupManager.getInstance().getMembership()
 				.adressOf(JessyGroupManager.getInstance().getSourceId());
-		bootstrap.bind(new InetSocketAddress(host, port));
+		channel=bootstrap.bind(new InetSocketAddress(host, port));
 
 	}
 
+	public void close(){
+		channel.close();
+	}
 }

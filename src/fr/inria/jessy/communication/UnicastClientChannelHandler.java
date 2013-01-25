@@ -20,6 +20,7 @@ public class UnicastClientChannelHandler extends SimpleChannelHandler {
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
+		System.err.println("UnicastClientChannelHandler" + e.toString());
 		e.getCause().printStackTrace();
 	}
 }

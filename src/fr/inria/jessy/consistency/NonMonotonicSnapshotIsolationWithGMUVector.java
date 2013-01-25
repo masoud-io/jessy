@@ -142,7 +142,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 			}
 		}
 		catch (Exception ex){
-
+			ex.printStackTrace();
 		}
 	}
 	
@@ -153,18 +153,28 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 		 * First, it needs to run the certification test on the received
 		 * execution history. A blind write always succeeds.
 		 */
-
+		
 		boolean isCommitted = executionHistory.getTransactionType() == BLIND_WRITE
 				|| certify(executionHistory);
-
+		
 		GMUVector<String> prepVC = null;
-		if (isCommitted
-				&& executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
-			/*
-			 * We have to update the vector here, and send it over to the
-			 * others. Corresponds to line 20-22 of Algorithm 4
-			 */
-			prepVC = (GMUVector<String>) object;
+
+		try{
+
+
+			if (isCommitted
+					&& executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
+				/*
+				 * We have to update the vector here, and send it over to the
+				 * others. Corresponds to line 20-22 of Algorithm 4
+				 */
+				prepVC = (GMUVector<String>) object;
+			}
+
+		}
+		catch (Exception ex){
+			ex.printStackTrace();
+			
 		}
 
 		/*
