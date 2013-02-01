@@ -15,7 +15,6 @@ do
     #scp ./launcher.sh ${nodes[$i]}:${scriptdir}/launcher.sh
     #scp ./clauncher.sh ${nodes[$i]}:${scriptdir}/clauncher.sh
     #scp ./client.sh ${nodes[$i]}:${scriptdir}/client.sh
-#        scp ./experience.sh ${nodes[$i]}:${scriptdir}/experience.sh
 	#scp ../config/YCSB/workloads/${workloadName} ${nodes[$i]}:${scriptdir}/${workloadName}
 #	scp ./concurrentlinkedhashmap.jar ${nodes[$i]}:${scriptdir}/concurrentlinkedhashmap.jar
 	scp ../../../jessy.jar ${nodes[$i]}:${scriptdir}/jessy.jar
