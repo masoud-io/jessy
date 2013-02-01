@@ -15,7 +15,10 @@ do
     #scp ./launcher.sh ${nodes[$i]}:${scriptdir}/launcher.sh
     #scp ./clauncher.sh ${nodes[$i]}:${scriptdir}/clauncher.sh
     #scp ./client.sh ${nodes[$i]}:${scriptdir}/client.sh
+<<<<<<< master
         scp ./experience.sh ${nodes[$i]}:${scriptdir}/experience.sh
+=======
+>>>>>>> 955da37 Two new scripts are added for first reserving the nodes in the grid5k, and then launching and executing the experiments. Transfering scripts are also improved.
 	#scp ../config/YCSB/workloads/${workloadName} ${nodes[$i]}:${scriptdir}/${workloadName}
 #	scp ./concurrentlinkedhashmap.jar ${nodes[$i]}:${scriptdir}/concurrentlinkedhashmap.jar
 	scp ../../../jessy.jar ${nodes[$i]}:${scriptdir}/jessy.jar
