@@ -17,6 +17,7 @@ cd ${workingdir};
 cp ${scriptdir}/config.property ${workingdir};
 cp ${scriptdir}/log4j.properties ${workingdir};
 cp ${scriptdir}/myfractal.xml ${workingdir};
+cp ${scriptdir}/config/YCSB/workloads/${workloadName} ${workingdir}/workload
 cd ${workingdir};
 
 export CLASSPATH=${scriptdir}/commons-lang.jar:${scriptdir}/log4j.jar:${scriptdir}/jessy.jar:${scriptdir}/fractal.jar:${scriptdir}/je.jar:${scriptdir}/db.jar:${scriptdir}/concurrentlinkedhashmap.jar:${scriptdir}/netty.jar:${scriptdir}/high-scale-lib.jar;

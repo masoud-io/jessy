@@ -2,7 +2,7 @@
 
 
 node=("msaeidaardekani@access.grid5000.fr")
-sites=("lille" "grenoble" "bordeaux" "toulouse" "luxembourg" "sophia" "lyon" "rennes" "reims") #"nancy"
+sites=("nancy" "lille" "grenoble" "bordeaux" "toulouse" "luxembourg" "sophia" "lyon" "rennes" "reims") #"nancy"
 files=("jessy.jar" "fractal.jar")
 
 let e=${#sites[@]}-1

@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import net.sourceforge.fractal.membership.Group;
-import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -34,16 +33,11 @@ import fr.inria.jessy.store.ReadRequestKey;
 public class KeySpacePartitioner  implements Partitioner{
 	
 	private static Logger logger = Logger.getLogger(KeySpacePartitioner.class);
-	private static TimeRecorder resolveTime;
 	
 	private HashSet<Keyspace> keyspaces; // TODO check intersection
 	private TreeMap<Group, Set<String>> g2rk; // groups to rootkeys
 	private TreeMap<String, Group> rk2g; // rootkeys to groups
 
-	static{
-		resolveTime = new TimeRecorder("Partitioner#resolveTime");
-	}
-	
 	public KeySpacePartitioner(Keyspace keyspace) {
 		super();
 		g2rk = new TreeMap<Group, Set<String>>();
@@ -172,10 +166,8 @@ public class KeySpacePartitioner  implements Partitioner{
 
 	@Override
 	public boolean isLocal(String k) {
-		resolveTime.start();
 		boolean ret = JessyGroupManager.getInstance().getMyGroups().contains(resolve(k));
 //		logger.debug("is local "+k+" ? "+ret);
-		resolveTime.stop();
 		return ret;
 	}
 	

@@ -350,8 +350,9 @@ public class TransactionalWorkload extends Workload {
 																						// fudge
 																						// factor
 
-			keychooser = new ScrambledZipfianGenerator(recordcount
-					+ expectednewkeys);
+//			keychooser = new ScrambledZipfianGenerator(recordcount
+//					+ expectednewkeys);
+			keychooser = new ScrambledZipfianGenerator(0,recordcount-1);
 		} else if (requestdistrib.compareTo("latest") == 0) {
 			keychooser = new SkewedLatestGenerator(transactioninsertkeysequence);
 		} else {
