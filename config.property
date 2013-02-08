@@ -10,7 +10,7 @@ datastore_type = hashmap
 #"us2" Update serializability with GMUVector from [Peluso2012]
 consistency_type = nmsi2
 
-#partitioner type: "keyspace" | "modulo" | "replicatedModulo"
+#partitioner type: "keyspace" | "modulo" | "replicatedModulo" | "sequential"
 partitioner_type = modulo
 
 #replication factor

@@ -21,7 +21,8 @@ do
 >>>>>>> 955da37 Two new scripts are added for first reserving the nodes in the grid5k, and then launching and executing the experiments. Transfering scripts are also improved.
 	#scp ../config/YCSB/workloads/${workloadName} ${nodes[$i]}:${scriptdir}/${workloadName}
 #	scp ./concurrentlinkedhashmap.jar ${nodes[$i]}:${scriptdir}/concurrentlinkedhashmap.jar
-	scp ../../../jessy.jar ${nodes[$i]}:${scriptdir}/jessy.jar
+#	scp ../../Batelier/target/batelier-0.0.1-SNAPSHOT.jar ${nodes[$i]}:${scriptdir}/fractal.jar
 	scp ../../../fractal.jar ${nodes[$i]}:${scriptdir}/fractal.jar
+	scp ../../../jessy.jar ${nodes[$i]}:${scriptdir}/jessy.jar
 done
 

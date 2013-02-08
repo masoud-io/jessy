@@ -138,6 +138,14 @@ public class ConstantPool {
 	public static final String WAREHOUSES_NUMBER = "warehouses_number";
 	public static final String OPERATION_WIDE_MEASUREMENTS = "operation_wide_measurements";
 	public static final String TRANSACTION_WIDE_MEASUREMENTS = "transaction_wide_measurements";
+
+	
+	/**
+	 * SequentialPartitioner
+	 * TODO generalize me
+	 */
+	public static final String NUMBER_OF_OBJECTS_PROPERTY_FILE=System.getProperty("user.dir")+ "/workload";
+	public static final String NUMBER_OF_OBJECTS_PROPERTY_NAME="recordcount";
 	
 	/**
 	 * Measurements
