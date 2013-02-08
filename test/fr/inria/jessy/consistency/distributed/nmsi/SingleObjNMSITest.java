@@ -46,7 +46,7 @@ public class SingleObjNMSITest extends TestCase {
 	@Before
 	public void setUp() throws Exception {
 		PropertyConfigurator.configure("log4j.properties");	
-		jessy = JessyFactory.getLocalJessy();
+		jessy = JessyFactory.getDistributedJessy();
 
 		// First, we have to define the entities read or written inside the
 		// transaction
