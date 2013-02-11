@@ -189,4 +189,10 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 		
 	}
 
+	@Override
+	public Set<String> generateKeysInAllGroups() {
+		//TODO
+		return null;
+	}
+
 }

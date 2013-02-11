@@ -214,5 +214,11 @@ public class KeySpacePartitioner  implements Partitioner{
 		BigInteger v2 = new BigInteger(k2.getBytes());
 		return v1.subtract(v2).abs();		
 	}
+
+	@Override	
+	public Set<String> generateKeysInAllGroups() {
+		//TODO
+		return null;
+	}
 	
 }
