@@ -121,7 +121,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		castLatency.setFormat("%a");
 	}
 	
-	public static void initProbesForExecution(){		
+	public synchronized static void initProbesForExecution(){		
 		reInitProbes=false;
 		System.out.println("INITING");
 
