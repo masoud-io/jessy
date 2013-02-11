@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-RES_ID=$(grep "Grid reservation id" /tmp/tmpOar | cut -f2 -d=)
+RES_ID=$(grep "Grid reservation id" tmpOar | cut -f2 -d=)
 
 export clustersNumber=$(($# / 3))
 
@@ -81,7 +81,7 @@ echo "configuration.sh file is done"
 
 #rm machines tmp
 
-export OAR_JOB_KEY_FILE=`cat /tmp/OAR_JOB_KEY_PATH`
+export OAR_JOB_KEY_FILE=`cat OAR_JOB_KEY_PATH`
 
 echo 'exported oarJobKeyFile ' $OAR_JOB_KEY_FILE
 

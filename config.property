@@ -11,7 +11,7 @@ datastore_type = hashmap
 consistency_type = nmsi2
 
 #partitioner type: "keyspace" | "modulo" | "replicatedModulo" | "sequential"
-partitioner_type = modulo
+partitioner_type = sequential
 
 #replication factor
 replication_factor = 1
