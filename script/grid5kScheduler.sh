@@ -34,11 +34,11 @@ while [  $reservationFail == "true" ]; do
         
         echo "trying to reserve nodes at... ""$next"
 
-        oargridsub -w '20:00:00' $reservation -s "$next" > /tmp/tmpOar
+        oargridsub -w '20:00:00' $reservation -s "$next" > tmpOar
 
         #retreving batch and grid reservation IDs
-        RES_ID=$(grep "Grid reservation id" /tmp/tmpOar | cut -f2 -d=)
-        echo $(grep "SSH KEY" /tmp/tmpOar | cut -b 25-) > /tmp/OAR_JOB_KEY_PATH
+        RES_ID=$(grep "Grid reservation id" tmpOar | cut -f2 -d=)
+        echo $(grep "SSH KEY" tmpOar | cut -b 25-) > OAR_JOB_KEY_PATH
 
         if [ -z "$RES_ID" ]
         then

@@ -99,7 +99,7 @@ function collectStats(){
     
 
 	if ! [ -s "${scriptdir}/results/${servercount}.txt" ]; then
-	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tOverall_Throughput\tCommitted_Throughput\tupdateTran_Latency\treadonlyTran_Latency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tExecutionLatency_UpdateTran\tTerminationLatency_UpdateTran\tExecutionLatency_ReadOnlyTran\tTerminationLatency_ReadOnlyTran\tVoting_Time\tCertificationLatency_UpdateTran\tCertificationLatency_readonlyTran\tCertificationQueueingTime\tApplyingTransactionQueueingTime\tVoting_Quorum_Latency\tCasting_Latency"
+	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tOverall_Throughput\tCommitted_Throughput\tupdateTran_Latency\treadonlyTran_Latency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tExecutionLatency_UpdateTran\tTerminationLatency_UpdateTran\tExecutionLatency_ReadOnlyTran\tTerminationLatency_ReadOnlyTran\tVoting_Time_NTP\tCertificationLatency_UpdateTran\tCertificationLatency_readonlyTran\tCertificationQueueingTime\tApplyingTransactionQueueingTime\tVoting_Quorum_Latency\tCasting_Latency_NTP"
 	fi
 
     let scount=${#servers[@]}-1
