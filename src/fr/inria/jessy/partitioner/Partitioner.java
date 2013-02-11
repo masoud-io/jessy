@@ -15,4 +15,6 @@ public interface Partitioner {
 	public abstract boolean isLocal(String k);
 
 	public abstract Set<String> resolveNames(Set<String> keys);
+	
+	public abstract Set<String> generateKeysInAllGroups();
 }

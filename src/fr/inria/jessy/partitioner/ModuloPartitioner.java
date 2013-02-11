@@ -89,4 +89,14 @@ public class ModuloPartitioner implements Partitioner {
 								.size());
 	}
 
+	@Override
+	public Set<String> generateKeysInAllGroups() {
+		Set<String> keys=new HashSet<String>();
+		
+		for (int i = 0; i < JessyGroupManager.getInstance().getReplicaGroups().size(); i++) {
+			keys.add("" + i);
+		}
+		return keys;
+	}
+
 }

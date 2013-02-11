@@ -123,9 +123,20 @@ public class SequentialPartitioner implements Partitioner {
 						.get(i);
 			}
 		}
-		
+		System.out.println("RETURNING NULL FOR " + key + " numberOfObjectsPerGroup : "+ numberOfObjectsPerGroup);
 		return null;
 
+	}
+
+	@Override
+	public Set<String> generateKeysInAllGroups() {
+		Set<String> keys=new HashSet<String>();
+		
+		for (int i = 0; i < JessyGroupManager.getInstance().getReplicaGroups().size(); i++) {
+			int key=(i*numberOfObjectsPerGroup)+1;
+			keys.add(""+key);
+		}
+		return keys;
 	}
 
 }

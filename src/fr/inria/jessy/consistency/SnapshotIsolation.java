@@ -164,9 +164,10 @@ public abstract class SnapshotIsolation extends Consistency {
 			// group. Thus, the transaction will atomic multicast to all replica
 			// groups.
 
-			for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
-				keys.add("" + i);
-			}
+//			for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
+//				keys.add("" + i);
+//			}
+			keys=manager.getPartitioner().generateKeysInAllGroups();
 
 			return keys;
 		} else if (target == ConcernedKeysTarget.SEND_VOTES) {
@@ -179,9 +180,10 @@ public abstract class SnapshotIsolation extends Consistency {
 			// It add arbitrary keys such that there is one key for each replica
 			// group. Thus, the transaction will atomic multicast to all replica
 			// groups.
-			for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
-				keys.add("" + i);
-			}
+//			for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
+//				keys.add("" + i);
+//			}
+			keys=manager.getPartitioner().generateKeysInAllGroups();
 			return keys;
 		}
 	}
