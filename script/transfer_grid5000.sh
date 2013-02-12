@@ -3,19 +3,33 @@
 
 node=("msaeidaardekani@access.grid5000.fr")
 sites=("nancy" "lille" "grenoble" "bordeaux" "toulouse" "luxembourg" "sophia" "lyon" "rennes" "reims") #"nancy"
-files=("jessy.jar" "fractal.jar")
+#jarfiles=("jessy.jar")
+#shfiles=("experience.sh" "jessy.sh")
 
 let e=${#sites[@]}-1
 for i in `seq 0 $e`
 do	
 scriptdir="/home/msaeidaardekani/${sites[i]}/jessy/scripts"
+
+echo "Deleting output files"
+ssh msaeidaardekani@access.grid5000.fr rm -f /home/msaeidaardekani/${sites[i]}/jessy/scripts/*.fr*
+
 echo "Sending to " ${sites[i]}
 
-	let fc=${#files[@]}-1
+	let fc=${#jarfiles[@]}-1
 	for f in `seq 0 $fc`
 	do	
-		scp ../../../${files[$f]} $node:${scriptdir}
+		scp ../../../${jarfiles[$f]} $node:${scriptdir}
 	done
-#		scp -r Loaded_YCSB/4 $node:${scriptdir}
+
+	let fc=${#shfiles[@]}-1
+	for f in `seq 0 $fc`
+	do	
+		scp ./${shfiles[$f]} $node:${scriptdir}
+	done
+
+#	scp ../config.property $node:${scriptdir}
+
+#		scp -r Loaded_YCSB/Sequential/3 $node:${scriptdir}
 done
 
