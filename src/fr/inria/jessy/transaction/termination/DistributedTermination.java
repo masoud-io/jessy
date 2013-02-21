@@ -220,12 +220,14 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	 * Call back by Fractal upon receiving atomically delivered
 	 * {@link TerminateTransactionRequestMessage} or {@link Vote}.
 	 */
+	int tmpSeq=0;
 	@Deprecated
 	public void learn(Stream s, Serializable v) {
 
 		if (v instanceof TerminateTransactionRequestMessage) {
 
 			TerminateTransactionRequestMessage terminateRequestMessage = (TerminateTransactionRequestMessage) v;
+			System.out.println("Transaction " + terminateRequestMessage.getExecutionHistory().getTransactionHandler().getId() + " with seq " + tmpSeq++ );
 
 			castLatency.add(System.currentTimeMillis()-terminateRequestMessage.startCasting);
 			if (reInitProbes){

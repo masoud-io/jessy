@@ -110,7 +110,14 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 				while (otherValue>lastCommittedTransactionSeqNumber.get()){
 					synchronized (lastCommittedTransactionSeqNumber) {
 						try {
+//							int diff=otherValue-lastCommittedTransactionSeqNumber.get();
+							System.out.println("WAITING >>>>>>>>>>>>> other is " + otherValue + " last seqno is " + lastCommittedTransactionSeqNumber);
+//							long start=System.currentTimeMillis();
 							lastCommittedTransactionSeqNumber.wait();
+//							if (otherValue-lastCommittedTransactionSeqNumber.get()==diff){
+//								incrementAndGetLastCommittedSeqNumber();
+//								lastCommittedTransactionSeqNumber.notifyAll();
+//							}
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}	
@@ -118,6 +125,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 					}
 				}
 				return CompatibleResult.NEVER_COMPATIBLE;
+//				return CompatibleResult.COMPATIBLE;
 			}
 			
 			Integer selfValue = getValue(selfKey);
