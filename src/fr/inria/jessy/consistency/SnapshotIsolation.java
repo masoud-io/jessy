@@ -99,8 +99,11 @@ public abstract class SnapshotIsolation extends Consistency {
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
 
-		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-				.getKeys(), history2.getWriteSet().getKeys());
+//		if (manager.getMyGroup().size()==1)
+//			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+//					.getKeys(), history2.getWriteSet().getKeys());
+//		else 
+			return false;
 
 	}
 	
@@ -123,6 +126,7 @@ public abstract class SnapshotIsolation extends Consistency {
 		// WARNING: there is a cast to ScalarVector
 		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
 			newVersion = ScalarVector.incrementAndGetLastCommittedSeqNumber();
+			System.out.println("Preparing to commit with " + newVersion + " for transaction " + executionHistory.getTransactionHandler().getId());
 
 			for (JessyEntity je : executionHistory.getWriteSet().getEntities()) {
 				((ScalarVector) je.getLocalVector()).update(newVersion);
@@ -158,31 +162,13 @@ public abstract class SnapshotIsolation extends Consistency {
 					&& executionHistory.getCreateSet().size() == 0)
 				return new HashSet<String>(0);
 
-			// TODO this is an ad hoc way that only works for Modulo
-			// Partitioner.
-			// It add arbitrary keys such that there is one key for each replica
-			// group. Thus, the transaction will atomic multicast to all replica
-			// groups.
-
-//			for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
-//				keys.add("" + i);
-//			}
 			keys=manager.getPartitioner().generateKeysInAllGroups();
-
 			return keys;
 		} else if (target == ConcernedKeysTarget.SEND_VOTES) {
 			keys.addAll(executionHistory.getWriteSet().getKeys());
 			keys.addAll(executionHistory.getCreateSet().getKeys());
 			return keys;
 		} else {
-			// TODO this is an ad hoc way that only works for Modulo
-			// Partitioner.
-			// It add arbitrary keys such that there is one key for each replica
-			// group. Thus, the transaction will atomic multicast to all replica
-			// groups.
-//			for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
-//				keys.add("" + i);
-//			}
 			keys=manager.getPartitioner().generateKeysInAllGroups();
 			return keys;
 		}
