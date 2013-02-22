@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
 import net.sourceforge.fractal.Learner;
@@ -28,6 +30,7 @@ import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.UnicastLearner;
 import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.communication.message.TransactionHandlerMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
@@ -203,87 +206,96 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		return reply;
 	}
 
+
+	
 	@Override
 	public void receiveMessage(Object message, Channel channel) {
-		Vote vote = ((VoteMessage) message).getVote();
-
-		if (ConstantPool.logging)
-			logger.error("got a VoteMessage from " + vote.getVoterGroupName()
-					+ " for " + vote.getTransactionHandler().getId());
-
-		if (terminated.containsKey(vote.getTransactionHandler().getId()))
-			return;
-		addVote(vote);		
+		if (message instanceof VoteMessage){
+			voteMessageRM_Delivered(message);
+		}
+		else{
+			logger.error("Netty delivered an unexpected message");
+		}
 	}
 	
 	/**
 	 * Call back by Fractal upon receiving atomically delivered
 	 * {@link TerminateTransactionRequestMessage} or {@link Vote}.
 	 */
-	int tmpSeq=0;
 	@Deprecated
 	public void learn(Stream s, Serializable v) {
-
+		System.out.println("learned something");
 		if (v instanceof TerminateTransactionRequestMessage) {
-
-			TerminateTransactionRequestMessage terminateRequestMessage = (TerminateTransactionRequestMessage) v;
-			System.out.println("Transaction " + terminateRequestMessage.getExecutionHistory().getTransactionHandler().getId() + " with seq " + tmpSeq++ );
-
-			castLatency.add(System.currentTimeMillis()-terminateRequestMessage.startCasting);
-			if (reInitProbes){
-				if (terminateRequestMessage.getExecutionHistory().getCreateSet()==null ||
-						terminateRequestMessage.getExecutionHistory().getCreateSet().size()==0)
-					initProbesForExecution();
-			}
-			
-			if (ConstantPool.logging)
-				logger.error("got a TerminateTransactionRequestMessage for "
-					+ terminateRequestMessage.getExecutionHistory()
-							.getTransactionHandler().getId() + " , read keys :" + terminateRequestMessage.getExecutionHistory().getReadSet().getKeys());
-
-			terminateRequestMessage.getExecutionHistory()
-					.setStartCertification(System.nanoTime());
-			
-			ConsistencyFactory.getConsistencyInstance().transactionDeliveredForTermination(terminateRequestMessage);
-			
-			try{
-				synchronized (atomicDeliveredMessages) {				
-					TransactionHandler abortedTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousAbortedTransactionHandler();
-					if (abortedTransactionHandler!=null){
-						for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
-							if (req.getExecutionHistory().getTransactionHandler().equals(abortedTransactionHandler)){
-								garbageCollectJessyReplica(req);
-								if (applyTransactionsToDataStore!=null)
-									applyTransactionsToDataStore.removeFromQueue(req);
-								break;
-							}
-						}
-
-					}
-					atomicDeliveredMessages.offer(terminateRequestMessage);
-				}
-			}
-			catch (Exception ex){
-				ex.printStackTrace();
-			}
-			
-			
-			pool.execute(new CertifyAndVoteTask(terminateRequestMessage));
-
-		} else { // VoteMessage
-
-			Vote vote = ((VoteMessage) v).getVote();
-
-			if (ConstantPool.logging)
-				logger.debug("got a VoteMessage from " + vote.getVoterGroupName()
-					+ " for " + vote.getTransactionHandler().getId());
-
-			if (terminated.containsKey(vote.getTransactionHandler().getId()))
-				return;
-			addVote(vote);
-
+			System.out.println("learned TerminateTransactionRequestMessage");
+			TerminateTransactionMessageAM_Delivered((TerminateTransactionRequestMessage)v);
+		} else if (v instanceof VoteMessage){ 
+			voteMessageRM_Delivered(v);
+		}
+		else{
+			logger.error("Fractal delivered an unexpected message");
 		}
 
+	}
+	
+	private void TerminateTransactionMessageAM_Delivered(TerminateTransactionRequestMessage terminateRequestMessage){
+		castLatency.add(System.currentTimeMillis()-terminateRequestMessage.startCasting);
+		if (reInitProbes){
+			if (terminateRequestMessage.getExecutionHistory().getCreateSet()==null ||
+					terminateRequestMessage.getExecutionHistory().getCreateSet().size()==0)
+				initProbesForExecution();
+		}
+		
+		if (ConstantPool.logging)
+			logger.error("got a TerminateTransactionRequestMessage for "
+				+ terminateRequestMessage.getExecutionHistory()
+						.getTransactionHandler().getId() + " , read keys :" + terminateRequestMessage.getExecutionHistory().getReadSet().getKeys());
+
+		terminateRequestMessage.getExecutionHistory()
+				.setStartCertification(System.nanoTime());
+		
+		ConsistencyFactory.getConsistencyInstance().transactionDeliveredForTermination(terminateRequestMessage);
+		
+		try{
+			synchronized (atomicDeliveredMessages) {				
+				TransactionHandler abortedTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousAbortedTransactionHandler();
+				if (abortedTransactionHandler!=null){
+					for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
+						if (req.getExecutionHistory().getTransactionHandler().equals(abortedTransactionHandler)){
+							garbageCollectJessyReplica(req);
+							if (applyTransactionsToDataStore!=null)
+								applyTransactionsToDataStore.removeFromQueue(req);
+							break;
+						}
+					}
+
+				}
+				atomicDeliveredMessages.offer(terminateRequestMessage);
+			}
+		}
+		catch (Exception ex){
+			ex.printStackTrace();
+		}
+		
+		
+		pool.execute(new CertifyAndVoteTask(terminateRequestMessage));
+	}
+	
+	/**
+	 * Call upon receiving a new vote. Since the vote can be received
+	 * via both Netty and Fractal, this method should be called from both
+	 * {@link this#learn(Stream, Serializable)} and {@link this#receiveMessage(Object, Channel)}
+	 * @param msg
+	 */
+	private void voteMessageRM_Delivered(Object msg){
+		Vote vote = ((VoteMessage) msg).getVote();
+
+		if (ConstantPool.logging)
+			logger.debug("got a VoteMessage from " + vote.getVoterGroupName()
+				+ " for " + vote.getTransactionHandler().getId());
+
+		if (terminated.containsKey(vote.getTransactionHandler().getId()))
+			return;
+		addVote(vote);
 	}
 
 	private VotingQuorum getOrCreateVotingQuorums(TransactionHandler transactionHandler) {
@@ -506,12 +518,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				 */
 				executionHistory.clearReadValues();
 				terminationCommunication
-						.sendTerminateTransactionRequestMessage(
-								new TerminateTransactionRequestMessage(
-										executionHistory, destGroups, group
+						.terminateTransaction(executionHistory, destGroups, group
 												.name(), JessyGroupManager
-												.getInstance().getSourceId()),
-								destGroups);
+												.getInstance().getSourceId());
 
 				/*
 				 * Wait here until the result of the transaction is known.

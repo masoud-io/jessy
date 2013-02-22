@@ -6,10 +6,11 @@ import java.io.ObjectOutput;
 import java.util.Collection;
 
 import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
+
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
-public class TerminateTransactionRequestMessage extends WanAMCastMessage {
+public class TerminateTransactionRequestMessage extends WanAMCastMessage{
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 

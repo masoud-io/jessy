@@ -7,6 +7,7 @@ import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.transaction.ExecutionHistory;
 
 
 public class GenuineTerminationCommunication extends TerminationCommunication{
@@ -26,9 +27,9 @@ public class GenuineTerminationCommunication extends TerminationCommunication{
 	}
 
 	@Override
-	public void sendTerminateTransactionRequestMessage(
-			TerminateTransactionRequestMessage msg, Collection<String> dest) {
-		aMCastStream.atomicMulticast(msg);
+	public void terminateTransaction(ExecutionHistory ex,
+			Collection<String> gDest, String gSource, int swidSource) {
+		aMCastStream.atomicMulticast(new TerminateTransactionRequestMessage(ex,gDest,gSource,swidSource));
 	}
 
 }

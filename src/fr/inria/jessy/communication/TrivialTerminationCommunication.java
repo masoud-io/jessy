@@ -10,6 +10,7 @@ import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.transaction.ExecutionHistory;
 
 /**
  * This class implements a trivial termination protocol. I.e., multicast the
@@ -38,9 +39,9 @@ public class TrivialTerminationCommunication extends TerminationCommunication im
 
 	
 	@Override
-	public void sendTerminateTransactionRequestMessage(
-			TerminateTransactionRequestMessage msg, Collection<String> dest) {
-		mCastTransaction.multicast(msg, dest);
+	public void terminateTransaction(
+			ExecutionHistory ex, Collection<String> gDest, String gSource, int swidSource) {
+		mCastTransaction.multicast(new TerminateTransactionRequestMessage(ex,gDest,gSource,swidSource), gDest);
 		
 	}
 

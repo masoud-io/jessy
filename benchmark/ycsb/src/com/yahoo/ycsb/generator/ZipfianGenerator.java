@@ -17,7 +17,14 @@
 
 package com.yahoo.ycsb.generator;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.NetworkInterface;
 import java.util.Random;
+import java.util.regex.Pattern;
+
+import net.sourceforge.fractal.utils.IPUtils;
 
 /**
  * A generator of a zipfian distribution. It produces a sequence of items, such that some items are more popular than others, according
@@ -136,7 +143,26 @@ public class ZipfianGenerator extends IntegerGenerator
 		base=min;
 		zipfianconstant=_zipfianconstant;
 
-		random=new Random();	 
+		String ip="";
+		try {
+			// Get global interface
+			Process p = Runtime.getRuntime().exec("netstat -rn");
+		    BufferedReader output = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		    String line;
+		    while((line=output.readLine())!=null ){
+				if(Pattern.compile("^0.0.0.0").matcher(line).find()){
+				    NetworkInterface ni = NetworkInterface.getByName(line.split("\\s+")[7]);
+				    ip=IPUtils.getIPforInterface(ni).iterator().next();
+				    ip=ip.replace(".", "");
+				    break;
+				}		
+		    }
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Unable to determine a global scope IP.");
+		}
+		
+		random=new Random(Long.parseLong(ip));	 
 
 		theta=zipfianconstant;
 

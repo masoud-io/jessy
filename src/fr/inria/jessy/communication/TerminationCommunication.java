@@ -7,8 +7,8 @@ import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.ConstantPool.UNICAST_MODE;
-import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
+import fr.inria.jessy.transaction.ExecutionHistory;
 
 public abstract class TerminationCommunication {
 
@@ -17,7 +17,7 @@ public abstract class TerminationCommunication {
 	/**
 	 * Stream used for multicast messages
 	 */
-	private MulticastStream mCastStream;
+	protected MulticastStream mCastStream;
 
 	private UnicastClientManager cManager;
 
@@ -64,6 +64,6 @@ public abstract class TerminationCommunication {
 	 * whom replicate a key in the set returned by:
 	 * {@code Consistency#getConcerningKeys(fr.inria.jessy.transaction.ExecutionHistory)}
 	 */
-	public abstract void sendTerminateTransactionRequestMessage(
-			TerminateTransactionRequestMessage msg, Collection<String> dest);
+	public abstract void terminateTransaction(
+			ExecutionHistory ex, Collection<String> gDest, String gSource, int swidSource);
 }
