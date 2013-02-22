@@ -126,7 +126,6 @@ public abstract class SnapshotIsolation extends Consistency {
 		// WARNING: there is a cast to ScalarVector
 		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
 			newVersion = ScalarVector.incrementAndGetLastCommittedSeqNumber();
-			System.out.println("Preparing to commit with " + newVersion + " for transaction " + executionHistory.getTransactionHandler().getId());
 
 			for (JessyEntity je : executionHistory.getWriteSet().getEntities()) {
 				((ScalarVector) je.getLocalVector()).update(newVersion);

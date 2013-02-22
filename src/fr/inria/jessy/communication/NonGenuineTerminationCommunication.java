@@ -14,6 +14,7 @@ import net.sourceforge.fractal.consensus.gpaxos.GPaxosStream.RECOVERY;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.replication.Command;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.transaction.ExecutionHistory;
 
 public class NonGenuineTerminationCommunication extends
 		TerminationCommunication implements Learner {
@@ -39,9 +40,9 @@ public class NonGenuineTerminationCommunication extends
 	}
 
 	@Override
-	public void sendTerminateTransactionRequestMessage(
-			TerminateTransactionRequestMessage msg, Collection<String> dest) {
-		gpaxosStream.propose(new CommandBox(msg));
+	public void terminateTransaction(
+			ExecutionHistory ex, Collection<String> gDest, String gSource, int swidSource) {
+		gpaxosStream.propose(new CommandBox(new TerminateTransactionRequestMessage(ex,gDest,gSource,swidSource)));
 
 	}
 	

@@ -10,7 +10,9 @@ import net.sourceforge.fractal.utils.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.communication.GenuineTerminationCommunication;
+import fr.inria.jessy.communication.LightGenuineTerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunication;
+import fr.inria.jessy.communication.TrivialTerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -207,7 +209,7 @@ public class Serializability extends Consistency {
 			 * Do not return {@code TrivialTerminationCommunication} instance
 			 * because it may lead to <i>deadlock</i>.
 			 */
-			terminationCommunication = new GenuineTerminationCommunication(
+			terminationCommunication = new LightGenuineTerminationCommunication(
 					group, learner);
 		return terminationCommunication;
 	}
