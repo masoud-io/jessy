@@ -2,8 +2,8 @@
 
 
 node=("msaeidaardekani@access.grid5000.fr")
-sites=("nancy" "lille" "grenoble" "bordeaux" "toulouse" "luxembourg" "sophia" "lyon" "rennes" "reims") #"nancy"
-#jarfiles=("jessy.jar")
+sites=("nancy" "bordeaux" "lille" "grenoble" "toulouse" "luxembourg" "sophia" "lyon" "rennes" "reims") #"nancy"
+#jarfiles=("jessy.jar" "fractal.jar")
 #shfiles=("experience.sh" "jessy.sh")
 
 let e=${#sites[@]}-1
@@ -30,6 +30,6 @@ echo "Sending to " ${sites[i]}
 
 #	scp ../config.property $node:${scriptdir}
 
-#		scp -r Loaded_YCSB/Sequential/3 $node:${scriptdir}
+#		scp -r Loaded_YCSB/Sequential/6 $node:${scriptdir}
 done
 

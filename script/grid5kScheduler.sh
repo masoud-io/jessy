@@ -56,6 +56,10 @@ while [  $reservationFail == "true" ]; do
                 next=${next//\'/}
                 timeToWait=$(( $next - $now ))
                 minutes=$(($timeToWait / 60))
+                
+                cp tmpOar "tmpOar_$RES_ID"
+				cp OAR_JOB_KEY_PATH "OAR_JOB_KEY_PATH_$RES_ID"
+
                 echo "I will sleep for:" $minutes "minutes" #$(date -d @$timeToWait)
                 sleep $timeToWait
 
