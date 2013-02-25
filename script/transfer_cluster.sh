@@ -17,8 +17,8 @@ do
     #scp ./client.sh ${nodes[$i]}:${scriptdir}/client.sh
 	#scp ../config/YCSB/workloads/${workloadName} ${nodes[$i]}:${scriptdir}/${workloadName}
 #	scp ./concurrentlinkedhashmap.jar ${nodes[$i]}:${scriptdir}/concurrentlinkedhashmap.jar
-#	scp ../../Batelier/target/batelier-0.0.1-SNAPSHOT.jar ${nodes[$i]}:${scriptdir}/fractal.jar
-	scp ../../../fractal.jar ${nodes[$i]}:${scriptdir}/fractal.jar
+	scp ../../Batelier/target/batelier-0.0.1-SNAPSHOT.jar ${nodes[$i]}:${scriptdir}/fractal.jar
+#	scp ../../../fractal.jar ${nodes[$i]}:${scriptdir}/fractal.jar
 	scp ../../../jessy.jar ${nodes[$i]}:${scriptdir}/jessy.jar
 done
 

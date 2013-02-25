@@ -5,7 +5,7 @@
 	<classpathentry excluding="com/yahoo/ycsb/InfinispanClient.java|com/yahoo/ycsb/CassandraClient10.java|com/yahoo/ycsb/NHBaseClient.java|com/yahoo/ycsb/VoldemortClient.java|com/yahoo/ycsb/MongoDbClient.java|com/yahoo/ycsb/RedisClient.java" kind="src" path="benchmark/ycsb/src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/fractal.jar" sourcepath="/Fractal"/>
+	<classpathentry kind="lib" path="lib/fractal.jar" sourcepath="/Batilier"/>
 	<classpathentry kind="lib" path="lib/je-5.0.34.jar" sourcepath="/local/msaeida/JavaPackages/Berkeley DB je-5.0.34"/>
 	<classpathentry kind="lib" path="lib/junit-4.10.jar" sourcepath="/data/msaeida/Java Packages/junit4.10/junit/tests"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar" sourcepath="/local/msaeida/JavaPackages/apache-log4j-1.2.16 (2)"/>

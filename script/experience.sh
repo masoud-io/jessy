@@ -35,6 +35,8 @@ function syncConfig(){
                         echo "synchronizing configuration in "$nodeName"..."
 
                         rsync --delete -az ./configuration.sh $nodeName.grid5000.fr:~/jessy/scripts/configuration.sh
+                        
+                        rsync --delete -az ./config.property $nodeName.grid5000.fr:~/jessy/scripts/config.property
 
                         next=$(($next+3))
                 done
