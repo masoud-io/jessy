@@ -18,10 +18,8 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.communication.GenuineTerminationCommunication;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.MessagePropagation;
-import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
@@ -362,18 +360,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		keys.addAll(executionHistory.getWriteSet().getKeys());
 		keys.addAll(executionHistory.getCreateSet().getKeys());
 		return keys;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Learner learner) {
-		if (terminationCommunication == null)
-			terminationCommunication = new GenuineTerminationCommunication(
-					group, learner);
-		return terminationCommunication;
 	}
 
 	private static AtomicInteger tempSequenceNumber=new AtomicInteger(0);

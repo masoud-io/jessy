@@ -4,12 +4,10 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
 import net.sourceforge.fractal.Learner;
@@ -27,10 +25,9 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
+import fr.inria.jessy.communication.TerminationCommunicationFactory;
 import fr.inria.jessy.communication.UnicastLearner;
-import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
-import fr.inria.jessy.communication.message.TransactionHandlerMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
@@ -63,9 +60,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 	private TerminationCommunication terminationCommunication;
 	
-	@SuppressWarnings("unused")
-	private UnicastServerManager sManager;
-
 	private Group group;
 
 	private Map<UUID, TransactionHandler> terminationRequests;
@@ -165,8 +159,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	public DistributedTermination(DistributedJessy j) {
 		jessy = j;
 		group = JessyGroupManager.getInstance().getMyGroup();
-		terminationCommunication = jessy.getConsistency()
-				.getOrCreateTerminationCommunication(group, this);
+		
+		terminationCommunication=TerminationCommunicationFactory.initAndGetConsistency(group, this, this);
 		logger.info("initialized");
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
@@ -177,8 +171,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		terminated = new ConcurrentLinkedHashMap.Builder<UUID, Object>()
 				.maximumWeightedCapacity(ConstantPool.JESSY_TERMINATED_TRANSACTIONS_LOG_SIZE)
 				.build();
-		
-		sManager=new UnicastServerManager(this, ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT);
 		
 		if (!jessy.getConsistency().applyingTransactionCommute()){
 			applyTransactionsToDataStore=new ApplyTransactionsToDataStore(this);
@@ -224,9 +216,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	 */
 	@Deprecated
 	public void learn(Stream s, Serializable v) {
-		System.out.println("learned something");
 		if (v instanceof TerminateTransactionRequestMessage) {
-			System.out.println("learned TerminateTransactionRequestMessage");
 			TerminateTransactionMessageAM_Delivered((TerminateTransactionRequestMessage)v);
 		} else if (v instanceof VoteMessage){ 
 			voteMessageRM_Delivered(v);
@@ -431,7 +421,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	}
 	
 	public void closeConnections(){
-		sManager.close();
+		terminationCommunication.close();
 	}
 	
 	/**

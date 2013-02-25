@@ -6,7 +6,6 @@ import java.util.Collection;
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
-import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
@@ -21,23 +20,23 @@ import fr.inria.jessy.transaction.ExecutionHistory;
  */
 public class TrivialTerminationCommunication extends TerminationCommunication implements Learner{
 
+	public TrivialTerminationCommunication(Learner fractalLearner,
+			UnicastLearner nettyLearner) {
+		super(fractalLearner, nettyLearner);
+		mCastTransaction = FractalManager.getInstance().getOrCreateMulticastStream(
+				"", manager.getMyGroup().name());
+		mCastTransaction.registerLearner("MulticastMessage", this);
+		mCastTransaction.start();
+		realLearner = fractalLearner;
+	}
+
+
 	/**
 	 * Stream used for multicast messages
 	 */
 	protected MulticastStream mCastTransaction;
 	private Learner realLearner;
 
-	
-	public TrivialTerminationCommunication(Group group, Learner learner) {
-		super(learner);
-		mCastTransaction = FractalManager.getInstance().getOrCreateMulticastStream(
-				"", manager.getMyGroup().name());
-		mCastTransaction.registerLearner("MulticastMessage", this);
-		mCastTransaction.start();
-		realLearner = learner;
-	}
-
-	
 	@Override
 	public void terminateTransaction(
 			ExecutionHistory ex, Collection<String> gDest, String gSource, int swidSource) {

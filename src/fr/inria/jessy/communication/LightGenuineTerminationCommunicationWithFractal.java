@@ -11,19 +11,30 @@ import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
+import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.TransactionHandlerMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionHandler;
 
 /**
- * TODO
+ * This class provides a light termination communication primitives.
+ * 
+ * Since {@link TerminateTransactionRequestMessage} size is huge, and fractal should perform two consensus with this message, the cost of
+ * genuine atomic multicast is huge.
+ * This class instead performs two communications in parallel.
+ * It rm-cast(TerminateTransactionRequestMessage) and am-cast(TransactionId).
+ * Thus {@link TransactionHandler#getId()} is light, the consensus is performed way faster than when we use {@link GenuineTerminationCommunication}.
+ * 
+ * Our study shows that with this class, SER performance increases by 70%.
  * 
  * @author Masoud Saeida Ardekani
  * 
  */
-public class LightGenuineTerminationCommunication extends TerminationCommunication implements Learner, Runnable{
+public class LightGenuineTerminationCommunicationWithFractal extends TerminationCommunication implements Learner, Runnable{
 
 	/**
 	 * Stream used for multicast messages
@@ -35,8 +46,13 @@ public class LightGenuineTerminationCommunication extends TerminationCommunicati
 	private Map<UUID,TerminateTransactionRequestMessage> rm_DeliveredTerminateTransactionRequestMessages=new ConcurrentHashMap<UUID, TerminateTransactionRequestMessage>();
 	private LinkedBlockingQueue<UUID> am_DeliveredTransactionHandlerMessage=new LinkedBlockingQueue<UUID>();
 	
-	public LightGenuineTerminationCommunication(Group group, Learner learner) {
-		super(learner);
+	protected MulticastStream mCastStream;
+	
+	public LightGenuineTerminationCommunicationWithFractal(Group group, Learner fractalLearner, UnicastLearner nettyLearner) {
+		super(fractalLearner,nettyLearner);
+		mCastStream = FractalManager.getInstance().getOrCreateMulticastStream(
+				ConstantPool.JESSY_VOTE_STREAM, manager.getMyGroup().name());
+		
 		mCastStream.registerLearner("TerminateTransactionRequestMessage", this);
 		
 		aMCastStream = FractalManager.getInstance()
@@ -44,7 +60,7 @@ public class LightGenuineTerminationCommunication extends TerminationCommunicati
 		aMCastStream.registerLearner("TransactionHandlerMessage", this);
 		aMCastStream.start();
 		
-		realLearner = learner;
+		realLearner = fractalLearner;
 		
 		ExecutorPool.getInstance().submit(this);
 	}
@@ -55,8 +71,8 @@ public class LightGenuineTerminationCommunication extends TerminationCommunicati
 			ExecutionHistory eh, Collection<String> gDest, String gSource, int swidSource) {
 		try{
 			
-			aMCastStream.atomicMulticast(new TransactionHandlerMessage(eh.getTransactionHandler().getId(),gDest,gSource,swidSource));
 			mCastStream.multicast(new TerminateTransactionRequestMessage(eh,gDest,gSource,swidSource));
+			aMCastStream.atomicMulticast(new TransactionHandlerMessage(eh.getTransactionHandler().getId(),gDest,gSource,swidSource));
 			
 		}
 		catch(Exception exception){
@@ -69,16 +85,14 @@ public class LightGenuineTerminationCommunication extends TerminationCommunicati
 	public void learn(Stream arg0, Serializable s) {
 		if (s instanceof TransactionHandlerMessage){
 			TransactionHandlerMessage msg=(TransactionHandlerMessage)s;
-			System.out.println("delivered TransactionHandlerMessage" + msg.getId());
 			am_DeliveredTransactionHandlerMessage.offer(msg.getId());
-			synchronized (am_DeliveredTransactionHandlerMessage) {
-				am_DeliveredTransactionHandlerMessage.notify();
-			}
 		}else
 		{
 			TerminateTransactionRequestMessage msg=(TerminateTransactionRequestMessage)s;
-			System.out.println("msg id is " + msg.getExecutionHistory().getTransactionHandler());
 			rm_DeliveredTerminateTransactionRequestMessages.put(msg.getExecutionHistory().getTransactionHandler().getId(), msg);
+			synchronized (rm_DeliveredTerminateTransactionRequestMessages) {
+				rm_DeliveredTerminateTransactionRequestMessages.notify();
+			}
 		}
 	}
 
@@ -95,13 +109,12 @@ public class LightGenuineTerminationCommunication extends TerminationCommunicati
 				while (!delivered){
 
 					if (rm_DeliveredTerminateTransactionRequestMessages.containsKey(id)){
-						System.out.println("BINGO, DELIVERED");
 						realLearner.learn(null, rm_DeliveredTerminateTransactionRequestMessages.remove(id));
 						delivered=true;
 					}
 					else{
-						synchronized (am_DeliveredTransactionHandlerMessage) {
-							am_DeliveredTransactionHandlerMessage.wait();
+						synchronized (rm_DeliveredTerminateTransactionRequestMessages) {
+							rm_DeliveredTerminateTransactionRequestMessages.wait();
 						}
 					}
 				}

@@ -30,9 +30,11 @@ public class ConsistencyFactory {
 			_instance = new NonMonotonicSnapshotIsolationWithGMUVector(
 					dataStore);
 		} else if (consistencyTypeName.equals("si")) {
-			_instance = new SnapshotIsolationWithBroadcast(dataStore);
+			//TODO
+			System.err.println("si with ab-cast is not yet implemented. Use si2 instead");
+//			_instance = new SnapshotIsolationWithBroadcast(dataStore);
 		} else if (consistencyTypeName.equals("si2")) {
-			_instance = new SnapshotIsolationWithMulticast(dataStore);
+			_instance = new SnapshotIsolation(dataStore);
 		} else if (consistencyTypeName.equals("ser")) {
 			_instance = new Serializability(dataStore);
 		} else if (consistencyTypeName.equals("rc")) {

@@ -100,7 +100,6 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 		} else {
 
 			Integer otherValue = (Integer) other.getValue(selfKey);
-
 			/**
 			 * this site has not received yet the required version
 			 */
@@ -114,6 +113,7 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 //							System.out.println("WAITING >>>>>>>>>>>>> other is " + otherValue + " last seqno is " + lastCommittedTransactionSeqNumber);
 //							long start=System.currentTimeMillis();
 							lastCommittedTransactionSeqNumber.wait();
+//							System.out.println("OUTTTTTT >>>>>>>>>>>>> other is " + otherValue + " last seqno is " + lastCommittedTransactionSeqNumber);
 //							if (otherValue-lastCommittedTransactionSeqNumber.get()==diff){
 //								incrementAndGetLastCommittedSeqNumber();
 //								lastCommittedTransactionSeqNumber.notifyAll();

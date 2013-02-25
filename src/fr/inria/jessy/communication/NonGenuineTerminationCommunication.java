@@ -25,52 +25,65 @@ public class NonGenuineTerminationCommunication extends
 	protected GPaxosStream gpaxosStream;
 	private Learner realLearner;
 
-	public NonGenuineTerminationCommunication(Group group, Learner learner) {
-		super(learner);
+	public NonGenuineTerminationCommunication(Group group,
+			Learner fractalLearner, UnicastLearner nettyLearner) {
+		super(fractalLearner, nettyLearner);
 		gpaxosStream = FractalManager.getInstance().getOrCreateGPaxosStream(
 				"gpaxosStream",
-				manager.getEverybodyGroup().name(), // the proposers are all the nodes in the system. 
-				manager.getReplicaGroups().iterator().next().name(), // pick a random group as the acceptors for GPaxos. 
-				manager.getAllReplicaGroup().name(), // the learners are all the replicas.
-				"net.sourceforge.fractal.consensus.gpaxos.cstruct.CSched", 
+				manager.getEverybodyGroup().name(), // the proposers are all the
+													// nodes in the system.
+				manager.getReplicaGroups().iterator().next().name(), // pick a
+																		// random
+																		// group
+																		// as
+																		// the
+																		// acceptors
+																		// for
+																		// GPaxos.
+				manager.getAllReplicaGroup().name(), // the learners are all the
+														// replicas.
+				"net.sourceforge.fractal.consensus.gpaxos.cstruct.CSched",
 				false, RECOVERY.DEFAULT, 1000, 1000);
 		gpaxosStream.registerLearner("*", this);
 		gpaxosStream.start();
-		realLearner = learner;
+		realLearner = fractalLearner;
 	}
 
 	@Override
-	public void terminateTransaction(
-			ExecutionHistory ex, Collection<String> gDest, String gSource, int swidSource) {
-		gpaxosStream.propose(new CommandBox(new TerminateTransactionRequestMessage(ex,gDest,gSource,swidSource)));
+	public void terminateTransaction(ExecutionHistory ex,
+			Collection<String> gDest, String gSource, int swidSource) {
+		gpaxosStream.propose(new CommandBox(
+				new TerminateTransactionRequestMessage(ex, gDest, gSource,
+						swidSource)));
 
 	}
-	
+
 	@Override
 	public void learn(Stream s, Serializable b) {
-		realLearner.learn(s, ((CommandBox)b).msg);
+		realLearner.learn(s, ((CommandBox) b).msg);
 	}
-	
-	private static class CommandBox extends Command{
-		
+
+	private static class CommandBox extends Command {
+
 		public TerminateTransactionRequestMessage msg;
-		
+
 		@Deprecated
-		public CommandBox(){
+		public CommandBox() {
 		}
-		
-		public CommandBox(TerminateTransactionRequestMessage m){
+
+		public CommandBox(TerminateTransactionRequestMessage m) {
 			super(FractalManager.getInstance().membership.myId());
 			msg = m;
 		}
-		
+
 		@Override
-		public String toString(){
+		public String toString() {
 			return msg.getExecutionHistory().getTransactionHandler().toString();
 		}
-		
+
 		@Override
-		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		public void readExternal(ObjectInput in) throws IOException,
+				ClassNotFoundException {
 			super.readExternal(in);
 			msg = (TerminateTransactionRequestMessage) in.readObject();
 		}
@@ -79,8 +92,7 @@ public class NonGenuineTerminationCommunication extends
 			super.writeExternal(out);
 			out.writeObject(msg);
 		}
-		
-	}
 
+	}
 
 }

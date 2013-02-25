@@ -3,16 +3,10 @@ package fr.inria.jessy.consistency;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sourceforge.fractal.Learner;
-import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.communication.GenuineTerminationCommunication;
-import fr.inria.jessy.communication.LightGenuineTerminationCommunication;
-import fr.inria.jessy.communication.TerminationCommunication;
-import fr.inria.jessy.communication.TrivialTerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -53,6 +47,7 @@ public class Serializability extends Consistency {
 			return true;
 		}
 
+		
 		/*
 		 * If the transaction is not init, we consider the create operations as
 		 * update operations. Thus, we move them to the writeSet List.
@@ -199,19 +194,6 @@ public class Serializability extends Consistency {
 				keys.addAll(executionHistory.getCreateSet().getKeys());
 		}
 		return keys;
-	}
-
-	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Learner learner) {
-		if (terminationCommunication == null)
-			/*
-			 * Do not return {@code TrivialTerminationCommunication} instance
-			 * because it may lead to <i>deadlock</i>.
-			 */
-			terminationCommunication = new LightGenuineTerminationCommunication(
-					group, learner);
-		return terminationCommunication;
 	}
 
 }
