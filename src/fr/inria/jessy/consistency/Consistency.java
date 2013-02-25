@@ -4,10 +4,7 @@ import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_
 
 import java.util.Set;
 
-import net.sourceforge.fractal.Learner;
-import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -29,7 +26,6 @@ public abstract class Consistency {
 	public static boolean SEND_READSET_DURING_TERMINATION=true;
 	
 	protected DataStore store;
-	protected TerminationCommunication terminationCommunication;
 	protected JessyGroupManager manager = JessyGroupManager.getInstance();
 
 	protected static boolean votePiggybackRequired = false;
@@ -37,14 +33,6 @@ public abstract class Consistency {
 	public Consistency(DataStore store) {
 		this.store = store;
 	}
-
-	/**
-	 * Returns the TerminationCommunication object
-	 * 
-	 * @return
-	 */
-	public abstract TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Learner learner);
 
 	/**
 	 * This method checks whether the transaction with the input
@@ -202,5 +190,5 @@ public abstract class Consistency {
 	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
 		
 	}
-
+	
 }

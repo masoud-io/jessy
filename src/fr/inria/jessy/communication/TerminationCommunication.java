@@ -2,61 +2,40 @@ package fr.inria.jessy.communication;
 
 import java.util.Collection;
 
-import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
-import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.ConstantPool.UNICAST_MODE;
+import fr.inria.jessy.ConstantPool.MULTICAST_MODE;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.termination.DistributedTermination;
 
+/**
+ * Abstract class for communication primitives during termination of a transaction.
+ * This class is needed by {@link DistributedTermination} 
+ * 
+ * @author Masoud Saeida Ardekani
+ *
+ */
 public abstract class TerminationCommunication {
 
 	protected JessyGroupManager manager = JessyGroupManager.getInstance();
-
-	/**
-	 * Stream used for multicast messages
-	 */
-	protected MulticastStream mCastStream;
-
-	private UnicastClientManager cManager;
-
-	public TerminationCommunication(Learner learner) {
-		mCastStream = FractalManager.getInstance().getOrCreateMulticastStream(
-				ConstantPool.JESSY_VOTE_STREAM, manager.getMyGroup().name());
-		mCastStream.registerLearner("VoteMessage", learner);
-		mCastStream.start();
-
-		cManager = new UnicastClientManager(null,
-				ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, null);
+	
+	VoteMulticast voteMulticast;
+	
+	public TerminationCommunication(Learner fractalLearner, UnicastLearner nettyLearner) {
+		
+			if (ConstantPool.JESSY_VOTING_PHASE_MULTICAST_MODE == MULTICAST_MODE.FRACTAL) {
+				voteMulticast=new VoteMulticastWithFractal(fractalLearner,nettyLearner);
+			} else {
+				voteMulticast=new VoteMulticastWithNetty(nettyLearner);
+			}
 	}
-
-	/**
-	 * Multicast the voteMessage to the WriteSet of the transaction.
-	 * <p>
-	 * If the transaction coordinator is not among the receivers
-	 * (isCertifyAtCoordinator is false), the voteMessage is also unicast to the
-	 * coordinator. This optimization saves one message delay.
-	 * 
-	 * @param voteMessage
-	 *            the VoteMessage to be multicast
-	 */
+	
 	public void sendVote(VoteMessage voteMessage,
 			boolean isCertifyAtCoordinator, int coordinatorSwid,
 			String coordinatorHost) {
 
-
-		mCastStream.multicast(voteMessage);
-		if (!isCertifyAtCoordinator) {
-			if (ConstantPool.JESSY_VOTING_PHASE_UNICST_MODE == UNICAST_MODE.FRACTAL) {
-				mCastStream.unicast(voteMessage, coordinatorSwid,
-						manager.getEverybodyGroup());
-			} else {
-
-				cManager.unicast(voteMessage, coordinatorSwid, coordinatorHost);
-			}
-		}
-
+		voteMulticast.sendVote(voteMessage, isCertifyAtCoordinator, coordinatorSwid, coordinatorHost);
 	}
 
 	/**
@@ -66,4 +45,8 @@ public abstract class TerminationCommunication {
 	 */
 	public abstract void terminateTransaction(
 			ExecutionHistory ex, Collection<String> gDest, String gSource, int swidSource);
+	
+	public void close(){
+		voteMulticast.close();
+	}
 }

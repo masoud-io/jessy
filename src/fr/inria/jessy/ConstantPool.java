@@ -2,6 +2,7 @@ package fr.inria.jessy;
 
 import java.util.concurrent.TimeUnit;
 
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 
 import net.sourceforge.fractal.Messageable;
@@ -23,12 +24,30 @@ public class ConstantPool {
 	public static enum UNICAST_MODE{
 		FRACTAL, NETTY
 	}
+	
+	public static enum MULTICAST_MODE{
+		FRACTAL, NETTY
+	}
+	
+	public static enum GENUINE_TERMINATION_MODE{
+		GENUINE, LIGHT_GENUINE
+	}
 
+	public static final GENUINE_TERMINATION_MODE TERMINATION_COMMUNICATION_TYPE = GENUINE_TERMINATION_MODE.LIGHT_GENUINE;
+	
 	/**
-	 * GPaxos Configurations
+	 * Specify the framework to be used for multicasting the vote
+	 * Only Fractal is available
 	 */
-	public static final int MAX_INTERGROUP_MESSAGE_DELAY = 3000;
-	public static final int CONSENSUS_LATENCY = 2000;
+	public static final MULTICAST_MODE JESSY_VOTING_PHASE_MULTICAST_MODE=MULTICAST_MODE.FRACTAL;
+	
+	/**
+	 * Specify the framework to be used for multicasting {@link TerminateTransactionRequestMessage}
+	 * Only Fractal is available
+	 */
+	public static final MULTICAST_MODE JESSY_LIGHT_GENUINE_MULTICAST_MODE=MULTICAST_MODE.FRACTAL;
+
+	public static final UNICAST_MODE JESSY_REMOTE_READ_UNICST_MODE=UNICAST_MODE.NETTY;
 	
 	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for marshalling unmarshalling facilities
 	
@@ -46,8 +65,7 @@ public class ConstantPool {
 	public static final int JESSY_NETTY_REMOTE_READER_PORT=4250;
 	public static final int JESSY_NETTY_VOTING_PHASE_PORT=4251;
 	
-	public static final UNICAST_MODE JESSY_REMOTE_READ_UNICST_MODE=UNICAST_MODE.NETTY;
-	public static final UNICAST_MODE JESSY_VOTING_PHASE_UNICST_MODE=UNICAST_MODE.NETTY;
+	public static final int JESSY_NETTY_TERMINATIONMESSAGE_PORT=4252;
 	
 	/**
 	 * Communication layer related constants

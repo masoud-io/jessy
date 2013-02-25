@@ -3,14 +3,10 @@ package fr.inria.jessy.consistency;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sourceforge.fractal.Learner;
-import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.communication.GenuineTerminationCommunication;
-import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
@@ -30,15 +26,6 @@ public abstract class NonMonotonicSnapshotIsolation extends Consistency {
 		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
 				.getKeys(), history2.getWriteSet().getKeys());
 		
-	}
-
-	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Learner learner) {
-		if (terminationCommunication == null)
-			terminationCommunication = new GenuineTerminationCommunication(
-					group, learner);
-		return terminationCommunication;
 	}
 
 	@Override

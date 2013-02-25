@@ -3,14 +3,10 @@ package fr.inria.jessy.consistency;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sourceforge.fractal.Learner;
-import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.communication.GenuineTerminationCommunication;
-import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
@@ -94,15 +90,6 @@ public abstract class UpdateSerializability extends Consistency {
 			keys.addAll(executionHistory.getCreateSet().getKeys());
 			return keys;
 		}
-	}
-	
-	@Override
-	public TerminationCommunication getOrCreateTerminationCommunication(
-			Group group, Learner learner) {
-		if (terminationCommunication == null)
-			terminationCommunication = new GenuineTerminationCommunication(
-					group, learner);
-		return terminationCommunication;
 	}
 	
 }

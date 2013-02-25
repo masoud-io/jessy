@@ -4,12 +4,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collection;
-import java.util.UUID;
 
 import net.sourceforge.fractal.Messageable;
-
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.store.EntitySet;
@@ -28,11 +24,11 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-	protected static final ConcurrentLinkedHashMap<UUID,ExecutionHistory> cache = 
-			new ConcurrentLinkedHashMap.Builder<UUID,ExecutionHistory>()
-			.maximumWeightedCapacity(5000)
-			.build();
-	
+//	protected static final ConcurrentLinkedHashMap<UUID,ExecutionHistory> cache = 
+//			new ConcurrentLinkedHashMap.Builder<UUID,ExecutionHistory>()
+//			.maximumWeightedCapacity(5000)
+//			.build();
+//	
 	public static enum TransactionType {
 		/**
 		 * the execution history is for a read only transaction
@@ -291,12 +287,12 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 
 	}
 	
-	public Object readResolve() {
-		if(!cache.containsKey(transactionHandler.getId())){
-			cache.put(transactionHandler.getId(),this);
-		}
-		return cache.get(transactionHandler.getId());
-	}
+//	public Object readResolve() {
+//		if(!cache.containsKey(transactionHandler.getId())){
+//			cache.put(transactionHandler.getId(),this);
+//		}
+//		return cache.get(transactionHandler.getId());
+//	}
 
 
 }
