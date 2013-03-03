@@ -34,6 +34,9 @@ public class FilePersistence {
 		
 		String group=""+JessyGroupManager.getInstance().getReplicaGroups().indexOf(JessyGroupManager.getInstance().getMyGroup());
 		String numberOfgroups = "" + JessyGroupManager.getInstance().getReplicaGroups().size();
+		//If the group size is 1, we add underscore to the path (thus the path is 1_), because the scripts needs to write to a file named "1".
+		if (numberOfgroups.equals("1"))
+			numberOfgroups=numberOfgroups + "_";
 		String consistency = ConsistencyFactory.getConsistencyTypeName();
 
 		
