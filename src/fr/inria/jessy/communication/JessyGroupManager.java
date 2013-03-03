@@ -222,6 +222,7 @@ public class JessyGroupManager {
 
 
 		String strGroupSize=Configuration.readConfig(ConstantPool.GROUP_SIZE);
+		System.out.println(">>> Group Size is " + strGroupSize + " <<<");
 		if (strGroupSize==null || strGroupSize.equals(""))
 			groupSize=1;
 		else

@@ -1,25 +1,27 @@
 
 
 
-node=("msaeidaardekani@access.grid5000.fr")
-sites=("nancy" "bordeaux" "lille" "grenoble" "toulouse" "luxembourg" "sophia" "lyon" "rennes" "reims") #"nancy"
-#jarfiles=("jessy.jar" "fractal.jar")
+node=("$1@access.grid5000.fr")
+sites=("nancy" "bordeaux"  "toulouse" "rennes" "lille" "grenoble" "luxembourg" "sophia" "lyon" "reims" "nancy") #"nancy"
 #shfiles=("experience.sh" "jessy.sh")
+#jarfiles=(`ls *.jar | tr '\n' ' '`)
+#shfiles=(`ls *.sh | tr '\n' ' '`)
+#dirs=("Loaded_YCSB/Sequential/2" "Loaded_YCSB/Sequential/3" "Loaded_YCSB/Sequential/4" "config")
 
 let e=${#sites[@]}-1
 for i in `seq 0 $e`
 do	
-scriptdir="/home/msaeidaardekani/${sites[i]}/jessy/scripts"
+scriptdir="/home/$1/${sites[i]}/jessy/scripts"
 
 echo "Deleting output files"
-ssh msaeidaardekani@access.grid5000.fr rm -f /home/msaeidaardekani/${sites[i]}/jessy/scripts/*.fr*
+ssh $1@access.grid5000.fr rm -rf /home/$1/${sites[i]}/jessy/scripts/*.fr*
 
 echo "Sending to " ${sites[i]}
 
 	let fc=${#jarfiles[@]}-1
 	for f in `seq 0 $fc`
 	do	
-		scp ../../../${jarfiles[$f]} $node:${scriptdir}
+		scp ./${jarfiles[$f]} $node:${scriptdir}
 	done
 
 	let fc=${#shfiles[@]}-1
@@ -28,8 +30,20 @@ echo "Sending to " ${sites[i]}
 		scp ./${shfiles[$f]} $node:${scriptdir}
 	done
 
-#	scp ../config.property $node:${scriptdir}
+        let fc=${#dirs[@]}-1
+        for f in `seq 0 $fc`
+        do
+		scp -r ${dirs[$f]} $node:${scriptdir}
+        done
 
-#		scp -r Loaded_YCSB/Sequential/6 $node:${scriptdir}
+
+#	scp ../config.property $node:${scriptdir}
+#	scp log4j.properties $node:${scriptdir}
+
+
+	scp ../../../jessy.jar $node:${scriptdir}
+	scp ../../Batelier/target/batelier-0.0.1-SNAPSHOT.jar $node:${scriptdir}/fractal.jar
+
+#		scp -v -r Loaded_YCSB/Sequential/2 $node:${scriptdir}
 done
 
