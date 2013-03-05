@@ -182,7 +182,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 * @inheritDoc
 	 */
 	@Override
-	public void prepareToCommit(ExecutionHistory executionHistory) {
+	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
+		ExecutionHistory executionHistory=msg.getExecutionHistory();
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 			return;
 
@@ -302,8 +303,8 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	 * because of performance issues.
 	 */
 	@Override
-	public void postAbort(ExecutionHistory executionHistory, Vote vote){
-		
+	public void postAbort(TerminateTransactionRequestMessage msg, Vote vote){
+		ExecutionHistory executionHistory=msg.getExecutionHistory();
 		
 		if (!isWCoordinator(executionHistory))
 			return;
@@ -317,19 +318,19 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 				dest.add(group.name());
 		}
 		
-		ParallelSnapshotIsolationPropagateMessage msg = new ParallelSnapshotIsolationPropagateMessage(
+		ParallelSnapshotIsolationPropagateMessage propagateMsg = new ParallelSnapshotIsolationPropagateMessage(
 				pb, dest, manager.getMyGroup().name(),
 				manager.getSourceId());
 		/*
 		 * Send to every other groups except myself
 		 */
-		propagation.propagate(msg);
+		propagation.propagate(propagateMsg);
 		
 
 		/*
 		 * send to myself
 		 */
-		learn(null, msg);
+		learn(null, propagateMsg);
 		
 	}
 

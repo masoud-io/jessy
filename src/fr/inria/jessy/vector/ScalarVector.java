@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sleepycat.persist.model.Persistent;
@@ -24,13 +25,24 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 	
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
 	
+	/*
+	 * Each committed transaction is assigned a sequence number (already given by {@link this#lastCommittingTransactionSeqNumber} 
+	 */
 	public static  AtomicInteger lastCommittedTransactionSeqNumber;
 	
+	/*
+	 * Each ab-deliver transaction is assigned a new sequence number and put in this queue until it is committed.
+	 * This queue is for the sake of reading consistent snapshots.
+	 */
+	public static  ConcurrentLinkedQueue<Integer> committingTransactionSeqNumber=new ConcurrentLinkedQueue<Integer>();
+	
 	static{
-		if (FilePersistence.loadFromDisk)
+		if (FilePersistence.loadFromDisk){
 			lastCommittedTransactionSeqNumber=(AtomicInteger)FilePersistence.readObject("ScalarVector.lastCommittedTransactionSeqNumber");
-		else
+		}
+		else{
 			lastCommittedTransactionSeqNumber = new AtomicInteger(0);
+		}
 	}
 	
 	public synchronized static int incrementAndGetLastCommittedSeqNumber(){
@@ -40,6 +52,15 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 				return result;
 		}
 	}
+	
+	public static void removeCommittingTransactionSeqNumber(int sequenceNumber){
+		synchronized (committingTransactionSeqNumber) {
+			committingTransactionSeqNumber.remove(sequenceNumber);
+			committingTransactionSeqNumber.notifyAll();
+		}
+		
+	}
+	
 	
 	public static int getLastCommittedSeqNumber(){
 		return lastCommittedTransactionSeqNumber.get();
@@ -103,21 +124,11 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 			/**
 			 * this site has not received yet the required version
 			 */
-			
 			if (otherValue > lastCommittedTransactionSeqNumber.get()) {
-				
 				while (otherValue>lastCommittedTransactionSeqNumber.get()){
 					synchronized (lastCommittedTransactionSeqNumber) {
 						try {
-//							int diff=otherValue-lastCommittedTransactionSeqNumber.get();
-//							System.out.println("WAITING >>>>>>>>>>>>> other is " + otherValue + " last seqno is " + lastCommittedTransactionSeqNumber);
-//							long start=System.currentTimeMillis();
 							lastCommittedTransactionSeqNumber.wait();
-//							System.out.println("OUTTTTTT >>>>>>>>>>>>> other is " + otherValue + " last seqno is " + lastCommittedTransactionSeqNumber);
-//							if (otherValue-lastCommittedTransactionSeqNumber.get()==diff){
-//								incrementAndGetLastCommittedSeqNumber();
-//								lastCommittedTransactionSeqNumber.notifyAll();
-//							}
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}	
@@ -125,7 +136,22 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 					}
 				}
 				return CompatibleResult.NEVER_COMPATIBLE;
-//				return CompatibleResult.COMPATIBLE;
+			}
+
+			Integer committingHead=committingTransactionSeqNumber.peek();
+			if (committingHead!=null && committingHead<otherValue) {
+				while (committingHead!=null && committingHead<otherValue){
+					synchronized (committingTransactionSeqNumber) {
+						try {
+							committingTransactionSeqNumber.wait(100);
+							committingHead=committingTransactionSeqNumber.peek();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}	
+
+					}
+				}
+				return CompatibleResult.NEVER_COMPATIBLE;
 			}
 			
 			Integer selfValue = getValue(selfKey);

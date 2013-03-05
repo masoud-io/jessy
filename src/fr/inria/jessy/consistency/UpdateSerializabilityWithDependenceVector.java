@@ -1,5 +1,6 @@
 package fr.inria.jessy.consistency;
 
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -139,7 +140,8 @@ public class UpdateSerializabilityWithDependenceVector extends UpdateSerializabi
 	}
 
 	@Override
-	public void prepareToCommit(ExecutionHistory executionHistory) {
+	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
+		ExecutionHistory executionHistory=msg.getExecutionHistory();
 		// updatedVector is a new vector. It will be used as a new
 		// vector for all modified vectors.
 		Vector<String> updatedVector = VectorFactory.getVector("");

@@ -348,7 +348,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			 * Prepare the transaction. I.e., update the vectors of modified
 			 * entities.
 			 */
-			jessy.getConsistency().prepareToCommit(executionHistory);
+			jessy.getConsistency().prepareToCommit(msg);
 
 			/*
 			 * Apply the modified entities.
@@ -670,7 +670,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					 * we can garbage collect right away, and exit.
 					 */
 					if (state==TransactionState.ABORTED_BY_VOTING || state ==TransactionState.ABORTED_BY_TIMEOUT){
-						jessy.getConsistency().postAbort(msg.getExecutionHistory(),vote);
+						jessy.getConsistency().postAbort(msg,vote);
 						measureCertificationTime(msg);
 						garbageCollectJessyReplica(msg);
 						return;

@@ -223,7 +223,8 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 	}
 
 	@Override
-	public void prepareToCommit(ExecutionHistory executionHistory) {
+	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
+		ExecutionHistory executionHistory=msg.getExecutionHistory();
 
 		GMUVector<String> commitVC = receivedVectors.get(executionHistory
 				.getTransactionHandler().getId());
