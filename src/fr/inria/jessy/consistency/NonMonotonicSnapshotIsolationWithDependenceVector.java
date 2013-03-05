@@ -3,6 +3,7 @@ package fr.inria.jessy.consistency;
 
 import static fr.inria.jessy.vector.ValueVector.ComparisonResult.EQUAL_TO;
 import static fr.inria.jessy.vector.ValueVector.ComparisonResult.GREATER_THAN;
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -107,7 +108,8 @@ public class NonMonotonicSnapshotIsolationWithDependenceVector extends NonMonoto
 	}
 
 	@Override
-	public void prepareToCommit(ExecutionHistory executionHistory) {
+	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
+		ExecutionHistory executionHistory=msg.getExecutionHistory();
 
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 			return;

@@ -3,13 +3,17 @@ package fr.inria.jessy.consistency;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.sourceforge.fractal.utils.CollectionUtils;
+
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.Vector;
 
@@ -96,18 +100,32 @@ public class SnapshotIsolation extends Consistency {
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
-
-//		if (manager.getMyGroup().size()==1)
-//			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-//					.getKeys(), history2.getWriteSet().getKeys());
-//		else 
-			return false;
-
+			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+					.getKeys(), history2.getWriteSet().getKeys());
 	}
 	
 	@Override
 	public boolean applyingTransactionCommute() {
 		return false;
+	}
+	
+	@Override
+	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
+		try{
+			int newVersion;
+			// WARNING: there is a cast to ScalarVector
+			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
+				newVersion = ScalarVector.incrementAndGetLastCommittedSeqNumber();
+			} else {
+				newVersion = 0;
+			}
+			
+			ScalarVector.committingTransactionSeqNumber.offer(newVersion);
+			msg.setComputedObjectUponDelivery(newVersion);
+		}
+		catch (Exception ex){
+			ex.printStackTrace();
+		}
 	}
 
 	/**
@@ -118,27 +136,32 @@ public class SnapshotIsolation extends Consistency {
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void prepareToCommit(ExecutionHistory executionHistory) {
+	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
+		ExecutionHistory executionHistory=msg.getExecutionHistory();
 
-		int newVersion;
+		int newVersion=(Integer)msg.getComputedObjectUponDelivery();		
 		// WARNING: there is a cast to ScalarVector
 		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
-			newVersion = ScalarVector.incrementAndGetLastCommittedSeqNumber();
 
 			for (JessyEntity je : executionHistory.getWriteSet().getEntities()) {
 				((ScalarVector) je.getLocalVector()).update(newVersion);
 			}
 
 		} else {
-			newVersion = 0;
 			for (JessyEntity je : executionHistory.getCreateSet().getEntities()) {
 				((ScalarVector) je.getLocalVector()).update(newVersion);
 			}
 		}
 
+		ScalarVector.removeCommittingTransactionSeqNumber(newVersion);
+		
 		logger.debug(executionHistory.getTransactionHandler() + " >> "
 				+ "COMMITED, lastCommittedTransactionSeqNumber:"
 				+ ScalarVector.getLastCommittedSeqNumber());
+	}
+	
+	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){
+		ScalarVector.removeCommittingTransactionSeqNumber((Integer)msg.getComputedObjectUponDelivery());
 	}
 
 	@Override

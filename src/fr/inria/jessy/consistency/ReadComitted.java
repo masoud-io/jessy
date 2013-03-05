@@ -3,6 +3,7 @@ package fr.inria.jessy.consistency;
 import java.util.HashSet;
 import java.util.Set;
 
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
@@ -30,7 +31,7 @@ public class ReadComitted extends Consistency {
 	}
 
 	@Override
-	public void prepareToCommit(ExecutionHistory executionHistory) {
+	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
 
 	}
 

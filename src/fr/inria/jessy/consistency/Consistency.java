@@ -70,7 +70,7 @@ public abstract class Consistency {
 	 * 
 	 * @param executionHistory
 	 */
-	public abstract void prepareToCommit(ExecutionHistory executionHistory);
+	public abstract void prepareToCommit(TerminateTransactionRequestMessage msg);
 
 	/**
 	 * Returns the set of keys that are concerned by the transaction. Concerning
@@ -109,7 +109,7 @@ public abstract class Consistency {
 	 * @param executionHistory ExecutionHistory of the aborted transaction
 	 * @param vote The vote used during certification 
 	 */
-	public void postAbort(ExecutionHistory executionHistory, Vote Vote){
+	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){
 		return;
 	}
 

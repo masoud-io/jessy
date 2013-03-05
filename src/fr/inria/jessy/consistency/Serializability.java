@@ -7,6 +7,7 @@ import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -161,8 +162,9 @@ public class Serializability extends Consistency {
 	}
 
 	@Override
-	public void prepareToCommit(ExecutionHistory executionHistory) {
-		for (JessyEntity entity : executionHistory.getWriteSet().getEntities()) {
+	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
+		
+		for (JessyEntity entity : msg.getExecutionHistory().getWriteSet().getEntities()) {
 			entity.getLocalVector().update(null, null);
 		}
 	}

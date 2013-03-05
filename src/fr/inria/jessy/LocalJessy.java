@@ -9,6 +9,7 @@ import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import com.sleepycat.je.DatabaseException;
 
+import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
@@ -100,7 +101,7 @@ public class LocalJessy extends Jessy {
 		if (consistency.certify(handler2executionHistory.get(transactionHandler))) {
 
 			// certification test has returned true. we can commit.
-			consistency.prepareToCommit(result);
+			consistency.prepareToCommit(new TerminateTransactionRequestMessage(result, null, null, -1));
 			applyModifiedEntities(result);
 			applyModifiedEntities(result);
 			result.changeState(TransactionState.COMMITTED);
