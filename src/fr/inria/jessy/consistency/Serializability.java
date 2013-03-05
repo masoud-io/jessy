@@ -73,7 +73,7 @@ public class Serializability extends Consistency {
 
 					if (lastComittedEntity.getLocalVector().isCompatible(
 							tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
-						logger.warn("Certification fails for transaction "
+						logger.debug("Certification fails for transaction "
 								+ executionHistory.getTransactionHandler().getId()
 								+ " because it has written " + tmp.getKey()
 								+ " with version " + tmp.getLocalVector()
@@ -106,7 +106,7 @@ public class Serializability extends Consistency {
 					if (lastComittedEntity.getLocalVector().isCompatible(
 							tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 
-						logger.warn("Certification fails for transaction "
+						logger.debug("Certification fails for transaction "
 								+ executionHistory.getTransactionHandler().getId()
 								+ " because it has written " + tmp.getKey()
 								+ " with version " + tmp.getLocalVector()
