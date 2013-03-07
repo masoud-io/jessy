@@ -89,8 +89,8 @@ public class LightGenuineTerminationCommunicationWithFractal extends Termination
 		}else
 		{
 			TerminateTransactionRequestMessage msg=(TerminateTransactionRequestMessage)s;
-			rm_DeliveredTerminateTransactionRequestMessages.put(msg.getExecutionHistory().getTransactionHandler().getId(), msg);
 			synchronized (rm_DeliveredTerminateTransactionRequestMessages) {
+				rm_DeliveredTerminateTransactionRequestMessages.put(msg.getExecutionHistory().getTransactionHandler().getId(), msg);
 				rm_DeliveredTerminateTransactionRequestMessages.notify();
 			}
 		}
@@ -107,13 +107,13 @@ public class LightGenuineTerminationCommunicationWithFractal extends Termination
 				delivered=false;
 				
 				while (!delivered){
+					synchronized (rm_DeliveredTerminateTransactionRequestMessages) {
 
-					if (rm_DeliveredTerminateTransactionRequestMessages.containsKey(id)){
-						realLearner.learn(null, rm_DeliveredTerminateTransactionRequestMessages.remove(id));
-						delivered=true;
-					}
-					else{
-						synchronized (rm_DeliveredTerminateTransactionRequestMessages) {
+						if (rm_DeliveredTerminateTransactionRequestMessages.containsKey(id)){
+							realLearner.learn(null, rm_DeliveredTerminateTransactionRequestMessages.remove(id));
+							delivered=true;
+						}
+						else{
 							rm_DeliveredTerminateTransactionRequestMessages.wait();
 						}
 					}
