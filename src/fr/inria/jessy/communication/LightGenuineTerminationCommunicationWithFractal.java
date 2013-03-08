@@ -72,7 +72,7 @@ public class LightGenuineTerminationCommunicationWithFractal extends Termination
 		try{
 			
 			mCastStream.multicast(new TerminateTransactionRequestMessage(eh,gDest,gSource,swidSource));
-			aMCastStream.atomicMulticast(new TransactionHandlerMessage(eh.getTransactionHandler().getId(),gDest,gSource,swidSource));
+			aMCastStream.atomicMulticast(new TransactionHandlerMessage(eh,gDest,gSource,swidSource));
 			
 		}
 		catch(Exception exception){

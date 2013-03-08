@@ -26,6 +26,7 @@ import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.VotePiggyback;
@@ -47,6 +48,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 	static {
 		votePiggybackRequired = true;
+		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
 	}
 
 	private MessagePropagation propagation;
@@ -100,6 +102,12 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 	}
 	
+	@Override
+	public boolean certificationCommute(TransactionTouchedKeys tk1,
+			TransactionTouchedKeys tk2) {
+		return !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.writeKeys);
+	}
+
 	@Override
 	public boolean applyingTransactionCommute() {
 		return true;

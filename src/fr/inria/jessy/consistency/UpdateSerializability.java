@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 
 public abstract class UpdateSerializability extends Consistency {
@@ -37,12 +38,23 @@ public abstract class UpdateSerializability extends Consistency {
 		
 		return result;
 		
-//		return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-//				.getKeys(), history2.getReadSet().getKeys())
-//				&& !CollectionUtils.isIntersectingWith(history2.getWriteSet()
-//						.getKeys(), history1.getReadSet().getKeys());
-
 	}
+	
+	@Override
+	public boolean certificationCommute(TransactionTouchedKeys tk1,
+			TransactionTouchedKeys tk2) {
+		boolean result=true;;
+		
+		if (tk1.readKeys!=null && tk2.writeKeys!=null){
+			result = !CollectionUtils.isIntersectingWith(tk2.writeKeys, tk1.readKeys);
+		}
+		if (tk1.writeKeys!=null && tk2.readKeys!=null){
+			result = result && !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.readKeys);
+		}
+		
+		return result;
+	}
+
 	
 	@Override
 	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,

@@ -150,23 +150,6 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 		return true;
 	}
 
-	@Override
-	public boolean certificationCommute(ExecutionHistory history1,
-			ExecutionHistory history2) {
-
-			boolean result=true;
-			if (history1.getReadSet()!=null && history2.getWriteSet()!=null){
-				result = !CollectionUtils.isIntersectingWith(history2.getWriteSet()
-						.getKeys(), history1.getReadSet().getKeys());
-			}
-			if (history1.getWriteSet()!=null && history2.getReadSet()!=null){
-				result = result && !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-						.getKeys(), history2.getReadSet().getKeys());
-			}
-			return result;
-
-	}
-	
 	/**
 	 * With GMUVector, it is not safe to apply transactions concurrently, and they should be applied as they are delivered. 
 	 */

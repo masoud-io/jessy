@@ -12,6 +12,7 @@ import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.vector.ScalarVector;
@@ -21,6 +22,10 @@ public class SnapshotIsolation extends Consistency {
 	private static Logger logger = Logger
 			.getLogger(SnapshotIsolation.class);
 
+	static{
+		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
+	}
+	
 	public SnapshotIsolation(DataStore store) {
 		super(store);
 		Consistency.SEND_READSET_DURING_TERMINATION=false;
@@ -102,6 +107,12 @@ public class SnapshotIsolation extends Consistency {
 			ExecutionHistory history2) {
 			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
 					.getKeys(), history2.getWriteSet().getKeys());
+	}
+	
+	@Override
+	public boolean certificationCommute(TransactionTouchedKeys tk1,
+			TransactionTouchedKeys tk2) {
+		return !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.writeKeys);
 	}
 	
 	@Override

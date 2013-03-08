@@ -6,9 +6,14 @@ import java.util.Set;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 
 public class ReadComitted extends Consistency {
 
+	static{
+		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
+	}
+	
 	public ReadComitted(DataStore store) {
 		super(store);
 		Consistency.SEND_READSET_DURING_TERMINATION=false;
@@ -22,6 +27,12 @@ public class ReadComitted extends Consistency {
 	@Override
 	public boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2) {
+		return true;
+	}
+	
+	@Override
+	public boolean certificationCommute(TransactionTouchedKeys tk1,
+			TransactionTouchedKeys tk2) {
 		return true;
 	}
 	

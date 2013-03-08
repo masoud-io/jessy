@@ -78,8 +78,7 @@ public class LightGenuineTerminationCommunicationWithNetty extends
 
 			multiCast(new TerminateTransactionRequestMessage(eh, gDest,
 					gSource, swidSource), gDest);
-			aMCastStream.atomicMulticast(new TransactionHandlerMessage(eh
-					.getTransactionHandler().getId(), gDest, gSource,
+			aMCastStream.atomicMulticast(new TransactionHandlerMessage(eh, gDest, gSource,
 					swidSource));
 
 		} catch (Exception exception) {
@@ -105,17 +104,17 @@ public class LightGenuineTerminationCommunicationWithNetty extends
 				delivered = false;
 
 				while (!delivered) {
+					synchronized (rm_DeliveredTerminateTransactionRequestMessages) {
 
-					if (rm_DeliveredTerminateTransactionRequestMessages
-							.containsKey(id)) {
-						realLearner.learn(null,
-								rm_DeliveredTerminateTransactionRequestMessages
-										.remove(id));
-						delivered = true;
-					} else {
-						synchronized (rm_DeliveredTerminateTransactionRequestMessages) {
+						if (rm_DeliveredTerminateTransactionRequestMessages
+								.containsKey(id)) {
+							realLearner.learn(null,
+									rm_DeliveredTerminateTransactionRequestMessages
+									.remove(id));
+							delivered = true;
+						} else {
 							rm_DeliveredTerminateTransactionRequestMessages
-									.wait();
+							.wait();
 						}
 					}
 				}
@@ -131,10 +130,10 @@ public class LightGenuineTerminationCommunicationWithNetty extends
 	public void receiveMessage(Object message, Channel channel) {
 		if (message instanceof TerminateTransactionRequestMessage) {
 			TerminateTransactionRequestMessage msg = (TerminateTransactionRequestMessage) message;
-			rm_DeliveredTerminateTransactionRequestMessages
-					.put(msg.getExecutionHistory().getTransactionHandler()
-							.getId(), msg);
 			synchronized (rm_DeliveredTerminateTransactionRequestMessages) {
+				rm_DeliveredTerminateTransactionRequestMessages
+				.put(msg.getExecutionHistory().getTransactionHandler()
+						.getId(), msg);
 				rm_DeliveredTerminateTransactionRequestMessages.notify();
 			}
 		} else {

@@ -307,5 +307,4 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 
 	}
 
-
 }

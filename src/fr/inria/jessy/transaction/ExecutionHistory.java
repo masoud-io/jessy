@@ -3,11 +3,13 @@ package fr.inria.jessy.transaction;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import net.sourceforge.fractal.Messageable;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.consistency.Consistency;
+import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 
@@ -24,11 +26,6 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-//	protected static final ConcurrentLinkedHashMap<UUID,ExecutionHistory> cache = 
-//			new ConcurrentLinkedHashMap.Builder<UUID,ExecutionHistory>()
-//			.maximumWeightedCapacity(5000)
-//			.build();
-//	
 	public static enum TransactionType {
 		/**
 		 * the execution history is for a read only transaction
@@ -223,6 +220,17 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 		return coodinatorHost;
 	}
 	
+	public TransactionTouchedKeys getTransactionTouchedKeys(){
+		if (ConsistencyFactory.getConsistencyInstance().READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST){
+			return new TransactionTouchedKeys(new ArrayList<String>(readSet.getKeys()), 
+					new ArrayList<String>(writeSet.getKeys()), new ArrayList<String>(createSet.getKeys()));
+		}
+		else{
+			return new TransactionTouchedKeys(null, 
+					new ArrayList<String>(writeSet.getKeys()), new ArrayList<String>(createSet.getKeys()));
+		}
+	}
+	
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 
@@ -287,12 +295,4 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 
 	}
 	
-//	public Object readResolve() {
-//		if(!cache.containsKey(transactionHandler.getId())){
-//			cache.put(transactionHandler.getId(),this);
-//		}
-//		return cache.get(transactionHandler.getId());
-//	}
-
-
 }

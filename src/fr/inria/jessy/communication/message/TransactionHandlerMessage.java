@@ -1,9 +1,16 @@
 package fr.inria.jessy.communication.message;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Collection;
 import java.util.UUID;
 
 import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
+import fr.inria.jessy.consistency.Consistency;
+import fr.inria.jessy.consistency.ConsistencyFactory;
+import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 
 /**
  * This class is for performance improvement.
@@ -16,16 +23,44 @@ import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
  */
 public class TransactionHandlerMessage extends WanAMCastMessage{
 
+	private final Consistency consistency=ConsistencyFactory.getConsistencyInstance();
+	
+	TransactionTouchedKeys keys;
+	
 	public TransactionHandlerMessage(){
 		
 	}
 	
-	public TransactionHandlerMessage(UUID id, Collection<String> dest, String gSource, int source){
-		super(id, dest, gSource,source);
+	public TransactionHandlerMessage(ExecutionHistory eh, Collection<String> dest, String gSource, int source){
+		super(eh.getTransactionHandler().getId(), dest, gSource,source);
+		keys=eh.getTransactionTouchedKeys();
+	}
+	
+	public boolean commute(WanAMCastMessage m){
+		return consistency.certificationCommute(keys, ((TransactionHandlerMessage) m).getKeys());
 	}
 	
 	public UUID getId(){
 		return (UUID)serializable;
+	}
+	
+	public TransactionTouchedKeys getKeys() {
+		return keys;
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(keys);
+	}
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		super.readExternal(in);
+		keys=(TransactionTouchedKeys) in.readObject();
 	}
 
 }

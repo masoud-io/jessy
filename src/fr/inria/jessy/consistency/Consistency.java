@@ -8,6 +8,7 @@ import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
 
@@ -24,12 +25,18 @@ public abstract class Consistency {
 	 * costs. For example, this variable is set to false in RC and SI.
 	 */
 	public static boolean SEND_READSET_DURING_TERMINATION=true;
+
+	/**
+	 * if set to true, keys of object read during execution are also returned in {@link ExecutionHistory#getTransactionTouchedKeys()}
+	 * Thus, they will also be piggy backed in {@link ExecTransactionHandlerMessage}. 
+	 */
+	public static boolean READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=true;
 	
 	protected DataStore store;
 	protected JessyGroupManager manager = JessyGroupManager.getInstance();
 
 	protected static boolean votePiggybackRequired = false;
-
+	
 	public Consistency(DataStore store) {
 		this.store = store;
 	}
@@ -55,6 +62,9 @@ public abstract class Consistency {
 	 */
 	public abstract boolean certificationCommute(ExecutionHistory history1,
 			ExecutionHistory history2);
+	
+	public abstract boolean certificationCommute(TransactionTouchedKeys tk1,
+			TransactionTouchedKeys tk2);
 	
 	/**
 	 * Returns true iff the transaction can be applied to the data store 
