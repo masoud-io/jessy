@@ -2,6 +2,8 @@ package fr.inria.jessy.communication;
 
 import java.util.Collection;
 
+import javax.management.RuntimeErrorException;
+
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;

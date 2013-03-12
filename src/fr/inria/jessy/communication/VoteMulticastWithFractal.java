@@ -31,9 +31,9 @@ public class VoteMulticastWithFractal extends VoteMulticast{
 		mCastStream.registerLearner("VoteMessage", fractalLearner);
 		mCastStream.start();
 		
-		if (manager.isProxy()){
-			sManager=new UnicastServerManager(nettyLearner, ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT);
-		}
+//		if (manager.isProxy()){
+//			sManager=new UnicastServerManager(nettyLearner, ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT);
+//		}
 	}
 	
 	/**
@@ -53,23 +53,23 @@ public class VoteMulticastWithFractal extends VoteMulticast{
 
 		mCastStream.multicast(voteMessage);
 		if (!isCertifyAtCoordinator) {
-//			mCastStream.unicast(voteMessage, coordinatorSwid,
-//					manager.getEverybodyGroup());
-			if (cManager==null){
-				cManager = new UnicastClientManager(null,
-						ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, null);
-			}
-			cManager.unicast(voteMessage, coordinatorSwid, coordinatorHost);
+			mCastStream.unicast(voteMessage, coordinatorSwid,
+					manager.getEverybodyGroup());
+//			if (cManager==null){
+//				cManager = new UnicastClientManager(null,
+//						ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, null);
+//			}
+//			cManager.unicast(voteMessage, coordinatorSwid, coordinatorHost);
 		}
 
 	}
 
 	@Override
 	public void close() {
-		if (cManager!=null)
-			cManager.close();
+//		if (cManager!=null)
+//			cManager.close();
 		
-		sManager.close();
+//		sManager.close();
 	}
 
 }

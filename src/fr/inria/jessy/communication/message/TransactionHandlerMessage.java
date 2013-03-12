@@ -24,28 +24,25 @@ import fr.inria.jessy.transaction.TransactionTouchedKeys;
 public class TransactionHandlerMessage extends WanAMCastMessage{
 
 	private final Consistency consistency=ConsistencyFactory.getConsistencyInstance();
-	
+
 	TransactionTouchedKeys keys;
-	
+
 	public TransactionHandlerMessage(){
-		
+
 	}
-	
+
 	public TransactionHandlerMessage(ExecutionHistory eh, Collection<String> dest, String gSource, int source){
-		super(eh.getTransactionHandler().getId(), dest, gSource,source);
+		super(eh.getTransactionHandler().getId().toString(), dest, gSource,source);
 		keys=eh.getTransactionTouchedKeys();
-	}
+	}	
 	
 	public boolean commute(WanAMCastMessage m){
-		return consistency.certificationCommute(keys, ((TransactionHandlerMessage) m).getKeys());
+		if(this==m) return true;
+		return consistency.certificationCommute(keys, ((TransactionHandlerMessage) m).keys);
 	}
-	
+
 	public UUID getId(){
-		return (UUID)serializable;
-	}
-	
-	public TransactionTouchedKeys getKeys() {
-		return keys;
+		return UUID.fromString((String)serializable);
 	}
 
 	@Override
@@ -58,7 +55,7 @@ public class TransactionHandlerMessage extends WanAMCastMessage{
 	@SuppressWarnings("unchecked")
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
-			ClassNotFoundException {
+	ClassNotFoundException {
 		super.readExternal(in);
 		keys=(TransactionTouchedKeys) in.readObject();
 	}

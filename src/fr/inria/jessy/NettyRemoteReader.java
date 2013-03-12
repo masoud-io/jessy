@@ -49,7 +49,7 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 
 		if (JessyGroupManager.getInstance().isProxy()) {	
 			cmanager = new UnicastClientManager(this,ConstantPool.JESSY_NETTY_REMOTE_READER_PORT, JessyGroupManager.getInstance()
-					.getAllReplicaGroup().members());
+					.getAllReplicaGroup().allNodes());
 
 			// The fastest way to handle client messages is to put them in a
 			// queue, and only one thread tries to take them from the queue and
@@ -101,7 +101,7 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 			toSend.add((ReadRequest<JessyEntity>) readRequest);
 			
 			cmanager.unicast(
-					new ReadRequestMessage(toSend), dests.iterator().next().members().iterator().next());
+					new ReadRequestMessage(toSend), dests.iterator().next().allNodes().iterator().next());
 			
 			pendingRemoteReads.put(readRequest.getReadRequestId(),
 					remoteRead);

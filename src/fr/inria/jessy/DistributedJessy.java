@@ -41,6 +41,7 @@ import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.VotePiggyback;
@@ -164,6 +165,7 @@ public class DistributedJessy extends Jessy {
 			MessageStream.addClass(EntitySet.class.getName());
 
 			MessageStream.addClass(Keyspace.class.getName());
+			MessageStream.addClass(TransactionTouchedKeys.class.getName());
 
 		} catch (Exception ex) {
 			ex.printStackTrace();

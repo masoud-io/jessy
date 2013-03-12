@@ -166,7 +166,7 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 
 					// Send them.
 					for (Group dest : toSend.keySet()) {
-						int swid = dest.members().iterator().next(); // FIXME
+						int swid = dest.allNodes().iterator().next(); // FIXME
 																		// improve
 																		// this.
 						remoteReadStream.unicast(

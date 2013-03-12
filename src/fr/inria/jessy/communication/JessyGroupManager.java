@@ -88,8 +88,6 @@ public class JessyGroupManager {
 
 			String fractalFile = Configuration
 					.readConfig(ConstantPool.FRACTAL_FILE);
-
-
 			
 			/*
 			 * Initialize Fractal and create the replica groups
@@ -111,7 +109,7 @@ public class JessyGroupManager {
 			 */
 			Collection<Integer> replicas = new HashSet<Integer>(
 					fractal.membership.allNodes());
-			allReplicaGroup = fractal.membership.getOrCreateTCPGroup(
+			allReplicaGroup = fractal.membership.getOrCreateNettyGroup(
 					ConstantPool.JESSY_ALL_SERVERS_GROUP,
 					ConstantPool.JESSY_ALL_SERVERS_PORT);
 			allReplicaGroup.putNodes(replicas);
@@ -136,8 +134,10 @@ public class JessyGroupManager {
 			 * Initialize a group that contains everybody.
 			 */
 			everybodyGroup = fractal.membership
-					.getOrCreateTCPDynamicGroup(ConstantPool.JESSY_EVERYBODY_GROUP,
-							ConstantPool.JESSY_EVERYBODY_PORT);
+					.getOrCreateNettyGroup(
+							ConstantPool.JESSY_EVERYBODY_GROUP,
+							ConstantPool.JESSY_EVERYBODY_PORT,
+							true);
 			everybodyGroup.putNodes(fractal.membership.allNodes());
 			logger.debug("everybodyGroup is : " + everybodyGroup);
 			

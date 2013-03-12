@@ -181,8 +181,8 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 	public String toString() {
 		String result;
 		result = transactionState.toString() + "\n";
-		result = result + readSet.toString() + "\n";
-		result = result + writeSet.toString() + "\n";
+		if(readSet!=null) result = result + readSet.toString() + "\n";
+		if(writeSet!=null) result = result + writeSet.toString() + "\n";
 		return result;
 	}
 

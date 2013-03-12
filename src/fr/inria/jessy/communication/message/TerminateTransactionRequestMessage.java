@@ -6,7 +6,6 @@ import java.io.ObjectOutput;
 import java.util.Collection;
 
 import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
-
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory;
 

@@ -63,7 +63,7 @@ public class LightGenuineTerminationCommunicationWithNetty extends
 		} else {
 			cManager = new UnicastClientManager(null,
 					ConstantPool.JESSY_NETTY_TERMINATIONMESSAGE_PORT, manager
-							.getAllReplicaGroup().members());
+							.getAllReplicaGroup().allNodes());
 		}
 
 		realLearner = fractalLearner;
@@ -143,7 +143,7 @@ public class LightGenuineTerminationCommunicationWithNetty extends
 
 	private void multiCast(Object obj, Collection<String> dest) {
 		for (String g : dest) {
-			for (Integer swid : manager.getMembership().group(g).members()) {
+			for (Integer swid : manager.getMembership().group(g).allNodes()) {
 				cManager.unicast(obj, swid);
 			}
 		}

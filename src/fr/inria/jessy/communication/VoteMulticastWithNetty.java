@@ -32,7 +32,7 @@ public class VoteMulticastWithNetty extends VoteMulticast{
 		if (cManager ==null){
 			if (!manager.isProxy()){
 				cManager = new UnicastClientManager(null,
-						ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, manager.getAllReplicaGroup().members());
+						ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, manager.getAllReplicaGroup().allNodes());
 			}
 		}
 
@@ -46,7 +46,7 @@ public class VoteMulticastWithNetty extends VoteMulticast{
 	
 	private void multiCast(Object obj, Collection<String> dest){
 		for (String g:dest){
-			for (Integer swid:manager.getMembership().group(g).members()){
+			for (Integer swid:manager.getMembership().group(g).allNodes()){
 				cManager.unicast(obj, swid);
 			}
 		}

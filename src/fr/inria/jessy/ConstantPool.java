@@ -47,7 +47,7 @@ public class ConstantPool {
 	 */
 	public static final MULTICAST_MODE JESSY_LIGHT_GENUINE_MULTICAST_MODE=MULTICAST_MODE.FRACTAL;
 
-	public static final UNICAST_MODE JESSY_REMOTE_READ_UNICST_MODE=UNICAST_MODE.NETTY;
+	public static final UNICAST_MODE JESSY_REMOTE_READ_UNICST_MODE=UNICAST_MODE.FRACTAL;
 	
 	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for marshalling unmarshalling facilities
 	
