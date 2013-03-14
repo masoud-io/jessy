@@ -11,7 +11,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
@@ -19,13 +18,11 @@ import net.sourceforge.fractal.multicast.MulticastStream;
 
 import com.yahoo.ycsb.YCSBEntity;
 
-import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
-import net.sourceforge.fractal.utils.ObjectUtils.InnerObjectFactory;
 /**
  * 
  * This class implements {@link RemoteReader} by using Netty package for

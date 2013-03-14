@@ -35,6 +35,9 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 	public static ConcurrentVersionVector<String> committedVTS;
 	
 	@Deprecated
+	public VersionVector(){}
+	
+	
 	public VersionVector(JessyGroupManager m) {
 		init(m);
 	}

@@ -79,12 +79,8 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,
 	// CONSTRUCTORS
 	//
 
-	/**
-	 * To be externalizable.
-	 */
-	public ValueVector() {
-
-	}
+	@Deprecated
+	public ValueVector() {}
 
 	/**
 	 * Creates a new empty value vector with the specified default value.

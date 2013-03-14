@@ -37,6 +37,10 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	/**
 	 * Needed for BerkeleyDB
 	 */
+	@Deprecated
+	public GMUVector(){
+	}
+	
 	public GMUVector(JessyGroupManager m) {
 		init(m);
 	}

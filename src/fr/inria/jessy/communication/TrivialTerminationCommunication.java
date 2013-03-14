@@ -3,7 +3,6 @@ package fr.inria.jessy.communication;
 import java.io.Serializable;
 import java.util.Collection;
 
-import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.multicast.MulticastMessage;

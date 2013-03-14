@@ -14,6 +14,7 @@ public class NullVector<K> extends Vector<K> implements Externalizable{
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
 	
+	@Deprecated
 	public NullVector() {
 		super();
 	}

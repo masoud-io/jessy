@@ -47,6 +47,7 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 		_bydefault = -1;
 	}
 
+	@Deprecated
 	public CompactVector() {
 		super(_bydefault);
 		keys = new ArrayList<K>(1);
