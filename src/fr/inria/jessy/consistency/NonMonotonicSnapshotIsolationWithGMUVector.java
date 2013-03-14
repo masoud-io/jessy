@@ -135,6 +135,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
 		try{
 			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
+				GMUVector.init(manager);
 				GMUVector<String> prepVC = GMUVector.mostRecentVC.clone();
 				int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
 				prepVC.setValue(prepVC.getSelfKey(), prepVCAti);

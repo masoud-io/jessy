@@ -31,20 +31,6 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 
 	public static GMUVector<String> mostRecentVC;
 
-	static {
-	}
-
-	/**
-	 * Needed for BerkeleyDB
-	 */
-	@Deprecated
-	public GMUVector(){
-	}
-	
-	public GMUVector(JessyGroupManager m) {
-		init(m);
-	}
-	
 	public synchronized static void init(JessyGroupManager m){
 		if(lastPrepSC!=null)
 			return;
@@ -59,7 +45,14 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 		}
 
 	}
-
+	
+	/**
+	 * Needed for BerkeleyDB
+	 */
+	@Deprecated
+	public GMUVector(){
+	}
+	
 	public GMUVector(K selfKey, Integer value) {
 		super(selfKey);
 		super.setValue(selfKey, value);

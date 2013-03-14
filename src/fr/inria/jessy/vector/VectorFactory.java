@@ -12,6 +12,12 @@ public class VectorFactory {
 	
 	public VectorFactory(JessyGroupManager m) {
 		manager = m;
+		if (consType.equals("psi")) {
+			VersionVector.init(manager);
+		}
+		if (consType.equals("nmsi2") || consType.equals("us2")) {
+			GMUVector.init(manager);
+		}		
 	}	
 	
 	public <K> Vector<K> getVector(K selfKey) {
@@ -31,7 +37,7 @@ public class VectorFactory {
 			return new VersionVector(manager.getMyGroup().name(), 0);
 		}
 		if (consType.equals("nmsi2") || consType.equals("us2")) {
-			return new GMUVector<K>(manager);
+			return new GMUVector<K>();
 		}
 		return null;
 	}

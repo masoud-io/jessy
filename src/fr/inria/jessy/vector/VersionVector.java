@@ -37,11 +37,6 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 	@Deprecated
 	public VersionVector(){}
 	
-	
-	public VersionVector(JessyGroupManager m) {
-		init(m);
-	}
-	
 	// FIXME ugly construct
 	public synchronized static void init(JessyGroupManager m){
 		
