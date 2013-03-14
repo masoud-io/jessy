@@ -4,6 +4,7 @@ import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.VoteMessage;
 
 /**
@@ -21,19 +22,16 @@ public class VoteMulticastWithFractal extends VoteMulticast{
 	 */
 	protected MulticastStream mCastStream;
 	
-	private UnicastClientManager cManager;
-	
-	private UnicastServerManager sManager;
+	private DistributedJessy j;
 
-	public VoteMulticastWithFractal(Learner fractalLearner, UnicastLearner nettyLearner ){
-		mCastStream = FractalManager.getInstance().getOrCreateMulticastStream(
-				ConstantPool.JESSY_VOTE_STREAM, manager.getMyGroup().name());
+	public VoteMulticastWithFractal(
+			Learner fractalLearner,
+			DistributedJessy jessy){
+		j =jessy;
+		mCastStream = j.manager.fractal.getOrCreateMulticastStream(
+				ConstantPool.JESSY_VOTE_STREAM, j.manager.getMyGroup().name());
 		mCastStream.registerLearner("VoteMessage", fractalLearner);
 		mCastStream.start();
-		
-//		if (manager.isProxy()){
-//			sManager=new UnicastServerManager(nettyLearner, ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT);
-//		}
 	}
 	
 	/**
@@ -50,26 +48,16 @@ public class VoteMulticastWithFractal extends VoteMulticast{
 			boolean isCertifyAtCoordinator, int coordinatorSwid,
 			String coordinatorHost) {
 
-
 		mCastStream.multicast(voteMessage);
 		if (!isCertifyAtCoordinator) {
 			mCastStream.unicast(voteMessage, coordinatorSwid,
-					manager.getEverybodyGroup());
-//			if (cManager==null){
-//				cManager = new UnicastClientManager(null,
-//						ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, null);
-//			}
-//			cManager.unicast(voteMessage, coordinatorSwid, coordinatorHost);
+					j.manager.getEverybodyGroup());
 		}
 
 	}
 
 	@Override
 	public void close() {
-//		if (cManager!=null)
-//			cManager.close();
-		
-//		sManager.close();
 	}
 
 }

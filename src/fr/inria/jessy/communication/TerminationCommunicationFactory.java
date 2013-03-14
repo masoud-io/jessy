@@ -4,7 +4,7 @@ import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.ConstantPool.GENUINE_TERMINATION_MODE;
-import fr.inria.jessy.ConstantPool.MULTICAST_MODE;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 
@@ -22,25 +22,21 @@ public class TerminationCommunicationFactory {
 		consistencyTypeName = ConsistencyFactory.getConsistencyTypeName();
 	}
 
-	public static TerminationCommunication initAndGetConsistency(Group group, Learner fractalLearner, UnicastLearner nettyLearner) {
+	public static TerminationCommunication initAndGetConsistency(
+			Group group, 
+			Learner fractalLearner,
+			DistributedJessy j) {
 		if (_instance != null)
 			return _instance;
-
-		if (consistencyTypeName.equals("rc")) {
-			_instance = new TrivialTerminationCommunication(fractalLearner, nettyLearner);
+				
+		if (consistencyTypeName.equals("rc") ) {
+			_instance = new TrivialTerminationCommunication(fractalLearner,j);
 		} 
 		else if (ConstantPool.TERMINATION_COMMUNICATION_TYPE==GENUINE_TERMINATION_MODE.GENUINE){
-			_instance=new GenuineTerminationCommunication(group, fractalLearner, nettyLearner);
+			_instance=new GenuineTerminationCommunication(group, fractalLearner,j);
 		}
 		else if (ConstantPool.TERMINATION_COMMUNICATION_TYPE==GENUINE_TERMINATION_MODE.LIGHT_GENUINE){
-			if(ConstantPool.JESSY_LIGHT_GENUINE_MULTICAST_MODE==MULTICAST_MODE.FRACTAL){
-				_instance=new LightGenuineTerminationCommunicationWithFractal(group, fractalLearner, nettyLearner);
-			}
-			else if(ConstantPool.JESSY_LIGHT_GENUINE_MULTICAST_MODE==MULTICAST_MODE.NETTY){
-				{
-					_instance=new LightGenuineTerminationCommunicationWithNetty(group, fractalLearner, nettyLearner);
-				}
-			}
+			_instance=new LightGenuineTerminationCommunicationWithFractal(group, fractalLearner,j);
 		}
 		return _instance;
 	}
@@ -48,5 +44,5 @@ public class TerminationCommunicationFactory {
 	public static TerminationCommunication getTerminationCommunicationInstance() {
 		return _instance;
 	}
-
 }
+

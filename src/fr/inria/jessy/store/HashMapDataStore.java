@@ -81,7 +81,7 @@ public class HashMapDataStore implements DataStore {
 					.toString());
 
 			if (tmp == null) {
-				throw new NullPointerException("Object with key"
+				throw new NullPointerException("Object with key "
 						+ readRequest.getOneKey().getKeyValue()
 						+ " does not exist in the Data Store.");
 			}

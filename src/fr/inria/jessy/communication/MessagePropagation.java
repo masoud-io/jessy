@@ -3,6 +3,7 @@ package fr.inria.jessy.communication;
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 
 /**
@@ -16,10 +17,10 @@ import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMe
 public class MessagePropagation {
 	private MulticastStream mCastStream;
 
-	public MessagePropagation(Learner learner) {
-		mCastStream = FractalManager.getInstance().getOrCreateMulticastStream(
-				JessyGroupManager.getInstance().getMyGroup().name(),
-				JessyGroupManager.getInstance().getMyGroup().name());
+	public MessagePropagation(Learner learner, JessyGroupManager m) {
+		mCastStream = m.fractal.getOrCreateMulticastStream(
+				m.getMyGroup().name(),
+				m.getMyGroup().name());
 		mCastStream.registerLearner("ParallelSnapshotIsolationPropagateMessage", learner);
 		mCastStream.start();
 	}

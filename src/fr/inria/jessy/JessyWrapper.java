@@ -9,6 +9,7 @@ import com.yahoo.ycsb.measurements.Measurements;
 
 import fr.inria.jessy.ConstantPool.MeasuredOperations;
 import fr.inria.jessy.ConstantPool.TransactionPhase;
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.store.BerkeleyDBDataStore;
 import fr.inria.jessy.store.DataStore;
@@ -393,6 +394,11 @@ return null;
 //			long en = System.currentTimeMillis();
 //			_measurements.measure(TransactionPhase.OW, MeasuredOperations.WRITE, (int) (en - st));
 //		}
+	}
+
+	@Override
+	protected JessyGroupManager createJessyGroupManager() {
+		return null;
 	}
 
 }

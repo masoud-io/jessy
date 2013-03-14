@@ -3,8 +3,6 @@ package fr.inria.jessy.communication;
 import fr.inria.jessy.communication.message.VoteMessage;
 
 public abstract class VoteMulticast {
-
-	protected JessyGroupManager manager = JessyGroupManager.getInstance();
 	
 	/**
 	 * Multicast the voteMessage to the WriteSet of the transaction.

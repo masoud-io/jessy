@@ -7,6 +7,7 @@ import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
@@ -20,8 +21,8 @@ public abstract class NonMonotonicSnapshotIsolation extends Consistency {
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
 	}
 	
-	public NonMonotonicSnapshotIsolation(DataStore dataStore) {
-		super(dataStore);
+	public NonMonotonicSnapshotIsolation(JessyGroupManager m, DataStore dataStore) {
+		super(m, dataStore);
 	}
 
 	@Override

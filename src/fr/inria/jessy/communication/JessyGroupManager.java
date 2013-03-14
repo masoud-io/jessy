@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.membership.Group;
@@ -32,10 +33,6 @@ import fr.inria.jessy.utils.Configuration;
 public class JessyGroupManager {
 
 	private static Logger logger = Logger.getLogger(JessyGroupManager.class);
-
-	private static JessyGroupManager instance;
-
-	private FractalManager fractal;
 
 	private Partitioner partitioner;
 
@@ -82,7 +79,9 @@ public class JessyGroupManager {
 	 */
 	private int groupSize=0;
 
-	private JessyGroupManager() {
+	public FractalManager fractal;
+	
+	public JessyGroupManager() {
 
 		try {
 
@@ -92,7 +91,7 @@ public class JessyGroupManager {
 			/*
 			 * Initialize Fractal and create the replica groups
 			 */
-			fractal = FractalManager.getInstance();
+			fractal = new FractalManager();
 			fractal.loadFile(fractalFile);
 			fractal.membership
 			.dispatchPeers(ConstantPool.JESSY_SERVER_GROUP,
@@ -138,7 +137,7 @@ public class JessyGroupManager {
 							ConstantPool.JESSY_EVERYBODY_GROUP,
 							ConstantPool.JESSY_EVERYBODY_PORT,
 							true);
-			everybodyGroup.putNodes(fractal.membership.allNodes());
+			everybodyGroup.putNodes(replicas); // to ensure only replicas are listening
 			logger.debug("everybodyGroup is : " + everybodyGroup);
 			
 			/*
@@ -158,23 +157,12 @@ public class JessyGroupManager {
 
 			// TODO generalize this
 			partitioner = PartitionerFactory
-					.getPartitioner(YCSBEntity.keyspace);
+					.getPartitioner(this, YCSBEntity.keyspace);
 
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			System.exit(0);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			System.exit(0);
 		}
-	}
-
-	public static JessyGroupManager getInstance() {
-		if (instance == null)
-			instance = new JessyGroupManager();
-
-		return instance;
-
 	}
 
 	public Group getMyGroup() {
@@ -213,7 +201,7 @@ public class JessyGroupManager {
 	}
 	
 	public Membership getMembership(){
-		return fractal.getMembership();
+		return fractal.membership;
 	}
 	
 	public int getGroupSize(){

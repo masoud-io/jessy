@@ -32,6 +32,18 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	public static GMUVector<String> mostRecentVC;
 
 	static {
+	}
+
+	/**
+	 * Needed for BerkeleyDB
+	 */
+	public GMUVector(JessyGroupManager m) {
+		init(m);
+	}
+	
+	public synchronized static void init(JessyGroupManager m){
+		if(lastPrepSC!=null)
+			return;
 		if (FilePersistence.loadFromDisk){
 			lastPrepSC=(AtomicInteger)FilePersistence.readObject("GMUVector.lastPrepSC");
 			mostRecentVC=(GMUVector<String>) FilePersistence.readObject("GMUVector.mostRecentVC");
@@ -39,18 +51,9 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 		else
 		{
 			lastPrepSC = new AtomicInteger(0);
-			mostRecentVC = new GMUVector<String>(JessyGroupManager.getInstance().getMyGroup().name(), 0);
+			mostRecentVC = new GMUVector<String>(m.getMyGroup().name(), 0);
 		}
-	}
 
-	/**
-	 * Needed for BerkeleyDB
-	 */
-	public GMUVector() {
-		// super((K) JessyGroupManager.getInstance().getMyGroup().name());
-		// super.setValue((K)
-		// JessyGroupManager.getInstance().getMyGroup().name(),
-		// 0);
 	}
 
 	public GMUVector(K selfKey, Integer value) {

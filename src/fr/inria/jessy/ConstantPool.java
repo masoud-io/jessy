@@ -39,8 +39,8 @@ public class ConstantPool {
 	 * Specify the framework to be used for multicasting the vote
 	 * Only Fractal is available
 	 */
-	public static final MULTICAST_MODE JESSY_VOTING_PHASE_MULTICAST_MODE=MULTICAST_MODE.FRACTAL;
 	
+	public static final MULTICAST_MODE JESSY_VOTING_PHASE_MULTICAST_MODE=MULTICAST_MODE.FRACTAL;
 	/**
 	 * Specify the framework to be used for multicasting {@link TerminateTransactionRequestMessage}
 	 * Only Fractal is available

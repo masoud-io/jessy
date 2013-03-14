@@ -42,7 +42,8 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	private Object extraObject;
 
 	static {
-		requireExtraObject = VectorFactory.needExtraObject();
+		VectorFactory f = new VectorFactory(null);
+		requireExtraObject = f.needExtraObject();
 		_bydefault = -1;
 	}
 

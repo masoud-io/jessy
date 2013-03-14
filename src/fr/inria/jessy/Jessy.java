@@ -15,6 +15,7 @@ import org.cliffc.high_scale_lib.NonBlockingHashtable;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.persist.model.SecondaryKey;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.store.DataStore;
@@ -72,6 +73,7 @@ public abstract class Jessy {
 	// OBJECT FIELDS
 	//
 
+	public JessyGroupManager manager;
 	protected DataStore dataStore;
 	Consistency consistency;
 
@@ -84,14 +86,28 @@ public abstract class Jessy {
 
 	public Jessy() throws Exception {
 
+		manager = createJessyGroupManager();
 		dataStore = DataStoreFactory.getDataStoreInstance();
-		consistency = ConsistencyFactory.initConsistency(dataStore);
+		consistency = ConsistencyFactory.initConsistency(manager, dataStore);
 
 		handler2executionHistory = new NonBlockingHashtable<TransactionHandler, ExecutionHistory>();
 
 		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
 
 	}
+	
+	public Jessy(JessyGroupManager m) throws Exception {
+
+		manager = m;
+		dataStore = DataStoreFactory.getDataStoreInstance();
+		consistency = ConsistencyFactory.initConsistency(manager, dataStore);
+
+		handler2executionHistory = new NonBlockingHashtable<TransactionHandler, ExecutionHistory>();
+
+		entityClasses = new ArrayList<Class<? extends JessyEntity>>();
+
+	}
+	
 
 	public DataStore getDataStore() {
 		return dataStore;
@@ -530,6 +546,8 @@ public abstract class Jessy {
 		logger.warn("Jessy DataStore is closed. The data should be permanent by now.");
 	}
 
+	protected abstract JessyGroupManager createJessyGroupManager();
+	
 	// TODO
 	public void open() {
 	}

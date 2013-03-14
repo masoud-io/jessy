@@ -15,6 +15,7 @@ import net.sourceforge.fractal.multicast.MulticastStream;
 import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.TransactionHandlerMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -48,15 +49,17 @@ public class LightGenuineTerminationCommunicationWithFractal extends Termination
 	
 	protected MulticastStream mCastStream;
 	
-	public LightGenuineTerminationCommunicationWithFractal(Group group, Learner fractalLearner, UnicastLearner nettyLearner) {
-		super(fractalLearner,nettyLearner);
-		mCastStream = FractalManager.getInstance().getOrCreateMulticastStream(
+	public LightGenuineTerminationCommunicationWithFractal(
+			Group group, 
+			Learner fractalLearner, 
+			DistributedJessy j) {
+		super(j, fractalLearner);
+		mCastStream = j.manager.fractal.getOrCreateMulticastStream(
 				ConstantPool.JESSY_VOTE_STREAM, manager.getMyGroup().name());
 		
 		mCastStream.registerLearner("TerminateTransactionRequestMessage", this);
 		
-		aMCastStream = FractalManager.getInstance()
-				.getOrCreateWanAMCastStream(group.name(), group.name());
+		aMCastStream = j.manager.fractal.getOrCreateWanAMCastStream(group.name(), group.name());
 		aMCastStream.registerLearner("TransactionHandlerMessage", this);
 		aMCastStream.start();
 		

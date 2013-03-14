@@ -114,64 +114,82 @@ public class DistributedJessy extends Jessy {
 
 			distributedTermination = new DistributedTermination(this);
 
-			if (ConstantPool.JESSY_REMOTE_READ_UNICST_MODE==UNICAST_MODE.FRACTAL){
-				remoteReader = new FractalRemoteReader(this);
-			}
-			else{
-				
-				remoteReader = new NettyRemoteReader(this);
-			}
+			remoteReader = new FractalRemoteReader(this);
 
 			// FIXME
 			super.addEntity(YCSBEntity.class);
 
-			partitioner = JessyGroupManager.getInstance().getPartitioner();
+			partitioner = manager.getPartitioner();
 
 			// FIXME MOVE THIS
-			MessageStream.addClass(JessyEntity.class.getName());
-			MessageStream.addClass(YCSBEntity.class.getName());
-			MessageStream.addClass(ReadRequestKey.class.getName());
-
-			MessageStream.addClass(Vector.class.getName());
-			MessageStream.addClass(ValueVector.class.getName());
-			MessageStream.addClass(DependenceVector.class.getName());
-			MessageStream.addClass(NullVector.class.getName());
-			MessageStream.addClass(CompactVector.class.getName());
-			MessageStream.addClass(LightScalarVector.class.getName());
-			MessageStream.addClass(VersionVector.class.getName());
-			MessageStream.addClass(DependenceVector.class.getName());
-			MessageStream.addClass(ConcurrentVersionVector.class.getName());
-			MessageStream.addClass(GMUVector.class.getName());
-
-			MessageStream.addClass(ReadReply.class.getName());
-			MessageStream.addClass(ReadRequest.class.getName());
-			MessageStream.addClass(ReadRequestMessage.class.getName());
-			MessageStream.addClass(ReadReplyMessage.class.getName());
-			MessageStream
-					.addClass(ParallelSnapshotIsolationPropagateMessage.class
-							.getName());
-			MessageStream.addClass(ParallelSnapshotIsolationPiggyback.class
-					.getName());
-
-			MessageStream.addClass(VoteMessage.class.getName());
-			MessageStream.addClass(Vote.class.getName());
-			MessageStream.addClass(VotePiggyback.class.getName());
-
-			MessageStream.addClass(TerminateTransactionRequestMessage.class
-					.getName());
-
-			MessageStream.addClass(ExecutionHistory.class.getName());
-			MessageStream.addClass(TransactionHandler.class.getName());
-			MessageStream.addClass(EntitySet.class.getName());
-
-			MessageStream.addClass(Keyspace.class.getName());
-			MessageStream.addClass(TransactionTouchedKeys.class.getName());
+//			MessageStream.addClass(JessyEntity.class.getName());
+//			MessageStream.addClass(YCSBEntity.class.getName());
+//			MessageStream.addClass(ReadRequestKey.class.getName());
+//
+//			MessageStream.addClass(Vector.class.getName());
+//			MessageStream.addClass(ValueVector.class.getName());
+//			MessageStream.addClass(DependenceVector.class.getName());
+//			MessageStream.addClass(NullVector.class.getName());
+//			MessageStream.addClass(CompactVector.class.getName());
+//			MessageStream.addClass(LightScalarVector.class.getName());
+//			MessageStream.addClass(VersionVector.class.getName());
+//			MessageStream.addClass(DependenceVector.class.getName());
+//			MessageStream.addClass(ConcurrentVersionVector.class.getName());
+//			MessageStream.addClass(GMUVector.class.getName());
+//
+//			MessageStream.addClass(ReadReply.class.getName());
+//			MessageStream.addClass(ReadRequest.class.getName());
+//			MessageStream.addClass(ReadRequestMessage.class.getName());
+//			MessageStream.addClass(ReadReplyMessage.class.getName());
+//			MessageStream
+//					.addClass(ParallelSnapshotIsolationPropagateMessage.class
+//							.getName());
+//			MessageStream.addClass(ParallelSnapshotIsolationPiggyback.class
+//					.getName());
+//
+//			MessageStream.addClass(VoteMessage.class.getName());
+//			MessageStream.addClass(Vote.class.getName());
+//			MessageStream.addClass(VotePiggyback.class.getName());
+//
+//			MessageStream.addClass(TerminateTransactionRequestMessage.class
+//					.getName());
+//
+//			MessageStream.addClass(ExecutionHistory.class.getName());
+//			MessageStream.addClass(TransactionHandler.class.getName());
+//			MessageStream.addClass(EntitySet.class.getName());
+//
+//			MessageStream.addClass(Keyspace.class.getName());
+//			MessageStream.addClass(TransactionTouchedKeys.class.getName());
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 
+	public DistributedJessy(JessyGroupManager m) throws Exception {
+		
+		super(m);
+		
+		try {
+
+			PerformanceProbe.setOutput("/dev/stdout");
+
+			distributedTermination = new DistributedTermination(this);
+
+			remoteReader = new FractalRemoteReader(this);
+
+			// FIXME
+			super.addEntity(YCSBEntity.class);
+
+			partitioner = manager.getPartitioner();
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	
+	
 	public static synchronized DistributedJessy getInstance() {
 		if (distributedJessy == null) {
 			try {
@@ -445,7 +463,7 @@ public class DistributedJessy extends Jessy {
 			ratioFailedExecution.add(Double.valueOf(failedReadCount.toString())
 					/ (Double.valueOf(executionCount.toString())));
 
-			if (!JessyGroupManager.getInstance().isProxy()) {
+			if (!manager.isProxy()) {
 				super.close(this);
 				FilePersistence.saveJessy();
 				remoteReader.closeReplicaConnections();
@@ -469,6 +487,8 @@ public class DistributedJessy extends Jessy {
 		try {
 			PropertyConfigurator.configure("log4j.properties");
 			
+			JessyGroupManager m = new JessyGroupManager();
+			
 			for (String str :args){
 				if (str.toLowerCase().contains("savetodisk")){
 					System.out.println("Will save the state into disk at exit.");
@@ -479,16 +499,17 @@ public class DistributedJessy extends Jessy {
 					System.out.println("Will load the state from disk.");
 				}
 				else if (str.contains("/")){
-					FilePersistence.makeStorageDirectory(str);
+					FilePersistence.makeStorageDirectory(m, str);
 				}
 				
 			}
+			
+			final DistributedJessy j = new DistributedJessy(m);
+			
 			if ((FilePersistence.saveToDisk || FilePersistence.loadFromDisk) && FilePersistence.storageDirectory.equals("")){
 				System.out.println("Please provide the path for loading/saving.");
 			}
-			
-			
-			final DistributedJessy j = DistributedJessy.getInstance();
+				
 			j.open();
 			SignalHandler sh = new SignalHandler() {
 				@Override
@@ -504,6 +525,11 @@ public class DistributedJessy extends Jessy {
 			e.printStackTrace();
 			System.exit(-1);
 		}
+	}
+
+	@Override
+	protected JessyGroupManager createJessyGroupManager() {
+		return new JessyGroupManager();
 	}
 
 }

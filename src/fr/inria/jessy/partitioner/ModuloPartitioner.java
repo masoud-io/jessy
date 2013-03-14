@@ -22,12 +22,12 @@ import fr.inria.jessy.store.ReadRequest;
  * 
  */
 // TODO InComplete!!!
-public class ModuloPartitioner implements Partitioner {
+public class ModuloPartitioner extends Partitioner {
 
 	private static Logger logger = Logger.getLogger(ModuloPartitioner.class);
 
-	public ModuloPartitioner() {
-		super();
+	public ModuloPartitioner(JessyGroupManager m) {
+		super(m);
 
 	}
 
@@ -47,8 +47,7 @@ public class ModuloPartitioner implements Partitioner {
 
 	@Override
 	public boolean isLocal(String k) {
-		return JessyGroupManager.getInstance().getMyGroups()
-				.contains(resolve(k));
+		return manager.getMyGroups().contains(resolve(k));
 	}
 
 	@Override
@@ -75,17 +74,16 @@ public class ModuloPartitioner implements Partitioner {
 	 *            a key
 	 * @return the replica group of <i>k</i>.
 	 */
-	private static Group resolve(String key) {
+	private Group resolve(String key) {
 		int numericKey = 0;
 		String mkey = key.replaceAll( "[^\\d]", "" );
 		if(!mkey.equals("")){
 			numericKey = Integer.valueOf(mkey); 
 		}
-		return JessyGroupManager
-				.getInstance()
+		return manager
 				.getReplicaGroups()
 				.get(numericKey
-						% JessyGroupManager.getInstance().getReplicaGroups()
+						% manager.getReplicaGroups()
 								.size());
 	}
 
@@ -93,7 +91,7 @@ public class ModuloPartitioner implements Partitioner {
 	public Set<String> generateKeysInAllGroups() {
 		Set<String> keys=new HashSet<String>();
 		
-		for (int i = 0; i < JessyGroupManager.getInstance().getReplicaGroups().size(); i++) {
+		for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
 			keys.add("" + i);
 		}
 		return keys;

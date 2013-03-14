@@ -7,13 +7,15 @@ import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.DistributedJessy;
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.Vector;
@@ -26,8 +28,8 @@ public class SnapshotIsolation extends Consistency {
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
 	}
 	
-	public SnapshotIsolation(DataStore store) {
-		super(store);
+	public SnapshotIsolation(JessyGroupManager m, DataStore store) {
+		super(m, store);
 		Consistency.SEND_READSET_DURING_TERMINATION=false;
 	}
 

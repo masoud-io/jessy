@@ -11,6 +11,7 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
+import fr.inria.jessy.vector.VectorFactory;
 
 public abstract class Consistency {
 
@@ -33,12 +34,15 @@ public abstract class Consistency {
 	public static boolean READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=true;
 	
 	protected DataStore store;
-	protected JessyGroupManager manager = JessyGroupManager.getInstance();
+	protected JessyGroupManager manager;
+	protected VectorFactory vfactory;
 
 	protected static boolean votePiggybackRequired = false;
 	
-	public Consistency(DataStore store) {
-		this.store = store;
+	public Consistency(JessyGroupManager m, DataStore s) {
+		manager = m;
+		store = s;
+		vfactory = new VectorFactory(m);
 	}
 
 	/**
@@ -152,7 +156,7 @@ public abstract class Consistency {
 				|| certify(executionHistory);
 
 		return new Vote(executionHistory.getTransactionHandler(), isAborted,
-				JessyGroupManager.getInstance().getMyGroup().name(), null);
+				manager.getMyGroup().name(), null);
 	}
 
 	public boolean isVotePiggybackRequired() {

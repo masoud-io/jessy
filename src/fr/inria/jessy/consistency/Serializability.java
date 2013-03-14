@@ -7,21 +7,22 @@ import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.vector.Vector;
 
 public class Serializability extends Consistency {
 
 	private static Logger logger = Logger.getLogger(Serializability.class);
 
-	public Serializability(DataStore dateStore) {
-		super(dateStore);
+	public Serializability(JessyGroupManager m, DataStore dateStore) {
+		super(m, dateStore);
 	}
 
 	@SuppressWarnings("unchecked")

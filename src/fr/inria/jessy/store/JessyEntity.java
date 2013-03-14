@@ -14,7 +14,6 @@ import com.sleepycat.persist.model.SecondaryKey;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.VectorFactory;
 
 /**
  * @author Masoud Saeida Ardekani
@@ -32,7 +31,7 @@ public abstract class JessyEntity implements Externalizable, Cloneable {
 	public static Keyspace keyspace = Keyspace.DEFAULT_KEYSPACE;
 
 	private Vector<String> localVector;
-	
+
 	private boolean removed = true;
 
 	@PrimaryKey(sequence = "Jessy_Sequence")
@@ -45,12 +44,12 @@ public abstract class JessyEntity implements Externalizable, Cloneable {
 	private JessyEntity() {
 	}
 
+	// FIXME previously the local vector was initialized 
 	public JessyEntity(String entityId) {
 		this.secondaryKey = entityId;
-		localVector = VectorFactory.getVector(entityId);
 	}
 
-	public boolean isRemovoed() {
+	public boolean isRemoved() {
 		return removed;
 	}
 

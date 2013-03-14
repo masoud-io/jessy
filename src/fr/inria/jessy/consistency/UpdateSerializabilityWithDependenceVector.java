@@ -1,5 +1,6 @@
 package fr.inria.jessy.consistency;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
@@ -11,8 +12,8 @@ import fr.inria.jessy.vector.VectorFactory;
 
 public class UpdateSerializabilityWithDependenceVector extends UpdateSerializability {
 
-	public UpdateSerializabilityWithDependenceVector(DataStore dateStore) {
-		super(dateStore);
+	public UpdateSerializabilityWithDependenceVector(JessyGroupManager m, DataStore dateStore) {
+		super(m, dateStore);
 	}
 	
 	@Override
@@ -144,7 +145,7 @@ public class UpdateSerializabilityWithDependenceVector extends UpdateSerializabi
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 		// updatedVector is a new vector. It will be used as a new
 		// vector for all modified vectors.
-		Vector<String> updatedVector = VectorFactory.getVector("");
+		Vector<String> updatedVector = vfactory.getVector("");
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
 

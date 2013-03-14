@@ -8,6 +8,7 @@ import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import net.sourceforge.fractal.multicast.MulticastStream;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
@@ -20,10 +21,11 @@ import fr.inria.jessy.transaction.ExecutionHistory;
  */
 public class TrivialTerminationCommunication extends TerminationCommunication implements Learner{
 
-	public TrivialTerminationCommunication(Learner fractalLearner,
-			UnicastLearner nettyLearner) {
-		super(fractalLearner, nettyLearner);
-		mCastTransaction = FractalManager.getInstance().getOrCreateMulticastStream(
+	public TrivialTerminationCommunication(
+			Learner fractalLearner,
+			DistributedJessy j) {
+		super(j,fractalLearner);
+		mCastTransaction = j.manager.fractal.getOrCreateMulticastStream(
 				"", manager.getMyGroup().name());
 		mCastTransaction.registerLearner("MulticastMessage", this);
 		mCastTransaction.start();

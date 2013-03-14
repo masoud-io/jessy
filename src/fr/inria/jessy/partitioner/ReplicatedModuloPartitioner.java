@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import net.sourceforge.fractal.membership.Group;
-import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -24,14 +23,14 @@ import fr.inria.jessy.utils.Configuration;
  * @author pcincilla
  *
  */
-public class ReplicatedModuloPartitioner implements Partitioner{
+public class ReplicatedModuloPartitioner extends Partitioner{
 
 	private int replicationFactor = -1;
 	private int groupMembersNumber=-1;
 	private int roundIndex;
 	
-	public ReplicatedModuloPartitioner(){
-		
+	public ReplicatedModuloPartitioner(JessyGroupManager m){
+		super(m);
 		roundIndex=-1;
 
 	}
@@ -42,7 +41,7 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 	@Override
 	public boolean isLocal(String k) {
 
-		Collection<Group> tmp = JessyGroupManager.getInstance().getMyGroups();
+		Collection<Group> tmp = manager.getMyGroups();
 		tmp.retainAll(resolveGroups(k));
 
 		if (tmp.isEmpty()){
@@ -110,8 +109,7 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 		int groupSetStart=groupSetNumber*(replicationFactor-1);
 
 		for(int i=0; i<groupMembersNumber; i++){
-			groupSet.add(JessyGroupManager
-					.getInstance()
+			groupSet.add(manager
 					.getReplicaGroups()
 					.get(groupSetStart+i));
 		}
@@ -147,8 +145,7 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 
 		for(int i=0; i<groupMembersNumber; i++){
 			
-			groupSet.add(JessyGroupManager
-					.getInstance()
+			groupSet.add(manager
 					.getReplicaGroups()
 					.get(groupSetStart+i).name());
 		}
@@ -171,18 +168,18 @@ public class ReplicatedModuloPartitioner implements Partitioner{
 		
 		
 		replicationFactor=Integer.parseInt(Configuration.readConfig(fr.inria.jessy.ConstantPool.REPLICATION_FACTOR));
-		groupMembersNumber=JessyGroupManager.getInstance().getReplicaGroups().size()/(replicationFactor);
+		groupMembersNumber=manager.getReplicaGroups().size()/(replicationFactor);
 		
 	
 		//		ReplicatedModuloPartitioner assume that the group size is equal to 1, i.e. each group contains exactly one Jessy instance
-		if( JessyGroupManager.getInstance().getGroupSize()!=1){
+		if( manager.getGroupSize()!=1){
 			System.err.println("ReplicatedModuloPartitioner is used with GROUP_SIZE!=1, system will exit");
 			System.exit(1);
 		}	
 
 		//		TODO handle any number of jessy instances
 		//		for simplicity for now assume that jessy instances are divisible by the replication factor
-		if( !(JessyGroupManager.getInstance().getReplicaGroups().size() % (replicationFactor) == 0)){
+		if( !(manager.getReplicaGroups().size() % (replicationFactor) == 0)){
 			System.err.println("ReplicatedModuloPartitioner is used and jessy instances are NOT divisible by the replication factor, system will exit");
 			System.exit(1);
 		}

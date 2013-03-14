@@ -7,18 +7,19 @@ import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 
 public abstract class UpdateSerializability extends Consistency {
 	
 	protected static Logger logger = Logger
 			.getLogger(UpdateSerializabilityWithDependenceVector.class);
 	
-	public UpdateSerializability(DataStore store) {
-		super(store);
+	public UpdateSerializability(JessyGroupManager m, DataStore store) {
+		super(m, store);
 	}
 
 	@Override

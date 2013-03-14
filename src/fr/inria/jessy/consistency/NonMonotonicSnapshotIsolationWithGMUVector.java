@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.sourceforge.fractal.utils.CollectionUtils;
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
@@ -38,8 +39,8 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector<String>>();
 	}
 
-	public NonMonotonicSnapshotIsolationWithGMUVector(DataStore dataStore) {
-		super(dataStore);
+	public NonMonotonicSnapshotIsolationWithGMUVector(JessyGroupManager m, DataStore dataStore) {
+		super(m, dataStore);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -181,7 +182,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 		 * Corresponds to line 23
 		 */
 		return new Vote(executionHistory.getTransactionHandler(), isCommitted,
-				JessyGroupManager.getInstance().getMyGroup().name(),
+				manager.getMyGroup().name(),
 				new VotePiggyback(prepVC));
 	}
 
@@ -251,8 +252,8 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 			/*
 			 * Corresponds to line 24
 			 */
-			Set<String> dest = new HashSet<String>(JessyGroupManager
-					.getInstance()
+			Set<String> dest = new HashSet<String>(
+					manager
 					.getPartitioner()
 					.resolveNames(
 							getConcerningKeys(executionHistory,

@@ -30,7 +30,7 @@ import fr.inria.jessy.store.ReadRequestKey;
  * 
  */
 
-public class KeySpacePartitioner  implements Partitioner{
+public class KeySpacePartitioner  extends Partitioner{
 	
 	private static Logger logger = Logger.getLogger(KeySpacePartitioner.class);
 	
@@ -38,10 +38,10 @@ public class KeySpacePartitioner  implements Partitioner{
 	private TreeMap<Group, Set<String>> g2rk; // groups to rootkeys
 	private TreeMap<String, Group> rk2g; // rootkeys to groups
 
-	public KeySpacePartitioner(Keyspace keyspace) {
-		super();
+	public KeySpacePartitioner(JessyGroupManager m, Keyspace keyspace) {
+		super(m);
 		g2rk = new TreeMap<Group, Set<String>>();
-		for (Group g : JessyGroupManager.getInstance().getReplicaGroups()){
+		for (Group g : manager.getReplicaGroups()){
 			g2rk.put(g, new HashSet<String>());
 		}
 		rk2g = new TreeMap<String, Group>();
@@ -166,7 +166,7 @@ public class KeySpacePartitioner  implements Partitioner{
 
 	@Override
 	public boolean isLocal(String k) {
-		boolean ret = JessyGroupManager.getInstance().getMyGroups().contains(resolve(k));
+		boolean ret = manager.getMyGroups().contains(resolve(k));
 //		logger.debug("is local "+k+" ? "+ret);
 		return ret;
 	}

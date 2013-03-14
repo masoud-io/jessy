@@ -2,12 +2,11 @@ package fr.inria.jessy.communication;
 
 import java.util.Collection;
 
-import javax.management.RuntimeErrorException;
-
 import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.wanamcast.WanAMCastStream;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
@@ -26,11 +25,13 @@ public class GenuineTerminationCommunication extends TerminationCommunication {
 	 */
 	protected WanAMCastStream aMCastStream;
 
-	public GenuineTerminationCommunication(Group group, Learner fractalLearner,
-			UnicastLearner nettyLearner) {
-		super(fractalLearner, nettyLearner);
+	public GenuineTerminationCommunication(
+			Group group,
+			Learner fractalLearner,
+			DistributedJessy j) {
+		super(j, fractalLearner);
 
-		aMCastStream = FractalManager.getInstance().getOrCreateWanAMCastStream(
+		aMCastStream = j.manager.fractal.getOrCreateWanAMCastStream(
 				group.name(), group.name());
 		aMCastStream.registerLearner("TerminateTransactionRequestMessage",
 				fractalLearner);

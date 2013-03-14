@@ -28,19 +28,16 @@ public class FilePersistence {
 	
 	public static String storageDirectory="";
 
-	public static void makeStorageDirectory(String path) {
+	public static void makeStorageDirectory(JessyGroupManager m, String path) {
 		if (!path.endsWith("/"))
 			path = path + "/";
 		
-		String group=""+JessyGroupManager.getInstance().getReplicaGroups().indexOf(JessyGroupManager.getInstance().getMyGroup());
-		String numberOfgroups = "" + JessyGroupManager.getInstance().getReplicaGroups().size();
+		String group=""+m.getReplicaGroups().indexOf(m.getMyGroup());
+		String numberOfgroups = "" + m.getReplicaGroups().size();
 		//If the group size is 1, we add underscore to the path (thus the path is 1_), because the scripts needs to write to a file named "1".
 		if (numberOfgroups.equals("1"))
 			numberOfgroups=numberOfgroups + "_";
 		String consistency = ConsistencyFactory.getConsistencyTypeName();
-
-		
-		
 		String result=path + numberOfgroups + "/" + consistency + "/" ;
 		File file=new File(result);
 		if (!file.exists())
@@ -76,6 +73,7 @@ public class FilePersistence {
 		String filePath = storageDirectory + objectName;
 		File file = new File(filePath);
 		if (!file.exists()) {
+			System.out.println("File "+file+" does not exist.");
 			return null;
 		}
 		

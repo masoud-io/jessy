@@ -13,6 +13,7 @@ import net.sourceforge.fractal.consensus.gpaxos.GPaxosStream;
 import net.sourceforge.fractal.consensus.gpaxos.GPaxosStream.RECOVERY;
 import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.replication.Command;
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
 
@@ -25,10 +26,12 @@ public class NonGenuineTerminationCommunication extends
 	protected GPaxosStream gpaxosStream;
 	private Learner realLearner;
 
-	public NonGenuineTerminationCommunication(Group group,
-			Learner fractalLearner, UnicastLearner nettyLearner) {
-		super(fractalLearner, nettyLearner);
-		gpaxosStream = FractalManager.getInstance().getOrCreateGPaxosStream(
+	public NonGenuineTerminationCommunication(
+			Group group,
+			Learner fractalLearner,
+			DistributedJessy j) {
+		super(j, fractalLearner);
+		gpaxosStream = j.manager.fractal.getOrCreateGPaxosStream(
 				"gpaxosStream",
 				manager.getEverybodyGroup().name(), // the proposers are all the
 													// nodes in the system.
@@ -72,7 +75,7 @@ public class NonGenuineTerminationCommunication extends
 		}
 
 		public CommandBox(TerminateTransactionRequestMessage m) {
-			super(FractalManager.getInstance().membership.myId());
+			super(0);
 			msg = m;
 		}
 

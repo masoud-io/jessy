@@ -46,10 +46,10 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 
 	public FractalRemoteReader(DistributedJessy j) {
 		super(j);
-		remoteReadStream = FractalManager.getInstance()
+		remoteReadStream = j.manager.fractal
 				.getOrCreateMulticastStream(
 						ConstantPool.JESSY_READER_STREAM,
-						JessyGroupManager.getInstance().getEverybodyGroup()
+						j.manager.getEverybodyGroup()
 								.name());
 		remoteReadStream.registerLearner("ReadRequestMessage", this);
 		remoteReadStream.registerLearner("ReadReplyMessage", this);
@@ -166,9 +166,7 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 
 					// Send them.
 					for (Group dest : toSend.keySet()) {
-						int swid = dest.allNodes().iterator().next(); // FIXME
-																		// improve
-																		// this.
+						int swid = dest.getRandom();
 						remoteReadStream.unicast(
 								new ReadRequestMessage(toSend.get(dest)), swid);
 					}

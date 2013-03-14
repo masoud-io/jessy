@@ -17,7 +17,6 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
-import org.jboss.netty.channel.Channel;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
@@ -26,7 +25,6 @@ import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunicationFactory;
-import fr.inria.jessy.communication.UnicastLearner;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency;
@@ -46,7 +44,7 @@ import fr.inria.jessy.transaction.TransactionState;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class DistributedTermination implements Learner, UnicastLearner {
+public class DistributedTermination implements Learner {
 
 	protected static Logger logger = Logger
 			.getLogger(DistributedTermination.class);
@@ -55,6 +53,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			certificationTime_update, certificationQueueingTime, applyingTransactionQueueingTime , votingTime, castLatency;
 	
 	private DistributedJessy jessy;
+	
+	private JessyGroupManager manager;
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
@@ -85,8 +85,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	 * Terminated transactions
 	 */	
 	private ConcurrentLinkedHashMap<UUID, Object> terminated;
+	
 	private static final Object dummyObject=new Object();
-
+	
 	private static boolean reInitProbes=true;
 	
 	static {
@@ -158,9 +159,10 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	
 	public DistributedTermination(DistributedJessy j) {
 		jessy = j;
-		group = JessyGroupManager.getInstance().getMyGroup();
+		manager = j.manager;
+		group = manager.getMyGroup();
 		
-		terminationCommunication=TerminationCommunicationFactory.initAndGetConsistency(group, this, this);
+		terminationCommunication=TerminationCommunicationFactory.initAndGetConsistency(group, this, j);
 		logger.info("initialized");
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
@@ -198,18 +200,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		return reply;
 	}
 
-
-	
-	@Override
-	public void receiveMessage(Object message, Channel channel) {
-		if (message instanceof VoteMessage){
-			voteMessageRM_Delivered(message);
-		}
-		else{
-			logger.error("Netty delivered an unexpected message");
-		}
-	}
-	
 	/**
 	 * Call back by Fractal upon receiving atomically delivered
 	 * {@link TerminateTransactionRequestMessage} or {@link Vote}.
@@ -259,6 +249,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					}
 
 				}
+
 				atomicDeliveredMessages.offer(terminateRequestMessage);
 			}
 		}
@@ -315,7 +306,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			
 			vq.addVote(vote);
 
-			if (JessyGroupManager.getInstance().isProxy()) {
+			if (manager.isProxy()) {
 				votingTime.add(System.currentTimeMillis()-vote.startVoteTime);
 			}
 		} catch (Exception ex) {
@@ -477,11 +468,10 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				if (destGroups.contains(group.name())) {
 					executionHistory.setCertifyAtCoordinator(true);
 				} else {
-					int coordinatorSwid=JessyGroupManager.getInstance()
-							.getSourceId();
+					int coordinatorSwid=manager.getSourceId();
 					executionHistory.setCertifyAtCoordinator(false);
 					executionHistory.setCoordinatorSwid(coordinatorSwid);
-					executionHistory.setCoordinatorHost(JessyGroupManager.getInstance().getMembership()
+					executionHistory.setCoordinatorHost(manager.getMembership()
 							.adressOf(coordinatorSwid));
 				}
 
@@ -509,8 +499,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				executionHistory.clearReadValues();
 				terminationCommunication
 						.terminateTransaction(executionHistory, destGroups, group
-												.name(), JessyGroupManager
-												.getInstance().getSourceId());
+												.name(), manager.getSourceId());
 
 				/*
 				 * Wait here until the result of the transaction is known.
@@ -629,8 +618,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					voteReceivers.remove(group.name());
 					vote.startVoteTime=System.currentTimeMillis();
 					VoteMessage voteMsg = new VoteMessage(vote, voteReceivers,
-							group.name(), JessyGroupManager.getInstance()
-									.getSourceId());
+							group.name(), manager.getSourceId());
 
 					terminationCommunication.sendVote(voteMsg, msg
 							.getExecutionHistory().isCertifyAtCoordinator(),

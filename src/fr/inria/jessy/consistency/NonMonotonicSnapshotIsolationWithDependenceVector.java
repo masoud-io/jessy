@@ -3,6 +3,8 @@ package fr.inria.jessy.consistency;
 
 import static fr.inria.jessy.vector.ValueVector.ComparisonResult.EQUAL_TO;
 import static fr.inria.jessy.vector.ValueVector.ComparisonResult.GREATER_THAN;
+import fr.inria.jessy.DistributedJessy;
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
@@ -21,8 +23,8 @@ import fr.inria.jessy.vector.VectorFactory;
  */
 public class NonMonotonicSnapshotIsolationWithDependenceVector extends NonMonotonicSnapshotIsolation {
 
-	public NonMonotonicSnapshotIsolationWithDependenceVector(DataStore dataStore) {
-		super(dataStore);
+	public NonMonotonicSnapshotIsolationWithDependenceVector(JessyGroupManager m, DataStore dataStore) {
+		super(m, dataStore);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -116,7 +118,7 @@ public class NonMonotonicSnapshotIsolationWithDependenceVector extends NonMonoto
 		
 		// updatedVector is a new vector. It will be used as a new
 		// vector for all modified vectors.
-		Vector<String> updatedVector = VectorFactory.getVector("");
+		Vector<String> updatedVector = vfactory.getVector("");
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
 

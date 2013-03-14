@@ -26,7 +26,7 @@ import fr.inria.jessy.store.ReadRequest;
  * 
  */
 // TODO InComplete!!!
-public class SequentialPartitioner implements Partitioner {
+public class SequentialPartitioner extends Partitioner {
 
 	private static Logger logger = Logger
 			.getLogger(SequentialPartitioner.class);
@@ -54,8 +54,8 @@ public class SequentialPartitioner implements Partitioner {
 		}
 	}
 
-	public SequentialPartitioner() {
-		super();
+	public SequentialPartitioner(JessyGroupManager m) {
+		super(m);
 
 	}
 
@@ -75,7 +75,7 @@ public class SequentialPartitioner implements Partitioner {
 
 	@Override
 	public boolean isLocal(String k) {
-		return JessyGroupManager.getInstance().getMyGroups()
+		return manager.getMyGroups()
 				.contains(resolve(k));
 	}
 
@@ -103,7 +103,7 @@ public class SequentialPartitioner implements Partitioner {
 	 *            a key
 	 * @return the replica group of <i>k</i>.
 	 */
-	private static Group resolve(String key) {
+	private Group resolve(String key) {
 		int numericKey = 0;
 		String mkey = key.replaceAll("[^\\d]", "");
 		if (!mkey.equals("")) {
@@ -111,14 +111,13 @@ public class SequentialPartitioner implements Partitioner {
 		}
 		
 		if (numberOfObjectsPerGroup==-1)
-			numberOfObjectsPerGroup=totalNumberOfObjects/JessyGroupManager.getInstance().getReplicaGroups()
+			numberOfObjectsPerGroup=totalNumberOfObjects/manager.getReplicaGroups()
 			.size();
 		
-		for(int i=0;i<JessyGroupManager.getInstance().getReplicaGroups()
+		for(int i=0;i< manager.getReplicaGroups()
 				.size();i++){
 			if (numericKey<=((i+1)*numberOfObjectsPerGroup)){
-				return JessyGroupManager
-						.getInstance()
+				return manager
 						.getReplicaGroups()
 						.get(i);
 			}
@@ -132,7 +131,7 @@ public class SequentialPartitioner implements Partitioner {
 	public Set<String> generateKeysInAllGroups() {
 		Set<String> keys=new HashSet<String>();
 		
-		for (int i = 0; i < JessyGroupManager.getInstance().getReplicaGroups().size(); i++) {
+		for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
 			int key=(i*numberOfObjectsPerGroup)+1;
 			keys.add(""+key);
 		}

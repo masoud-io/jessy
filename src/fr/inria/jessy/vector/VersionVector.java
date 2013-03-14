@@ -33,17 +33,22 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 	 * the system.
 	 */
 	public static ConcurrentVersionVector<String> committedVTS;
-
-	static{
+	
+	@Deprecated
+	public VersionVector(JessyGroupManager m) {
+		init(m);
+	}
+	
+	// FIXME ugly construct
+	public synchronized static void init(JessyGroupManager m){
+		
+		if(committedVTS!=null) return;
+		
 		if (FilePersistence.loadFromDisk)
 			committedVTS= (ConcurrentVersionVector<String>) FilePersistence.readObject("VersionVector.committedVTS");
 		else
-			committedVTS = new ConcurrentVersionVector<String>(
-					JessyGroupManager.getInstance().getMyGroup().name());
-	}
-	
-	@Deprecated
-	public VersionVector() {
+			committedVTS = new ConcurrentVersionVector<String>(m.getMyGroup().name());
+		
 	}
 
 	public VersionVector(K selfKey, Integer selfValue) {

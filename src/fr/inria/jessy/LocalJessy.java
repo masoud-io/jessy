@@ -9,6 +9,7 @@ import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 
 import com.sleepycat.je.DatabaseException;
 
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -126,6 +127,11 @@ public class LocalJessy extends Jessy {
 		if (activeClients.size() == 0) {
 			super.close(object);
 		}
+	}
+
+	@Override
+	protected JessyGroupManager createJessyGroupManager() {
+		return null;
 	}
 
 }

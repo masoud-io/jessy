@@ -18,6 +18,7 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
@@ -26,8 +27,8 @@ import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.VotePiggyback;
 import fr.inria.jessy.vector.Vector;
@@ -57,14 +58,14 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 	private ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback> receivedPiggybacks;
 
-	public ParallelSnapshotIsalation(DataStore store) {
-		super(store);
+	public ParallelSnapshotIsalation(JessyGroupManager m, DataStore store) {
+		super(m, store);
 		receivedPiggybacks = new ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback>();
-		propagation = new MessagePropagation(this);
+		propagation = new MessagePropagation(this,m);
 		
 		applyPiggyback=new HashMap<String, ParallelSnapshotIsolationApplyPiggyback>();
 		
-		for(Group group:JessyGroupManager.getInstance().getReplicaGroups()){
+		for(Group group:manager.getReplicaGroups()){
 			ParallelSnapshotIsolationApplyPiggyback task=new ParallelSnapshotIsolationApplyPiggyback();
 			pool.submit(task);
 			applyPiggyback.put(group.name(),task);
