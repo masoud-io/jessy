@@ -96,12 +96,10 @@ function collectStats(){
     certificationTime_update=0;
     certificationQueueingTime=0;
     applyingTransactionQueueingTime=0;
-    castingLatency=0;
-    votingQuorumLatency=0;
     
 
 	if ! [ -s "${scriptdir}/results/${servercount}.txt" ]; then
-	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tOverall_Throughput\tCommitted_Throughput\tupdateTran_Latency\treadonlyTran_Latency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tExecutionLatency_UpdateTran\tTerminationLatency_UpdateTran\tExecutionLatency_ReadOnlyTran\tTerminationLatency_ReadOnlyTran\tVoting_Time_NTP\tCertificationLatency_UpdateTran\tCertificationLatency_readonlyTran\tCertificationQueueingTime\tApplyingTransactionQueueingTime\tVoting_Quorum_Latency\tCasting_Latency_NTP"
+	    echo -e  "Consistency\tServer_Machines\tClient_Machines\tNumber_Of_Clients\tOverall_Throughput\tCommitted_Throughput\tupdateTran_Latency\treadonlyTran_Latency\tFailed_Termination_Ratio\tFailed_Execution_Ratio\tFailed_Read_Ratio\tTermination_Timeout_Ratio\tExecutionLatency_UpdateTran\tupdateCertificationLatency\tExecutionLatency_ReadOnlyTran\treadonlyCertificationLatency\tVoting_Time\tCertificationLatency_UpdateTran\tCertificationLatency_readonlyTran\tCertificationQueueingTime\tApplyingTransactionQueueingTime"
 	fi
 
     let scount=${#servers[@]}-1
@@ -127,17 +125,6 @@ function collectStats(){
 	tmp=`grep -a "applyingTransactionQueueingTime_update" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
 	if [ -n "${tmp}" ]; then
 	    applyingTransactionQueueingTime=`echo "${tmp}+${applyingTransactionQueueingTime}"| sed 's/E/*10^/g'`;	    
-	fi
-
-
-	tmp=`grep -a "castLatency_Update_ReadOnly" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
-	if [ -n "${tmp}" ]; then
-	    castingLatency=`echo "${tmp}+${castingLatency}"| sed 's/E/*10^/g'`;	    
-	fi
-
-	tmp=`grep -a "votingPhase_Latency" ${scriptdir}/${server} | gawk -F':' '{print $2}'`;
-	if [ -n "${tmp}" ]; then
-	    votingQuorumLatency=`echo "${tmp}+${votingQuorumLatency}"| sed 's/E/*10^/g'`;	    
 	fi
 
     done
@@ -236,11 +223,9 @@ function collectStats(){
 
     certificationTime_readonly=`echo "scale=2;(${certificationTime_readonly})/${#servers[@]}" | ${bc}`;
     certificationTime_update=`echo "scale=2;(${certificationTime_update})/${#servers[@]}" | ${bc}`;
+
     certificationQueueingTime=`echo "scale=2;(${certificationQueueingTime})/${#servers[@]}" | ${bc}`;
     applyingTransactionQueueingTime=`echo "scale=2;(${applyingTransactionQueueingTime})/${#servers[@]}" | ${bc}`;
-    castingLatency=`echo "scale=2;(${castingLatency})/${#servers[@]}" | ${bc}`;
-    votingQuorumLatency=`echo "scale=2;(${votingQuorumLatency})/${#servers[@]}" | ${bc}`;
-
 
     executionTime_readonly=`echo "scale=2;(${executionTime_readonly})/${#clients[@]}" | ${bc}`;
     executionTime_update=`echo "scale=2;(${executionTime_update})/${#clients[@]}" | ${bc}`;
@@ -248,9 +233,10 @@ function collectStats(){
     terminationTime_update=`echo "scale=2;(${terminationTime_update})/${#clients[@]}" | ${bc}`;
     votingTime=`echo "scale=2;(${votingTime})/${#clients[@]}" | ${bc}`;
     
-    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${overallThroughput}\t${committedThroughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime_update}\t${terminationTime_update}\t${executionTime_readonly}\t${terminationTime_readonly}\t${votingTime}\t${certificationTime_update}\t${certificationTime_readonly}\t${certificationQueueingTime}\t${applyingTransactionQueueingTime}\t${votingQuorumLatency}\t${castingLatency}"
+    echo -e  "${consistency}\t${servercount}\t$[${#clients[@]}]\t${clientcount}\t${overallThroughput}\t${committedThroughput}\t${updateLatency}\t${readLatency}\t${failedTerminationRatio}\t${failedExecutionRatio}\t${failedReadsRatio}\t${timeoutRatio}\t${executionTime_update}\t${terminationTime_update}\t${executionTime_readonly}\t${terminationTime_readonly}\t${votingTime}\t${certificationTime_update}\t${certificationTime_readonly}\t${certificationQueueingTime}\t${applyingTransactionQueueingTime}"
 
 }
+
 
 trap "stopExp; wait; exit 255" SIGINT SIGTERM
 trap "dump; wait;" SIGQUIT
