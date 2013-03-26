@@ -174,7 +174,6 @@ public class DistributedTermination implements Learner {
 	}
 	
 	private void TerminateTransactionMessageAM_Delivered(TerminateTransactionRequestMessage terminateRequestMessage){
-		
 		if (ConstantPool.logging)
 			logger.error("got a TerminateTransactionRequestMessage for "
 				+ terminateRequestMessage.getExecutionHistory()
@@ -185,27 +184,32 @@ public class DistributedTermination implements Learner {
 		
 		ConsistencyFactory.getConsistencyInstance().transactionDeliveredForTermination(terminateRequestMessage);
 	
-//		try{
-			synchronized (atomicDeliveredMessages) {				
-				// FIXME what is this mess !??
-				//				TransactionHandler abortedTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousAbortedTransactionHandler();
-//				if (abortedTransactionHandler!=null){
-//					for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
-//						if (req.getExecutionHistory().getTransactionHandler().equals(abortedTransactionHandler)){
-//							garbageCollectJessyReplica(req);
-//							if (applyTransactionsToDataStore!=null)
-//								applyTransactionsToDataStore.removeFromQueue(req);
-//							break;
-//						}
-//					}
-//
-//				}
+		try{
+			synchronized (atomicDeliveredMessages) {
+				
+				/*
+				 * If the previous transaction has been timed-out, this transaction will carry the id of it.
+				 * All the effects of the previous transaction should be wiped out from the system. 
+				 */
+				TransactionHandler abortedTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousAbortedTransactionHandler();
+				if (abortedTransactionHandler!=null){
+					for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
+						if (req.getExecutionHistory().getTransactionHandler().equals(abortedTransactionHandler)){
+							garbageCollectJessyReplica(req);
+							if (applyTransactionsToDataStore!=null)
+								applyTransactionsToDataStore.removeFromQueue(req);
+							break;
+						}
+					}
+
+				}
+				
 				atomicDeliveredMessages.offer(terminateRequestMessage);
 			}
-//		}
-//		catch (Exception ex){
-//			ex.printStackTrace();
-//		}
+		}
+		catch (Exception ex){
+			ex.printStackTrace();
+		}
 		
 		
 		pool.execute(new CertifyAndVoteTask(terminateRequestMessage));

@@ -114,7 +114,7 @@ public class SnapshotIsolation extends Consistency {
 	@Override
 	public boolean certificationCommute(TransactionTouchedKeys tk1,
 			TransactionTouchedKeys tk2) {
-		return !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.writeKeys);
+		return false;
 	}
 	
 	@Override
@@ -211,10 +211,17 @@ public class SnapshotIsolation extends Consistency {
 	public Set<String> getVotersToCoordinator(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
-		Set<String> keys = new HashSet<String>();
+		
+		Set<String> keys = new HashSet<String>(4);
 		keys.addAll(executionHistory.getWriteSet().getKeys());
 		keys.addAll(executionHistory.getCreateSet().getKeys());
 
-		return keys;
+		Set<String> destGroups = new HashSet<String>(4);
+		
+		destGroups
+		.addAll(manager.getPartitioner().resolveNames(keys));
+
+		
+		return destGroups;
 	}
 }
