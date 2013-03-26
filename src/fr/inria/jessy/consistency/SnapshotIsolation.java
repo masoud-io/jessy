@@ -212,11 +212,11 @@ public class SnapshotIsolation extends Consistency {
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
 		
-		Set<String> keys = new HashSet<String>(4);
+		Set<String> keys = new HashSet<String>();
 		keys.addAll(executionHistory.getWriteSet().getKeys());
 		keys.addAll(executionHistory.getCreateSet().getKeys());
 
-		Set<String> destGroups = new HashSet<String>(4);
+		Set<String> destGroups = new HashSet<String>();
 		
 		destGroups
 		.addAll(manager.getPartitioner().resolveNames(keys));

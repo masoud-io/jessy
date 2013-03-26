@@ -120,47 +120,55 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 			return CompatibleResult.COMPATIBLE;
 		} else {
 
+			//FIXME THIS IS A BROKEN CODE. READS ARE NOT CONSISTENT!
 			Integer otherValue = (Integer) other.getValue(selfKey);
-			/**
-			 * this site has not received yet the required version
-			 */
-			if (otherValue > lastCommittedTransactionSeqNumber.get()) {
-				while (otherValue>lastCommittedTransactionSeqNumber.get()){
-					synchronized (lastCommittedTransactionSeqNumber) {
-						try {
-							lastCommittedTransactionSeqNumber.wait();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}	
-
-					}
-				}
-				return CompatibleResult.NEVER_COMPATIBLE;
-			}
-
-			Integer committingHead=committingTransactionSeqNumber.peek();
-			if (committingHead!=null && committingHead<otherValue) {
-				while (committingHead!=null && committingHead<otherValue){
-					synchronized (committingTransactionSeqNumber) {
-						try {
-							committingTransactionSeqNumber.wait(100);
-							committingHead=committingTransactionSeqNumber.peek();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}	
-
-					}
-				}
-				return CompatibleResult.NEVER_COMPATIBLE;
-			}
-			
 			Integer selfValue = getValue(selfKey);
 
 			if (selfValue <= otherValue) {
 				return CompatibleResult.COMPATIBLE;
 			}
-
-			return CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
+			else
+				return CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
+			/**
+			 * this site has not received yet the required version
+			 */
+//			if (otherValue > lastCommittedTransactionSeqNumber.get()) {
+//				while (otherValue>lastCommittedTransactionSeqNumber.get()){
+//					synchronized (lastCommittedTransactionSeqNumber) {
+//						try {
+//							lastCommittedTransactionSeqNumber.wait();
+//						} catch (InterruptedException e) {
+//							e.printStackTrace();
+//						}	
+//
+//					}
+//				}
+//				return CompatibleResult.NEVER_COMPATIBLE;
+//			}
+//
+//			Integer committingHead=committingTransactionSeqNumber.peek();
+//			if (committingHead!=null && committingHead<otherValue) {
+//				while (committingHead!=null && committingHead<otherValue){
+//					synchronized (committingTransactionSeqNumber) {
+//						try {
+//							committingTransactionSeqNumber.wait(100);
+//							committingHead=committingTransactionSeqNumber.peek();
+//						} catch (InterruptedException e) {
+//							e.printStackTrace();
+//						}	
+//
+//					}
+//				}
+//				return CompatibleResult.NEVER_COMPATIBLE;
+//			}
+//			
+//			Integer selfValue = getValue(selfKey);
+//
+//			if (selfValue <= otherValue) {
+//				return CompatibleResult.COMPATIBLE;
+//			}
+//
+//			return CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 		}
 
 	}
