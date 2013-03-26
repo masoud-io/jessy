@@ -38,27 +38,22 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		transactionExecutionTime_ReadOlny = new ValueRecorder(
 				"Transaction#transactionExecutionTime_ReadOlny(ms)");
 		transactionExecutionTime_ReadOlny.setFormat("%a");
-		transactionExecutionTime_ReadOlny.setFactor(1000000);
 
 		transactionExecutionTime_Update = new ValueRecorder(
 				"Transaction#transactionExecutionTime_Update(ms)");
 		transactionExecutionTime_Update.setFormat("%a");
-		transactionExecutionTime_Update.setFactor(1000000);
 
 		transactionTerminationTime_ReadOnly = new ValueRecorder(
 				"Transaction#transactionTerminationTime_ReadOnly(ms)");
 		transactionTerminationTime_ReadOnly.setFormat("%a");
-		transactionTerminationTime_ReadOnly.setFactor(1000000);
 
 		transactionTerminationTime_Update = new ValueRecorder(
 				"Transaction#transactionTerminationTime_Update(ms)");
 		transactionTerminationTime_Update.setFormat("%a");
-		transactionTerminationTime_Update.setFactor(1000000);
 
 		transactionReadOperatinTime = new ValueRecorder(
 				"Transaction#transactionReadOperatinTime(ms)");
 		transactionReadOperatinTime.setFormat("%a");
-		transactionReadOperatinTime.setFactor(1000000);
 
 		retryCommitOnAbort = readConfig();
 	}
@@ -98,7 +93,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		this.jessy = jessy;
 		this.transactionHandler = jessy.startTransaction();
 		this.isQuery = true;
-		executionStartTime = System.nanoTime();
+		executionStartTime = System.currentTimeMillis();
 		totalCount.incr();
 	}
 	
@@ -106,7 +101,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		this.jessy = jessy;
 		this.transactionHandler = jessy.startTransaction(readOperations,updateOperations,createOperations);
 		this.isQuery = true;
-		executionStartTime = System.nanoTime();
+		executionStartTime = System.currentTimeMillis();
 		totalCount.incr();
 	}
 
@@ -129,9 +124,9 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 */
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
 			throws Exception {
-		long start = System.nanoTime();
+		long start = System.currentTimeMillis();
 		E entity = jessy.read(transactionHandler, entityClass, keyValue);
-		transactionReadOperatinTime.add(System.nanoTime() - start);
+		transactionReadOperatinTime.add(System.currentTimeMillis() - start);
 		// if (entity != null)
 		// entity.setPrimaryKey(null);
 		return entity;
@@ -165,15 +160,15 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 */
 	public ExecutionHistory commitTransaction() {
 		if(mainTransactionCommit==0) 
-			terminationStartTime= System.nanoTime();
+			terminationStartTime= System.currentTimeMillis();
 		
 		mainTransactionCommit++;
 		
 		if (isQuery)
-			transactionExecutionTime_ReadOlny.add(System.nanoTime()
+			transactionExecutionTime_ReadOlny.add(System.currentTimeMillis()
 					- executionStartTime);
 		else{
-			transactionExecutionTime_Update.add(System.nanoTime()
+			transactionExecutionTime_Update.add(System.currentTimeMillis()
 					- executionStartTime);
 		}
 
@@ -218,10 +213,10 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		mainTransactionCommit--;
 		if (mainTransactionCommit==0)
 			if (isQuery)
-				transactionTerminationTime_ReadOnly.add(System.nanoTime()
+				transactionTerminationTime_ReadOnly.add(System.currentTimeMillis()
 						- terminationStartTime);
 			else
-				transactionTerminationTime_Update.add(System.nanoTime()
+				transactionTerminationTime_Update.add(System.currentTimeMillis()
 						- terminationStartTime);
 
 		return executionHistory;
@@ -268,6 +263,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 * we need to re set all the probes. Otherwise, the execution latency is not accurate since the start time is the very beginning of the transaction.
 	 */
 	private void reInitProbes(){
-		executionStartTime = System.nanoTime();
+		executionStartTime = System.currentTimeMillis();
 	}
 }

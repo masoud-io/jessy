@@ -49,6 +49,7 @@ public class VoteMulticastWithFractal extends VoteMulticast{
 			String coordinatorHost) {
 
 		mCastStream.multicast(voteMessage);
+		// FIXME only a single process might know the client, this is not at all fault tolerant.
 		if (!isCertifyAtCoordinator) {
 			mCastStream.unicast(voteMessage, coordinatorSwid,
 					j.manager.getEverybodyGroup());

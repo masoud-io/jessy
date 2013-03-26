@@ -89,7 +89,7 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 
 		} else {
 
-			long start = System.nanoTime();
+			long start = System.currentTimeMillis();
 
 			List<ReadReply> list = ((ReadReplyMessage) v).getReadReplies();
 			batching.add(list.size());
@@ -135,7 +135,7 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 					list.clear();
 					list.add(remoteReadQ.take());
 
-					long start = System.nanoTime();
+					long start = System.currentTimeMillis();
 
 					remoteReadQ.drainTo(list);
 
@@ -168,7 +168,7 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 								new ReadRequestMessage(toSend.get(dest)), swid);
 					}
 
-					clientAskingTime.add(System.nanoTime() - start);
+					clientAskingTime.add(System.currentTimeMillis() - start);
 
 				}
 
@@ -196,7 +196,7 @@ public class FractalRemoteReader extends RemoteReader implements Learner {
 			while (true) {
 
 				try {
-					long start = System.nanoTime();
+					long start = System.currentTimeMillis();
 
 					pendingRequests.clear();
 					msgs.clear();

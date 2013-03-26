@@ -97,12 +97,10 @@ public class DistributedJessy extends Jessy {
 				"Jessy#NonTransactionalWriteRequestTime");
 		
 		remoteReaderLatency = new ValueRecorder(
-				"DistributedJessy#remoteReaderLatency(ms)");
-		remoteReaderLatency.setFormat("%a");
-		remoteReaderLatency.setFactor(1000000);
+				"DistributedJessy#remoteReaderLatency(ms,max)");
+		remoteReaderLatency.setFormat("%M");
 		
 		clientProcessingResponseTime = new TimeRecorder("RemoteReader#clientProcessingResponseTime(ms)");
-		clientProcessingResponseTime.setFactor(1000000);
 		clientProcessingResponseTime.setFormat("%a");
 	}
 
@@ -226,7 +224,7 @@ public class DistributedJessy extends Jessy {
 			boolean isDone = false;
 			int tries = 0;
 
-			long start=System.nanoTime();
+			long start=System.currentTimeMillis();
 			do {
 
 				future = remoteReader.remoteRead(readRequest);
@@ -243,7 +241,7 @@ public class DistributedJessy extends Jessy {
 
 						logger.debug("read " + readRequest + " is successfull ");
 						result = readReply.getEntity().iterator().next();
-						remoteReaderLatency.add(System.nanoTime()-start);
+						remoteReaderLatency.add(System.currentTimeMillis()-start);
 						isDone = true;
 					} 
 

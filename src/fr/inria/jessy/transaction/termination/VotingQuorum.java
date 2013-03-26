@@ -30,15 +30,6 @@ public class VotingQuorum {
 
 	private static Logger logger = Logger.getLogger(VotingQuorum.class);
 	
-	private static ValueRecorder votingPhase_Latency;
-	
-	static {
-		votingPhase_Latency = new ValueRecorder(
-				"VotingQuorum#votingPhase_Latency(ms)");
-		votingPhase_Latency.setFormat("%a");
-		votingPhase_Latency.setFactor(1000000);
-	}
-	
 	private TransactionState result = TransactionState.COMMITTING;
 	private TransactionHandler transactionHandler;
 	private Collection<String> voters;
@@ -81,9 +72,7 @@ public class VotingQuorum {
 	 *         {@link TransactionState.ABORTED_BY_VOTING}
 	 */
 	public synchronized TransactionState waitVoteResult(Collection<String> groups) {
-		
-		long start=System.nanoTime();
-		
+
 		while( result == TransactionState.COMMITTING
 			   && voters.size() < groups.size() ){
 			try {
@@ -96,8 +85,6 @@ public class VotingQuorum {
 				e.printStackTrace();
 			}
 		}
-		
-		votingPhase_Latency.add(System.nanoTime()-start);
 		
 		if( result == TransactionState.COMMITTING ){
 			if (ConstantPool.logging)

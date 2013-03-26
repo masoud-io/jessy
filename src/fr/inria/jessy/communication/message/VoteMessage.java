@@ -21,4 +21,8 @@ public class VoteMessage extends MulticastMessage {
 		return (Vote) serializable;
 	}
 
+	public String toString(){
+		return serializable.toString();
+	}
+	
 }

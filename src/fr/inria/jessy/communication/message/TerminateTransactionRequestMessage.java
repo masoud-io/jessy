@@ -13,7 +13,7 @@ public class TerminateTransactionRequestMessage extends WanAMCastMessage{
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
-	public long startCasting;
+	public long startCastingTime;
 	
 	private Object computedObjectUponDelivery;
 	
@@ -24,7 +24,7 @@ public class TerminateTransactionRequestMessage extends WanAMCastMessage{
 	public TerminateTransactionRequestMessage(ExecutionHistory eh,
 			Collection<String> dest, String gSource, int source) {
 		super(eh, dest, gSource, source);
-		startCasting = System.currentTimeMillis();
+		startCastingTime = System.currentTimeMillis();
 	}
 
 	public ExecutionHistory getExecutionHistory() {
@@ -35,13 +35,13 @@ public class TerminateTransactionRequestMessage extends WanAMCastMessage{
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		super.readExternal(in);
-		startCasting = in.readLong();
+		startCastingTime = in.readLong();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
-		out.writeLong(startCasting);
+		out.writeLong(startCastingTime);
 	}
 
 	@Override
@@ -60,6 +60,9 @@ public class TerminateTransactionRequestMessage extends WanAMCastMessage{
 		this.computedObjectUponDelivery = computedObjectUponDelivery;
 	}
 
+	public String toStirng(){
+		return serializable.toString();
+	}
 	
 	
 }

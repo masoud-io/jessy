@@ -49,8 +49,8 @@ public class DistributedTermination implements Learner {
 	protected static Logger logger = Logger
 			.getLogger(DistributedTermination.class);
 
-	protected static ValueRecorder certificationTime_readonly,
-			certificationTime_update, certificationQueueingTime, applyingTransactionQueueingTime , votingTime, castLatency;
+	protected static ValueRecorder readOnlyCertificationLatency, updateCertificationLatency, 
+								   certificationQueueingLatency, applyingTransactionQueueingLatency , votingLatency;
 	
 	private DistributedJessy jessy;
 	
@@ -87,71 +87,27 @@ public class DistributedTermination implements Learner {
 	private ConcurrentLinkedHashMap<UUID, Object> terminated;
 	
 	private static final Object dummyObject=new Object();
-	
-	private static boolean reInitProbes=true;
-	
+		
 	static {
-		initProbesForInsertion();
-	}
-
-	public static void initProbesForInsertion(){
-		certificationTime_update = new ValueRecorder(
-				"DistributedTermination#certificationTime_Insert(ms)");
-		certificationTime_update.setFormat("%a");
-		certificationTime_update.setFactor(1000000);	
-		
-		certificationQueueingTime = new ValueRecorder(
-				"DistributedTermination#certificationQueueingTime_Insert(ms)");
-		certificationQueueingTime.setFormat("%a");
-		certificationQueueingTime.setFactor(1000000);
-		
-		applyingTransactionQueueingTime = new ValueRecorder(
-				"DistributedTermination#applyingTransactionQueueingTime_Insert(ms)");
-		applyingTransactionQueueingTime.setFormat("%a");
-		applyingTransactionQueueingTime.setFactor(1000000);
-		
-		votingTime = new ValueRecorder(
-				"DistributedTermination#votingTime(ms)");
-		votingTime.setFormat("%a");
-		
-		castLatency = new ValueRecorder(
-				"DistributedTermination#castLatency_Loading(ms)");
-		castLatency.setFormat("%a");
-	}
-	
-	public synchronized static void initProbesForExecution(){
-		if (!reInitProbes) return;
-		
-		reInitProbes=false;
-		System.out.println("Initializing Probes for execution...");
-
-		certificationTime_readonly = new ValueRecorder(
+		readOnlyCertificationLatency = new ValueRecorder(
 				"DistributedTermination#certificationTime_readonly(ms)");
-		certificationTime_readonly.setFormat("%a");
-		certificationTime_readonly.setFactor(1000000);
+		readOnlyCertificationLatency.setFormat("%a");
 
-		certificationTime_update = new ValueRecorder(
+		updateCertificationLatency = new ValueRecorder(
 				"DistributedTermination#certificationTime_update(ms)");
-		certificationTime_update.setFormat("%a");
-		certificationTime_update.setFactor(1000000);	
+		updateCertificationLatency.setFormat("%a");
 		
-		certificationQueueingTime = new ValueRecorder(
+		certificationQueueingLatency = new ValueRecorder(
 				"DistributedTermination#certificationQueueingTime_update(ms)");
-		certificationQueueingTime.setFormat("%a");
-		certificationQueueingTime.setFactor(1000000);
+		certificationQueueingLatency.setFormat("%a");
 		
-		applyingTransactionQueueingTime = new ValueRecorder(
+		applyingTransactionQueueingLatency = new ValueRecorder(
 				"DistributedTermination#applyingTransactionQueueingTime_update(ms)");
-		applyingTransactionQueueingTime.setFormat("%a");
-		applyingTransactionQueueingTime.setFactor(1000000);
+		applyingTransactionQueueingLatency.setFormat("%a");
 
-		votingTime = new ValueRecorder(
+		votingLatency = new ValueRecorder(
 				"DistributedTermination#votingTime(ms)");
-		votingTime.setFormat("%a");
-		
-		castLatency = new ValueRecorder(
-				"DistributedTermination#castLatency_Update_ReadOnly(ms)");
-		castLatency.setFormat("%a");
+		votingLatency.setFormat("%a");
 
 	}
 	
@@ -218,12 +174,6 @@ public class DistributedTermination implements Learner {
 	}
 	
 	private void TerminateTransactionMessageAM_Delivered(TerminateTransactionRequestMessage terminateRequestMessage){
-		castLatency.add(System.currentTimeMillis()-terminateRequestMessage.startCasting);
-		if (reInitProbes){
-			if (terminateRequestMessage.getExecutionHistory().getCreateSet()==null ||
-					terminateRequestMessage.getExecutionHistory().getCreateSet().size()==0)
-				initProbesForExecution();
-		}
 		
 		if (ConstantPool.logging)
 			logger.error("got a TerminateTransactionRequestMessage for "
@@ -231,31 +181,31 @@ public class DistributedTermination implements Learner {
 						.getTransactionHandler().getId() + " , read keys :" + terminateRequestMessage.getExecutionHistory().getReadSet().getKeys());
 
 		terminateRequestMessage.getExecutionHistory()
-				.setStartCertification(System.nanoTime());
+				.setStartCertificationTime(System.currentTimeMillis());
 		
 		ConsistencyFactory.getConsistencyInstance().transactionDeliveredForTermination(terminateRequestMessage);
-		
-		try{
+	
+//		try{
 			synchronized (atomicDeliveredMessages) {				
-				TransactionHandler abortedTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousAbortedTransactionHandler();
-				if (abortedTransactionHandler!=null){
-					for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
-						if (req.getExecutionHistory().getTransactionHandler().equals(abortedTransactionHandler)){
-							garbageCollectJessyReplica(req);
-							if (applyTransactionsToDataStore!=null)
-								applyTransactionsToDataStore.removeFromQueue(req);
-							break;
-						}
-					}
-
-				}
-
+				// FIXME what is this mess !??
+				//				TransactionHandler abortedTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousAbortedTransactionHandler();
+//				if (abortedTransactionHandler!=null){
+//					for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
+//						if (req.getExecutionHistory().getTransactionHandler().equals(abortedTransactionHandler)){
+//							garbageCollectJessyReplica(req);
+//							if (applyTransactionsToDataStore!=null)
+//								applyTransactionsToDataStore.removeFromQueue(req);
+//							break;
+//						}
+//					}
+//
+//				}
 				atomicDeliveredMessages.offer(terminateRequestMessage);
 			}
-		}
-		catch (Exception ex){
-			ex.printStackTrace();
-		}
+//		}
+//		catch (Exception ex){
+//			ex.printStackTrace();
+//		}
 		
 		
 		pool.execute(new CertifyAndVoteTask(terminateRequestMessage));
@@ -303,12 +253,7 @@ public class DistributedTermination implements Learner {
 
 		try {
 			jessy.getConsistency().voteReceived(vote);
-			
 			vq.addVote(vote);
-
-			if (manager.isProxy()) {
-				votingTime.add(System.currentTimeMillis()-vote.startVoteTime);
-			}
 		} catch (Exception ex) {
 			/*
 			 * If here is reached, it means that a concurrent thread has already
@@ -538,6 +483,8 @@ public class DistributedTermination implements Learner {
 
 			try {
 
+				long start = System.currentTimeMillis();
+				
 				/*
 				 * First, à la P-Store.
 				 */
@@ -563,8 +510,10 @@ public class DistributedTermination implements Learner {
 					}
 				}
 				
-				certificationQueueingTime.add(System.nanoTime()-msg.getExecutionHistory().getStartCertification());
+				certificationQueueingLatency.add(System.currentTimeMillis()-start);
 
+				start = System.currentTimeMillis();
+				
 				if (ConstantPool.logging)
 					if (msg.getExecutionHistory().getTransactionType()==TransactionType.UPDATE_TRANSACTION){
 						logger.error("Staring certification of " + msg.getExecutionHistory().getTransactionHandler().getId());
@@ -616,14 +565,17 @@ public class DistributedTermination implements Learner {
 				if (voteSender){
 
 					voteReceivers.remove(group.name());
-					vote.startVoteTime=System.currentTimeMillis();
 					VoteMessage voteMsg = new VoteMessage(vote, voteReceivers,
 							group.name(), manager.getSourceId());
 
-					terminationCommunication.sendVote(voteMsg, msg
-							.getExecutionHistory().isCertifyAtCoordinator(),
-							msg.getExecutionHistory().getCoordinatorSwid(),msg.getExecutionHistory().getCoordinatorHost());
-					
+					try{
+						terminationCommunication.sendVote(voteMsg, msg
+								.getExecutionHistory().isCertifyAtCoordinator(),
+								msg.getExecutionHistory().getCoordinatorSwid(),msg.getExecutionHistory().getCoordinatorHost());
+					}catch(Exception e){
+						// FIXME handle this properly
+						System.out.println("Cannot send "+voteMsg.toString()+" - coordinator "+msg.getExecutionHistory().getCoordinatorSwid()+" is unknown.");
+					}
 					
 					/*
 					 * we can garbage collect right away, and exit.
@@ -644,6 +596,8 @@ public class DistributedTermination implements Learner {
 					else
 						getOrCreateVotingQuorums(vote.getTransactionHandler());
 					
+					assert votingQuorums.containsKey(msg.getExecutionHistory().getTransactionHandler()) : msg.getExecutionHistory().getTransactionHandler() +"\n"+votingQuorums;
+ 					
 					TransactionState state = votingQuorums.get(
 							msg.getExecutionHistory().getTransactionHandler())
 							.waitVoteResult(voteSenders);
@@ -654,6 +608,8 @@ public class DistributedTermination implements Learner {
 						logger.debug("got voting quorum for " + msg.getExecutionHistory().getTransactionHandler()
 								+ " , result is " + state);
 
+					votingLatency.add(System.currentTimeMillis()-start);
+					
 					/*
 					 * we can garbage collect right away, and exit.
 					 */
@@ -666,7 +622,7 @@ public class DistributedTermination implements Learner {
 
 				}
 				
-				msg.getExecutionHistory().setApplyingTransactionQueueingStartTime(System.nanoTime());
+				msg.getExecutionHistory().setApplyingTransactionQueueingStartTime(System.currentTimeMillis());
 				
 				if (!jessy.getConsistency().applyingTransactionCommute() && voteSender && voteReceiver)
 				{
@@ -696,18 +652,18 @@ public class DistributedTermination implements Learner {
 	
 	protected static void measureCertificationTime(TerminateTransactionRequestMessage msg){
 		if (msg.getExecutionHistory().getTransactionType() == TransactionType.READONLY_TRANSACTION)
-			certificationTime_readonly.add(System.nanoTime()
+			readOnlyCertificationLatency.add(System.currentTimeMillis()
 					- msg.getExecutionHistory()
-					.getStartCertification());
+					.getStartCertificationTime());
 		else if (msg.getExecutionHistory().isVoteReceiver() && (msg.getExecutionHistory().getTransactionType() == TransactionType.UPDATE_TRANSACTION))
-			certificationTime_update.add(System.nanoTime()
+			updateCertificationLatency.add(System.currentTimeMillis()
 					- msg.getExecutionHistory()
-					.getStartCertification());
+					.getStartCertificationTime());
 	}
 	
 	protected static void measureApplyingTransactionQueueingTime(TerminateTransactionRequestMessage msg){	
 		if (msg.getExecutionHistory().isVoteReceiver())
-			applyingTransactionQueueingTime.add(System.nanoTime()-msg.getExecutionHistory().getApplyingTransactionQueueingStartTime());
+			applyingTransactionQueueingLatency.add(System.currentTimeMillis()-msg.getExecutionHistory().getApplyingTransactionQueueingStartTime());
 	}
 
 }

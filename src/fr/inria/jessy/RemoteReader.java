@@ -36,7 +36,6 @@ public abstract class RemoteReader {
 
 	static {
 		clientAskingTime = new TimeRecorder("RemoteReader#clientAskingTime(ms)");
-		clientAskingTime.setFactor(1000000);
 		clientAskingTime.setFormat("%a");
 
 		batching = new ValueRecorder("RemoteReader#batching)");

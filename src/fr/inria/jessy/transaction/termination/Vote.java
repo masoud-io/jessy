@@ -16,7 +16,6 @@ public class Vote implements Externalizable {
 	private TransactionHandler transactionHandler;
 	private boolean isAborted;
 	private String voterGroupName;
-	public long startVoteTime;
 
 	private VotePiggyback votePiggyback;
 
@@ -47,11 +46,14 @@ public class Vote implements Externalizable {
 	public VotePiggyback getVotePiggyBack() {
 		return votePiggyback;
 	}
+	
+	public String toString(){
+		return "VOTE["+this.transactionHandler.toString()+"]";
+	}
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		startVoteTime=in.readLong();
 		transactionHandler = (TransactionHandler) in.readObject();
 		isAborted = in.readBoolean();
 		voterGroupName = (String) in.readObject();
@@ -63,7 +65,6 @@ public class Vote implements Externalizable {
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeLong(startVoteTime);
 		out.writeObject(transactionHandler);
 		out.writeBoolean(isAborted);
 		out.writeObject(voterGroupName);

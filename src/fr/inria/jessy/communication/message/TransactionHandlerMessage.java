@@ -44,6 +44,10 @@ public class TransactionHandlerMessage extends WanAMCastMessage{
 	public UUID getId(){
 		return UUID.fromString((String)serializable);
 	}
+	
+	public String toString(){
+		return getId().toString();
+	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {

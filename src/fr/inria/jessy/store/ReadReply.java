@@ -16,6 +16,8 @@ public class ReadReply<E extends JessyEntity> implements Externalizable {
 	int readRequestId;
 	Collection<E> entities;
 
+	// FIXME use transaction handler instead.
+	
 	/**
 	 * For externalizable interface
 	 */
