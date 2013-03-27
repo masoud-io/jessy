@@ -21,11 +21,7 @@ public class ConstantPool {
 		SERVER, PROXY
 	}
 	
-	public static enum UNICAST_MODE{
-		FRACTAL, NETTY
-	}
-	
-	public static enum MULTICAST_MODE{
+	public static enum CAST_MODE{
 		FRACTAL, NETTY
 	}
 	
@@ -39,15 +35,9 @@ public class ConstantPool {
 	 * Specify the framework to be used for multicasting the vote
 	 * Only Fractal is available
 	 */
-	
-	public static final MULTICAST_MODE JESSY_VOTING_PHASE_MULTICAST_MODE=MULTICAST_MODE.FRACTAL;
-	/**
-	 * Specify the framework to be used for multicasting {@link TerminateTransactionRequestMessage}
-	 * Only Fractal is available
-	 */
-	public static final MULTICAST_MODE JESSY_LIGHT_GENUINE_MULTICAST_MODE=MULTICAST_MODE.FRACTAL;
+	public static final CAST_MODE JESSY_VOTING_PHASE_MULTICAST_MODE=CAST_MODE.NETTY;
 
-	public static final UNICAST_MODE JESSY_REMOTE_READ_UNICST_MODE=UNICAST_MODE.FRACTAL;
+	public static final CAST_MODE JESSY_REMOTE_READ_UNICST_MODE=CAST_MODE.NETTY;
 	
 	public final static long JESSY_MID = Messageable.FRACTAL_MID; // for marshalling unmarshalling facilities
 	
@@ -113,7 +103,7 @@ public class ConstantPool {
 	 * returning a null value from the server.
 	 */
 	public static final long JESSY_READ_RETRY_TIMEOUT = 1;
-	public static final short JESSY_READ_RETRY_TIMES = 3;
+	public static final short JESSY_READ_RETRY_TIMES = 10;
 	
 	/**
 	 * Specifies the timeout for a voting quorum. 
@@ -131,8 +121,8 @@ public class ConstantPool {
 	/**
 	 * Number of read/update operations in update transaction in YCSB 
 	 */
-	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=3;
-	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=1;
+	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=2;
+	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=2;
 	
 	/**
 	 * These two variables are used in {@link Jessy} to prevent checking for objects that have been

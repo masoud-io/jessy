@@ -51,9 +51,9 @@ public class LightGenuineTerminationCommunicationWithFractal extends Termination
 	
 	public LightGenuineTerminationCommunicationWithFractal(
 			Group group, 
-			Learner fractalLearner, 
+			Learner fractalLearner, UnicastLearner nettyLearner,
 			DistributedJessy j) {
-		super(j, fractalLearner);
+		super(j, fractalLearner,nettyLearner);
 		mCastStream = j.manager.fractal.getOrCreateMulticastStream(
 				ConstantPool.JESSY_VOTE_STREAM, manager.getMyGroup().name());
 		

@@ -27,9 +27,9 @@ public class GenuineTerminationCommunication extends TerminationCommunication {
 
 	public GenuineTerminationCommunication(
 			Group group,
-			Learner fractalLearner,
+			Learner fractalLearner, UnicastLearner nettyLearner,
 			DistributedJessy j) {
-		super(j, fractalLearner);
+		super(j, fractalLearner,nettyLearner);
 
 		aMCastStream = j.manager.fractal.getOrCreateWanAMCastStream(
 				group.name(), group.name());

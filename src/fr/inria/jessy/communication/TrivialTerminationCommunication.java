@@ -21,9 +21,9 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 public class TrivialTerminationCommunication extends TerminationCommunication implements Learner{
 
 	public TrivialTerminationCommunication(
-			Learner fractalLearner,
+			Learner fractalLearner, UnicastLearner nettyLearner,
 			DistributedJessy j) {
-		super(j,fractalLearner);
+		super(j,fractalLearner,nettyLearner);
 		mCastTransaction = j.manager.fractal.getOrCreateMulticastStream(
 				"", manager.getMyGroup().name());
 		mCastTransaction.registerLearner("MulticastMessage", this);

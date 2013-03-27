@@ -28,9 +28,9 @@ public class NonGenuineTerminationCommunication extends
 
 	public NonGenuineTerminationCommunication(
 			Group group,
-			Learner fractalLearner,
+			Learner fractalLearner, UnicastLearner nettyLearner,
 			DistributedJessy j) {
-		super(j, fractalLearner);
+		super(j, fractalLearner,nettyLearner);
 		gpaxosStream = j.manager.fractal.getOrCreateGPaxosStream(
 				"gpaxosStream",
 				manager.getEverybodyGroup().name(), // the proposers are all the

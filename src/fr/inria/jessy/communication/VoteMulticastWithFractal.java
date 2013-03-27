@@ -1,6 +1,5 @@
 package fr.inria.jessy.communication;
 
-import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.ConstantPool;

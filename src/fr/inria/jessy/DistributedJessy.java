@@ -7,7 +7,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
-import net.sourceforge.fractal.MessageStream;
 import net.sourceforge.fractal.utils.PerformanceProbe;
 import net.sourceforge.fractal.utils.PerformanceProbe.FloatValueRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.SimpleCounter;
@@ -22,38 +21,19 @@ import sun.misc.SignalHandler;
 
 import com.yahoo.ycsb.YCSBEntity;
 
-import fr.inria.jessy.ConstantPool.UNICAST_MODE;
+import fr.inria.jessy.ConstantPool.CAST_MODE;
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
-import fr.inria.jessy.communication.message.ReadReplyMessage;
-import fr.inria.jessy.communication.message.ReadRequestMessage;
-import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
-import fr.inria.jessy.communication.message.VoteMessage;
-import fr.inria.jessy.consistency.ParallelSnapshotIsolationPiggyback;
 import fr.inria.jessy.partitioner.Partitioner;
 import fr.inria.jessy.persistence.FilePersistence;
-import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
-import fr.inria.jessy.store.Keyspace;
 import fr.inria.jessy.store.ReadReply;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.store.ReadRequestKey;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
-import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
-import fr.inria.jessy.transaction.termination.Vote;
-import fr.inria.jessy.transaction.termination.VotePiggyback;
 import fr.inria.jessy.vector.CompactVector;
-import fr.inria.jessy.vector.ConcurrentVersionVector;
-import fr.inria.jessy.vector.DependenceVector;
-import fr.inria.jessy.vector.GMUVector;
-import fr.inria.jessy.vector.LightScalarVector;
-import fr.inria.jessy.vector.NullVector;
-import fr.inria.jessy.vector.ValueVector;
-import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.VersionVector;
 
 public class DistributedJessy extends Jessy {
 
@@ -112,7 +92,10 @@ public class DistributedJessy extends Jessy {
 
 			distributedTermination = new DistributedTermination(this);
 
-			remoteReader = new FractalRemoteReader(this);
+			if (ConstantPool.JESSY_REMOTE_READ_UNICST_MODE==CAST_MODE.FRACTAL)				
+				remoteReader = new FractalRemoteReader(this);
+			else
+				remoteReader = new NettyRemoteReader(this);
 
 			// FIXME
 			super.addEntity(YCSBEntity.class);
@@ -174,7 +157,10 @@ public class DistributedJessy extends Jessy {
 
 			distributedTermination = new DistributedTermination(this);
 
-			remoteReader = new FractalRemoteReader(this);
+			if (ConstantPool.JESSY_REMOTE_READ_UNICST_MODE==CAST_MODE.FRACTAL)				
+				remoteReader = new FractalRemoteReader(this);
+			else
+				remoteReader = new NettyRemoteReader(this);
 
 			// FIXME
 			super.addEntity(YCSBEntity.class);

@@ -25,18 +25,19 @@ public class TerminationCommunicationFactory {
 	public static TerminationCommunication initAndGetConsistency(
 			Group group, 
 			Learner fractalLearner,
+			UnicastLearner nettyLearner,
 			DistributedJessy j) {
 		if (_instance != null)
 			return _instance;
 				
 		if (consistencyTypeName.equals("rc") ) {
-			_instance = new TrivialTerminationCommunication(fractalLearner,j);
+			_instance = new TrivialTerminationCommunication(fractalLearner, nettyLearner,j);
 		} 
 		else if (ConstantPool.TERMINATION_COMMUNICATION_TYPE==GENUINE_TERMINATION_MODE.GENUINE){
-			_instance=new GenuineTerminationCommunication(group, fractalLearner,j);
+			_instance=new GenuineTerminationCommunication(group, fractalLearner,nettyLearner,j);
 		}
 		else if (ConstantPool.TERMINATION_COMMUNICATION_TYPE==GENUINE_TERMINATION_MODE.LIGHT_GENUINE){
-			_instance=new LightGenuineTerminationCommunicationWithFractal(group, fractalLearner,j);
+			_instance=new LightGenuineTerminationCommunicationWithFractal(group, fractalLearner,nettyLearner,j);
 		}
 		return _instance;
 	}

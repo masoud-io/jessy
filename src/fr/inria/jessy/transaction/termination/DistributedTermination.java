@@ -17,6 +17,7 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
+import org.jboss.netty.channel.Channel;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
@@ -25,6 +26,7 @@ import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunicationFactory;
+import fr.inria.jessy.communication.UnicastLearner;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency;
@@ -44,7 +46,7 @@ import fr.inria.jessy.transaction.TransactionState;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class DistributedTermination implements Learner {
+public class DistributedTermination implements Learner, UnicastLearner {
 
 	protected static Logger logger = Logger
 			.getLogger(DistributedTermination.class);
@@ -118,7 +120,7 @@ public class DistributedTermination implements Learner {
 		manager = j.manager;
 		group = manager.getMyGroup();
 		
-		terminationCommunication=TerminationCommunicationFactory.initAndGetConsistency(group, this, j);
+		terminationCommunication=TerminationCommunicationFactory.initAndGetConsistency(group, this,this, j);
 		logger.info("initialized");
 
 		terminationRequests = new ConcurrentHashMap<UUID, TransactionHandler>();
@@ -156,6 +158,16 @@ public class DistributedTermination implements Learner {
 		return reply;
 	}
 
+	@Override
+	public void receiveMessage(Object message, Channel channel) {
+		if (message instanceof VoteMessage){
+			voteMessageRM_Delivered(message);
+		}		
+		else{
+			logger.error("Netty delivered an unexpected message");
+		}
+	}
+	
 	/**
 	 * Call back by Fractal upon receiving atomically delivered
 	 * {@link TerminateTransactionRequestMessage} or {@link Vote}.

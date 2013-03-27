@@ -3,6 +3,8 @@ package fr.inria.jessy.communication;
 import java.util.Collection;
 
 import net.sourceforge.fractal.Learner;
+import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.CAST_MODE;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
@@ -21,10 +23,15 @@ public abstract class TerminationCommunication {
 	VoteMulticast voteMulticast;
 	protected DistributedJessy j;
 	
-	public TerminationCommunication(DistributedJessy jessy, Learner fractalLearner) {
+	public TerminationCommunication(DistributedJessy jessy, Learner fractalLearner, UnicastLearner nettyLearner) {
 			j = jessy;
 			manager = j.manager;
-			voteMulticast=new VoteMulticastWithFractal(fractalLearner,jessy);
+			if (ConstantPool.JESSY_VOTING_PHASE_MULTICAST_MODE==CAST_MODE.FRACTAL){
+				voteMulticast=new VoteMulticastWithFractal(fractalLearner,jessy);
+			}
+			else{
+				voteMulticast=new VoteMulticastWithNetty(jessy, nettyLearner);
+			}
 	}
 	
 	public void sendVote(VoteMessage voteMessage,
