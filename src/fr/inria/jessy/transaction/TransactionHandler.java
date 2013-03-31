@@ -14,7 +14,7 @@ public class TransactionHandler implements Externalizable, Cloneable{
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 	
 	/**
-	 * A unique id for identifying the previous aborted transaction either by voting or timeout.
+	 * A unique id for identifying the previous aborted transaction by timeout.
 	 * 
 	 * 
 	 * <p>
@@ -25,7 +25,7 @@ public class TransactionHandler implements Externalizable, Cloneable{
 	 * This variable helps us to check if the certification conflict is because
 	 * of a dangling aborted transaction, or something else.
 	 */
-	private TransactionHandler previousAbortedTransactionHandler;
+	private TransactionHandler previousTimedoutTransactionHandler;
 	
 	private  UUID id;
 	
@@ -37,13 +37,13 @@ public class TransactionHandler implements Externalizable, Cloneable{
 		return id;
 	}
 
-	public TransactionHandler getPreviousAbortedTransactionHandler() {
-		return previousAbortedTransactionHandler;
+	public TransactionHandler getPreviousTimedoutTransactionHandler() {
+		return previousTimedoutTransactionHandler;
 	}
 
-	public void setPreviousAbortedTransactionHandler(
+	public void setPreviousTimedoutTransactionHandler(
 			TransactionHandler previousAbortedTransactionHandler) {
-		this.previousAbortedTransactionHandler = previousAbortedTransactionHandler;
+		this.previousTimedoutTransactionHandler = previousAbortedTransactionHandler;
 	}
 	
 	@Override
@@ -67,14 +67,14 @@ public class TransactionHandler implements Externalizable, Cloneable{
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		id = (UUID) in.readObject();
-		previousAbortedTransactionHandler=(TransactionHandler) in.readObject();
+		previousTimedoutTransactionHandler=(TransactionHandler) in.readObject();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(id);
-		if (previousAbortedTransactionHandler!=null)
-			out.writeObject(previousAbortedTransactionHandler);
+		if (previousTimedoutTransactionHandler!=null)
+			out.writeObject(previousTimedoutTransactionHandler);
 		else
 			out.writeObject(null);
 	}

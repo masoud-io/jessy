@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.UUID;
 
 import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
-import fr.inria.jessy.consistency.Consistency;
-import fr.inria.jessy.consistency.ConsistencyFactory;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
 
@@ -23,22 +21,28 @@ import fr.inria.jessy.transaction.TransactionTouchedKeys;
  */
 public class TransactionHandlerMessage extends WanAMCastMessage{
 
-	private final Consistency consistency=ConsistencyFactory.getConsistencyInstance();
-
 	TransactionTouchedKeys keys;
 
+	@Deprecated
 	public TransactionHandlerMessage(){
-
 	}
 
 	public TransactionHandlerMessage(ExecutionHistory eh, Collection<String> dest, String gSource, int source){
 		super(eh.getTransactionHandler().getId().toString(), dest, gSource,source);
 		keys=eh.getTransactionTouchedKeys();
 	}	
-	
+
+	/**
+	 * Return true if this message commute with the given message.
+	 * <p>
+	 * Note that if return true, cyclic property of WanAMCast cannot be ensured.
+	 * Thus, might lead to some distributed deadlocks!
+	 */
+	@Override
 	public boolean commute(WanAMCastMessage m){
 		if(this==m) return true;
-		return consistency.certificationCommute(keys, ((TransactionHandlerMessage) m).keys);
+		return false;
+//		return consistency.certificationCommute(keys, ((TransactionHandlerMessage) m).keys);
 	}
 
 	public UUID getId(){

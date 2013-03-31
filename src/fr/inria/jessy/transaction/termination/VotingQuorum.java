@@ -3,8 +3,6 @@ package fr.inria.jessy.transaction.termination;
 import java.util.Collection;
 import java.util.HashSet;
 
-import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
-
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
@@ -61,7 +59,7 @@ public class VotingQuorum {
 		}
 		
 		notified=true;
-		notify();
+		notifyAll();
 	}
 
 	/**
@@ -96,5 +94,11 @@ public class VotingQuorum {
 			logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting. Groups are: " + groups + " . voters are : " + voters);
 		return TransactionState.ABORTED_BY_VOTING;
 	}
+
+	public Collection<String> getVoters() {
+		return voters;
+	}
+	
+	
 
 }

@@ -21,8 +21,6 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 	
 	private PriorityBlockingQueue<ParallelSnapshotIsolationPiggyback> piggybackQueue;
 	
-	private Object lock=new Object();
-
 	public ParallelSnapshotIsolationApplyPiggyback() {
 		piggybackQueue=new PriorityBlockingQueue<ParallelSnapshotIsolationPiggyback>(11, ParallelSnapshotIsolationPiggyback.ParallelSnapshotIsolationPiggybackComparator);
 	}
@@ -36,17 +34,28 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 		if (VersionVector.committedVTS.getValue(piggyback.getwCoordinatorGroupName()) >= piggyback.getSequenceNumber()) {
 			return;
 		}
+		
 		addToQueue(piggyback);
 	}
 
 	public void syncApply(ParallelSnapshotIsolationPiggyback piggyback) {
-		
+		if (VersionVector.committedVTS.getValue(piggyback.getwCoordinatorGroupName()) > piggyback.getSequenceNumber()) {
+			/*
+			 * If it has been applied before, ignore this one.
+			 * 
+			 * In theory, this if must never occur.
+			 */
+			if (ConstantPool.logging)
+				logger.error("Transaction "+ piggyback.getTransactionHandler().getId()+ " wants to update "+ piggyback.getwCoordinatorGroupName()
+						+ " : "+ piggyback.getSequenceNumber()+ " while current sequence number is "+ VersionVector.committedVTS.getValue(piggyback.getwCoordinatorGroupName()));
+			return;
+		}
 		synchronized(piggyback){
 			try {
 				addToQueue(piggyback);
-				if (!piggyback.isApplied())
+				while (!piggyback.isApplied())
 					piggyback.wait();
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -55,19 +64,20 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 	private void addToQueue(ParallelSnapshotIsolationPiggyback pb){
 		piggybackQueue.offer(pb);
 		
-		synchronized(lock){
-			lock.notify();
+		synchronized(piggybackQueue){
+			piggybackQueue.notify();
 		}
 	}
 	
 	@Override
 	public void run() {
+		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		ParallelSnapshotIsolationPiggyback pb;
 		while (true){
 			try {
 				pb = piggybackQueue.take();
 				updateCommittedVTS(pb);
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -89,19 +99,6 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 		try{
 
 
-			if (VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()) > pb.getSequenceNumber()) {
-				/*
-				 * If it has been applied before, ignore this one.
-				 * 
-				 * In theory, this if must never occur.
-				 */
-				if (ConstantPool.logging)
-					logger.error("Transaction "+ pb.getTransactionHandler().getId()+ " wants to update "+ pb.getwCoordinatorGroupName()
-							+ " : "+ pb.getSequenceNumber()+ " while current sequence number is "+ VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()));
-				return;
-			}
-
-
 			/*
 			 * Two conditions should be held before applying the updates. Figure 13
 			 * of [Serrano2011]
@@ -114,18 +111,18 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 			 */
 
 			if ((VersionVector.committedVTS
-					.getValue(pb.getwCoordinatorGroupName()) < pb.getSequenceNumber()- 1) && (piggybackQueue.size()<1000)){
+					.getValue(pb.getwCoordinatorGroupName()) < pb.getSequenceNumber()- 1)){
 				
 				if (ConstantPool.logging)
 					logger.error("late sequence: Transaction "
 							+ pb.getTransactionHandler().getId() + " wants to update " + pb.getwCoordinatorGroupName()
 							+ " : " + pb.getSequenceNumber()+ " while current sequence number is " + VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()));
 
-				piggybackQueue.offer(pb);
 
-				synchronized(lock){
-					lock.wait();
+				synchronized(piggybackQueue){
+					piggybackQueue.wait();
 				}
+				piggybackQueue.offer(pb);
 
 				return;
 			}
@@ -158,24 +155,30 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 				}
 			}
 
+			if (VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()) > pb.getSequenceNumber()) {
+				setAndNotifyParallelSnapshotIsolationPiggyback(pb);
+				return;
+			}
+			
 			synchronized (VersionVector.committedVTS) {
-				if (VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()) > pb.getSequenceNumber()) {
-					return;
-				}
 				VersionVector.committedVTS.setVector(pb.getwCoordinatorGroupName(),
 						(int)pb.getSequenceNumber());
 
 				VersionVector.committedVTS.notifyAll();
 			}
 
-			synchronized(pb){
-				pb.setApplied(true);
-				pb.notify();
-			}
+			setAndNotifyParallelSnapshotIsolationPiggyback(pb);
 			
 		}
 		catch(Exception ex){
 			ex.printStackTrace();
+		}
+	}
+	
+	private void setAndNotifyParallelSnapshotIsolationPiggyback(ParallelSnapshotIsolationPiggyback pb){
+		synchronized (pb){
+			pb.setApplied(true);
+			pb.notify();
 		}
 	}
 

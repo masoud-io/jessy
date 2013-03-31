@@ -6,9 +6,11 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
@@ -89,6 +91,10 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	private ConcurrentLinkedHashMap<UUID, Object> terminated;
 	
 	private static final Object dummyObject=new Object();
+	
+	ApplyTransactionsToDataStore applyTransactionsToDataStore;
+	
+	BlockingQueue<TerminateTransactionRequestMessage> amQueue=new LinkedBlockingQueue<TerminateTransactionRequestMessage>();
 		
 	static {
 		readOnlyCertificationLatency = new ValueRecorder(
@@ -112,9 +118,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		votingLatency.setFormat("%a");
 
 	}
-	
-	ApplyTransactionsToDataStore applyTransactionsToDataStore;
-	
+		
 	public DistributedTermination(DistributedJessy j) {
 		jessy = j;
 		manager = j.manager;
@@ -136,7 +140,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			applyTransactionsToDataStore=new ApplyTransactionsToDataStore(this);
 			pool.submit(applyTransactionsToDataStore);
 		}
-			
+		
 	}
 
 	/**
@@ -161,7 +165,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	@Override
 	public void receiveMessage(Object message, Channel channel) {
 		if (message instanceof VoteMessage){
-			voteMessageRM_Delivered(message);
+			handleVoteMessage(message);
 		}		
 		else{
 			logger.error("Netty delivered an unexpected message");
@@ -175,9 +179,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	@Deprecated
 	public void learn(Stream s, Serializable v) {
 		if (v instanceof TerminateTransactionRequestMessage) {
-			TerminateTransactionMessageAM_Delivered((TerminateTransactionRequestMessage)v);
+			handleTerminateTransactionMessage((TerminateTransactionRequestMessage)v);
 		} else if (v instanceof VoteMessage){ 
-			voteMessageRM_Delivered(v);
+			handleVoteMessage(v);
 		}
 		else{
 			logger.error("Fractal delivered an unexpected message");
@@ -185,7 +189,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 	}
 	
-	private void TerminateTransactionMessageAM_Delivered(TerminateTransactionRequestMessage terminateRequestMessage){
+
+	private void handleTerminateTransactionMessage(TerminateTransactionRequestMessage terminateRequestMessage){
 		if (ConstantPool.logging)
 			logger.error("got a TerminateTransactionRequestMessage for "
 				+ terminateRequestMessage.getExecutionHistory()
@@ -194,7 +199,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		terminateRequestMessage.getExecutionHistory()
 				.setStartCertificationTime(System.currentTimeMillis());
 		
-		ConsistencyFactory.getConsistencyInstance().transactionDeliveredForTermination(terminateRequestMessage);
+		boolean certifyAndVote=ConsistencyFactory.getConsistencyInstance().transactionDeliveredForTermination(terminated, votingQuorums, terminateRequestMessage);
 	
 		try{
 			synchronized (atomicDeliveredMessages) {
@@ -203,10 +208,10 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				 * If the previous transaction has been timed-out, this transaction will carry the id of it.
 				 * All the effects of the previous transaction should be wiped out from the system. 
 				 */
-				TransactionHandler abortedTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousAbortedTransactionHandler();
-				if (abortedTransactionHandler!=null){
+				TransactionHandler timedoutTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousTimedoutTransactionHandler();
+				if (timedoutTransactionHandler!=null){
 					for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
-						if (req.getExecutionHistory().getTransactionHandler().equals(abortedTransactionHandler)){
+						if (req.getExecutionHistory().getTransactionHandler().equals(timedoutTransactionHandler)){
 							garbageCollectJessyReplica(req);
 							if (applyTransactionsToDataStore!=null)
 								applyTransactionsToDataStore.removeFromQueue(req);
@@ -216,15 +221,17 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 				}
 				
-				atomicDeliveredMessages.offer(terminateRequestMessage);
+				if (certifyAndVote)
+					atomicDeliveredMessages.add(terminateRequestMessage);
 			}
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
 		}
 		
-		
-		pool.execute(new CertifyAndVoteTask(terminateRequestMessage));
+		if (certifyAndVote){
+			pool.execute(new CertifyAndVoteTask(terminateRequestMessage));
+		}
 	}
 	
 	/**
@@ -233,15 +240,13 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	 * {@link this#learn(Stream, Serializable)} and {@link this#receiveMessage(Object, Channel)}
 	 * @param msg
 	 */
-	private void voteMessageRM_Delivered(Object msg){
+	private void handleVoteMessage(Object msg){
 		Vote vote = ((VoteMessage) msg).getVote();
 
 		if (ConstantPool.logging)
 			logger.debug("got a VoteMessage from " + vote.getVoterGroupName()
 				+ " for " + vote.getTransactionHandler().getId());
 
-		if (terminated.containsKey(vote.getTransactionHandler().getId()))
-			return;
 		addVote(vote);
 	}
 
@@ -265,11 +270,15 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	 * @param vote
 	 */
 	private void addVote(Vote vote) {
+		if (terminated.containsKey(vote.getTransactionHandler().getId()))
+			return;
+		
 		VotingQuorum vq = getOrCreateVotingQuorums(vote.getTransactionHandler());
 
 		try {
 			jessy.getConsistency().voteReceived(vote);
 			vq.addVote(vote);
+			jessy.getConsistency().voteAdded(vote.getTransactionHandler(), terminated, votingQuorums);
 		} catch (Exception ex) {
 			/*
 			 * If here is reached, it means that a concurrent thread has already
@@ -345,6 +354,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		}
 		catch(Exception ex){
 			System.out.println("Garbage collecting cannot be done!");
+			ex.printStackTrace();
 		}
 
 	}
@@ -637,7 +647,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					}
 
 				}
-				
 				msg.getExecutionHistory().setApplyingTransactionQueueingStartTime(System.currentTimeMillis());
 				
 				if (!jessy.getConsistency().applyingTransactionCommute() && voteSender && voteReceiver)

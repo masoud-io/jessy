@@ -196,7 +196,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 				 */
 				TransactionHandler oldHanlder=this.transactionHandler.clone();
 				this.transactionHandler = jessy.startTransaction();
-				this.transactionHandler.setPreviousAbortedTransactionHandler(oldHanlder);
+				if (executionHistory.getTransactionState()==TransactionState.ABORTED_BY_TIMEOUT)
+					this.transactionHandler.setPreviousTimedoutTransactionHandler(oldHanlder);
 				reInitProbes();
 				mainTransactionCommit++;
 				executionHistory = execute();

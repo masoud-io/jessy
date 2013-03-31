@@ -208,7 +208,6 @@ public class DistributedJessy extends Jessy {
 
 			Future<ReadReply<E>> future;
 			boolean isDone = false;
-			int tries = 0;
 
 			long start=System.currentTimeMillis();
 			do {
@@ -217,7 +216,6 @@ public class DistributedJessy extends Jessy {
 
 				try {
 
-					tries++;
 					readReply = future.get(
 							ConstantPool.JESSY_REMOTE_READER_TIMEOUT,
 							ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
@@ -345,28 +343,34 @@ public class DistributedJessy extends Jessy {
 
 	@Override
 	public void applyModifiedEntities(ExecutionHistory executionHistory) {
-		Iterator<? extends JessyEntity> itr;
+		try{
+			Iterator<? extends JessyEntity> itr;
 
-		if (executionHistory.getWriteSet().size() > 0) {
-			itr = executionHistory.getWriteSet().getEntities().iterator();
-			while (itr.hasNext()) {
-				JessyEntity tmp = itr.next();
+			if (executionHistory.getWriteSet().size() > 0) {
+				itr = executionHistory.getWriteSet().getEntities().iterator();
+				while (itr.hasNext()) {
+					JessyEntity tmp = itr.next();
 
-				// Send the entity to the data store to be saved if it is local
-				if (partitioner.isLocal(tmp.getKey()))
-					dataStore.put(tmp);
+					// Send the entity to the data store to be saved if it is local
+					if (partitioner.isLocal(tmp.getKey()))
+						dataStore.put(tmp);
+				}
+			}
+
+			if (executionHistory.getCreateSet().size() > 0) {
+				itr = executionHistory.getCreateSet().getEntities().iterator();
+				while (itr.hasNext()) {
+					JessyEntity tmp = itr.next();
+
+					// Send the entity to the data store to be saved if it is local
+					if (partitioner.isLocal(tmp.getKey()))
+						dataStore.put(tmp);
+				}
 			}
 		}
-
-		if (executionHistory.getCreateSet().size() > 0) {
-			itr = executionHistory.getCreateSet().getEntities().iterator();
-			while (itr.hasNext()) {
-				JessyEntity tmp = itr.next();
-
-				// Send the entity to the data store to be saved if it is local
-				if (partitioner.isLocal(tmp.getKey()))
-					dataStore.put(tmp);
-			}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
 		}
 	}
 

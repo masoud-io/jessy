@@ -8,8 +8,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
@@ -17,8 +18,10 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.VotePiggyback;
+import fr.inria.jessy.transaction.termination.VotingQuorum;
 import fr.inria.jessy.vector.GMUVector;
 
 /**
@@ -158,7 +161,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 	}
 
 	@Override
-	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
 				GMUVector<String> prepVC = GMUVector.mostRecentVC.clone();
@@ -171,6 +174,8 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 		catch (Exception ex){
 			ex.printStackTrace();
 		}
+		
+		return true;
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -3,7 +3,6 @@ package fr.inria.jessy.consistency;
 
 import static fr.inria.jessy.vector.ValueVector.ComparisonResult.EQUAL_TO;
 import static fr.inria.jessy.vector.ValueVector.ComparisonResult.GREATER_THAN;
-import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
@@ -13,7 +12,6 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.ValueVector.ComparisonResult;
 import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.VectorFactory;
 
 /**
  * This class implements Non-Monotonic Snapshot Isolation consistency criterion.

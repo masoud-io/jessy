@@ -2,12 +2,15 @@ package fr.inria.jessy.consistency;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.DistributedJessy;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
@@ -15,8 +18,10 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.Vote;
+import fr.inria.jessy.transaction.termination.VotingQuorum;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.Vector;
 
@@ -123,7 +128,7 @@ public class SnapshotIsolation extends Consistency {
 	}
 	
 	@Override
-	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			int newVersion;
 			// WARNING: there is a cast to ScalarVector
@@ -138,6 +143,30 @@ public class SnapshotIsolation extends Consistency {
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
+		}
+		
+		Set<String> voteSenders =manager.getPartitioner().resolveNames(getConcerningKeys(
+				msg.getExecutionHistory(),
+				ConcernedKeysTarget.SEND_VOTES)); 
+
+		if (voteSenders.contains(manager.getMyGroup().name())){
+			return true;
+		}
+		else{
+			nonConcernedMessages.put(msg.getExecutionHistory().getTransactionHandler().getId(), msg);
+
+			try{
+				if (quorumes.containsKey(msg.getExecutionHistory().getTransactionHandler())){
+					voteAdded(msg.getExecutionHistory().getTransactionHandler(),terminatedTransactions, quorumes);
+				}
+
+			}
+			catch(Exception ex){
+				ex.printStackTrace();
+			}
+			
+			
+			return false;
 		}
 	}
 
@@ -224,4 +253,51 @@ public class SnapshotIsolation extends Consistency {
 		
 		return destGroups;
 	}
+	
+	ConcurrentHashMap<UUID, TerminateTransactionRequestMessage> nonConcernedMessages=new ConcurrentHashMap<UUID, TerminateTransactionRequestMessage>();
+	Object dummyObject=new Object();
+	
+	@Override
+	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes) {
+		try{
+
+			if (manager.isProxy()){
+				return ;
+			}
+
+			if (!nonConcernedMessages.containsKey(th.getId())){
+				return;
+			}
+			synchronized (nonConcernedMessages){
+				if (!nonConcernedMessages.containsKey(th.getId())){
+					return;
+				}
+			
+				if (quorumes.containsKey(th)){			
+
+					if (quorumes.get(th).getVoters()==null)
+						return;
+
+
+					int receivedVotes= quorumes.get(th).getVoters().size();
+
+					TerminateTransactionRequestMessage msg=nonConcernedMessages.get(th.getId());
+					int waitingVotes =manager.getPartitioner().resolveNames(getConcerningKeys(
+							msg.getExecutionHistory(),
+							ConcernedKeysTarget.SEND_VOTES)).size();
+
+					if (receivedVotes>=waitingVotes){
+						ScalarVector.removeCommittingTransactionSeqNumber((Integer)msg.getComputedObjectUponDelivery());
+						nonConcernedMessages.remove(th.getId());
+						quorumes.remove(th);
+						terminatedTransactions.put(th.getId(), dummyObject);
+					}
+				}
+			}
+		}
+		catch (Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
 }

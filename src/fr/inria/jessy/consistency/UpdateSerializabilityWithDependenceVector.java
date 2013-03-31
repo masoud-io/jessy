@@ -8,7 +8,6 @@ import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.VectorFactory;
 
 public class UpdateSerializabilityWithDependenceVector extends UpdateSerializability {
 

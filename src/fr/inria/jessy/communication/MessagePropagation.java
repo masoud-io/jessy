@@ -1,9 +1,7 @@
 package fr.inria.jessy.communication;
 
-import net.sourceforge.fractal.FractalManager;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.multicast.MulticastStream;
-import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 
 /**
@@ -26,7 +24,7 @@ public class MessagePropagation {
 	}
 
 	/**
-	 * Multicast the msg
+	 * Multicast the message msg
 	 * 
 	 * TODO java.util.ConcurrentModificationException if it is not synchronized
 	 * 

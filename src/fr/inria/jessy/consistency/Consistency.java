@@ -3,14 +3,20 @@ package fr.inria.jessy.consistency;
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.Vote;
+import fr.inria.jessy.transaction.termination.VotingQuorum;
 import fr.inria.jessy.vector.VectorFactory;
 
 public abstract class Consistency {
@@ -134,6 +140,15 @@ public abstract class Consistency {
 	public void voteReceived(Vote vote) {
 		return;
 	}
+	
+	/**
+	 * Is called after a vote is added to the voting quorums
+	 * @param quorumes
+	 * @param vote
+	 */
+	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes) {
+		return;
+	}
 
 	/**
 	 * Returns the Vote containing the certification result at a particular
@@ -200,9 +215,12 @@ public abstract class Consistency {
 	 * in different members of a group. Thus, they assign different versions to the modified objects. Thus, 
 	 * modified objects commit with different versions in different members of a group.
 	 * 
+	 * 	@return true if the transaction should be inserted in the am-Delivered list, and a CertifyAndVote task should be created. 
+	 * Otherwise false. 
 	 */
-	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
-		
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+		return true;
 	}
+	
 	
 }

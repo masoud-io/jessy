@@ -18,7 +18,9 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.apache.log4j.Logger;
 
-import fr.inria.jessy.DistributedJessy;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
@@ -28,9 +30,11 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.Vote;
 import fr.inria.jessy.transaction.termination.VotePiggyback;
+import fr.inria.jessy.transaction.termination.VotingQuorum;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VersionVector;
 
@@ -168,10 +172,11 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 				if (lastComittedEntity.getLocalVector().isCompatible(
 						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 
-					logger.error("Aborting a transaction because for key " + tmp.getKey() + "local vector is "
-							+ tmp.getLocalVector()
-							+ " and last committed is "
-							+ lastComittedEntity.getLocalVector() + " for transaction" + executionHistory.getTransactionHandler());
+					if (ConstantPool.logging)
+						logger.error("Aborting a transaction because for key " + tmp.getKey() + "local vector is "
+								+ tmp.getLocalVector()
+								+ " and last committed is "
+								+ lastComittedEntity.getLocalVector() + " for transaction" + executionHistory.getTransactionHandler());
 
 					return false;
 				}
@@ -266,7 +271,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	public void postCommit(ExecutionHistory executionHistory) {
 
 		/*
-		 * only the WCoordinator propagate the votes as in [Serrano11]
+		 * only the WCoordinator propagates the votes as in [Serrano11]
 		 * 
 		 * Read-only transaction does not propagate
 		 */
@@ -323,7 +328,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		
 		Set<String> dest = new HashSet<String>();
 		for (Group group : manager.getReplicaGroups()){
-			if (!manager.getMyGroup().name().equals(group))
+			if (!manager.getMyGroup().name().equals(group.name()))
 				dest.add(group.name());
 		}
 		
@@ -375,15 +380,21 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 	private static AtomicInteger tempSequenceNumber=new AtomicInteger(0);
 
 	@Override
-	public void transactionDeliveredForTermination(TerminateTransactionRequestMessage msg){
-		if (isWCoordinator(msg.getExecutionHistory())) {
-			int sequenceNumber=0;
-			
-			if (msg.getExecutionHistory().getTransactionType()!=TransactionType.INIT_TRANSACTION)
-				sequenceNumber=tempSequenceNumber.incrementAndGet();
-			
-			msg.setComputedObjectUponDelivery(new Integer(sequenceNumber));
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+		try{
+			if (isWCoordinator(msg.getExecutionHistory())) {
+				int sequenceNumber=0;
+
+				if (msg.getExecutionHistory().getTransactionType()!=TransactionType.INIT_TRANSACTION)
+					sequenceNumber=tempSequenceNumber.incrementAndGet();
+
+				msg.setComputedObjectUponDelivery(new Integer(sequenceNumber));
+			}
 		}
+		catch (Exception ex){
+			ex.printStackTrace();
+		}
+		return true;
 	}
 	
 	/**
