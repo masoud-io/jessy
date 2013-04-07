@@ -2,11 +2,11 @@ package fr.inria.jessy.consistency;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
-import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import net.sourceforge.fractal.utils.ExecutorPool;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
@@ -32,10 +32,12 @@ import fr.inria.jessy.vector.GMUVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
+public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 
 	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
-
+	
+	private static ApplyGMUVector applyGMUVector;
+	
 	static {
 		votePiggybackRequired = true;
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector<String>>();
@@ -43,6 +45,11 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 
 	public UpdateSerializabilityWithGMUVector(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
+		
+		if (!m.isProxy()){
+			applyGMUVector=new ApplyGMUVector();
+			ExecutorPool.getInstance().submit(applyGMUVector);
+		}
 	}
 	
 	@Override
@@ -103,9 +110,9 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 				 * committed values
 				 */
 				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getSelfValue()) {
+						.getLocalVector().getValue(GMUVector.versionPrefix + manager.getMyGroup().name())) {
 					if (ConstantPool.logging)
-						logger.debug("Certification fails (ReadSet) : Reads key "	+ tmp.getKey() + " with the vector "
+						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (ReadSet) : Reads key "	+ tmp.getKey() + " with the vector "
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
 				}
@@ -135,9 +142,9 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 				 * committed values
 				 */
 				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getSelfValue()) {
+						.getLocalVector().getValue(GMUVector.versionPrefix + manager.getMyGroup().name())) {
 					if (ConstantPool.logging)
-						logger.debug("Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
+						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
 				}
@@ -164,11 +171,14 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
-				GMUVector<String> prepVC = GMUVector.mostRecentVC.clone();
-				int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
-				prepVC.setValue(prepVC.getSelfKey(), prepVCAti);
+				Set<String> voteReceivers =	manager.getPartitioner().resolveNames(getConcerningKeys(
+								msg.getExecutionHistory(),
+								ConcernedKeysTarget.RECEIVE_VOTES));
 				
-				msg.setComputedObjectUponDelivery(prepVC);
+				if (voteReceivers.contains(manager.getMyGroup().name())){
+					int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
+					msg.setComputedObjectUponDelivery((Integer)prepVCAti);
+				}
 			}
 		}
 		catch (Exception ex){
@@ -190,14 +200,15 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 			boolean isCommitted = executionHistory.getTransactionType() == BLIND_WRITE
 					|| certify(executionHistory);
 
-			GMUVector<String> prepVC = null;
+			Integer prepVCAti = null;
 			if (isCommitted
 					&& executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
 				/*
 				 * We have to update the vector here, and send it over to the
 				 * others. Corresponds to line 20-22 of Algorithm 4
 				 */
-				prepVC = (GMUVector<String>) object;
+				if (object!=null)
+					prepVCAti = (Integer) object;
 			}
 
 			/*
@@ -205,7 +216,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 			 */
 			return new Vote(executionHistory.getTransactionHandler(), isCommitted,
 					manager.getMyGroup().name(),
-					new VotePiggyback(prepVC));
+					new VotePiggyback(prepVCAti));
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
@@ -228,21 +239,22 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 		}
 
 		try {
-			if (vote.getVotePiggyBack() != null) {
+			Integer prepVCAti = (Integer) vote
+					.getVotePiggyBack().getPiggyback();
 
-				GMUVector<String> commitVC = (GMUVector<String>) vote
-						.getVotePiggyBack().getPiggyback();
+			if (vote.getVotePiggyBack() != null && prepVCAti!=null) {
 
 				/*
 				 * Corresponds to line 19
 				 */
-				
 				GMUVector<String> receivedVector = receivedVectors.putIfAbsent(
-						vote.getTransactionHandler().getId(), commitVC);
+						vote.getTransactionHandler().getId(), new GMUVector<String>(manager.getMyGroup().name(), 0));
 				if (receivedVector != null) {
-					receivedVector.update(commitVC);
-//					receivedVectors.get(vote.getTransactionHandler().getId())
-//							.update(commitVC);
+					receivedVector.setValue(vote.getVoterGroupName(), prepVCAti);
+				}
+				else{
+					
+					receivedVectors.get(vote.getTransactionHandler().getId()).setValue(vote.getVoterGroupName(), prepVCAti);
 				}
 			}
 		} catch (Exception ex) {
@@ -254,77 +266,34 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 
-		GMUVector<String> commitVC = receivedVectors.get(executionHistory
-				.getTransactionHandler().getId());
+		GMUVector<String> commitVC = new GMUVector<String>(manager.getMyGroup().name(), 0);
 
-		if (commitVC != null) {
-
-			/*
-			 * line 19 above is not complete. Though it calculates the max of all received votes, it does not consider the vectors of read items.
-			 * now we should take the max of commitVC with every thing we have read so far.
-			 */
-			for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
-				commitVC.update(tmp.getLocalVector());
-			}
-			
-			/*
-			 * Corresponds to line 22
-			 */
-			int xactVN = 0;
-			for (Entry<String, Integer> entry : commitVC.getEntrySet()) {
-				if (entry.getValue() > xactVN)
-					xactVN = entry.getValue();
-			}
-
-			/*
-			 * Corresponds to line 24
-			 */
-			Set<String> dest = new HashSet<String>(
-					manager
-					.getPartitioner()
-					.resolveNames(
-							getConcerningKeys(executionHistory,
-									ConcernedKeysTarget.RECEIVE_VOTES)));
-
-			/*
-			 * setup commitVC
-			 */
-			for (String index : dest) {
-				commitVC.setValue(index, xactVN);
-			}
-
-			/*
-			 * Assigning commitVC to the entities
-			 */
-			for (JessyEntity entity : executionHistory.getWriteSet()
-					.getEntities()) {
-				entity.setLocalVector(commitVC.clone());
-			}
+		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {			
+			commitVC.update(tmp.getLocalVector());
 		}
+
+		GMUVector<String> receivedVC = receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId());
+		commitVC.update(receivedVC);
+
+		/*
+		 * Assigning commitVC to the entities
+		 */
+		for (JessyEntity entity : executionHistory.getWriteSet()
+				.getEntities()) {
+			entity.getLocalVector().getMap().clear();
+			entity.getLocalVector().setValue(manager.getMyGroup().name(), (int)commitVC.getSelfValue());
+		}
+		
+		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) 
+			applyGMUVector.applyCommittedGMUVector(receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId()).getSelfValue(), commitVC);
 
 	}
 
+	@Override
 	public void postCommit(ExecutionHistory executionHistory) {
 		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
-			/*
-			 * Corresponds to line 26-27
-			 * 
-			 * We only need a final vector for one of the written objects. Thus,
-			 * we choose the first one.
-			 */
-			GMUVector<String> commitVC = receivedVectors.get(executionHistory
-					.getTransactionHandler().getId());
-			if (GMUVector.lastPrepSC.get() < commitVC.getValue(manager.getMyGroup().name())) {
-				GMUVector.lastPrepSC.set(commitVC.getValue(manager.getMyGroup().name()));
-			}
-			
-			/*
-			 * Corresponds to line 31
-			 */
-			GMUVector.mostRecentVC=commitVC.clone();
+			applyGMUVector.GMUVectorIsAdded();
 		}
-		
-
 		/*
 		 * Garbage collect the received vectors. We don't need them anymore.
 		 */
@@ -334,6 +303,10 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability {
 					.getId());
 
 	}
-
-
+	
+	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){
+		int seqNo=receivedVectors.remove(msg.getExecutionHistory().getTransactionHandler().getId()).getSelfValue();
+		applyGMUVector.applyAbortedGMUVector(seqNo);
+	}
+	
 }

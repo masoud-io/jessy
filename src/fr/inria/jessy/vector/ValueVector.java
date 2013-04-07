@@ -140,11 +140,11 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,
 		return map.entrySet();
 	}
 
-	protected HashMap<K, V> getMap() {
+	public HashMap<K, V> getMap() {
 		return map;
 	}
 
-	protected void setMap(HashMap<K, V> map) {
+	public void setMap(HashMap<K, V> map) {
 		this.map = map;
 	}
 	
@@ -165,6 +165,19 @@ public class ValueVector<K, V extends Comparable<V>> implements Cloneable,
 	 */
 	public synchronized void update(ValueVector<K, V> vector) {
 		for (Map.Entry<K, V> entry : vector.map.entrySet()) {
+			K key = entry.getKey();
+			V value = entry.getValue();
+			if (getValue(key).compareTo(value) < 0) {
+				setValue(key, value);
+			}
+		}
+	}
+	
+	public synchronized void updateAndRemove(ValueVector<K, V> vector, String str) {
+		for (Map.Entry<K, V> entry : vector.map.entrySet()) {
+			if (entry.getKey().toString().startsWith(str)){
+				continue;
+			}
 			K key = entry.getKey();
 			V value = entry.getValue();
 			if (getValue(key).compareTo(value) < 0) {

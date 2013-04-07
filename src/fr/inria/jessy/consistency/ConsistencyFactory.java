@@ -46,6 +46,10 @@ public class ConsistencyFactory {
 			_instance = new UpdateSerializabilityWithDependenceVector(m, dataStore);
 		} else if (consistencyTypeName.equals("us2")) {
 			_instance = new UpdateSerializabilityWithGMUVector(m, dataStore);
+		} else if (consistencyTypeName.equals("us3")) {
+			_instance = new UpdateSerializabilityWithDependenceVector(m, dataStore);
+		} else if (consistencyTypeName.equals("nmsi3")) {
+			_instance = new NonMonotonicSnapshotIsolationWithDependenceVector(m, dataStore);
 		}
 		return _instance;
 	}

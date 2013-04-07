@@ -78,7 +78,7 @@ public class ConstantPool {
 	 * Since a vote request might be lost, upon the timeout, a new transaction
 	 * termination should be initialized.
 	 */
-	public static final long JESSY_TRANSACTION_TERMINATION_TIMEOUT = 50000;
+	public static final long JESSY_TRANSACTION_TERMINATION_TIMEOUT = 5000000;
 	public static final TimeUnit JESSY_TRANSACTION_TERMINATION_TIMEOUT_TYPE = TimeUnit.MILLISECONDS;
 
 	/**
@@ -91,6 +91,8 @@ public class ConstantPool {
 	 */
 	public static final long JESSY_TERMINATED_TRANSACTIONS_LOG_SIZE=1000;
 		
+	public static final int GMUVECTOR_LOGCOMMITVC_SIZE=1000;
+	
 	/**
 	 * Specifies the threshold for ignoring the condition checks before applying
 	 * the propagation. NOTE: if the propagation is reliable broadcast, this
@@ -111,7 +113,7 @@ public class ConstantPool {
 	 * <p>
 	 * Note that this might violate the safety of the correctness criteria if some nodes receives the voting message, and some others does not receive it. 
 	 */
-	public static long JESSY_VOTING_QUORUM_TIMEOUT=30000;
+	public static long JESSY_VOTING_QUORUM_TIMEOUT=30000000;
 
 	/**
 	 * Number of read operations in Read-only transaction in YCSB 

@@ -377,7 +377,6 @@ public class DistributedJessy extends Jessy {
 	@Override
 	public ExecutionHistory commitTransaction(
 			TransactionHandler transactionHandler) {
-		logger.debug(transactionHandler + " IS COMMITTING");
 		ExecutionHistory executionHistory = getExecutionHistory(transactionHandler);
 		
 		Future<TransactionState> stateFuture = distributedTermination
@@ -390,6 +389,7 @@ public class DistributedJessy extends Jessy {
 					ConstantPool.JESSY_TRANSACTION_TERMINATION_TIMEOUT_TYPE);
 			executionHistory.changeState(stateResult);
 		} catch (TimeoutException te) {
+			distributedJessy.garbageCollectTransaction(transactionHandler);
 			executionHistory.changeState(TransactionState.ABORTED_BY_TIMEOUT);
 		} catch (Exception e) {
 			e.printStackTrace();

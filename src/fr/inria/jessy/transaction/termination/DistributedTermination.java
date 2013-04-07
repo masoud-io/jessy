@@ -342,7 +342,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	 * @param transactionHandler
 	 *            The transactionHandler to be garbage collected.
 	 */
-	private void garbageCollectJessyInstance(TransactionHandler transactionHandler) {
+	public void garbageCollectJessyInstance(TransactionHandler transactionHandler) {
 		jessy.garbageCollectTransaction(transactionHandler);
 		
 		try{

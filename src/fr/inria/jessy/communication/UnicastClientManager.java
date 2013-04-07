@@ -1,6 +1,7 @@
 package fr.inria.jessy.communication;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +15,8 @@ import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.group.ChannelGroup;
+import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
 import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
@@ -147,6 +150,16 @@ public class UnicastClientManager {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+	
+	public void multiCast(Object obj, Collection<String> dest){
+		ChannelGroup cg=new DefaultChannelGroup();
+		for (String g:dest){
+			for (Integer swid:distributedJessy.manager.getMembership().group(g).allNodes()){
+				cg.add(swid2Channel.get(swid));
+			}
+		}
+		cg.write(obj);
 	}
 
 }

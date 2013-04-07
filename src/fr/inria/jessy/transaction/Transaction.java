@@ -127,8 +127,6 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		long start = System.currentTimeMillis();
 		E entity = jessy.read(transactionHandler, entityClass, keyValue);
 		transactionReadOperatinTime.add(System.currentTimeMillis() - start);
-		// if (entity != null)
-		// entity.setPrimaryKey(null);
 		return entity;
 	}
 
@@ -265,5 +263,9 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 */
 	private void reInitProbes(){
 		executionStartTime = System.currentTimeMillis();
+	}
+	
+	public TransactionHandler getTransactionHandler(){
+		return transactionHandler;
 	}
 }

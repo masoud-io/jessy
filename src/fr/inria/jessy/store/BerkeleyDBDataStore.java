@@ -30,6 +30,9 @@ import fr.inria.jessy.vector.Vector;
  * 
  *         This class wraps the DPI of BerkeleyDB into a generic key-value API.
  * @param <T>
+ * 
+ * TODO THIS CLASS IS NOT COMPATIBLE WITH GMUVECTOR
+ * GMUVector pre and post read methods should be added here!!! 
  */
 
 public class BerkeleyDBDataStore implements DataStore{

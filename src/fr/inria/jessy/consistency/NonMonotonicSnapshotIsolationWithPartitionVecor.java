@@ -2,11 +2,13 @@ package fr.inria.jessy.consistency;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
+import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.sourceforge.fractal.utils.ExecutorPool;
+import net.sourceforge.fractal.utils.CollectionUtils;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
@@ -32,27 +34,19 @@ import fr.inria.jessy.vector.GMUVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnapshotIsolation {
+public class NonMonotonicSnapshotIsolationWithPartitionVecor extends NonMonotonicSnapshotIsolation {
 
 	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
-	
-	private static ApplyGMUVector applyGMUVector;
-	
+
 	static {
 		votePiggybackRequired = true;
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector<String>>();
 	}
 
-	public NonMonotonicSnapshotIsolationWithGMUVector(JessyGroupManager m, DataStore dataStore) {
+	public NonMonotonicSnapshotIsolationWithPartitionVecor(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
-		
-		if (!m.isProxy()){
-			applyGMUVector=new ApplyGMUVector();
-			ExecutorPool.getInstance().submit(applyGMUVector);
-		}
 	}
-	
-	@Override
+
 	@SuppressWarnings("unchecked")
 	public boolean certify(ExecutionHistory executionHistory) {
 		TransactionType transactionType = executionHistory.getTransactionType();
@@ -111,9 +105,9 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 				 * committed values
 				 */
 				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getValue(GMUVector.versionPrefix + manager.getMyGroup().name())) {
+						.getLocalVector().getSelfValue()) {
 					if (ConstantPool.logging)
-						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
+						logger.error("Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
 				}
@@ -128,9 +122,14 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 		return true;
 	}
 
-	/**
-	 * With GMUVector, it is not safe to apply transactions concurrently, and they should be applied as they are delivered. 
-	 */
+	@Override
+	public boolean certificationCommute(ExecutionHistory history1,
+			ExecutionHistory history2) {
+
+			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
+					.getKeys(), history2.getWriteSet().getKeys());
+	}
+	
 	@Override
 	public boolean applyingTransactionCommute() {
 		return false;
@@ -140,14 +139,12 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
-				Set<String> voteReceivers =	manager.getPartitioner().resolveNames(getConcerningKeys(
-								msg.getExecutionHistory(),
-								ConcernedKeysTarget.RECEIVE_VOTES));
-				
-				if (voteReceivers.contains(manager.getMyGroup().name())){
-					int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
-					msg.setComputedObjectUponDelivery((Integer)prepVCAti);
-				}
+				GMUVector.init(manager);
+				GMUVector<String> prepVC = GMUVector.mostRecentVC.clone();
+				int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
+				prepVC.setValue(prepVC.getSelfKey(), prepVCAti);
+
+				msg.setComputedObjectUponDelivery(prepVC);
 			}
 		}
 		catch (Exception ex){
@@ -160,37 +157,40 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 	@SuppressWarnings("unchecked")
 	@Override
 	public Vote createCertificationVote(ExecutionHistory executionHistory, Object object) {
+		/*
+		 * First, it needs to run the certification test on the received
+		 * execution history. A blind write always succeeds.
+		 */
+		
+		boolean isCommitted = executionHistory.getTransactionType() == BLIND_WRITE
+				|| certify(executionHistory);
+		
+		GMUVector<String> prepVC = null;
+
 		try{
-			/*
-			 * First, it needs to run the certification test on the received
-			 * execution history. A blind write always succeeds.
-			 */
 
-			boolean isCommitted = executionHistory.getTransactionType() == BLIND_WRITE
-					|| certify(executionHistory);
 
-			Integer prepVCAti = null;
 			if (isCommitted
 					&& executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
 				/*
 				 * We have to update the vector here, and send it over to the
 				 * others. Corresponds to line 20-22 of Algorithm 4
 				 */
-				if (object!=null)
-					prepVCAti = (Integer) object;
+				prepVC = (GMUVector<String>) object;
 			}
 
-			/*
-			 * Corresponds to line 23
-			 */
-			return new Vote(executionHistory.getTransactionHandler(), isCommitted,
-					manager.getMyGroup().name(),
-					new VotePiggyback(prepVCAti));
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
-			return null;
+			
 		}
+
+		/*
+		 * Corresponds to line 23
+		 */
+		return new Vote(executionHistory.getTransactionHandler(), isCommitted,
+				manager.getMyGroup().name(),
+				new VotePiggyback(prepVC));
 	}
 
 	/**
@@ -208,22 +208,21 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 		}
 
 		try {
-			Integer prepVCAti = (Integer) vote
-					.getVotePiggyBack().getPiggyback();
+			if (vote.getVotePiggyBack() != null) {
 
-			if (vote.getVotePiggyBack() != null && prepVCAti!=null) {
+				GMUVector<String> commitVC = (GMUVector<String>) vote
+						.getVotePiggyBack().getPiggyback();
 
 				/*
 				 * Corresponds to line 19
 				 */
+				
 				GMUVector<String> receivedVector = receivedVectors.putIfAbsent(
-						vote.getTransactionHandler().getId(), new GMUVector<String>(manager.getMyGroup().name(), 0));
+						vote.getTransactionHandler().getId(), commitVC);
 				if (receivedVector != null) {
-					receivedVector.setValue(vote.getVoterGroupName(), prepVCAti);
-				}
-				else{
-					
-					receivedVectors.get(vote.getTransactionHandler().getId()).setValue(vote.getVoterGroupName(), prepVCAti);
+					receivedVector.update(commitVC);
+//					receivedVectors.get(vote.getTransactionHandler().getId())
+//							.update(commitVC);
 				}
 			}
 		} catch (Exception ex) {
@@ -235,34 +234,77 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 
-		GMUVector<String> commitVC = new GMUVector<String>(manager.getMyGroup().name(), 0);
+		GMUVector<String> commitVC = receivedVectors.get(executionHistory
+				.getTransactionHandler().getId());
 
-		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {			
-			commitVC.update(tmp.getLocalVector());
+		if (commitVC != null) {
+
+			/*
+			 * line 19 above is not complete. Though it calculates the max of all received votes, it does not consider the vectors of read items.
+			 * now we should take the max of commitVC with every thing we have read so far.
+			 */
+			for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
+				commitVC.update(tmp.getLocalVector());
+			}
+			
+			/*
+			 * Corresponds to line 22
+			 */
+			int xactVN = 0;
+			for (Entry<String, Integer> entry : commitVC.getEntrySet()) {
+				if (entry.getValue() > xactVN)
+					xactVN = entry.getValue();
+			}
+
+			/*
+			 * Corresponds to line 24
+			 */
+			Set<String> dest = new HashSet<String>(
+					manager
+					.getPartitioner()
+					.resolveNames(
+							getConcerningKeys(executionHistory,
+									ConcernedKeysTarget.RECEIVE_VOTES)));
+
+			/*
+			 * setup commitVC
+			 */
+			for (String index : dest) {
+				commitVC.setValue(index, xactVN);
+			}
+
+			/*
+			 * Assigning commitVC to the entities
+			 */
+			for (JessyEntity entity : executionHistory.getWriteSet()
+					.getEntities()) {
+				entity.setLocalVector(commitVC.clone());
+			}
 		}
-
-		GMUVector<String> receivedVC = receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId());
-		commitVC.update(receivedVC);
-
-		/*
-		 * Assigning commitVC to the entities
-		 */
-		for (JessyEntity entity : executionHistory.getWriteSet()
-				.getEntities()) {
-			entity.getLocalVector().getMap().clear();
-			entity.getLocalVector().setValue(manager.getMyGroup().name(), (int)commitVC.getSelfValue());
-		}
-		
-		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) 
-			applyGMUVector.applyCommittedGMUVector(receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId()).getSelfValue(), commitVC);
 
 	}
 
-	@Override
 	public void postCommit(ExecutionHistory executionHistory) {
 		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
-			applyGMUVector.GMUVectorIsAdded();
+			/*
+			 * Corresponds to line 26-27
+			 * 
+			 * We only need a final vector for one of the written objects. Thus,
+			 * we choose the first one.
+			 */
+			GMUVector<String> commitVC = receivedVectors.get(executionHistory
+					.getTransactionHandler().getId());
+			if (GMUVector.lastPrepSC.get() < commitVC.getValue(manager.getMyGroup().name())) {
+				GMUVector.lastPrepSC.set(commitVC.getValue(manager.getMyGroup().name()));
+			}
+			
+			/*
+			 * Corresponds to line 31
+			 */
+			GMUVector.mostRecentVC=commitVC.clone();
 		}
+		
+
 		/*
 		 * Garbage collect the received vectors. We don't need them anymore.
 		 */
@@ -272,10 +314,5 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 					.getId());
 
 	}
-	
-	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){
-		int seqNo=receivedVectors.remove(msg.getExecutionHistory().getTransactionHandler().getId()).getSelfValue();
-		applyGMUVector.applyAbortedGMUVector(seqNo);
-	}
-	
+
 }

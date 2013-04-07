@@ -16,9 +16,8 @@ import org.jboss.netty.channel.Channel;
 import com.yahoo.ycsb.Utils;
 import com.yahoo.ycsb.YCSBEntity;
 
-import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.communication.UnicastLearner;
 import fr.inria.jessy.communication.UnicastClientManager;
+import fr.inria.jessy.communication.UnicastLearner;
 import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;

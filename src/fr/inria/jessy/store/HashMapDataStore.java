@@ -9,6 +9,7 @@ import com.sleepycat.je.DatabaseException;
 import fr.inria.jessy.persistence.FilePersistence;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.vector.VectorFactory;
 
 /**
  * Implements a simple in-memory hashmap data store for jessy.
@@ -74,6 +75,11 @@ public class HashMapDataStore implements DataStore {
 	public <E extends JessyEntity, SK> ReadReply<E> get(
 			ReadRequest<E> readRequest) throws NullPointerException {
 
+		if (!VectorFactory.prepareRead(readRequest)){
+			E entity = null;
+			return new ReadReply<E>(entity, readRequest.getReadRequestId());
+		}
+			
 		CompactVector<String> readSet = readRequest.getReadSet();
 
 		if (readRequest.isOneKeyRequest) {
@@ -98,7 +104,8 @@ public class HashMapDataStore implements DataStore {
 				
 				
 				if (compatibleResult == Vector.CompatibleResult.COMPATIBLE) {
-					return new ReadReply<E>(entity,
+					VectorFactory.postRead(readRequest, entity);
+					return new ReadReply<E>(entity,							
 							readRequest.getReadRequestId());
 				} else {
 					if (compatibleResult == Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
