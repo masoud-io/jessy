@@ -221,4 +221,9 @@ public abstract class Consistency {
 	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		return true;
 	}
+	
+	public void garbageCollect(TerminateTransactionRequestMessage msg){
+		return;
+	}
+
 }

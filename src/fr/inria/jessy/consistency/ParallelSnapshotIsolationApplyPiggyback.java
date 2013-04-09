@@ -71,7 +71,7 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 	
 	@Override
 	public void run() {
-		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+//		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		ParallelSnapshotIsolationPiggyback pb;
 		while (true){
 			try {

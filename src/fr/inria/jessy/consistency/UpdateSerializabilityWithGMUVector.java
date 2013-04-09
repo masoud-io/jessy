@@ -35,12 +35,13 @@ import fr.inria.jessy.vector.GMUVector;
 public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 
 	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
-	
+	private static ConcurrentHashMap<UUID, Integer> seqNos;
 	private static ApplyGMUVector applyGMUVector;
 	
 	static {
 		votePiggybackRequired = true;
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector<String>>();
+		seqNos=new ConcurrentHashMap<UUID, Integer>();
 	}
 
 	public UpdateSerializabilityWithGMUVector(JessyGroupManager m, DataStore dataStore) {
@@ -92,6 +93,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 				executionHistory.getCreateSet());
 
 		JessyEntity lastComittedEntity;
+
 		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
 
 			if (!manager.getPartitioner().isLocal(tmp.getKey()))
@@ -110,39 +112,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 				 * committed values
 				 */
 				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getValue(GMUVector.versionPrefix + manager.getMyGroup().name())) {
-					if (ConstantPool.logging)
-						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (ReadSet) : Reads key "	+ tmp.getKey() + " with the vector "
-							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
-					return false;
-				}
-
-			} catch (NullPointerException e) {
-				// nothing to do.
-				// the key is simply not there.
-			}
-
-		}
-
-		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
-
-			if (!manager.getPartitioner().isLocal(tmp.getKey()))
-				continue;
-
-			try {
-
-				lastComittedEntity = store
-						.get(new ReadRequest<JessyEntity>(
-								(Class<JessyEntity>) tmp.getClass(),
-								"secondaryKey", tmp.getKey(), null))
-						.getEntity().iterator().next();
-
-				/*
-				 * instead of locking, we simply checks against the latest
-				 * committed values
-				 */
-				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getValue(GMUVector.versionPrefix + manager.getMyGroup().name())) {
+						.getLocalVector().getValue(tmp.getKey())) {
 					if (ConstantPool.logging)
 						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
@@ -155,7 +125,38 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 			}
 
 		}
+		
+		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
+			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+				continue;
 
+			try {
+				lastComittedEntity = store
+						.get(new ReadRequest<JessyEntity>(
+								(Class<JessyEntity>) tmp.getClass(),
+								"secondaryKey", tmp.getKey(), null))
+						.getEntity().iterator().next();
+
+				/*
+				 * instead of locking, we simply checks against the latest
+				 * committed values
+				 */
+				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
+						.getLocalVector().getValue(tmp.getKey())) {
+					if (ConstantPool.logging)
+						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
+							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
+					return false;
+				}
+				
+			} catch (NullPointerException e) {
+//				e.printStackTrace();
+				// nothing to do.
+				// the key is simply not there.
+			}
+
+		}
+		
 		return true;
 	}
 
@@ -164,7 +165,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 	 */
 	@Override
 	public boolean applyingTransactionCommute() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -178,6 +179,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 				if (voteReceivers.contains(manager.getMyGroup().name())){
 					int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
 					msg.setComputedObjectUponDelivery((Integer)prepVCAti);
+					seqNos.put(msg.getExecutionHistory().getTransactionHandler().getId(), prepVCAti);
 				}
 			}
 		}
@@ -231,10 +233,6 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 	@Override
 	public void voteReceived(Vote vote) {
 		if (vote.getVotePiggyBack().getPiggyback() == null) {
-			/*
-			 * transaction has been aborted, thus a null piggyback is sent along
-			 * with the vote. no need for extra work.
-			 */
 			return;
 		}
 
@@ -253,60 +251,85 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 					receivedVector.setValue(vote.getVoterGroupName(), prepVCAti);
 				}
 				else{
-					
-					receivedVectors.get(vote.getTransactionHandler().getId()).setValue(vote.getVoterGroupName(), prepVCAti);
+					receivedVectors
+						.get(vote.getTransactionHandler().getId())
+						.setValue(vote.getVoterGroupName(), prepVCAti);
 				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
-
+	
 	@Override
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
-		ExecutionHistory executionHistory=msg.getExecutionHistory();
-
 		GMUVector<String> commitVC = new GMUVector<String>(manager.getMyGroup().name(), 0);
-
-		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {			
-			commitVC.update(tmp.getLocalVector());
-		}
-
-		GMUVector<String> receivedVC = receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId());
-		commitVC.update(receivedVC);
-
-		/*
-		 * Assigning commitVC to the entities
-		 */
-		for (JessyEntity entity : executionHistory.getWriteSet()
-				.getEntities()) {
-			entity.getLocalVector().getMap().clear();
-			entity.getLocalVector().setValue(manager.getMyGroup().name(), (int)commitVC.getSelfValue());
-		}
 		
-		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) 
-			applyGMUVector.applyCommittedGMUVector(receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId()).getSelfValue(), commitVC);
+		try{
+			ExecutionHistory executionHistory=msg.getExecutionHistory();
+
+
+			for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {			
+				commitVC.update(tmp.getLocalVector());
+			}
+
+			GMUVector<String> receivedVC = receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId());
+			commitVC.update(receivedVC);
+
+			/*
+			 * Assigning commitVC to the entities
+			 */
+			for (JessyEntity entity : executionHistory.getWriteSet()
+					.getEntities()) {
+				entity.getLocalVector().getMap().clear();
+				entity.getLocalVector().setValue(manager.getMyGroup().name(), (int)commitVC.getSelfValue());
+			}
+
+		}
+		catch (Exception ex){
+			ex.printStackTrace();
+		}
+		finally{
+			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {			
+				applyGMUVector.applyCommittedGMUVector(seqNos.remove(msg.getExecutionHistory().getTransactionHandler().getId()), commitVC);
+			}
+		}
 
 	}
 
 	@Override
 	public void postCommit(ExecutionHistory executionHistory) {
-		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
-			applyGMUVector.GMUVectorIsAdded();
+		try{
+			if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
+				applyGMUVector.GMUVectorIsAdded();
+			}
+
 		}
+		catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void garbageCollect(TerminateTransactionRequestMessage msg){
 		/*
 		 * Garbage collect the received vectors. We don't need them anymore.
 		 */
-		if (receivedVectors.containsKey(executionHistory
+		if (receivedVectors.containsKey(msg.getExecutionHistory()
 				.getTransactionHandler().getId()))
-			receivedVectors.remove(executionHistory.getTransactionHandler()
+			receivedVectors.remove(msg.getExecutionHistory().getTransactionHandler()
 					.getId());
-
 	}
 	
+	@Override
 	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){
-		int seqNo=receivedVectors.remove(msg.getExecutionHistory().getTransactionHandler().getId()).getSelfValue();
-		applyGMUVector.applyAbortedGMUVector(seqNo);
+		try{
+			receivedVectors.remove(msg.getExecutionHistory().getTransactionHandler().getId());
+			applyGMUVector.applyAbortedGMUVector(seqNos.remove(msg.getExecutionHistory().getTransactionHandler().getId()));
+		}
+		catch(Exception ex){
+			ex.printStackTrace();
+		}
 	}
 	
 }

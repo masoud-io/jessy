@@ -1,15 +1,21 @@
 package fr.inria.jessy;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.utils.ExecutorPool;
 import net.sourceforge.fractal.utils.PerformanceProbe.TimeRecorder;
 import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 
 import org.apache.log4j.Logger;
 import org.cliffc.high_scale_lib.NonBlockingHashtable;
+
 
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadReply;
@@ -48,12 +54,16 @@ public abstract class RemoteReader {
 	protected NonBlockingHashtable<Integer, RemoteReadFuture<JessyEntity>> pendingRemoteReads;
 
 	protected BlockingQueue<RemoteReadFuture<JessyEntity>> remoteReadQ;
+	
+//	protected ConcurrentHashMap<Group, Integer> partitionsContact;
 
 	public RemoteReader(DistributedJessy j) {
 		jessy = j;
 
 		remoteReadQ = new LinkedBlockingDeque<RemoteReadFuture<JessyEntity>>();
 		pendingRemoteReads = new NonBlockingHashtable<Integer, RemoteReadFuture<JessyEntity>>();
+		
+//		partitionsContact = new ConcurrentHashMap<Group, Integer>();
 	}
 
 	public abstract <E extends JessyEntity> Future<ReadReply<E>> remoteRead(

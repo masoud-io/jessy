@@ -14,6 +14,7 @@ import com.sleepycat.persist.model.Persistent;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.consistency.ApplyGMUVector;
 import fr.inria.jessy.persistence.FilePersistence;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -40,7 +41,7 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	
 	private static JessyGroupManager manager;
 	
-	public static final String versionPrefix="*";
+	public static final String versionPrefix="user";
 
 	public synchronized static void init(JessyGroupManager m){
 		if(lastPrepSC!=null)
@@ -68,10 +69,13 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 			return true;
 		}
 		
+		//We have not received all update transaction.
+		//We are not sure to read or not, thus we try another replica
 		if (other.getValue(myKey)!=null  &&
-				other.getValue(myKey) > GMUVector.logCommitVC.peekFirst().getSelfValue() ){
-			//We have not received all update transaction.
-			//We are not sure to read or not, thus we try another replica
+				other.getValue(myKey)-2 > GMUVector.logCommitVC.peekFirst().getSelfValue() ){
+//			if ((other.getValue(myKey) - GMUVector.logCommitVC.peekFirst().getSelfValue())>100){
+//				ApplyGMUVector.appliedSeq++;
+//			}
 			return false;
 		}
 		
@@ -122,8 +126,9 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	public static void postRead(ReadRequest rr, JessyEntity entity){
 		try{
 			int seqNo=entity.getLocalVector().getValue(manager.getMyGroup().name());
-			entity.getLocalVector().setMap(rr.getReadSet().getMap());
-			entity.getLocalVector().setValue(GMUVector.versionPrefix+manager.getMyGroup().name(), seqNo);
+			entity.getLocalVector().setMap((HashMap<String, Integer>) rr.getReadSet().getMap().clone());
+			if (seqNo>0)
+				entity.getLocalVector().setValue(entity.getKey(), seqNo);
 		}
 		catch(Exception ex){
 			ex.printStackTrace();

@@ -75,7 +75,7 @@ public class HashMapDataStore implements DataStore {
 	public <E extends JessyEntity, SK> ReadReply<E> get(
 			ReadRequest<E> readRequest) throws NullPointerException {
 
-		if (!VectorFactory.prepareRead(readRequest)){
+		if (readRequest.getReadSet()!=null && !VectorFactory.prepareRead(readRequest)){
 			E entity = null;
 			return new ReadReply<E>(entity, readRequest.getReadRequestId());
 		}

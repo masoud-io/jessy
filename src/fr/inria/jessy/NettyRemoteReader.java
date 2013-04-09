@@ -16,8 +16,9 @@ import org.jboss.netty.channel.Channel;
 import com.yahoo.ycsb.Utils;
 import com.yahoo.ycsb.YCSBEntity;
 
-import fr.inria.jessy.communication.UnicastClientManager;
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.UnicastLearner;
+import fr.inria.jessy.communication.UnicastClientManager;
 import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;
@@ -217,7 +218,21 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 
 					// Send them.
 					for (Group dest : toSend.keySet()) {
-						int swid = dest.getRandom();
+//						int swid=-1;
+//						if (partitionsContact.containsKey(dest)){
+//							swid=partitionsContact.get(dest);
+//						}
+//						else{
+//							synchronized(partitionsContact){
+//								if (!partitionsContact.containsKey(dest)){
+//									swid = dest.getRandom();
+//									partitionsContact.put(dest, swid);									
+//								}else{
+//									swid=partitionsContact.get(dest);
+//								}
+//							}
+//						}
+						int swid=dest.getRandom();
 						cmanager.unicast(
 								new ReadRequestMessage(toSend.get(dest)), swid);
 					}

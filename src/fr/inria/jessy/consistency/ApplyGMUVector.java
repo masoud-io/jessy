@@ -1,6 +1,6 @@
 package fr.inria.jessy.consistency;
 
-import java.util.Map.Entry;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import fr.inria.jessy.ConstantPool;
@@ -56,21 +56,32 @@ public class ApplyGMUVector implements Runnable{
 			 * In any case, the old version of object should be removed.
 			 * Old version of object has a key starts with {@link GMUVector.versionPrefix}
 			 */
-			if (GMUVector.logCommitVC.size()>0){
-				GMUVector<String> finalVector;
-				finalVector=GMUVector.logCommitVC.getFirst().clone();
-				finalVector.updateAndRemove(commitVC, GMUVector.versionPrefix);				
-				GMUVector.logCommitVC.addFirst(finalVector);
-//				System.out.println("last commitVC is " + finalVector);
-			}
-			else{
-				for (Entry<String,Integer> entry:commitVC.getMap().entrySet()){
-					if (entry.getKey().startsWith(GMUVector.versionPrefix))
-						commitVC.getMap().remove(entry.getKey());
+			try{
+				if (GMUVector.logCommitVC.size()>0){
+					GMUVector<String> finalVector;
+					finalVector=GMUVector.logCommitVC.getFirst().clone();
+					finalVector.updateAndRemove(commitVC, GMUVector.versionPrefix);
+					Iterator<String> itr=finalVector.getMap().keySet().iterator();
+					while (itr.hasNext()){
+						if (itr.next().startsWith(GMUVector.versionPrefix))
+							itr.remove();
+					}
+					GMUVector.logCommitVC.addFirst(finalVector);
 				}
-				GMUVector.logCommitVC.addFirst(commitVC);
-//				System.out.println("last commitVC is " + commitVC);
+				else{
+					Iterator<String> itr=commitVC.getMap().keySet().iterator();
+					while (itr.hasNext()){
+						if (itr.next().startsWith(GMUVector.versionPrefix))
+							itr.remove();
+					}
+					
+					GMUVector.logCommitVC.addFirst(commitVC);
+				}
 			}
+			catch(Exception ex){
+				ex.printStackTrace();
+			}
+			
 		}
 	}
 	
