@@ -119,7 +119,7 @@ public class SnapshotIsolation extends Consistency {
 	@Override
 	public boolean certificationCommute(TransactionTouchedKeys tk1,
 			TransactionTouchedKeys tk2) {
-		return false;
+		return !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.writeKeys);
 	}
 	
 	@Override
