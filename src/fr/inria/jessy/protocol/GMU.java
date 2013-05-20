@@ -1,57 +1,55 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import net.sourceforge.fractal.utils.ExecutorPool;
-
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-
+import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.consistency.US;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
-import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.termination.Vote;
-import fr.inria.jessy.transaction.termination.VotePiggyback;
-import fr.inria.jessy.transaction.termination.VotingQuorum;
+import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.transaction.termination.vote.Vote;
+import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
 import fr.inria.jessy.vector.GMUVector;
+import fr.inria.jessy.vector.GMUVector2;
 
 /**
- * This class implements Non-Monotonic Snapshot Isolation consistency criterion
- * along with using GMUVector introduced by [Peluso2012]
+ * This class implements EXACTLY [Peluso2012]: I.e., Update Serializability consistency criterion along with
+ * using GMUVector introduced by 
  * 
+ * CONS: US
+ * Vector: GMUVector
+ * Atomic Commitment: Two phase commit
  * 
  * @author Masoud Saeida Ardekani
  * 
  */
-public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnapshotIsolation {
+public class GMU extends US{
 
 	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
-	private static ConcurrentHashMap<UUID, Integer> seqNos;
-	
-	private static ApplyGMUVector applyGMUVector;
+	private static ConcurrentLinkedQueue<UUID> commitQueue;
 	
 	static {
-		votePiggybackRequired = true;
+		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector<String>>();
-		seqNos=new ConcurrentHashMap<UUID, Integer>();
+		commitQueue=new ConcurrentLinkedQueue<UUID>();
+		votePiggybackRequired = true;
 	}
 
-	public NonMonotonicSnapshotIsolationWithGMUVector(JessyGroupManager m, DataStore dataStore) {
+	public GMU(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 		
-		if (!m.isProxy()){
-			applyGMUVector=new ApplyGMUVector();
-			ExecutorPool.getInstance().submit(applyGMUVector);
-		}
 	}
 	
 	@Override
@@ -95,11 +93,13 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 
 		JessyEntity lastComittedEntity;
 
-		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
+		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
+
 			if (!manager.getPartitioner().isLocal(tmp.getKey()))
 				continue;
 
 			try {
+
 				lastComittedEntity = store
 						.get(new ReadRequest<JessyEntity>(
 								(Class<JessyEntity>) tmp.getClass(),
@@ -117,9 +117,8 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
 				}
-				
+
 			} catch (NullPointerException e) {
-//				e.printStackTrace();
 				// nothing to do.
 				// the key is simply not there.
 			}
@@ -130,35 +129,13 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 	}
 
 	/**
-	 * With GMUVector, it is not safe to apply transactions concurrently, and they should be applied as they are delivered. 
+	 * Since there is no concurrent conflicting transaction, it is safe to apply transactions concurrently.
 	 */
 	@Override
 	public boolean applyingTransactionCommute() {
 		return true;
 	}
 
-	@Override
-	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
-		try{
-			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
-				Set<String> voteReceivers =	manager.getPartitioner().resolveNames(getConcerningKeys(
-								msg.getExecutionHistory(),
-								ConcernedKeysTarget.RECEIVE_VOTES));
-				
-				if (voteReceivers.contains(manager.getMyGroup().name())){
-					int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
-					msg.setComputedObjectUponDelivery((Integer)prepVCAti);
-					seqNos.put(msg.getExecutionHistory().getTransactionHandler().getId(), prepVCAti);
-				}
-			}
-		}
-		catch (Exception ex){
-			ex.printStackTrace();
-		}
-		
-		return true;
-	}
-	
 	@SuppressWarnings("unchecked")
 	@Override
 	public Vote createCertificationVote(ExecutionHistory executionHistory, Object object) {
@@ -171,15 +148,18 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 			boolean isCommitted = executionHistory.getTransactionType() == BLIND_WRITE
 					|| certify(executionHistory);
 
-			Integer prepVCAti = null;
+			GMUVector<String> vector = null;
 			if (isCommitted
 					&& executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
 				/*
 				 * We have to update the vector here, and send it over to the
 				 * others. Corresponds to line 20-22 of Algorithm 4
 				 */
-				if (object!=null)
-					prepVCAti = (Integer) object;
+				vector=GMUVector.logCommitVC.peekFirst().clone();
+				vector.setValue(""+manager.getSourceId(), GMUVector2.lastPrepSC.incrementAndGet());
+				//TODO FIX ME, not safe.
+				//Transactions should be added exactly in order.
+				commitQueue.add(executionHistory.getTransactionHandler().getId());
 			}
 
 			/*
@@ -187,7 +167,7 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 			 */
 			return new Vote(executionHistory.getTransactionHandler(), isCommitted,
 					manager.getMyGroup().name(),
-					new VotePiggyback(prepVCAti));
+					new VotePiggyback(vector));
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
@@ -206,23 +186,22 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 		}
 
 		try {
-			Integer prepVCAti = (Integer) vote
+			GMUVector vector = (GMUVector) vote
 					.getVotePiggyBack().getPiggyback();
 
-			if (vote.getVotePiggyBack() != null && prepVCAti!=null) {
+			if (vote.getVotePiggyBack() != null && vector!=null) {
 
 				/*
-				 * Corresponds to line 19
+				 * Corresponds to line 19 of algorithm 3
 				 */
 				GMUVector<String> receivedVector = receivedVectors.putIfAbsent(
-						vote.getTransactionHandler().getId(), new GMUVector<String>(manager.getMyGroup().name(), 0));
+						vote.getTransactionHandler().getId(), new GMUVector<String>(""+manager.getSourceId(), 0));
 				if (receivedVector != null) {
-					receivedVector.setValue(vote.getVoterGroupName(), prepVCAti);
+					receivedVector.update(vector);
 				}
 				else{
 					receivedVectors
-						.get(vote.getTransactionHandler().getId())
-						.setValue(vote.getVoterGroupName(), prepVCAti);
+						.get(vote.getTransactionHandler().getId()).update(vector);
 				}
 			}
 		} catch (Exception ex) {
@@ -230,47 +209,97 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 		}
 	}
 	
+	private boolean isCoordinator(TerminateTransactionRequestMessage msg){
+		String firstWriteKey=msg.getExecutionHistory().getWriteSet().getKeys().iterator().next();
+		if (manager.getPartitioner().resolve(firstWriteKey).leader() == manager.getSourceId()){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	
+	@Override
+	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
+		if (isCoordinator(msg) && state==TransactionState.COMMITTED){
+
+			GMUVector<String> commitVC = new GMUVector<String>(manager.getMyGroup().name(), 0);
+
+			try{
+				ExecutionHistory executionHistory=msg.getExecutionHistory();
+
+
+				for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {			
+					commitVC.update(tmp.getLocalVector());
+				}
+
+				GMUVector<String> receivedVC = receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId());
+				commitVC.update(receivedVC);
+				int max=0;
+				for (Integer val:commitVC.getMap().values())
+					if (val>max) max=val;
+
+				/*
+				 * Assign the max value to indexes of all processes
+				 * 
+				 * Line 23 and 24 of Algorithm 3
+				 */
+				Set<String> voteReceivers=	manager.getPartitioner().resolveNames(getConcerningKeys(
+								msg.getExecutionHistory(),
+								ConcernedKeysTarget.RECEIVE_VOTES));
+				for (String str:voteReceivers){
+					Group g=manager.getPartitioner().resolve(str);
+					for (int tmpswid:g.allNodes()){
+						commitVC.setValue(""+tmpswid, max);
+					}
+				}
+
+				/*
+				 * Assigning commitVC to the entities
+				 */
+				for (JessyEntity entity : executionHistory.getWriteSet()
+						.getEntities()) {
+					entity.getLocalVector().getMap().clear();
+					entity.getLocalVector().setValue(manager.getMyGroup().name(), (int)commitVC.getSelfValue());
+				}
+
+			}
+			catch (Exception ex){
+				ex.printStackTrace();
+			}
+		}
+	}
+	
 	@Override
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
-		GMUVector<String> commitVC = new GMUVector<String>(manager.getMyGroup().name(), 0);
+		while (!commitQueue.peek().equals(msg.getExecutionHistory().getTransactionHandler().getId())){
+			synchronized (commitQueue) {
+				try {
+					commitQueue.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		
-		try{
-			ExecutionHistory executionHistory=msg.getExecutionHistory();
-
-
-			for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {			
-				commitVC.update(tmp.getLocalVector());
-			}
-
-			GMUVector<String> receivedVC = receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId());
-			commitVC.update(receivedVC);
-
-			/*
-			 * Assigning commitVC to the entities
-			 */
-			for (JessyEntity entity : executionHistory.getWriteSet()
-					.getEntities()) {
-				entity.getLocalVector().getMap().clear();
-				entity.getLocalVector().setValue(manager.getMyGroup().name(), (int)commitVC.getSelfValue());
-			}
-
+		//we need one vector, lets take first one.
+		GMUVector<String> vector=(GMUVector<String>) msg.getExecutionHistory().getWriteSet().getEntities().iterator().next().getLocalVector();
+		int updatedVal=vector.getValue(""+manager.getSourceId());
+		if (GMUVector.lastPrepSC.get() < updatedVal){
+			GMUVector.lastPrepSC.set(updatedVal);
 		}
-		catch (Exception ex){
-			ex.printStackTrace();
-		}
-		finally{
-			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {			
-				applyGMUVector.applyCommittedGMUVector(seqNos.remove(msg.getExecutionHistory().getTransactionHandler().getId()), commitVC);
-			}
-		}
-
+		
+		GMUVector.logCommitVC.add(vector);
 	}
 
 	@Override
 	public void postCommit(ExecutionHistory executionHistory) {
 		try{
 			if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
-				applyGMUVector.GMUVectorIsAdded();
+				commitQueue.remove(executionHistory.getTransactionHandler().getId());
+				synchronized(commitQueue){
+					commitQueue.notifyAll();
+				}
 			}
 
 		}
@@ -293,8 +322,13 @@ public class NonMonotonicSnapshotIsolationWithGMUVector extends NonMonotonicSnap
 	@Override
 	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){
 		try{
-			receivedVectors.remove(msg.getExecutionHistory().getTransactionHandler().getId());
-			applyGMUVector.applyAbortedGMUVector(seqNos.remove(msg.getExecutionHistory().getTransactionHandler().getId()));
+			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
+				commitQueue.remove(msg.getExecutionHistory().getTransactionHandler().getId());
+				synchronized(commitQueue){
+					commitQueue.notifyAll();
+				}
+			}
+
 		}
 		catch(Exception ex){
 			ex.printStackTrace();

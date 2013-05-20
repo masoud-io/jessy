@@ -4,7 +4,7 @@ import java.util.Set;
 
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.consistency.ParallelSnapshotIsolationPiggyback;
+import fr.inria.jessy.protocol.ParallelSnapshotIsolationPiggyback;
 
 /**
  * Used for propagating the committed sequence number of the WCoordinator to all

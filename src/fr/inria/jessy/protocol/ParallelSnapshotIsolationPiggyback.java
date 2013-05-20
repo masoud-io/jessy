@@ -1,4 +1,4 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 import java.io.Externalizable;
 import java.io.IOException;

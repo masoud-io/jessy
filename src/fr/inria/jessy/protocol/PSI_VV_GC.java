@@ -1,4 +1,4 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
-import net.sourceforge.fractal.utils.CollectionUtils;
 import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.apache.log4j.Logger;
@@ -25,31 +24,36 @@ import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.consistency.PSI;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.TransactionTouchedKeys;
-import fr.inria.jessy.transaction.termination.Vote;
-import fr.inria.jessy.transaction.termination.VotePiggyback;
-import fr.inria.jessy.transaction.termination.VotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.Vote;
+import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VersionVector;
 
 /**
- * PSI implementation according to [Serrano2011] paper.
+ * PSI implementation according to [Serrano2011] paper with one exception. 
+ * I.e., Uses group communication instead of two phase commit. 
+ * 
+ * CONS: PSI
+ * Vector: VersionVector
+ * Atomic Commitment: GroupCommunication
  * 
  * @author Masoud Saeida Ardekani
  * 
  */
-public class ParallelSnapshotIsalation extends Consistency implements Learner {
+public class PSI_VV_GC extends PSI implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
 	private static Logger logger = Logger
-			.getLogger(ParallelSnapshotIsalation.class);
+			.getLogger(PSI_VV_GC.class);
 
 	static {
 		votePiggybackRequired = true;
@@ -62,7 +66,7 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 
 	private ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback> receivedPiggybacks;
 
-	public ParallelSnapshotIsalation(JessyGroupManager m, DataStore store) {
+	public PSI_VV_GC(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		receivedPiggybacks = new ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback>();
 		propagation = new MessagePropagation(this,m);
@@ -74,43 +78,6 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 			pool.submit(task);
 			applyPiggyback.put(group.name(),task);
 		}
-	}
-
-	/**
-	 * @inheritDoc
-	 * 
-	 *             According to the implementation of VersionVector, commute in
-	 *             certification is not allowed.
-	 *             <p>
-	 *             Assume there are two servers s1 and s2 that replicate objects
-	 *             x and y. Also assume there are two transaction t1 and t2 that
-	 *             writes a new value on x and y accordingly. Since
-	 *             commutativity may lead to execution of t1 and t2 in different
-	 *             orders on s1 and s2, and version vector cannot distinguish
-	 *             this re-ordering, it can lead to some strange behavior.
-	 *             (i.e., reading inconsistent snapshots!)
-	 *             
-	 *             <p>
-	 *             Note: if the group size is greater than 1, transactions cannot commute under any condition.
-	 *             Because, sequenceNumber is assigned to a transaction in {@link Consistency#createCertificationVote(ExecutionHistory)}.
-	 *             Now if two transactions T1 and T2 that does not have any conflict run in P1 and P2 (in group g1) concurrently,
-	 *             then they can end up having different sequence numbers in different jessy instances.
-	 *             For example, T1 and T2 can have sequenceNumbers 1 and 2 respectively in P1, and 
-	 *             they can have sequenceNumbers 2 and 1 in P2 respectively. 
-	 */
-	@Override
-	public boolean certificationCommute(ExecutionHistory history1,
-			ExecutionHistory history2) {
-
-			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-					.getKeys(), history2.getWriteSet().getKeys());
-
-	}
-	
-	@Override
-	public boolean certificationCommute(TransactionTouchedKeys tk1,
-			TransactionTouchedKeys tk2) {
-		return !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.writeKeys);
 	}
 
 	@Override
@@ -365,22 +332,10 @@ public class ParallelSnapshotIsalation extends Consistency implements Learner {
 		}
 	}
 
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
-			ConcernedKeysTarget target) {
-		Set<String> keys = new HashSet<String>();
-		keys.addAll(executionHistory.getWriteSet().getKeys());
-		keys.addAll(executionHistory.getCreateSet().getKeys());
-		return keys;
-	}
-
 	private static AtomicInteger tempSequenceNumber=new AtomicInteger(0);
 
 	@Override
-	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			if (isWCoordinator(msg.getExecutionHistory())) {
 				int sequenceNumber=0;

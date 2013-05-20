@@ -1,4 +1,4 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
@@ -11,44 +11,53 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.consistency.US;
+import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.termination.Vote;
-import fr.inria.jessy.transaction.termination.VotePiggyback;
-import fr.inria.jessy.transaction.termination.VotingQuorum;
-import fr.inria.jessy.vector.GMUVector;
+import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.Vote;
+import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
+import fr.inria.jessy.vector.GMUVector2;
 
 /**
  * This class implements Update Serializability consistency criterion along with
  * using GMUVector introduced by [Peluso2012]
  * 
+ * CONS: US
+ * Vector: GMUVector
+ * Atomic Commitment: GroupCommunication
  * 
  * @author Masoud Saeida Ardekani
  * 
+ * TODO Certify and GMUVector should be double checked. 
+ * 
  */
-public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
+public class US_GMUVector_GC extends US{
 
-	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
+	private static ConcurrentHashMap<UUID, GMUVector2<String>> receivedVectors;
 	private static ConcurrentHashMap<UUID, Integer> seqNos;
-	private static ApplyGMUVector applyGMUVector;
+	private static ApplyGMUVector2 applyGMUVector;
 	
 	static {
+		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
 		votePiggybackRequired = true;
-		receivedVectors = new ConcurrentHashMap<UUID, GMUVector<String>>();
+		receivedVectors = new ConcurrentHashMap<UUID, GMUVector2<String>>();
 		seqNos=new ConcurrentHashMap<UUID, Integer>();
 	}
 
-	public UpdateSerializabilityWithGMUVector(JessyGroupManager m, DataStore dataStore) {
+	public US_GMUVector_GC(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 		
 		if (!m.isProxy()){
-			applyGMUVector=new ApplyGMUVector();
+			applyGMUVector=new ApplyGMUVector2();
 			ExecutorPool.getInstance().submit(applyGMUVector);
 		}
 	}
@@ -126,36 +135,36 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 
 		}
 		
-		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
-			if (!manager.getPartitioner().isLocal(tmp.getKey()))
-				continue;
-
-			try {
-				lastComittedEntity = store
-						.get(new ReadRequest<JessyEntity>(
-								(Class<JessyEntity>) tmp.getClass(),
-								"secondaryKey", tmp.getKey(), null))
-						.getEntity().iterator().next();
-
-				/*
-				 * instead of locking, we simply checks against the latest
-				 * committed values
-				 */
-				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getValue(tmp.getKey())) {
-					if (ConstantPool.logging)
-						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
-							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
-					return false;
-				}
-				
-			} catch (NullPointerException e) {
-//				e.printStackTrace();
-				// nothing to do.
-				// the key is simply not there.
-			}
-
-		}
+//		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
+//			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+//				continue;
+//
+//			try {
+//				lastComittedEntity = store
+//						.get(new ReadRequest<JessyEntity>(
+//								(Class<JessyEntity>) tmp.getClass(),
+//								"secondaryKey", tmp.getKey(), null))
+//						.getEntity().iterator().next();
+//
+//				/*
+//				 * instead of locking, we simply checks against the latest
+//				 * committed values
+//				 */
+//				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
+//						.getLocalVector().getValue(tmp.getKey())) {
+//					if (ConstantPool.logging)
+//						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
+//							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
+//					return false;
+//				}
+//				
+//			} catch (NullPointerException e) {
+////				e.printStackTrace();
+//				// nothing to do.
+//				// the key is simply not there.
+//			}
+//
+//		}
 		
 		return true;
 	}
@@ -169,7 +178,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 	}
 
 	@Override
-	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
 				Set<String> voteReceivers =	manager.getPartitioner().resolveNames(getConcerningKeys(
@@ -177,7 +186,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 								ConcernedKeysTarget.RECEIVE_VOTES));
 				
 				if (voteReceivers.contains(manager.getMyGroup().name())){
-					int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
+					int prepVCAti = GMUVector2.lastPrepSC.incrementAndGet();
 					msg.setComputedObjectUponDelivery((Integer)prepVCAti);
 					seqNos.put(msg.getExecutionHistory().getTransactionHandler().getId(), prepVCAti);
 				}
@@ -245,15 +254,15 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 				/*
 				 * Corresponds to line 19
 				 */
-				GMUVector<String> receivedVector = receivedVectors.putIfAbsent(
-						vote.getTransactionHandler().getId(), new GMUVector<String>(manager.getMyGroup().name(), 0));
+				GMUVector2<String> receivedVector = receivedVectors.putIfAbsent(
+						vote.getTransactionHandler().getId(), new GMUVector2<String>(manager.getMyGroup().name(), 0));
 				if (receivedVector != null) {
-					receivedVector.setValue(vote.getVoterGroupName(), prepVCAti);
+					receivedVector.setValue(vote.getVoterEntityName(), prepVCAti);
 				}
 				else{
 					receivedVectors
 						.get(vote.getTransactionHandler().getId())
-						.setValue(vote.getVoterGroupName(), prepVCAti);
+						.setValue(vote.getVoterEntityName(), prepVCAti);
 				}
 			}
 		} catch (Exception ex) {
@@ -263,7 +272,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 	
 	@Override
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
-		GMUVector<String> commitVC = new GMUVector<String>(manager.getMyGroup().name(), 0);
+		GMUVector2<String> commitVC = new GMUVector2<String>(manager.getMyGroup().name(), 0);
 		
 		try{
 			ExecutionHistory executionHistory=msg.getExecutionHistory();
@@ -273,7 +282,7 @@ public class UpdateSerializabilityWithGMUVector extends UpdateSerializability{
 				commitVC.update(tmp.getLocalVector());
 			}
 
-			GMUVector<String> receivedVC = receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId());
+			GMUVector2<String> receivedVC = receivedVectors.get(msg.getExecutionHistory().getTransactionHandler().getId());
 			commitVC.update(receivedVC);
 
 			/*

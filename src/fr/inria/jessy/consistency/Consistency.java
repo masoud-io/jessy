@@ -13,10 +13,10 @@ import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
+import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
-import fr.inria.jessy.transaction.termination.DistributedTermination;
-import fr.inria.jessy.transaction.termination.Vote;
-import fr.inria.jessy.transaction.termination.VotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.vector.VectorFactory;
 
 public abstract class Consistency {
@@ -146,7 +146,7 @@ public abstract class Consistency {
 	 * @param quorumes
 	 * @param vote
 	 */
-	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes) {
+	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes) {
 		return;
 	}
 
@@ -167,10 +167,10 @@ public abstract class Consistency {
 		 * execution history. A blind write always succeeds.
 		 */
 
-		boolean isAborted = executionHistory.getTransactionType() == BLIND_WRITE
+		boolean isCommitted = executionHistory.getTransactionType() == BLIND_WRITE
 				|| certify(executionHistory);
 
-		return new Vote(executionHistory.getTransactionHandler(), isAborted,
+		return new Vote(executionHistory.getTransactionHandler(), isCommitted,
 				manager.getMyGroup().name(), null);
 	}
 
@@ -218,12 +218,17 @@ public abstract class Consistency {
 	 * 	@return true if the transaction should be inserted in the am-Delivered list, and a CertifyAndVote task should be created. 
 	 * Otherwise false. 
 	 */
-	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		return true;
 	}
 	
 	public void garbageCollect(TerminateTransactionRequestMessage msg){
 		return;
 	}
+	
+	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
+		
+	}
+
 
 }

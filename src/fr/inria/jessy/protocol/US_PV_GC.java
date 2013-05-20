@@ -1,4 +1,4 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
@@ -7,31 +7,38 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.consistency.US;
+import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
-import fr.inria.jessy.transaction.termination.Vote;
-import fr.inria.jessy.vector.GMUVector;
+import fr.inria.jessy.transaction.termination.vote.Vote;
+import fr.inria.jessy.vector.GMUVector2;
 
 /**
  * This class implements Update Serializability consistency criterion along with
- * using GMUVector introduced by [Peluso2012]
+ * Partitioned Vector
  * 
+ * CONS: US
+ * Vector: DependenceVector
+ * Atomic Commitment: GroupCommunication
  * 
  * @author Masoud Saeida Ardekani
  * 
  */
-public class UpdateSerializabilityWithPartitionVector extends UpdateSerializability {
+public class US_PV_GC extends US {
 
 	static {
+		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
 		votePiggybackRequired = false;
 	}
 
-	public UpdateSerializabilityWithPartitionVector(JessyGroupManager m, DataStore dataStore) {
+	public US_PV_GC(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 	}
 	
@@ -107,37 +114,37 @@ public class UpdateSerializabilityWithPartitionVector extends UpdateSerializabil
 
 		}
 
-		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
-
-			if (!manager.getPartitioner().isLocal(tmp.getKey()))
-				continue;
-
-			try {
-
-				lastComittedEntity = store
-						.get(new ReadRequest<JessyEntity>(
-								(Class<JessyEntity>) tmp.getClass(),
-								"secondaryKey", tmp.getKey(), null))
-						.getEntity().iterator().next();
-
-				/*
-				 * instead of locking, we simply checks against the latest
-				 * committed values
-				 */
-				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getSelfValue()) {
-//					if (ConstantPool.logging)
-						logger.error("Transaction " + executionHistory.getTransactionHandler().getId() + " Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
-							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
-					return false;
-				}
-
-			} catch (NullPointerException e) {
-				// nothing to do.
-				// the key is simply not there.
-			}
-
-		}
+//		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
+//
+//			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+//				continue;
+//
+//			try {
+//
+//				lastComittedEntity = store
+//						.get(new ReadRequest<JessyEntity>(
+//								(Class<JessyEntity>) tmp.getClass(),
+//								"secondaryKey", tmp.getKey(), null))
+//						.getEntity().iterator().next();
+//
+//				/*
+//				 * instead of locking, we simply checks against the latest
+//				 * committed values
+//				 */
+//				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
+//						.getLocalVector().getSelfValue()) {
+////					if (ConstantPool.logging)
+//						logger.error("Transaction " + executionHistory.getTransactionHandler().getId() + " Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
+//							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
+//					return false;
+//				}
+//
+//			} catch (NullPointerException e) {
+//				// nothing to do.
+//				// the key is simply not there.
+//			}
+//
+//		}
 
 		return true;
 	}
@@ -176,7 +183,7 @@ public class UpdateSerializabilityWithPartitionVector extends UpdateSerializabil
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 
-		GMUVector<String> commitVC = new GMUVector<String>(manager.getMyGroup().name(),0);
+		GMUVector2<String> commitVC = new GMUVector2<String>(manager.getMyGroup().name(),0);
 
 
 			for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {

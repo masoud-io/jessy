@@ -1,4 +1,4 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
@@ -15,16 +15,18 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.consistency.NMSI;
+import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.termination.Vote;
-import fr.inria.jessy.transaction.termination.VotePiggyback;
-import fr.inria.jessy.transaction.termination.VotingQuorum;
-import fr.inria.jessy.vector.GMUVector;
+import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.Vote;
+import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
+import fr.inria.jessy.vector.GMUVector2;
 
 /**
  * This class implements Non-Monotonic Snapshot Isolation consistency criterion
@@ -34,16 +36,16 @@ import fr.inria.jessy.vector.GMUVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class NonMonotonicSnapshotIsolationWithPartitionVecor extends NonMonotonicSnapshotIsolation {
+public class NMSI_PV_GC extends NMSI {
 
-	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
+	private static ConcurrentHashMap<UUID, GMUVector2<String>> receivedVectors;
 
 	static {
 		votePiggybackRequired = true;
-		receivedVectors = new ConcurrentHashMap<UUID, GMUVector<String>>();
+		receivedVectors = new ConcurrentHashMap<UUID, GMUVector2<String>>();
 	}
 
-	public NonMonotonicSnapshotIsolationWithPartitionVecor(JessyGroupManager m, DataStore dataStore) {
+	public NMSI_PV_GC(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 	}
 
@@ -136,12 +138,12 @@ public class NonMonotonicSnapshotIsolationWithPartitionVecor extends NonMonotoni
 	}
 
 	@Override
-	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
-				GMUVector.init(manager);
-				GMUVector<String> prepVC = GMUVector.mostRecentVC.clone();
-				int prepVCAti = GMUVector.lastPrepSC.incrementAndGet();
+				GMUVector2.init(manager);
+				GMUVector2<String> prepVC = GMUVector2.mostRecentVC.clone();
+				int prepVCAti = GMUVector2.lastPrepSC.incrementAndGet();
 				prepVC.setValue(prepVC.getSelfKey(), prepVCAti);
 
 				msg.setComputedObjectUponDelivery(prepVC);
@@ -165,7 +167,7 @@ public class NonMonotonicSnapshotIsolationWithPartitionVecor extends NonMonotoni
 		boolean isCommitted = executionHistory.getTransactionType() == BLIND_WRITE
 				|| certify(executionHistory);
 		
-		GMUVector<String> prepVC = null;
+		GMUVector2<String> prepVC = null;
 
 		try{
 
@@ -176,7 +178,7 @@ public class NonMonotonicSnapshotIsolationWithPartitionVecor extends NonMonotoni
 				 * We have to update the vector here, and send it over to the
 				 * others. Corresponds to line 20-22 of Algorithm 4
 				 */
-				prepVC = (GMUVector<String>) object;
+				prepVC = (GMUVector2<String>) object;
 			}
 
 		}
@@ -210,14 +212,14 @@ public class NonMonotonicSnapshotIsolationWithPartitionVecor extends NonMonotoni
 		try {
 			if (vote.getVotePiggyBack() != null) {
 
-				GMUVector<String> commitVC = (GMUVector<String>) vote
+				GMUVector2<String> commitVC = (GMUVector2<String>) vote
 						.getVotePiggyBack().getPiggyback();
 
 				/*
 				 * Corresponds to line 19
 				 */
 				
-				GMUVector<String> receivedVector = receivedVectors.putIfAbsent(
+				GMUVector2<String> receivedVector = receivedVectors.putIfAbsent(
 						vote.getTransactionHandler().getId(), commitVC);
 				if (receivedVector != null) {
 					receivedVector.update(commitVC);
@@ -234,7 +236,7 @@ public class NonMonotonicSnapshotIsolationWithPartitionVecor extends NonMonotoni
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 
-		GMUVector<String> commitVC = receivedVectors.get(executionHistory
+		GMUVector2<String> commitVC = receivedVectors.get(executionHistory
 				.getTransactionHandler().getId());
 
 		if (commitVC != null) {
@@ -292,16 +294,16 @@ public class NonMonotonicSnapshotIsolationWithPartitionVecor extends NonMonotoni
 			 * We only need a final vector for one of the written objects. Thus,
 			 * we choose the first one.
 			 */
-			GMUVector<String> commitVC = receivedVectors.get(executionHistory
+			GMUVector2<String> commitVC = receivedVectors.get(executionHistory
 					.getTransactionHandler().getId());
-			if (GMUVector.lastPrepSC.get() < commitVC.getValue(manager.getMyGroup().name())) {
-				GMUVector.lastPrepSC.set(commitVC.getValue(manager.getMyGroup().name()));
+			if (GMUVector2.lastPrepSC.get() < commitVC.getValue(manager.getMyGroup().name())) {
+				GMUVector2.lastPrepSC.set(commitVC.getValue(manager.getMyGroup().name()));
 			}
 			
 			/*
 			 * Corresponds to line 31
 			 */
-			GMUVector.mostRecentVC=commitVC.clone();
+			GMUVector2.mostRecentVC=commitVC.clone();
 		}
 		
 

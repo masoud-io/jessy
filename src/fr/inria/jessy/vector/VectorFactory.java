@@ -18,7 +18,7 @@ public class VectorFactory {
 			VersionVector.init(manager);
 		}
 		if (consType.equals("nmsi2") || consType.equals("us2")) {
-			GMUVector.init(manager);
+			GMUVector2.init(manager);
 		}		
 	}	
 	
@@ -39,14 +39,14 @@ public class VectorFactory {
 			return new VersionVector(manager.getMyGroup().name(), 0);
 		}
 		if (consType.equals("nmsi2") || consType.equals("us2")) {
-			return new GMUVector<K>();
+			return new GMUVector2<K>();
 		}
 		return null;
 	}
 	
 	public static boolean prepareRead(ReadRequest rr){
 		if (consType.equals("nmsi2") || consType.equals("us2")) {
-			return GMUVector.prepareRead(rr);
+			return GMUVector2.prepareRead(rr);
 		}
 		else
 			return true;
@@ -54,7 +54,7 @@ public class VectorFactory {
 	
 	public static void postRead(ReadRequest rr, JessyEntity entity){
 		if (consType.equals("nmsi2") || consType.equals("us2")) {
-			GMUVector.postRead(rr, entity);
+			GMUVector2.postRead(rr, entity);
 		}
 	}
 

@@ -1,4 +1,4 @@
-package fr.inria.jessy.transaction.termination;
+package fr.inria.jessy.transaction.termination.vote;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -14,8 +14,8 @@ public class Vote implements Externalizable {
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 
 	private TransactionHandler transactionHandler;
-	private boolean isAborted;
-	private String voterGroupName;
+	private boolean isCommitted;
+	private String voterEntityName;
 
 	private VotePiggyback votePiggyback;
 
@@ -23,11 +23,11 @@ public class Vote implements Externalizable {
 	public Vote() {
 	}
 
-	public Vote(TransactionHandler transactionHandler, boolean aborted,
+	public Vote(TransactionHandler transactionHandler, boolean committed,
 			String voterGroupName, VotePiggyback votePiggyback) {
 		this.transactionHandler = transactionHandler;
-		this.isAborted = aborted;
-		this.voterGroupName = voterGroupName;
+		this.isCommitted = committed;
+		this.voterEntityName = voterGroupName;
 		this.votePiggyback = votePiggyback;
 	}
 
@@ -35,16 +35,20 @@ public class Vote implements Externalizable {
 		return transactionHandler;
 	}
 
-	public boolean isAborted() {
-		return isAborted;
+	public boolean isCommitted() {
+		return isCommitted;
 	}
 
-	public String getVoterGroupName() {
-		return voterGroupName;
+	public String getVoterEntityName() {
+		return voterEntityName;
 	}
 
 	public VotePiggyback getVotePiggyBack() {
 		return votePiggyback;
+	}
+	
+	public void setVoterEntityName(String voterEntityName){
+		this.voterEntityName=voterEntityName;
 	}
 	
 	public String toString(){
@@ -55,8 +59,8 @@ public class Vote implements Externalizable {
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		transactionHandler = (TransactionHandler) in.readObject();
-		isAborted = in.readBoolean();
-		voterGroupName = (String) in.readObject();
+		isCommitted = in.readBoolean();
+		voterEntityName = (String) in.readObject();
 
 		if (ConsistencyFactory.getConsistencyInstance()
 				.isVotePiggybackRequired())
@@ -66,8 +70,8 @@ public class Vote implements Externalizable {
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(transactionHandler);
-		out.writeBoolean(isAborted);
-		out.writeObject(voterGroupName);
+		out.writeBoolean(isCommitted);
+		out.writeObject(voterEntityName);
 
 		if (ConsistencyFactory.getConsistencyInstance()
 				.isVotePiggybackRequired())

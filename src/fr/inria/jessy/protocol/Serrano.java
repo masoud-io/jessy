@@ -1,11 +1,9 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
-import net.sourceforge.fractal.utils.CollectionUtils;
 
 import org.apache.log4j.Logger;
 
@@ -13,27 +11,28 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.consistency.Consistency;
+import fr.inria.jessy.consistency.SI;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.TransactionTouchedKeys;
-import fr.inria.jessy.transaction.termination.Vote;
-import fr.inria.jessy.transaction.termination.VotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.Vector;
 
-public class SnapshotIsolation extends Consistency {
+public class Serrano extends SI {
 	private static Logger logger = Logger
-			.getLogger(SnapshotIsolation.class);
+			.getLogger(Serrano.class);
 
 	static{
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
 	}
 	
-	public SnapshotIsolation(JessyGroupManager m, DataStore store) {
+	public Serrano(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		Consistency.SEND_READSET_DURING_TERMINATION=false;
 	}
@@ -108,19 +107,6 @@ public class SnapshotIsolation extends Consistency {
 
 		return true;
 	}
-
-	@Override
-	public boolean certificationCommute(ExecutionHistory history1,
-			ExecutionHistory history2) {
-			return !CollectionUtils.isIntersectingWith(history1.getWriteSet()
-					.getKeys(), history2.getWriteSet().getKeys());
-	}
-	
-	@Override
-	public boolean certificationCommute(TransactionTouchedKeys tk1,
-			TransactionTouchedKeys tk2) {
-		return !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.writeKeys);
-	}
 	
 	@Override
 	public boolean applyingTransactionCommute() {
@@ -128,7 +114,7 @@ public class SnapshotIsolation extends Consistency {
 	}
 	
 	@Override
-	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			int newVersion;
 			// WARNING: there is a cast to ScalarVector
@@ -207,36 +193,6 @@ public class SnapshotIsolation extends Consistency {
 	}
 
 	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
-			ConcernedKeysTarget target) {
-
-		Set<String> keys = new HashSet<String>(4);
-		if (target == ConcernedKeysTarget.TERMINATION_CAST) {
-
-			/*
-			 * If it is a read-only transaction, we return an empty set. But if
-			 * it is not an empty set, then we have to return a set that
-			 * contains a key every group. We do this to simulate the atomic
-			 * broadcast behavior. Because, later, this transaction will atomic
-			 * multicast to all the groups.
-			 */
-			if (executionHistory.getWriteSet().size() == 0
-					&& executionHistory.getCreateSet().size() == 0)
-				return new HashSet<String>(0);
-
-			keys=manager.getPartitioner().generateKeysInAllGroups();
-			return keys;
-		} else if (target == ConcernedKeysTarget.SEND_VOTES) {
-			keys.addAll(executionHistory.getWriteSet().getKeys());
-			keys.addAll(executionHistory.getCreateSet().getKeys());
-			return keys;
-		} else {
-			keys=manager.getPartitioner().generateKeysInAllGroups();
-			return keys;
-		}
-	}
-
-	@Override
 	public Set<String> getVotersToCoordinator(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
@@ -258,7 +214,7 @@ public class SnapshotIsolation extends Consistency {
 	Object dummyObject=new Object();
 	
 	@Override
-	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes) {
+	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes) {
 		try{
 
 			if (manager.isProxy()){

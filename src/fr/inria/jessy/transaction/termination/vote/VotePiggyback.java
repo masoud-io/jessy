@@ -1,4 +1,4 @@
-package fr.inria.jessy.transaction.termination;
+package fr.inria.jessy.transaction.termination.vote;
 
 import java.io.Externalizable;
 import java.io.IOException;

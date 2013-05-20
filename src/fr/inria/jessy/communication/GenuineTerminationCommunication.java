@@ -8,7 +8,6 @@ import net.sourceforge.fractal.wanamcast.WanAMCastStream;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.termination.DistributedTermination;
 
 /**
  * This class provides a traditional genuine termination communication

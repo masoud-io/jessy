@@ -1,8 +1,8 @@
 
 
 
-node=("$1@access.grid5000.fr")
-sites=("nancy" "bordeaux"  "toulouse" "rennes" "lille" "grenoble" "luxembourg" "sophia" "lyon" "reims" "nancy") #"nancy"
+node=("$1@access-north.grid5000.fr")
+sites=("nancy" "bordeaux"  "toulouse" "rennes" "sophia" "lille" "grenoble") # "luxembourg" "lyon" "reims") #"nancy"
 #shfiles=("experience.sh" "jessy.sh")
 #jarfiles=(`ls *.jar | tr '\n' ' '`)
 #shfiles=(`ls *.sh | tr '\n' ' '`)
@@ -14,7 +14,7 @@ do
 scriptdir="/home/$1/${sites[i]}/jessy/scripts"
 
 echo "Deleting output files"
-ssh $1@access.grid5000.fr rm -rf /home/$1/${sites[i]}/jessy/scripts/*.fr*
+ssh $1@access-north.grid5000.fr rm -rf /home/$1/${sites[i]}/jessy/scripts/*.fr*
 
 echo "Sending to " ${sites[i]}
 
@@ -42,8 +42,8 @@ echo "Sending to " ${sites[i]}
 
 
 	scp ../../../jessy.jar $node:${scriptdir}
-	scp ../../Batelier/target/batelier-0.0.1-SNAPSHOT.jar $node:${scriptdir}/fractal.jar
+#	scp ../../Batelier/target/batelier-0.0.1-SNAPSHOT.jar $node:${scriptdir}/fractal.jar
 
-#		scp -v -r Loaded_YCSB/Sequential/2 $node:${scriptdir}
+#		scp -v -r Loaded_YCSB/Sequential/6 $node:${scriptdir}
 done
 

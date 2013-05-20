@@ -1,6 +1,7 @@
 package fr.inria.jessy.communication;
 
 import net.sourceforge.fractal.Learner;
+import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.multicast.MulticastStream;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
@@ -56,6 +57,10 @@ public class VoteMulticastWithFractal extends VoteMulticast{
 
 	}
 
+	public void sendVote(VoteMessage voteMessage,Group g) {
+		mCastStream.unicast(voteMessage, g.leader());
+	}
+	
 	@Override
 	public void close() {
 	}

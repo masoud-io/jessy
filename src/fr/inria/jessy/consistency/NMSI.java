@@ -12,16 +12,16 @@ import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
 
-public abstract class NonMonotonicSnapshotIsolation extends Consistency {
+public abstract class NMSI extends Consistency {
 	
 	protected static Logger logger = Logger
-			.getLogger(NonMonotonicSnapshotIsolation.class);
+			.getLogger(NMSI.class);
 
 	static{
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
 	}
 	
-	public NonMonotonicSnapshotIsolation(JessyGroupManager m, DataStore dataStore) {
+	public NMSI(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 	}
 

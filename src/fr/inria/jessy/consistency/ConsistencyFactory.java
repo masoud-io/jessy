@@ -4,6 +4,13 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.protocol.NMSI_DV_GC;
+import fr.inria.jessy.protocol.NMSI_GMUVector_GC;
+import fr.inria.jessy.protocol.PSI_VV_GC;
+import fr.inria.jessy.protocol.PStore;
+import fr.inria.jessy.protocol.Serrano;
+import fr.inria.jessy.protocol.US_DV_GC;
+import fr.inria.jessy.protocol.US_GMUVector_GC;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.utils.Configuration;
 
@@ -26,30 +33,30 @@ public class ConsistencyFactory {
 			return _instance;
 
 		if (consistencyTypeName.equals("nmsi")) {
-			_instance = new NonMonotonicSnapshotIsolationWithDependenceVector(m, dataStore);
+			_instance = new NMSI_DV_GC(m, dataStore);
 		} else if (consistencyTypeName.equals("nmsi2")) {
-			_instance = new NonMonotonicSnapshotIsolationWithGMUVector(m,
+			_instance = new NMSI_GMUVector_GC(m,
 					dataStore);
 		} else if (consistencyTypeName.equals("si")) {
 			//TODO
 			System.err.println("si with ab-cast is not yet implemented. Use si2 instead");
 //			_instance = new SnapshotIsolationWithBroadcast(dataStore);
 		} else if (consistencyTypeName.equals("si2")) {
-			_instance = new SnapshotIsolation(m, dataStore);
+			_instance = new Serrano(m, dataStore);
 		} else if (consistencyTypeName.equals("ser")) {
-			_instance = new Serializability(m, dataStore);
+			_instance = new PStore(m, dataStore);
 		} else if (consistencyTypeName.equals("rc")) {
-			_instance = new ReadComitted(m, dataStore);
+			_instance = new RC(m, dataStore);
 		} else if (consistencyTypeName.equals("psi")) {
-			_instance = new ParallelSnapshotIsalation(m, dataStore);
+			_instance = new PSI_VV_GC(m, dataStore);
 		} else if (consistencyTypeName.equals("us")) {
-			_instance = new UpdateSerializabilityWithDependenceVector(m, dataStore);
+			_instance = new US_DV_GC(m, dataStore);
 		} else if (consistencyTypeName.equals("us2")) {
-			_instance = new UpdateSerializabilityWithGMUVector(m, dataStore);
+			_instance = new US_GMUVector_GC(m, dataStore);
 		} else if (consistencyTypeName.equals("us3")) {
-			_instance = new UpdateSerializabilityWithDependenceVector(m, dataStore);
+			_instance = new US_DV_GC(m, dataStore);
 		} else if (consistencyTypeName.equals("nmsi3")) {
-			_instance = new NonMonotonicSnapshotIsolationWithDependenceVector(m, dataStore);
+			_instance = new NMSI_DV_GC(m, dataStore);
 		}
 		return _instance;
 	}

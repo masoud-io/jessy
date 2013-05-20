@@ -103,7 +103,7 @@ public class SequentialPartitioner extends Partitioner {
 	 *            a key
 	 * @return the replica group of <i>k</i>.
 	 */
-	private Group resolve(String key) {
+	public Group resolve(String key) {
 		int numericKey = 0;
 		String mkey = key.replaceAll("[^\\d]", "");
 		if (!mkey.equals("")) {

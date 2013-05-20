@@ -2,6 +2,8 @@ package fr.inria.jessy.communication;
 
 import java.util.Collection;
 
+import net.sourceforge.fractal.membership.Group;
+
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.VoteMessage;
@@ -45,6 +47,10 @@ public class VoteMulticastWithNetty extends VoteMulticast{
 			cManager.unicast(voteMessage, coordinatorSwid, coordinatorHost);
 		}
 
+	}
+	
+	public void sendVote(VoteMessage voteMessage,Group g) {
+		cManager.unicast(voteMessage, g.leader());
 	}
 	
 	private void multiCast(Object obj, Collection<String> dest){

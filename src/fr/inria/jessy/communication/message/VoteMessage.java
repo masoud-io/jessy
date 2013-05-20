@@ -4,7 +4,7 @@ import java.util.Set;
 
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.transaction.termination.Vote;
+import fr.inria.jessy.transaction.termination.vote.Vote;
 
 public class VoteMessage extends MulticastMessage {
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;

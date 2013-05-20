@@ -181,7 +181,7 @@ public class KeySpacePartitioner  extends Partitioner{
 	 * @param k a key
 	 * @return the replica group of <i>k</i>.
 	 */
-	private Group resolve(String k) {
+	public Group resolve(String k) {
 		String closest = closestRootkeyOf(k);
 		Group ret = rk2g.get(closest);
 		assert ret!=null;

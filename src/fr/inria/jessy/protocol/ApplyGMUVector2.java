@@ -1,18 +1,27 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.vector.GMUVector;
+import fr.inria.jessy.vector.GMUVector2;
 
-public class ApplyGMUVector implements Runnable{
+/**
+ * Used for SRDS submission
+ * 
+ * Used with NMSI and US with GC 
+ * 
+ *  
+ * @author msaeida
+ *
+ */
+public class ApplyGMUVector2 implements Runnable{
 
 	@SuppressWarnings("deprecation")
-	private GMUVector<String> dummyVector=new GMUVector<String>();
-	public static ConcurrentHashMap<Integer, GMUVector<String>> toBeAppliedVectors=new ConcurrentHashMap<Integer, GMUVector<String>>();
+	private GMUVector2<String> dummyVector=new GMUVector2<String>();
+	public static ConcurrentHashMap<Integer, GMUVector2<String>> toBeAppliedVectors=new ConcurrentHashMap<Integer, GMUVector2<String>>();
 	
-	public void applyCommittedGMUVector(Integer seqNo, GMUVector<String> vector){
+	public void applyCommittedGMUVector(Integer seqNo, GMUVector2<String> vector){
 		toBeAppliedVectors.put(seqNo, vector);
 	}
 	
@@ -43,13 +52,13 @@ public class ApplyGMUVector implements Runnable{
 					}
 				}
 			}
-			GMUVector<String> commitVC=toBeAppliedVectors.remove(appliedSeq++);
+			GMUVector2<String> commitVC=toBeAppliedVectors.remove(appliedSeq++);
 			if (commitVC.getMap().size()==0){
 				//this is dummyvector because of abort transaction. continue!
 				continue;
 			}
-			if (GMUVector.logCommitVC.size()==ConstantPool.GMUVECTOR_LOGCOMMITVC_SIZE)
-				GMUVector.logCommitVC.removeLast();
+			if (GMUVector2.logCommitVC.size()==ConstantPool.GMUVECTOR_LOGCOMMITVC_SIZE)
+				GMUVector2.logCommitVC.removeLast();
 
 			/*
 			 * If it is the first, we simply add, otherwise, we get the first, and update it with ours, and then put it back.
@@ -57,25 +66,25 @@ public class ApplyGMUVector implements Runnable{
 			 * Old version of object has a key starts with {@link GMUVector.versionPrefix}
 			 */
 			try{
-				if (GMUVector.logCommitVC.size()>0){
-					GMUVector<String> finalVector;
-					finalVector=GMUVector.logCommitVC.getFirst().clone();
-					finalVector.updateAndRemove(commitVC, GMUVector.versionPrefix);
+				if (GMUVector2.logCommitVC.size()>0){
+					GMUVector2<String> finalVector;
+					finalVector=GMUVector2.logCommitVC.getFirst().clone();
+					finalVector.updateAndRemove(commitVC, GMUVector2.versionPrefix);
 					Iterator<String> itr=finalVector.getMap().keySet().iterator();
 					while (itr.hasNext()){
-						if (itr.next().startsWith(GMUVector.versionPrefix))
+						if (itr.next().startsWith(GMUVector2.versionPrefix))
 							itr.remove();
 					}
-					GMUVector.logCommitVC.addFirst(finalVector);
+					GMUVector2.logCommitVC.addFirst(finalVector);
 				}
 				else{
 					Iterator<String> itr=commitVC.getMap().keySet().iterator();
 					while (itr.hasNext()){
-						if (itr.next().startsWith(GMUVector.versionPrefix))
+						if (itr.next().startsWith(GMUVector2.versionPrefix))
 							itr.remove();
 					}
 					
-					GMUVector.logCommitVC.addFirst(commitVC);
+					GMUVector2.logCommitVC.addFirst(commitVC);
 				}
 			}
 			catch(Exception ex){

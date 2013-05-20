@@ -15,18 +15,24 @@ import com.sleepycat.persist.model.Persistent;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.persistence.FilePersistence;
+import fr.inria.jessy.protocol.ApplyGMUVector2;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 
 /**
- * Require a vector of size of number of processes
+ * Used for SRDS submission
  * 
- * @author Masoud Saeida Ardekani This class implements Vector exactly introduced in [Peluso2012].
+ * Used with NMSI and US with GC
+ * 
+ * Requires a Vector of size of number of groups!!!
+ * 
+ * @author Masoud Saeida Ardekani This class implements Vector used in
+ *         [Peluso2012].
  * 
  */
 
 @Persistent
-public class GMUVector<K> extends Vector<K> implements Externalizable {
+public class GMUVector2<K> extends Vector<K> implements Externalizable {
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
 
@@ -35,38 +41,47 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	 */
 	public static AtomicInteger lastPrepSC;
 
-	public static LinkedBlockingDeque<GMUVector<String>> logCommitVC;
+	public static LinkedBlockingDeque<GMUVector2<String>> logCommitVC;
+	
+	public static GMUVector2<String> mostRecentVC;
 	
 	private static JessyGroupManager manager;
 	
+	public static final String versionPrefix="user";
+
 	public synchronized static void init(JessyGroupManager m){
 		if(lastPrepSC!=null)
 			return;
 		manager=m;
 		if (FilePersistence.loadFromDisk){
 			lastPrepSC=(AtomicInteger)FilePersistence.readObject("GMUVector.lastPrepSC");
+			mostRecentVC=(GMUVector2<String>) FilePersistence.readObject("GMUVector.mostRecentVC");
 		}
 		else
 		{
 			lastPrepSC = new AtomicInteger(0);
+			mostRecentVC = new GMUVector2<String>(m.getMyGroup().name(), 0);
 		}
 		
-		logCommitVC=  new LinkedBlockingDeque<GMUVector<String>>(ConstantPool.GMUVECTOR_LOGCOMMITVC_SIZE);
+		logCommitVC=  new LinkedBlockingDeque<GMUVector2<String>>(ConstantPool.GMUVECTOR_LOGCOMMITVC_SIZE);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static boolean prepareRead(ReadRequest rr){
-		String myKey=""+manager.getSourceId();
+		String myKey=manager.getMyGroup().name();
 		CompactVector<String> other=rr.getReadSet();
 		
-		if (GMUVector.logCommitVC.peekFirst()==null){
+		if (GMUVector2.logCommitVC.peekFirst()==null){
 			return true;
 		}
 		
 		//We have not received all update transaction.
 		//We are not sure to read or not, thus we try another replica
 		if (other.getValue(myKey)!=null  &&
-				other.getValue(myKey) > GMUVector.logCommitVC.peekFirst().getValue(myKey)){
+				other.getValue(myKey)-2 > GMUVector2.logCommitVC.peekFirst().getSelfValue() ){
+//			if ((other.getValue(myKey) - GMUVector.logCommitVC.peekFirst().getSelfValue())>100){
+//				ApplyGMUVector.appliedSeq++;
+//			}
 			return false;
 		}
 		
@@ -76,13 +91,13 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 			/*
 			 * this is the first read because hasRead is not yet initialize.
 			 */
-			rr.getReadSet().setMap(GMUVector.logCommitVC.peekFirst().getMap());
+			rr.getReadSet().setMap(GMUVector2.logCommitVC.peekFirst().getMap());
 		} else if (!hasRead.contains(myKey)) {
 			/*
 			 * line 3,4 of Algorithm 2
 			 */
-			Iterator<GMUVector<String>> itr=GMUVector.logCommitVC.iterator();
-			GMUVector<String> vector=null;
+			Iterator<GMUVector2<String>> itr=GMUVector2.logCommitVC.iterator();
+			GMUVector2<String> vector=null;
 			
 			boolean found=false;;
 			while (itr.hasNext()){
@@ -116,7 +131,7 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void postRead(ReadRequest rr, JessyEntity entity){
 		try{
-			int seqNo=entity.getLocalVector().getValue(""+manager.getSourceId());
+			int seqNo=entity.getLocalVector().getValue(manager.getMyGroup().name());
 			entity.getLocalVector().setMap((HashMap<String, Integer>) rr.getReadSet().getMap().clone());
 			if (seqNo>0)
 				entity.getLocalVector().setValue(entity.getKey(), seqNo);
@@ -131,10 +146,10 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	 * Needed for BerkeleyDB
 	 */
 	@Deprecated
-	public GMUVector(){
+	public GMUVector2(){
 	}
 	
-	public GMUVector(K selfKey, Integer value) {
+	public GMUVector2(K selfKey, Integer value) {
 		super(selfKey);
 		super.setValue(selfKey, value);
 	}
@@ -156,8 +171,8 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	}
 
 	@Override
-	public GMUVector<K> clone() {
-		return (GMUVector<K>) super.clone();
+	public GMUVector2<K> clone() {
+		return (GMUVector2<K>) super.clone();
 	}
 
 	public void readExternal(ObjectInput in) throws IOException,

@@ -8,7 +8,7 @@ import java.io.ObjectOutputStream;
 
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.consistency.ConsistencyFactory;
-import fr.inria.jessy.vector.GMUVector;
+import fr.inria.jessy.vector.GMUVector2;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.VersionVector;
 
@@ -102,8 +102,8 @@ public class FilePersistence {
 		else if (ConsistencyFactory.getConsistencyTypeName().equals("si2") || ConsistencyFactory.getConsistencyTypeName().equals("si"))
 			writeObject(ScalarVector.lastCommittedTransactionSeqNumber, "ScalarVector.lastCommittedTransactionSeqNumber");
 		else if (ConsistencyFactory.getConsistencyTypeName().equals("nmsi2") || ConsistencyFactory.getConsistencyTypeName().equals("us2")){
-			writeObject(GMUVector.lastPrepSC, "GMUVector.lastPrepSC");
-			writeObject(GMUVector.mostRecentVC, "GMUVector.mostRecentVC");			
+			writeObject(GMUVector2.lastPrepSC, "GMUVector.lastPrepSC");
+			writeObject(GMUVector2.mostRecentVC, "GMUVector.mostRecentVC");			
 		}
 		
 	}

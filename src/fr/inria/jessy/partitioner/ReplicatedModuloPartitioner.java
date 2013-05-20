@@ -192,4 +192,10 @@ public class ReplicatedModuloPartitioner extends Partitioner{
 		return null;
 	}
 
+	@Override
+	public Group resolve(String key) {
+		//TODO
+		return null;
+	}
+
 }

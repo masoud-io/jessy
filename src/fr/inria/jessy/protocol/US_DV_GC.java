@@ -1,7 +1,10 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
+import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.consistency.US;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -9,9 +12,22 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.vector.Vector;
 
-public class UpdateSerializabilityWithDependenceVector extends UpdateSerializability {
+/**
+ * 
+ * CONS: US
+ * Vector: DependenceVector
+ * Atomic Commitment: GroupCommunication
+ * 
+ * @author Masoud Saeida Ardekani
+ *
+ */
+public class US_DV_GC extends US {
 
-	public UpdateSerializabilityWithDependenceVector(JessyGroupManager m, DataStore dateStore) {
+	static{
+		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
+	}
+	
+	public US_DV_GC(JessyGroupManager m, DataStore dateStore) {
 		super(m, dateStore);
 	}
 	

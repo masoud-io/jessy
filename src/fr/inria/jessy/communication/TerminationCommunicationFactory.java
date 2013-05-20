@@ -6,7 +6,6 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.ConstantPool.GENUINE_TERMINATION_MODE;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.consistency.ConsistencyFactory;
-import fr.inria.jessy.transaction.termination.DistributedTermination;
 
 /**
  * This class provides a factory for generating the {@link TerminationCommunication} needed in {@link DistributedTermination}

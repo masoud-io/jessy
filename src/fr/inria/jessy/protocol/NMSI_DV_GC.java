@@ -1,10 +1,11 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 
 import static fr.inria.jessy.vector.ValueVector.ComparisonResult.EQUAL_TO;
 import static fr.inria.jessy.vector.ValueVector.ComparisonResult.GREATER_THAN;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
+import fr.inria.jessy.consistency.NMSI;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -19,9 +20,9 @@ import fr.inria.jessy.vector.Vector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class NonMonotonicSnapshotIsolationWithDependenceVector extends NonMonotonicSnapshotIsolation {
+public class NMSI_DV_GC extends NMSI {
 
-	public NonMonotonicSnapshotIsolationWithDependenceVector(JessyGroupManager m, DataStore dataStore) {
+	public NMSI_DV_GC(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 	}
 

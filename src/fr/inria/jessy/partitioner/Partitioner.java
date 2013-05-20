@@ -18,6 +18,8 @@ public abstract class Partitioner {
 	public abstract <E extends JessyEntity> Set<Group> resolve(
 			ReadRequest<E> readRequest);
 
+	public abstract Group resolve(String key);
+	
 	public abstract boolean isLocal(String k);
 
 	public abstract Set<String> resolveNames(Set<String> keys);

@@ -1,5 +1,6 @@
 package fr.inria.jessy.communication;
 
+import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.communication.message.VoteMessage;
 
 public abstract class VoteMulticast {
@@ -17,6 +18,8 @@ public abstract class VoteMulticast {
 	public abstract void sendVote(VoteMessage voteMessage,
 			boolean isCertifyAtCoordinator, int coordinatorSwid,
 			String coordinatorHost);
+	
+	public abstract void sendVote(VoteMessage voteMessage,Group g) ;
 	
 	public abstract void close();
 }

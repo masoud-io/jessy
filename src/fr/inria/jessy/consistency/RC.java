@@ -9,13 +9,13 @@ import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
 
-public class ReadComitted extends Consistency {
+public class RC extends Consistency {
 
 	static{
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
 	}
 	
-	public ReadComitted(JessyGroupManager m, DataStore store) {
+	public RC(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		Consistency.SEND_READSET_DURING_TERMINATION=false;
 	}
