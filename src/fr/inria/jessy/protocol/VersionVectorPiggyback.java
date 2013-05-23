@@ -20,7 +20,7 @@ import fr.inria.jessy.vector.VersionVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class ParallelSnapshotIsolationPiggyback implements Externalizable {
+public class VersionVectorPiggyback implements Externalizable {
 
 	private static final long serialVersionUID = ConstantPool.JESSY_MID;
 	
@@ -49,10 +49,10 @@ public class ParallelSnapshotIsolationPiggyback implements Externalizable {
 	private boolean isApplied =false;
 
 	@Deprecated
-	public ParallelSnapshotIsolationPiggyback() {
+	public VersionVectorPiggyback() {
 	}
 
-	public ParallelSnapshotIsolationPiggyback(String wCoordinatorGroupName,
+	public VersionVectorPiggyback(String wCoordinatorGroupName,
 			Integer sequenceNumber, ExecutionHistory executionHistory) {
 		this.wCoordinatorGroupName = wCoordinatorGroupName;
 		this.sequenceNumber = sequenceNumber;
@@ -85,11 +85,11 @@ public class ParallelSnapshotIsolationPiggyback implements Externalizable {
 	}
 
 	
-	public static Comparator<ParallelSnapshotIsolationPiggyback> ParallelSnapshotIsolationPiggybackComparator=new Comparator<ParallelSnapshotIsolationPiggyback>(){
+	public static Comparator<VersionVectorPiggyback> ParallelSnapshotIsolationPiggybackComparator=new Comparator<VersionVectorPiggyback>(){
 
 		@Override
-		public int compare(ParallelSnapshotIsolationPiggyback o1,
-				ParallelSnapshotIsolationPiggyback o2) {
+		public int compare(VersionVectorPiggyback o1,
+				VersionVectorPiggyback o2) {
 			
 			return o1.sequenceNumber.compareTo(o2.sequenceNumber);
 		}
@@ -120,7 +120,7 @@ public class ParallelSnapshotIsolationPiggyback implements Externalizable {
 		this.isApplied = isApplied;
 	}
 
-	public static Comparator<ParallelSnapshotIsolationPiggyback> getParallelSnapshotIsolationPiggybackComparator() {
+	public static Comparator<VersionVectorPiggyback> getParallelSnapshotIsolationPiggybackComparator() {
 		return ParallelSnapshotIsolationPiggybackComparator;
 	}
 

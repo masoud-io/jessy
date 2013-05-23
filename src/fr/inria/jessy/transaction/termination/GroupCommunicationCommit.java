@@ -1,10 +1,14 @@
 package fr.inria.jessy.transaction.termination;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
+import fr.inria.jessy.transaction.TransactionHandler;
+import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 
 public class GroupCommunicationCommit extends AtomicCommit{
 
@@ -55,7 +59,7 @@ public class GroupCommunicationCommit extends AtomicCommit{
 	}
 	
 	@Override
-	public void setVoters(TerminateTransactionRequestMessage msg ,Set<String> voteReceivers, Set<String> voteSenders){
+	public void setVoters(TerminateTransactionRequestMessage msg ,Set<String> voteReceivers, AtomicBoolean voteReceiver, Set<String> voteSenders, AtomicBoolean voteSender){
 			voteReceivers =	jessy.partitioner.resolveNames(jessy
 					.getConsistency().getConcerningKeys(
 							msg.getExecutionHistory(),
@@ -65,10 +69,18 @@ public class GroupCommunicationCommit extends AtomicCommit{
 					.getConsistency().getConcerningKeys(
 							msg.getExecutionHistory(),
 							ConcernedKeysTarget.SEND_VOTES)); 
+			
+			voteReceiver.set(voteReceivers.contains(group.name()));
+			voteSender.set(voteSenders.contains(group.name()));
 	}
 	
 	@Override
 	public void sendVote(VoteMessage voteMessage, TerminateTransactionRequestMessage msg){
 		voteMulticast.sendVote(voteMessage, msg.getExecutionHistory().isCertifyAtCoordinator(), msg.getExecutionHistory().getCoordinatorSwid(), msg.getExecutionHistory().getCoordinatorHost());
+	}
+
+	@Override
+	public VotingQuorum getNewVotingQuorum(TransactionHandler th) {
+		return new GroupVotingQuorum(th);
 	}
 }

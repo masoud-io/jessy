@@ -14,16 +14,15 @@ import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.consistency.NMSI;
-import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
+import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 import fr.inria.jessy.vector.GMUVector2;
 
 /**
@@ -140,7 +139,7 @@ public class NMSI_GMUVector_GC extends NMSI {
 	}
 
 	@Override
-	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
 				Set<String> voteReceivers =	manager.getPartitioner().resolveNames(getConcerningKeys(

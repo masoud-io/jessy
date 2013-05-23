@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.consistency.ConsistencyFactory;
+import fr.inria.jessy.consistency.ProtocolFactory;
 import fr.inria.jessy.vector.GMUVector2;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.VersionVector;
@@ -37,8 +37,8 @@ public class FilePersistence {
 		//If the group size is 1, we add underscore to the path (thus the path is 1_), because the scripts needs to write to a file named "1".
 		if (numberOfgroups.equals("1"))
 			numberOfgroups=numberOfgroups + "_";
-		String consistency = ConsistencyFactory.getConsistencyTypeName();
-		String result=path + numberOfgroups + "/" + consistency + "/" ;
+		String persistenceName = ProtocolFactory.getPersistenceName();
+		String result=path + numberOfgroups + "/" + persistenceName + "/" ;
 		File file=new File(result);
 		if (!file.exists())
 			file.mkdirs();
@@ -97,11 +97,11 @@ public class FilePersistence {
 	 */
 	public static void saveJessy() {
 		System.out.println("Saving Jessy ...");
-		if (ConsistencyFactory.getConsistencyTypeName().equals("psi"))
+		if (ProtocolFactory.getProtocolName().equals("psi"))
 			writeObject(VersionVector.committedVTS, "VersionVector.committedVTS");
-		else if (ConsistencyFactory.getConsistencyTypeName().equals("si2") || ConsistencyFactory.getConsistencyTypeName().equals("si"))
+		else if (ProtocolFactory.getProtocolName().equals("si2") || ProtocolFactory.getProtocolName().equals("si"))
 			writeObject(ScalarVector.lastCommittedTransactionSeqNumber, "ScalarVector.lastCommittedTransactionSeqNumber");
-		else if (ConsistencyFactory.getConsistencyTypeName().equals("nmsi2") || ConsistencyFactory.getConsistencyTypeName().equals("us2")){
+		else if (ProtocolFactory.getProtocolName().equals("nmsi2") || ProtocolFactory.getProtocolName().equals("us2")){
 			writeObject(GMUVector2.lastPrepSC, "GMUVector.lastPrepSC");
 			writeObject(GMUVector2.mostRecentVC, "GMUVector.mostRecentVC");			
 		}

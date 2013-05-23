@@ -2,22 +2,20 @@ package fr.inria.jessy.transaction.termination;
 
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.sourceforge.fractal.membership.Group;
-
-import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
-import fr.inria.jessy.ConstantPool.CAST_MODE;
 import fr.inria.jessy.communication.TerminationCommunication;
 import fr.inria.jessy.communication.TerminationCommunicationFactory;
 import fr.inria.jessy.communication.VoteMulticast;
-import fr.inria.jessy.communication.VoteMulticastWithFractal;
 import fr.inria.jessy.communication.VoteMulticastWithNetty;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
+import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
-import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
+import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 
 public abstract class AtomicCommit {
 
@@ -37,12 +35,7 @@ public abstract class AtomicCommit {
 		
 		terminationCommunication=TerminationCommunicationFactory.initAndGetConsistency(jessy.manager.getMyGroup(), termination,termination, jessy);
 		
-		if (ConstantPool.JESSY_VOTING_PHASE_MULTICAST_MODE==CAST_MODE.FRACTAL){
-			voteMulticast=new VoteMulticastWithFractal(termination,jessy);
-		}
-		else{
-			voteMulticast=new VoteMulticastWithNetty(jessy, termination);
-		}
+		voteMulticast=new VoteMulticastWithNetty(jessy, termination);
 		
 		group=jessy.manager.getMyGroup();
 	}
@@ -75,23 +68,12 @@ public abstract class AtomicCommit {
 	 * @param voteReceivers 
 	 * @param voteSenders
 	 */
-	public abstract void setVoters(TerminateTransactionRequestMessage msg ,Set<String> voteReceivers, Set<String> voteSenders);
+	public abstract void setVoters(TerminateTransactionRequestMessage msg ,Set<String> voteReceivers, AtomicBoolean voteReceiver, Set<String> voteSenders, AtomicBoolean voteSender);
 	
 	
 	public void closeAtomicCommit(){
 		voteMulticast.close();
 	}
-	
-	
-//	public HashSet<String> getDestinationGroups(Set<String> concernedKeys){
-//		return jessy.partitioner.resolveNames(concernedKeys);
-//		HashSet<String> destGroups = new HashSet<String>();
-//		
-//		destGroups
-//				.addAll(jessy.partitioner.resolveNames(concernedKeys));
-//		
-//		return destGroups;
-//	}
 	
 	
 	/**
@@ -100,7 +82,7 @@ public abstract class AtomicCommit {
 	 * @param concernedKeys
 	 * @return
 	 */
-	public GroupVotingQuorum broadcastTransaction(ExecutionHistory executionHistory, Set<String> destGroups){
+	public VotingQuorum broadcastTransaction(ExecutionHistory executionHistory, Set<String> destGroups){
 		
 		if (destGroups.contains(jessy.manager.getMyGroup().name())) {
 			executionHistory.setCertifyAtCoordinator(true);
@@ -114,7 +96,7 @@ public abstract class AtomicCommit {
 
 		termination.votingQuorums.put(
 				executionHistory.getTransactionHandler(),
-				new GroupVotingQuorum(executionHistory
+				getNewVotingQuorum(executionHistory
 						.getTransactionHandler()));
 
 		/*
@@ -122,7 +104,7 @@ public abstract class AtomicCommit {
 		 * the votingQuorums might be garbage collected by another
 		 * thread after multicasting this transaction.
 		 */
-		GroupVotingQuorum vq = termination.votingQuorums.get(executionHistory
+		VotingQuorum vq = termination.votingQuorums.get(executionHistory
 				.getTransactionHandler());
 
 		/*
@@ -139,7 +121,8 @@ public abstract class AtomicCommit {
 	public abstract void sendVote(VoteMessage voteMessage, TerminateTransactionRequestMessage msg);
 	
 	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
-		
+		return;
 	}
 	
+	public abstract VotingQuorum getNewVotingQuorum(TransactionHandler th);
 }

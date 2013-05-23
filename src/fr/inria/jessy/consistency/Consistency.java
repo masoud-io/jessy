@@ -15,8 +15,9 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
-import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
+import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.vote.Vote;
+import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 import fr.inria.jessy.vector.VectorFactory;
 
 public abstract class Consistency {
@@ -146,7 +147,7 @@ public abstract class Consistency {
 	 * @param quorumes
 	 * @param vote
 	 */
-	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes) {
+	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes) {
 		return;
 	}
 
@@ -218,7 +219,7 @@ public abstract class Consistency {
 	 * 	@return true if the transaction should be inserted in the am-Delivered list, and a CertifyAndVote task should be created. 
 	 * Otherwise false. 
 	 */
-	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		return true;
 	}
 	
@@ -229,6 +230,5 @@ public abstract class Consistency {
 	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
 		
 	}
-
 
 }

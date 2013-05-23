@@ -34,7 +34,9 @@ public class GroupVotingQuorum extends VotingQuorum{
 		}
 		
 		notified=true;
-		notifyAll();
+		synchronized(this){
+			notifyAll();
+		}
 	}
 
 	/**
@@ -49,7 +51,9 @@ public class GroupVotingQuorum extends VotingQuorum{
 			   && voters.size() < groups.size() ){
 			try {
 				notified=false;
-				wait(ConstantPool.JESSY_VOTING_QUORUM_TIMEOUT);
+				synchronized(this){
+					wait(ConstantPool.JESSY_VOTING_QUORUM_TIMEOUT);
+				}
 				if (!notified){
 					return TransactionState.ABORTED_BY_TIMEOUT;
 				}

@@ -1,22 +1,11 @@
 package fr.inria.jessy.consistency;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.sourceforge.fractal.Learner;
-import net.sourceforge.fractal.membership.Group;
 import net.sourceforge.fractal.utils.CollectionUtils;
-import net.sourceforge.fractal.utils.ExecutorPool;
-
-import org.apache.log4j.Logger;
-
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.communication.MessagePropagation;
-import fr.inria.jessy.protocol.ParallelSnapshotIsolationApplyPiggyback;
-import fr.inria.jessy.protocol.ParallelSnapshotIsolationPiggyback;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
@@ -34,34 +23,8 @@ import fr.inria.jessy.transaction.TransactionTouchedKeys;
  */
 public abstract class PSI extends Consistency implements Learner {
 
-	private ExecutorPool pool = ExecutorPool.getInstance();
-
-	private static Logger logger = Logger
-			.getLogger(PSI.class);
-
-	static {
-		votePiggybackRequired = true;
-		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
-	}
-
-	private MessagePropagation propagation;
-	
-	private HashMap<String,ParallelSnapshotIsolationApplyPiggyback> applyPiggyback;
-
-	private ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback> receivedPiggybacks;
-
 	public PSI(JessyGroupManager m, DataStore store) {
 		super(m, store);
-		receivedPiggybacks = new ConcurrentHashMap<UUID, ParallelSnapshotIsolationPiggyback>();
-		propagation = new MessagePropagation(this,m);
-		
-		applyPiggyback=new HashMap<String, ParallelSnapshotIsolationApplyPiggyback>();
-		
-		for(Group group:manager.getReplicaGroups()){
-			ParallelSnapshotIsolationApplyPiggyback task=new ParallelSnapshotIsolationApplyPiggyback();
-			pool.submit(task);
-			applyPiggyback.put(group.name(),task);
-		}
 	}
 
 	/**

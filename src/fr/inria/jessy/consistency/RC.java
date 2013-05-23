@@ -8,6 +8,9 @@ import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
+import fr.inria.jessy.vector.NullVector;
+import fr.inria.jessy.vector.PartitionVector;
+import fr.inria.jessy.vector.Vector;
 
 public class RC extends Consistency {
 

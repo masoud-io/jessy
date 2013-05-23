@@ -17,7 +17,7 @@ import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.consistency.Consistency;
-import fr.inria.jessy.consistency.ConsistencyFactory;
+import fr.inria.jessy.consistency.ProtocolFactory;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.DataStoreFactory;
 import fr.inria.jessy.store.JessyEntity;
@@ -88,7 +88,7 @@ public abstract class Jessy {
 
 		manager = createJessyGroupManager();
 		dataStore = DataStoreFactory.getDataStoreInstance();
-		consistency = ConsistencyFactory.initConsistency(manager, dataStore);
+		consistency = ProtocolFactory.initProtocol(manager, dataStore);
 
 		handler2executionHistory = new NonBlockingHashtable<TransactionHandler, ExecutionHistory>();
 
@@ -100,7 +100,7 @@ public abstract class Jessy {
 
 		manager = m;
 		dataStore = DataStoreFactory.getDataStoreInstance();
-		consistency = ConsistencyFactory.initConsistency(manager, dataStore);
+		consistency = ProtocolFactory.initProtocol(manager, dataStore);
 
 		handler2executionHistory = new NonBlockingHashtable<TransactionHandler, ExecutionHistory>();
 

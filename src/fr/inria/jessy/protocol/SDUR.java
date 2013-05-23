@@ -24,7 +24,7 @@ import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
-import fr.inria.jessy.consistency.PSI;
+import fr.inria.jessy.consistency.SER;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -38,22 +38,22 @@ import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VersionVector;
 
 /**
- * PSI implementation according to [Serrano2011] paper with one exception. 
- * I.e., Uses group communication instead of two phase commit. 
+ * SDUR implementation according to [SciasciaDSN2012] paper. 
+ * It uses Walter vector implementation, and differs it by extending SER and not PSI.
  * 
- * CONS: PSI
+ * CONS: SER
  * Vector: VersionVector
- * Atomic Commitment: GroupCommunication
+ * Atomic Commitment: GroupCommunication without acyclic
  * 
  * @author Masoud Saeida Ardekani
  * 
  */
-public class PSI_VV_GC extends PSI implements Learner {
+public class SDUR extends SER implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
 	private static Logger logger = Logger
-			.getLogger(PSI_VV_GC.class);
+			.getLogger(SDUR.class);
 
 	static {
 		votePiggybackRequired = true;
@@ -66,7 +66,7 @@ public class PSI_VV_GC extends PSI implements Learner {
 
 	private ConcurrentHashMap<UUID, VersionVectorPiggyback> receivedPiggybacks;
 
-	public PSI_VV_GC(JessyGroupManager m, DataStore store) {
+	public SDUR(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		receivedPiggybacks = new ConcurrentHashMap<UUID, VersionVectorPiggyback>();
 		propagation = new MessagePropagation(this,m);
@@ -423,5 +423,5 @@ public class PSI_VV_GC extends PSI implements Learner {
 					(VersionVectorPiggyback) vote
 							.getVotePiggyBack().getPiggyback());
 	}
-
+	
 }

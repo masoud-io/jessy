@@ -15,17 +15,17 @@ import fr.inria.jessy.vector.VersionVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
+public class VersionVectorApplyPiggyback implements Runnable{
 
-	private static Logger logger = Logger.getLogger(ParallelSnapshotIsolationApplyPiggyback.class);
+	private static Logger logger = Logger.getLogger(VersionVectorApplyPiggyback.class);
 	
-	private PriorityBlockingQueue<ParallelSnapshotIsolationPiggyback> piggybackQueue;
+	private PriorityBlockingQueue<VersionVectorPiggyback> piggybackQueue;
 	
-	public ParallelSnapshotIsolationApplyPiggyback() {
-		piggybackQueue=new PriorityBlockingQueue<ParallelSnapshotIsolationPiggyback>(11, ParallelSnapshotIsolationPiggyback.ParallelSnapshotIsolationPiggybackComparator);
+	public VersionVectorApplyPiggyback() {
+		piggybackQueue=new PriorityBlockingQueue<VersionVectorPiggyback>(11, VersionVectorPiggyback.ParallelSnapshotIsolationPiggybackComparator);
 	}
 
-	public void asyncApply(ParallelSnapshotIsolationPiggyback piggyback) {
+	public void asyncApply(VersionVectorPiggyback piggyback) {
 		/*
 		 * If group size is greater than 1, then it can be the case where this node 
 		 * has already received a piggyback from another member of the group.
@@ -38,7 +38,7 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 		addToQueue(piggyback);
 	}
 
-	public void syncApply(ParallelSnapshotIsolationPiggyback piggyback) {
+	public void syncApply(VersionVectorPiggyback piggyback) {
 		if (VersionVector.committedVTS.getValue(piggyback.getwCoordinatorGroupName()) > piggyback.getSequenceNumber()) {
 			/*
 			 * If it has been applied before, ignore this one.
@@ -61,7 +61,7 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 		}
 	}
 	
-	private void addToQueue(ParallelSnapshotIsolationPiggyback pb){
+	private void addToQueue(VersionVectorPiggyback pb){
 		piggybackQueue.offer(pb);
 		
 		synchronized(piggybackQueue){
@@ -72,7 +72,7 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 	@Override
 	public void run() {
 //		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-		ParallelSnapshotIsolationPiggyback pb;
+		VersionVectorPiggyback pb;
 		while (true){
 			try {
 				pb = piggybackQueue.take();
@@ -95,7 +95,7 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 	 *            TODO waiting on committedVTS might not be SAFE. Talk with
 	 *            Pierre about it!
 	 */
-	private void updateCommittedVTS(ParallelSnapshotIsolationPiggyback pb) {
+	private void updateCommittedVTS(VersionVectorPiggyback pb) {
 		try{
 
 
@@ -175,7 +175,7 @@ public class ParallelSnapshotIsolationApplyPiggyback implements Runnable{
 		}
 	}
 	
-	private void setAndNotifyParallelSnapshotIsolationPiggyback(ParallelSnapshotIsolationPiggyback pb){
+	private void setAndNotifyParallelSnapshotIsolationPiggyback(VersionVectorPiggyback pb){
 		synchronized (pb){
 			pb.setApplied(true);
 			pb.notify();

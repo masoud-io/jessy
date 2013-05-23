@@ -56,6 +56,8 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static boolean prepareRead(ReadRequest rr){
+		if (true)
+			return true;
 		String myKey=""+manager.getSourceId();
 		CompactVector<String> other=rr.getReadSet();
 		
@@ -119,7 +121,7 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 			int seqNo=entity.getLocalVector().getValue(""+manager.getSourceId());
 			entity.getLocalVector().setMap((HashMap<String, Integer>) rr.getReadSet().getMap().clone());
 			if (seqNo>0)
-				entity.getLocalVector().setValue(entity.getKey(), seqNo);
+				entity.getLocalVector().setValue(""+manager.getSourceId(), seqNo);
 		}
 		catch(Exception ex){
 			ex.printStackTrace();
@@ -177,7 +179,7 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 		 */
 		if (object == null)
 			object = new HashMap<K, Boolean>(4);
-		((HashMap<K, Boolean>) object).put(selfKey, true);
+		((HashMap<String, Boolean>) object).put(""+manager.getSourceId(), true);
 	}
 
 	@Override

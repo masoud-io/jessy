@@ -11,6 +11,7 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.vector.DependenceVector;
 import fr.inria.jessy.vector.ValueVector.ComparisonResult;
 import fr.inria.jessy.vector.Vector;
 
@@ -117,7 +118,7 @@ public class NMSI_DV_GC extends NMSI {
 		
 		// updatedVector is a new vector. It will be used as a new
 		// vector for all modified vectors.
-		Vector<String> updatedVector = vfactory.getVector("");
+		Vector<String> updatedVector = new DependenceVector<String>("");
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
 
@@ -127,6 +128,5 @@ public class NMSI_DV_GC extends NMSI {
 		}
 
 	}
-
 
 }

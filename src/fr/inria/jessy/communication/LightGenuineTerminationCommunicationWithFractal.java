@@ -48,17 +48,32 @@ public class LightGenuineTerminationCommunicationWithFractal extends Termination
 	
 	protected MulticastStream mCastStream;
 	
+	/**
+	 * 
+	 * @param group
+	 * @param fractalLearner
+	 * @param nettyLearner
+	 * @param j
+	 * @param cyclicMulticast if true, the amcast primitive will not ensure acyclic property.
+	 * This is useful for S-DUR implementation.
+	 */
 	public LightGenuineTerminationCommunicationWithFractal(
 			Group group, 
 			Learner fractalLearner, UnicastLearner nettyLearner,
-			DistributedJessy j) {
+			DistributedJessy j, boolean cyclicMulticast) {
 		super(j, fractalLearner,nettyLearner);
 		mCastStream = j.manager.fractal.getOrCreateMulticastStream(
 				ConstantPool.JESSY_VOTE_STREAM, manager.getMyGroup().name());
 		
 		mCastStream.registerLearner("TerminateTransactionRequestMessage", this);
 		
-		aMCastStream = j.manager.fractal.getOrCreateWanAMCastStream(group.name(), group.name());
+		if (cyclicMulticast){
+			aMCastStream = j.manager.fractal.getOrCreateWanNonAcyclicAMCastStream(group.name(), group.name());
+		}
+		else{
+			aMCastStream = j.manager.fractal.getOrCreateWanAMCastStream(group.name(), group.name());	
+		}
+		
 		aMCastStream.registerLearner("TransactionHandlerMessage", this);
 		aMCastStream.start();
 		

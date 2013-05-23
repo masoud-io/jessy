@@ -1,6 +1,7 @@
 package fr.inria.jessy.transaction.termination;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.UUID;
@@ -9,6 +10,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
@@ -22,6 +24,7 @@ import org.jboss.netty.channel.Channel;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.UnicastLearner;
@@ -29,13 +32,13 @@ import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
-import fr.inria.jessy.consistency.ConsistencyFactory;
+import fr.inria.jessy.consistency.ProtocolFactory;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
-import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
-import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.transaction.termination.vote.Vote;
+import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 
 /**
  * This class is responsible for sending transactions to remote replicas,
@@ -65,7 +68,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	/**
 	 * VotingQuorums for processing transactions.
 	 */
-	protected ConcurrentHashMap<TransactionHandler, GroupVotingQuorum> votingQuorums;
+	protected ConcurrentHashMap<TransactionHandler, VotingQuorum> votingQuorums;
 
 	/**
 	 * Atomically delivered but not processed transactions. This list is to ensure the certification safety and 
@@ -91,6 +94,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	BlockingQueue<TerminateTransactionRequestMessage> amQueue=new LinkedBlockingQueue<TerminateTransactionRequestMessage>();
 	
 	private AtomicCommit atomicCommit;
+	private String voterName;
 		
 	static {
 		readOnlyCertificationLatency = new ValueRecorder(
@@ -124,7 +128,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		atomicDeliveredMessages = new LinkedList<TerminateTransactionRequestMessage>();
 		
-		votingQuorums = new ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>();
+		votingQuorums = new ConcurrentHashMap<TransactionHandler, VotingQuorum>();
 
 		terminated = new ConcurrentLinkedHashMap.Builder<UUID, Object>()
 				.maximumWeightedCapacity(ConstantPool.JESSY_TERMINATED_TRANSACTIONS_LOG_SIZE)
@@ -133,6 +137,15 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		if (!jessy.getConsistency().applyingTransactionCommute()){
 			applyTransactionsToDataStore=new ApplyTransactionsToDataStore(this);
 			pool.submit(applyTransactionsToDataStore);
+		}
+		
+		if (ConstantPool.ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION){
+			atomicCommit=new GroupCommunicationCommit(this);
+			voterName=group.name();
+		}
+		else if (ConstantPool.ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT){
+			atomicCommit=new TwoPhaseCommit(this);
+			voterName="" + jessy.manager.getSourceId();
 		}
 		
 	}
@@ -189,7 +202,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		terminateRequestMessage.getExecutionHistory()
 				.setStartCertificationTime(System.currentTimeMillis());
 		
-		boolean certifyAndVote=ConsistencyFactory.getConsistencyInstance().transactionDeliveredForTermination(terminated, votingQuorums, terminateRequestMessage);
+		boolean certifyAndVote=ProtocolFactory.getProtocolInstance().transactionDeliveredForTermination(terminated, votingQuorums, terminateRequestMessage);
 	
 		try{
 			synchronized (atomicDeliveredMessages) {
@@ -240,10 +253,10 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		addVote(vote);
 	}
 
-	private GroupVotingQuorum getOrCreateVotingQuorums(TransactionHandler transactionHandler) {
-		GroupVotingQuorum vq = votingQuorums.putIfAbsent(
+	private VotingQuorum getOrCreateVotingQuorums(TransactionHandler transactionHandler) {
+		VotingQuorum vq = votingQuorums.putIfAbsent(
 				transactionHandler,
-				new GroupVotingQuorum(transactionHandler));
+				atomicCommit.getNewVotingQuorum(transactionHandler));
 		if (vq == null) {
 			logger.debug("creating voting quorum for "
 					+ transactionHandler);
@@ -262,13 +275,14 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	private void addVote(Vote vote) {
 		if (terminated.containsKey(vote.getTransactionHandler().getId()))
 			return;
-		GroupVotingQuorum vq = getOrCreateVotingQuorums(vote.getTransactionHandler());
+		VotingQuorum vq = getOrCreateVotingQuorums(vote.getTransactionHandler());
 
 		try {
 			jessy.getConsistency().voteReceived(vote);
 			vq.addVote(vote);
 			jessy.getConsistency().voteAdded(vote.getTransactionHandler(), terminated, votingQuorums);
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			/*
 			 * If here is reached, it means that a concurrent thread has already
 			 * garbage collected the voting quorum. Thus it has become null. <p> No special
@@ -367,7 +381,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		}
 
 		garbageCollectJessyInstance(msg.getExecutionHistory().getTransactionHandler());
-		ConsistencyFactory.getConsistencyInstance().garbageCollect(msg);
+		ProtocolFactory.getProtocolInstance().garbageCollect(msg);
 	}
 	
 	public void closeConnections(){
@@ -418,7 +432,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 				Set<String> destGroups=jessy.partitioner.resolveNames(concernedKeys);
 				
-				GroupVotingQuorum vq=atomicCommit.broadcastTransaction(executionHistory, destGroups);
+				VotingQuorum vq=atomicCommit.broadcastTransaction(executionHistory, destGroups);
 				/*
 				 * Wait here until the result of the transaction is known.
 				 */
@@ -455,6 +469,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		public void run() {
 
+			System.out.println("Starting transaction " + msg.getExecutionHistory().getTransactionHandler().getId() + " read set " + msg.getExecutionHistory().getReadSet() + " writeset " + msg.getExecutionHistory().getWriteSet() );
 			try {
 
 				long start = System.currentTimeMillis();
@@ -469,6 +484,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 				Vote vote =null;
 				if (preemptive_abort){
+					System.out.println("Pre-emptive Abort" + msg.getExecutionHistory().getTransactionHandler().getId());
 					vote=new Vote(msg.getExecutionHistory().getTransactionHandler(),false, group.name(), null);
 				}
 				else {
@@ -476,10 +492,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 						msg.getExecutionHistory(), msg.getComputedObjectUponDelivery());
 				}
 				
-				
-				Set<String> voteReceivers=null;
-				Set<String> voteSenders=null;				
-				atomicCommit.setVoters(msg, voteReceivers, voteSenders);
 
 				/*
 				 * if true, it means that it must wait for the vote from the
@@ -488,28 +500,31 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				 * instance which only replicates an object read by the
 				 * transaction should send its vote, and return.
 				 */
-				boolean voteReceiver = voteReceivers.contains(group.name());
-				msg.getExecutionHistory().setVoteReceiver(voteReceiver);
-				boolean voteSender=voteSenders.contains(group.name());
-				
-				if (voteSender){
+				AtomicBoolean voteReceiver=new AtomicBoolean(false);
+				AtomicBoolean voteSender=new AtomicBoolean(false);
 
-					voteReceivers.remove(group.name());
+				Set<String> voteReceivers=new HashSet<String>();
+				Set<String> voteSenders=new HashSet<String>();				
+				atomicCommit.setVoters(msg, voteReceivers, voteReceiver, voteSenders, voteSender);
+
+				msg.getExecutionHistory().setVoteReceiver(voteReceiver.get());
+				if (voteSender.get()==true){
+
+					voteReceivers.remove(voterName);
 					VoteMessage voteMsg = new VoteMessage(vote, voteReceivers,
 							group.name(), manager.getSourceId());
 
 					try{
 						atomicCommit.sendVote(voteMsg, msg);
 					}catch(Exception e){
-						// FIXME handle this properly
-						System.out.println("Cannot send "+voteMsg.toString()+" - coordinator "+msg.getExecutionHistory().getCoordinatorSwid()+" is unknown.");
+						e.printStackTrace();
 					}
 					
 					/*
 					 * we can garbage collect right away, and exit.
 					 * if jessy replica is in RS(T) and not in WS(T), under SER, it should exit right away once it sends our votes. 
 					 */
-					if (!voteReceiver){
+					if (voteReceiver.get()==false){
 						measureCertificationTime(msg);
 						garbageCollectJessyReplica(msg);
 						return;
@@ -517,9 +532,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 				}
 
-				if (voteReceiver) {
-					
-					if (voteSenders.contains(group.name()))
+				if (voteReceiver.get()==true) {
+					System.out.println("Needs to wait for the votes from " + voteSenders + "for " + msg.getExecutionHistory().getTransactionHandler().getId());
+					if (voteSenders.contains(voterName))
 						addVote(vote);
 					else
 						getOrCreateVotingQuorums(vote.getTransactionHandler());
@@ -529,7 +544,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					TransactionState state = votingQuorums.get(
 							msg.getExecutionHistory().getTransactionHandler())
 							.waitVoteResult(voteSenders);
-					msg.getExecutionHistory().changeState(state);
+					msg.getExecutionHistory().changeState(state);					
 					jessy.getConsistency().quorumReached(msg, state);
 					atomicCommit.quorumReached(msg,state);
 					
@@ -553,7 +568,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				}
 				msg.getExecutionHistory().setApplyingTransactionQueueingStartTime(System.currentTimeMillis());
 				
-				if (!jessy.getConsistency().applyingTransactionCommute() && voteSender && voteReceiver)
+				if (!jessy.getConsistency().applyingTransactionCommute() && voteSender.get() && voteReceiver.get())
 				{
 					/*
 					 * When applying transactions to the data-store does not commute, instead of waiting in this thread
@@ -603,7 +618,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 		return jessy;
 	}
 	
-	public ConcurrentHashMap<TransactionHandler, GroupVotingQuorum> getVotingQuorumes(){
+	public ConcurrentHashMap<TransactionHandler, VotingQuorum> getVotingQuorumes(){
 		return votingQuorums;
 	}
 }

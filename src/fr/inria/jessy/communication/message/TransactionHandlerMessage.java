@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
-import fr.inria.jessy.consistency.ConsistencyFactory;
+import fr.inria.jessy.consistency.ProtocolFactory;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
 
@@ -43,7 +43,7 @@ public class TransactionHandlerMessage extends WanAMCastMessage{
 	public boolean commute(WanAMCastMessage m){
 		if(this==m) return true;
 //		return false;
-		return ConsistencyFactory.getConsistencyInstance().certificationCommute(keys, ((TransactionHandlerMessage) m).keys);
+		return ProtocolFactory.getProtocolInstance().certificationCommute(keys, ((TransactionHandlerMessage) m).keys);
 	}
 
 	public UUID getId(){

@@ -9,7 +9,7 @@ import java.util.Collection;
 import net.sourceforge.fractal.Messageable;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.consistency.Consistency;
-import fr.inria.jessy.consistency.ConsistencyFactory;
+import fr.inria.jessy.consistency.ProtocolFactory;
 import fr.inria.jessy.store.EntitySet;
 import fr.inria.jessy.store.JessyEntity;
 
@@ -221,7 +221,7 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 	}
 	
 	public TransactionTouchedKeys getTransactionTouchedKeys(){
-		if (ConsistencyFactory.getConsistencyInstance().READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST){
+		if (ProtocolFactory.getProtocolInstance().READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST){
 			return new TransactionTouchedKeys(new ArrayList<String>(readSet.getKeys()), 
 					new ArrayList<String>(writeSet.getKeys()), new ArrayList<String>(createSet.getKeys()));
 		}

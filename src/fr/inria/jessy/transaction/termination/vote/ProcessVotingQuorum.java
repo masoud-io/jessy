@@ -14,8 +14,7 @@ public class ProcessVotingQuorum extends VotingQuorum{
 
 	@Override
 	public void addVote(Vote vote) {
-		if (ConstantPool.logging)
-			logger.debug("adding vote for "+transactionHandler+" for "+vote.getVoterEntityName()+" with result "+vote.isCommitted());
+		System.out.println("adding vote for "+transactionHandler+" for "+vote.getVoterEntityName()+" with result "+vote.isCommitted());
 		
 		if (vote.isCommitted() == false) {
 			result = TransactionState.ABORTED_BY_VOTING;
@@ -24,16 +23,21 @@ public class ProcessVotingQuorum extends VotingQuorum{
 		}
 		
 		notified=true;
-		notifyAll();		
+		synchronized(this){
+			notifyAll();		
+		}
 	}
 
 	@Override
 	public TransactionState waitVoteResult(Collection<String> replicas) {
 		while( result == TransactionState.COMMITTING 
 				   && voters.size() < replicas.size() ){
+			System.out.println(transactionHandler +" waits because voters are " + voters + " and replicas are " + replicas);
 				try {
 					notified=false;
-					wait(ConstantPool.JESSY_VOTING_QUORUM_TIMEOUT);
+					synchronized(this){
+						this.wait(ConstantPool.JESSY_VOTING_QUORUM_TIMEOUT);
+					}
 					if (!notified){
 						return TransactionState.ABORTED_BY_TIMEOUT;
 					}

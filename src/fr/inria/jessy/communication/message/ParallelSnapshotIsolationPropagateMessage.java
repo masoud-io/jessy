@@ -4,7 +4,7 @@ import java.util.Set;
 
 import net.sourceforge.fractal.multicast.MulticastMessage;
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.protocol.ParallelSnapshotIsolationPiggyback;
+import fr.inria.jessy.protocol.VersionVectorPiggyback;
 
 /**
  * Used for propagating the committed sequence number of the WCoordinator to all
@@ -25,13 +25,13 @@ public class ParallelSnapshotIsolationPropagateMessage extends MulticastMessage 
 	}
 
 	public ParallelSnapshotIsolationPropagateMessage(
-			ParallelSnapshotIsolationPiggyback piggyback, Set<String> dest,
+			VersionVectorPiggyback piggyback, Set<String> dest,
 			String gsource, int source) {
 		super(piggyback, dest, gsource, source);
 	}
 
-	public ParallelSnapshotIsolationPiggyback getParallelSnapshotIsolationPiggyback() {
-		return (ParallelSnapshotIsolationPiggyback) serializable;
+	public VersionVectorPiggyback getParallelSnapshotIsolationPiggyback() {
+		return (VersionVectorPiggyback) serializable;
 	}
 
 }

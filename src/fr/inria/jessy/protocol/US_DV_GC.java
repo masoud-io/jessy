@@ -10,6 +10,7 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.vector.DependenceVector;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -82,34 +83,34 @@ public class US_DV_GC extends US {
 
 		JessyEntity lastComittedEntity;
 
-		/*
-		 * Firstly, the writeSet is checked.
-		 */
-		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
-			try {
-				lastComittedEntity = store
-						.get(new ReadRequest<JessyEntity>(
-								(Class<JessyEntity>) tmp.getClass(),
-								"secondaryKey", tmp.getKey(), null))
-						.getEntity().iterator().next();
-
-				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
-					logger.warn("Certification fails for transaction "
-							+ executionHistory.getTransactionHandler().getId()
-							+ " because it has written " + tmp.getKey()
-							+ " with version " + tmp.getLocalVector()
-							+ " but the last committed version is : "
-							+ lastComittedEntity.getLocalVector());
-					return false;
-				}
-
-			} catch (NullPointerException e) {
-				// nothing to do.
-				// the key is simply not there.
-			}
-
-		}
+//		/*
+//		 * Firstly, the writeSet is checked.
+//		 */
+//		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
+//			try {
+//				lastComittedEntity = store
+//						.get(new ReadRequest<JessyEntity>(
+//								(Class<JessyEntity>) tmp.getClass(),
+//								"secondaryKey", tmp.getKey(), null))
+//						.getEntity().iterator().next();
+//
+//				if (lastComittedEntity.getLocalVector().isCompatible(
+//						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
+//					logger.warn("Certification fails for transaction "
+//							+ executionHistory.getTransactionHandler().getId()
+//							+ " because it has written " + tmp.getKey()
+//							+ " with version " + tmp.getLocalVector()
+//							+ " but the last committed version is : "
+//							+ lastComittedEntity.getLocalVector());
+//					return false;
+//				}
+//
+//			} catch (NullPointerException e) {
+//				// nothing to do.
+//				// the key is simply not there.
+//			}
+//
+//		}
 
 		/*
 		 * Secondly, the readSet is checked.
@@ -160,7 +161,7 @@ public class US_DV_GC extends US {
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 		// updatedVector is a new vector. It will be used as a new
 		// vector for all modified vectors.
-		Vector<String> updatedVector = vfactory.getVector("");
+		Vector<String> updatedVector = new DependenceVector<String>("");
 		updatedVector.update(executionHistory.getReadSet().getCompactVector(),
 				executionHistory.getWriteSet().getCompactVector());
 

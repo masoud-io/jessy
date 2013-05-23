@@ -11,7 +11,6 @@ import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.consistency.US;
-import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -218,5 +217,5 @@ public class US_PV_GC extends US {
 			}
 
 	}
-
+	
 }

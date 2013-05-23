@@ -19,10 +19,10 @@ import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.transaction.termination.TwoPhaseCommit;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
 import fr.inria.jessy.vector.GMUVector;
-import fr.inria.jessy.vector.GMUVector2;
 
 /**
  * This class implements EXACTLY [Peluso2012]: I.e., Update Serializability consistency criterion along with
@@ -155,8 +155,10 @@ public class GMU extends US{
 				 * We have to update the vector here, and send it over to the
 				 * others. Corresponds to line 20-22 of Algorithm 4
 				 */
-				vector=GMUVector.logCommitVC.peekFirst().clone();
-				vector.setValue(""+manager.getSourceId(), GMUVector2.lastPrepSC.incrementAndGet());
+				if (GMUVector.logCommitVC.size()>0)
+					vector=GMUVector.logCommitVC.peekFirst().clone();
+				else vector=new GMUVector<String>(""+manager.getSourceId(), 0);
+				vector.setValue(""+manager.getSourceId(), GMUVector.lastPrepSC.incrementAndGet());
 				//TODO FIX ME, not safe.
 				//Transactions should be added exactly in order.
 				commitQueue.add(executionHistory.getTransactionHandler().getId());
@@ -165,9 +167,10 @@ public class GMU extends US{
 			/*
 			 * Corresponds to line 23
 			 */
-			return new Vote(executionHistory.getTransactionHandler(), isCommitted,
-					manager.getMyGroup().name(),
+			Vote vote= new Vote(executionHistory.getTransactionHandler(), isCommitted,
+					""+manager.getSourceId(),
 					new VotePiggyback(vector));
+			return vote;
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
@@ -181,10 +184,13 @@ public class GMU extends US{
 	@SuppressWarnings("unchecked")
 	@Override
 	public void voteReceived(Vote vote) {
-		if (vote.getVotePiggyBack().getPiggyback() == null) {
+		if (vote.getVotePiggyBack()==null || vote.getVotePiggyBack().getPiggyback() == null) {
 			return;
 		}
 
+		/*
+		 *Only the coordinator should be here.  
+		 */
 		try {
 			GMUVector vector = (GMUVector) vote
 					.getVotePiggyBack().getPiggyback();
@@ -223,7 +229,7 @@ public class GMU extends US{
 	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
 		if (isCoordinator(msg) && state==TransactionState.COMMITTED){
 
-			GMUVector<String> commitVC = new GMUVector<String>(manager.getMyGroup().name(), 0);
+			GMUVector<String> commitVC = new GMUVector<String>(""+manager.getSourceId(), 0);
 
 			try{
 				ExecutionHistory executionHistory=msg.getExecutionHistory();
@@ -260,7 +266,7 @@ public class GMU extends US{
 				for (JessyEntity entity : executionHistory.getWriteSet()
 						.getEntities()) {
 					entity.getLocalVector().getMap().clear();
-					entity.getLocalVector().setValue(manager.getMyGroup().name(), (int)commitVC.getSelfValue());
+					entity.setLocalVector(commitVC.clone());
 				}
 
 			}
@@ -284,12 +290,23 @@ public class GMU extends US{
 		
 		//we need one vector, lets take first one.
 		GMUVector<String> vector=(GMUVector<String>) msg.getExecutionHistory().getWriteSet().getEntities().iterator().next().getLocalVector();
+		GMUVector.logCommitVC.add(vector.clone());
+		
 		int updatedVal=vector.getValue(""+manager.getSourceId());
 		if (GMUVector.lastPrepSC.get() < updatedVal){
 			GMUVector.lastPrepSC.set(updatedVal);
 		}
 		
-		GMUVector.logCommitVC.add(vector);
+		/*
+		 * We only need a scalar 
+		 */
+		for (JessyEntity entity : msg.getExecutionHistory().getWriteSet()
+				.getEntities()) {
+			entity.getLocalVector().getMap().clear();
+			entity.getLocalVector().getMap().put(""+manager.getSourceId(),updatedVal);
+			System.out.println("Writing " + entity.getKey() + " with " + entity.getLocalVector());
+		}
+		
 	}
 
 	@Override
@@ -334,5 +351,14 @@ public class GMU extends US{
 			ex.printStackTrace();
 		}
 	}
-	
+
+	@Override
+	public Set<String> getVotersToCoordinator(
+			Set<String> termincationRequestReceivers,
+			ExecutionHistory executionHistory) {
+		termincationRequestReceivers.clear();
+		termincationRequestReceivers.add(TwoPhaseCommit.getCoordinatorId(executionHistory,manager.getPartitioner()));
+		return termincationRequestReceivers;
+	}
+
 }

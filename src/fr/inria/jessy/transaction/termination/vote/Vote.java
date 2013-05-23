@@ -6,7 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.consistency.ConsistencyFactory;
+import fr.inria.jessy.consistency.ProtocolFactory;
 import fr.inria.jessy.transaction.TransactionHandler;
 
 public class Vote implements Externalizable {
@@ -24,10 +24,10 @@ public class Vote implements Externalizable {
 	}
 
 	public Vote(TransactionHandler transactionHandler, boolean committed,
-			String voterGroupName, VotePiggyback votePiggyback) {
+			String votertEntityName, VotePiggyback votePiggyback) {
 		this.transactionHandler = transactionHandler;
 		this.isCommitted = committed;
-		this.voterEntityName = voterGroupName;
+		this.voterEntityName = votertEntityName;
 		this.votePiggyback = votePiggyback;
 	}
 
@@ -62,7 +62,7 @@ public class Vote implements Externalizable {
 		isCommitted = in.readBoolean();
 		voterEntityName = (String) in.readObject();
 
-		if (ConsistencyFactory.getConsistencyInstance()
+		if (ProtocolFactory.getProtocolInstance()
 				.isVotePiggybackRequired())
 			votePiggyback = (VotePiggyback) in.readObject();
 	}
@@ -73,7 +73,7 @@ public class Vote implements Externalizable {
 		out.writeBoolean(isCommitted);
 		out.writeObject(voterEntityName);
 
-		if (ConsistencyFactory.getConsistencyInstance()
+		if (ProtocolFactory.getProtocolInstance()
 				.isVotePiggybackRequired())
 			out.writeObject(votePiggyback);
 	}

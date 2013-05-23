@@ -49,8 +49,13 @@ public class VoteMulticastWithNetty extends VoteMulticast{
 
 	}
 	
-	public void sendVote(VoteMessage voteMessage,Group g) {
-		cManager.unicast(voteMessage, g.leader());
+	public void sendVote(VoteMessage voteMessage,int  swid, String host) {
+		if (cManager ==null){
+				cManager = new UnicastClientManager(distributedJessy,null,
+						ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, distributedJessy.manager.getAllReplicaGroup().allNodes());
+		}
+		
+		cManager.unicast(voteMessage, swid, host);
 	}
 	
 	private void multiCast(Object obj, Collection<String> dest){

@@ -1,10 +1,5 @@
 package fr.inria.jessy.protocol;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import net.sourceforge.fractal.utils.CollectionUtils;
-
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.communication.JessyGroupManager;
@@ -15,7 +10,6 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
-import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -155,5 +149,4 @@ public class PStore extends SER {
 			entity.getLocalVector().update(null, null);
 		}
 	}
-
 }

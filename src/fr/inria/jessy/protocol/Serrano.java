@@ -19,8 +19,8 @@ import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
 import fr.inria.jessy.transaction.termination.vote.Vote;
+import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.Vector;
 
@@ -114,7 +114,7 @@ public class Serrano extends SI {
 	}
 	
 	@Override
-	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
+	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			int newVersion;
 			// WARNING: there is a cast to ScalarVector
@@ -214,7 +214,7 @@ public class Serrano extends SI {
 	Object dummyObject=new Object();
 	
 	@Override
-	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, GroupVotingQuorum>  quorumes) {
+	public void voteAdded(TransactionHandler th, ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes) {
 		try{
 
 			if (manager.isProxy()){
