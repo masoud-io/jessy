@@ -164,12 +164,13 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
 
-		if (getSelfValue()<= other.getValue(getSelfKey())){
-			return CompatibleResult.COMPATIBLE;
-		}
-		else {
-			return CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
-		}
+		return CompatibleResult.COMPATIBLE;
+//		if (getSelfValue()<= other.getValue(getSelfKey())){
+//			return CompatibleResult.COMPATIBLE;
+//		}
+//		else {
+//			return CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
+//		}
 	
 	}
 

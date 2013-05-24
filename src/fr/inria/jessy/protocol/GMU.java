@@ -110,10 +110,10 @@ public class GMU extends US{
 				 * instead of locking, we simply checks against the latest
 				 * committed values
 				 */
-				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getValue(tmp.getKey())) {
+				if (lastComittedEntity.getLocalVector().getValue(""+manager.getSourceId()) > tmp
+						.getLocalVector().getValue(""+manager.getSourceId())) {
 //					if (ConstantPool.logging)
-						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
+						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (readSet) : Reads key "	+ tmp.getKey() + " with the vector "
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
 				}
@@ -279,15 +279,15 @@ public class GMU extends US{
 	@Override
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
 		try{
-//			while (!commitQueue.peek().equals(msg.getExecutionHistory().getTransactionHandler().getId())){
-//				synchronized (commitQueue) {
-//					try {
-//						commitQueue.wait();
-//					} catch (InterruptedException e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			}
+			while (!commitQueue.peek().equals(msg.getExecutionHistory().getTransactionHandler().getId())){
+				synchronized (commitQueue) {
+					try {
+						commitQueue.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
 
 			//we need one vector, lets take first one.
 			GMUVector<String> vector=(GMUVector<String>) msg.getExecutionHistory().getWriteSet().getEntities().iterator().next().getLocalVector();
