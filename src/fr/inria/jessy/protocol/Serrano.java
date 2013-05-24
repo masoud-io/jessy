@@ -231,11 +231,11 @@ public class Serrano extends SI {
 			
 				if (quorumes.containsKey(th)){			
 
-					if (quorumes.get(th).getVoters()==null)
+					if (quorumes.get(th).getReceivedVoters()==null)
 						return;
 
 
-					int receivedVotes= quorumes.get(th).getVoters().size();
+					int receivedVotes= quorumes.get(th).getReceivedVoters().size();
 
 					TerminateTransactionRequestMessage msg=nonConcernedMessages.get(th.getId());
 					int waitingVotes =manager.getPartitioner().resolveNames(getConcerningKeys(

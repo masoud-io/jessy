@@ -55,10 +55,10 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	}
 
 	public void update(Vector<K> vector) {
+		if (requireExtraObject)
+			vector.updateExtraObjectInCompactVector(vector, extraObject);
 		super.update(vector);
 		keys.add(vector.getSelfKey());
-		if (requireExtraObject)
-			vector.updateExtraObjectInCompactVector(extraObject);
 	}
 
 	public List<K> getKeys() {

@@ -46,7 +46,7 @@ public class VectorFactory {
 
 	public boolean needExtraObject() {
 
-		if (persistenceName.equals("nmsi2") || persistenceName.equals("us2")) {
+		if (persistenceName.equals("nmsi3") || persistenceName.equals("us3") || persistenceName.equals("us2")) {
 			return true;
 		}
 

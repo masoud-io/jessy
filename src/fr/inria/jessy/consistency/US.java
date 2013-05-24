@@ -17,7 +17,7 @@ import fr.inria.jessy.transaction.TransactionTouchedKeys;
 public abstract class US extends Consistency {
 	
 	protected static Logger logger = Logger
-			.getLogger(US_DV_GC.class);
+			.getLogger(US.class);
 	
 	public US(JessyGroupManager m, DataStore store) {
 		super(m, store);

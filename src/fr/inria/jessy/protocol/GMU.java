@@ -112,7 +112,7 @@ public class GMU extends US{
 				 */
 				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
 						.getLocalVector().getValue(tmp.getKey())) {
-					if (ConstantPool.logging)
+//					if (ConstantPool.logging)
 						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
@@ -278,33 +278,38 @@ public class GMU extends US{
 	
 	@Override
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
-		while (!commitQueue.peek().equals(msg.getExecutionHistory().getTransactionHandler().getId())){
-			synchronized (commitQueue) {
-				try {
-					commitQueue.wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+		try{
+//			while (!commitQueue.peek().equals(msg.getExecutionHistory().getTransactionHandler().getId())){
+//				synchronized (commitQueue) {
+//					try {
+//						commitQueue.wait();
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+
+			//we need one vector, lets take first one.
+			GMUVector<String> vector=(GMUVector<String>) msg.getExecutionHistory().getWriteSet().getEntities().iterator().next().getLocalVector();
+			GMUVector.logCommitVC.addFirst(vector.clone());
+
+			int updatedVal=vector.getValue(""+manager.getSourceId());
+			if (GMUVector.lastPrepSC.get() < updatedVal){
+				GMUVector.lastPrepSC.set(updatedVal);
+			}
+
+			/*
+			 * We only need a scalar 
+			 */
+			for (JessyEntity entity : msg.getExecutionHistory().getWriteSet()
+					.getEntities()) {
+				entity.getLocalVector().getMap().clear();
+				entity.getLocalVector().getMap().put(""+manager.getSourceId(),updatedVal);
+				System.out.println("Writing " + entity.getKey() + " with " + entity.getLocalVector());
 			}
 		}
-		
-		//we need one vector, lets take first one.
-		GMUVector<String> vector=(GMUVector<String>) msg.getExecutionHistory().getWriteSet().getEntities().iterator().next().getLocalVector();
-		GMUVector.logCommitVC.add(vector.clone());
-		
-		int updatedVal=vector.getValue(""+manager.getSourceId());
-		if (GMUVector.lastPrepSC.get() < updatedVal){
-			GMUVector.lastPrepSC.set(updatedVal);
-		}
-		
-		/*
-		 * We only need a scalar 
-		 */
-		for (JessyEntity entity : msg.getExecutionHistory().getWriteSet()
-				.getEntities()) {
-			entity.getLocalVector().getMap().clear();
-			entity.getLocalVector().getMap().put(""+manager.getSourceId(),updatedVal);
-			System.out.println("Writing " + entity.getKey() + " with " + entity.getLocalVector());
+		catch (Exception ex){
+			ex.printStackTrace();
 		}
 		
 	}

@@ -4,9 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,72 +54,90 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static boolean prepareRead(ReadRequest rr){
-		if (true)
-			return true;
-		String myKey=""+manager.getSourceId();
-		CompactVector<String> other=rr.getReadSet();
-		
-		if (GMUVector.logCommitVC.peekFirst()==null){
-			return true;
-		}
-		
-		//We have not received all update transaction.
-		//We are not sure to read or not, thus we try another replica
-		if (other.getValue(myKey)!=null  &&
-				other.getValue(myKey) > GMUVector.logCommitVC.peekFirst().getValue(myKey)){
-			return false;
-		}
-		
-		List<String> hasRead = rr.getReadSet().getKeys();
+		try{
+			String myKey=""+manager.getSourceId();
+			CompactVector<String> other=rr.getReadSet();
 
-		if (hasRead.size() == 0) {
-			/*
-			 * this is the first read because hasRead is not yet initialize.
-			 */
-			rr.getReadSet().setMap(GMUVector.logCommitVC.peekFirst().getMap());
-		} else if (!hasRead.contains(myKey)) {
-			/*
-			 * line 3,4 of Algorithm 2
-			 */
-			Iterator<GMUVector<String>> itr=GMUVector.logCommitVC.iterator();
-			GMUVector<String> vector=null;
-			
-			boolean found=false;;
-			while (itr.hasNext()){
-				found=false;
-				vector=itr.next();
-				for (String index : hasRead) {
-					if (vector.getValue(index) <= other.getValue(index)){
-						found=true;
-						continue;
-					}
-					else{
-						break;
-					}
-				}
-				if (found)
-					break;
+
+			if (GMUVector.logCommitVC.peekFirst()==null){
+				return true;
 			}
-			if (!found){
+
+			GMUVectorExtraObject extraObject=(GMUVectorExtraObject)other.getExtraObject();
+			if (extraObject==null){
+				rr.temporaryVector=GMUVectorExtraObject.getXactVector(GMUVector.logCommitVC.peekFirst());
+				return true;
+			}
+
+			//We have not received all update transaction.
+			//We are not sure to read or not, thus we try another replica
+			if (extraObject!=null  &&
+					extraObject.xact.getValue(myKey) > GMUVector.logCommitVC.peekFirst().getValue(myKey)){
 				return false;
 			}
-			else{
-				if (vector!=null)
-					rr.getReadSet().update(vector);
-			}
-			
-		} 
-		
-		return true;
+
+			if (extraObject.hasReads.size() == 0) {
+				/*
+				 * this is the first read because hasRead is not yet initialize.
+				 */
+				rr.temporaryVector=GMUVectorExtraObject.getXactVector(GMUVector.logCommitVC.peekFirst());
+			} else if (!extraObject.hasReads.contains(myKey)) {
+				/*
+				 * line 3,4 of Algorithm 2
+				 */
+				Iterator<GMUVector<String>> itr=GMUVector.logCommitVC.iterator();
+				GMUVector<String> vector=null;
+
+				boolean found=false;;
+				while (itr.hasNext()){
+					found=false;
+					vector=itr.next();
+
+					Iterator<String> hasReadItr=extraObject.hasReads.iterator();
+					while (hasReadItr.hasNext()) {
+						String index=hasReadItr.next();
+						if (vector.getValue(index) <= extraObject.xact.getValue(index)){
+							found=true;
+							continue;
+						}
+						else{
+							break;
+						}
+					}
+					if (found)
+						break;
+				}
+				if (!found){
+					return false;
+				}
+				else{
+					if (vector!=null){
+						//Add xact vector to the object vector.
+						// This is a dirty work, and in updateExtraObjectInCompactVector, we remove them, and put them in extraobject of compact vector
+						rr.temporaryVector=GMUVectorExtraObject.getXactVector(vector);
+					}
+				}
+
+			} 
+
+			return true;
+		}
+		catch (Exception ex){
+			ex.printStackTrace();			
+			return false;
+		}
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void postRead(ReadRequest rr, JessyEntity entity){
 		try{
-			int seqNo=entity.getLocalVector().getValue(""+manager.getSourceId());
-			entity.getLocalVector().setMap((HashMap<String, Integer>) rr.getReadSet().getMap().clone());
-			if (seqNo>0)
-				entity.getLocalVector().setValue(""+manager.getSourceId(), seqNo);
+			//Add has read nodes to the object vector.
+			// This is a dirty work, and in updateExtraObjectInCompactVector, we remove them, and put them in extraobject of compact vector
+			entity.getLocalVector().update(GMUVectorExtraObject.getHasRead(manager, entity.getKey()));
+			if (rr.temporaryVector!=null){
+				System.out.println("ADDING IN GMUVECTOR " + rr.temporaryVector);
+				entity.getLocalVector().update(rr.temporaryVector);
+			}
 		}
 		catch(Exception ex){
 			ex.printStackTrace();
@@ -173,13 +189,12 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 
 	// TODO parameterize 4 correctly
 	@Override
-	public void updateExtraObjectInCompactVector(Object object) {
-		/*
-		 * init with 4 entries, because for the moment, we have 4 reads.
-		 */
-		if (object == null)
-			object = new HashMap<K, Boolean>(4);
-		((HashMap<String, Boolean>) object).put(""+manager.getSourceId(), true);
+	public void updateExtraObjectInCompactVector(Vector<K> vector, Object object) {
+		try {
+			object=(Object) GMUVectorExtraObject.getGMUVectorExtraObject((GMUVector<String>)vector);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

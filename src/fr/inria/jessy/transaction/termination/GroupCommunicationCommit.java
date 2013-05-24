@@ -7,7 +7,6 @@ import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.termination.vote.GroupVotingQuorum;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 
 public class GroupCommunicationCommit extends AtomicCommit{
@@ -79,8 +78,4 @@ public class GroupCommunicationCommit extends AtomicCommit{
 		voteMulticast.sendVote(voteMessage, msg.getExecutionHistory().isCertifyAtCoordinator(), msg.getExecutionHistory().getCoordinatorSwid(), msg.getExecutionHistory().getCoordinatorHost());
 	}
 
-	@Override
-	public VotingQuorum getNewVotingQuorum(TransactionHandler th) {
-		return new GroupVotingQuorum(th);
-	}
 }

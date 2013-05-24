@@ -282,7 +282,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			vq.addVote(vote);
 			jessy.getConsistency().voteAdded(vote.getTransactionHandler(), terminated, votingQuorums);
 		} catch (Exception ex) {
-			ex.printStackTrace();
 			/*
 			 * If here is reached, it means that a concurrent thread has already
 			 * garbage collected the voting quorum. Thus it has become null. <p> No special
@@ -300,39 +299,45 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	protected void handleTerminationResult(TerminateTransactionRequestMessage msg)
 			throws Exception {
 
+		try{
+			System.out.println("Handing termination of " + msg.getExecutionHistory().getTransactionHandler().getId());
+			ExecutionHistory executionHistory = msg.getExecutionHistory();
 
-		ExecutionHistory executionHistory = msg.getExecutionHistory();
+			TransactionHandler th = executionHistory.getTransactionHandler();
+			assert !terminated.containsKey(th.getId());
 
-		TransactionHandler th = executionHistory.getTransactionHandler();
-		assert !terminated.containsKey(th.getId());
+			if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
+				/*
+				 * Prepare the transaction. I.e., update the vectors of modified
+				 * entities.
+				 */
+				jessy.getConsistency().prepareToCommit(msg);
 
-		if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
+				/*
+				 * Apply the modified entities.
+				 */
+				jessy.applyModifiedEntities(executionHistory);
+
+			}
+
+			if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
+				/*
+				 * calls the postCommit method of the consistency criterion for post
+				 * commit actions. (e.g., propagating vectors)
+				 */
+				jessy.getConsistency().postCommit(executionHistory);
+			}
+
 			/*
-			 * Prepare the transaction. I.e., update the vectors of modified
-			 * entities.
+			 * We have to garbage collect at the server ASAP, because concurrent transactions can only
+			 * proceed after garbage collecting the current delivered transaction.
 			 */
-			jessy.getConsistency().prepareToCommit(msg);
-
-			/*
-			 * Apply the modified entities.
-			 */
-			jessy.applyModifiedEntities(executionHistory);
-
+			garbageCollectJessyReplica(msg);
 		}
-		
-		if (executionHistory.getTransactionState() == TransactionState.COMMITTED) {
-			/*
-			 * calls the postCommit method of the consistency criterion for post
-			 * commit actions. (e.g., propagating vectors)
-			 */
-			jessy.getConsistency().postCommit(executionHistory);
+		catch (Exception ex ) 
+		{
+			ex.printStackTrace();
 		}
-
-		/*
-		 * We have to garbage collect at the server ASAP, because concurrent transactions can only
-		 * proceed after garbage collecting the current delivered transaction.
-		 */
-		garbageCollectJessyReplica(msg);
 		
 	}
 
@@ -371,6 +376,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	private void garbageCollectJessyReplica(TerminateTransactionRequestMessage msg){
 		try{
 			synchronized (atomicDeliveredMessages) {
+				System.out.println("Removing " + msg.getExecutionHistory().getTransactionHandler().getId());
 				atomicDeliveredMessages.remove(msg);
 				atomicDeliveredMessages.notifyAll();
 			}
@@ -483,8 +489,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				jessy.setExecutionHistory(msg.getExecutionHistory());
 
 				Vote vote =null;
-				if (preemptive_abort){
-					System.out.println("Pre-emptive Abort" + msg.getExecutionHistory().getTransactionHandler().getId());
+				if (preemptive_abort){					
 					vote=new Vote(msg.getExecutionHistory().getTransactionHandler(),false, group.name(), null);
 				}
 				else {
@@ -547,7 +552,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					msg.getExecutionHistory().changeState(state);					
 					jessy.getConsistency().quorumReached(msg, state);
 					atomicCommit.quorumReached(msg,state);
-					
+					System.out.println("Got the votes for " + msg.getExecutionHistory().getTransactionHandler().getId());
 					if (ConstantPool.logging)
 						logger.debug("got voting quorum for " + msg.getExecutionHistory().getTransactionHandler()
 								+ " , result is " + state);

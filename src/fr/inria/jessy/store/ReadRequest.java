@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.utils.Compress;
 import fr.inria.jessy.vector.CompactVector;
+import fr.inria.jessy.vector.Vector;
 
 //TODO Comment me and all methods
 public class ReadRequest<E extends JessyEntity> implements Externalizable {
@@ -42,6 +43,7 @@ public class ReadRequest<E extends JessyEntity> implements Externalizable {
 
 	private int readRequestId;
 
+	public Vector<String> temporaryVector; 
 	/**
 	 * For externalizable interface
 	 */

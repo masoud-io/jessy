@@ -119,7 +119,7 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements Clone
 		out.writeObject(selfKey);
 	}
 
-	public void updateExtraObjectInCompactVector(Object object) {
+	public void updateExtraObjectInCompactVector(Vector<K> vector, Object object) {
 		return;
 	}
 

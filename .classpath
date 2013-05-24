@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="fr/inria/jessy/communication/VoteMulticastWithFractal.java" kind="src" path="src"/>
+	<classpathentry excluding="fr/inria/jessy/communication/VoteMulticastWithFractal.java|fr/inria/jessy/transaction/termination/vote/GroupVotingQuorum.java|fr/inria/jessy/transaction/termination/vote/ProcessVotingQuorum.java" kind="src" path="src"/>
 	<classpathentry excluding="com/yahoo/ycsb/CassandraClient10.java|com/yahoo/ycsb/InfinispanClient.java|com/yahoo/ycsb/MongoDbClient.java|com/yahoo/ycsb/NHBaseClient.java|com/yahoo/ycsb/RedisClient.java|com/yahoo/ycsb/VoldemortClient.java" kind="src" path="benchmark/ycsb/src"/>
 	<classpathentry excluding="ycsb/src/" kind="src" path="benchmark"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>

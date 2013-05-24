@@ -124,5 +124,7 @@ public abstract class AtomicCommit {
 		return;
 	}
 	
-	public abstract VotingQuorum getNewVotingQuorum(TransactionHandler th);
+	public VotingQuorum getNewVotingQuorum(TransactionHandler th){
+		return new VotingQuorum(th);
+	}
 }

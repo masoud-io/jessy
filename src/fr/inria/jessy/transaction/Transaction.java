@@ -157,8 +157,10 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 * 
 	 */
 	public ExecutionHistory commitTransaction() {
-		if(mainTransactionCommit==0) 
+		if(mainTransactionCommit==0) {
+			System.out.println("Committing " + this.transactionHandler.getId());
 			terminationStartTime= System.currentTimeMillis();
+		}
 		
 		mainTransactionCommit++;
 		
@@ -208,15 +210,16 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		}
 
 		jessy.garbageCollectTransaction(transactionHandler);
-
 		mainTransactionCommit--;
-		if (mainTransactionCommit==0)
+		if (mainTransactionCommit==0){
+			System.out.println("COMMITTED " + this.transactionHandler.getId());
 			if (isQuery)
 				transactionTerminationTime_ReadOnly.add(System.currentTimeMillis()
 						- terminationStartTime);
 			else
 				transactionTerminationTime_Update.add(System.currentTimeMillis()
 						- terminationStartTime);
+		}
 
 		return executionHistory;
 	}

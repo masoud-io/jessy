@@ -10,11 +10,8 @@ import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.partitioner.Partitioner;
 import fr.inria.jessy.transaction.ExecutionHistory;
-import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
-import fr.inria.jessy.transaction.termination.vote.ProcessVotingQuorum;
 import fr.inria.jessy.transaction.termination.vote.Vote;
-import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 
 public class TwoPhaseCommit extends AtomicCommit {
 
@@ -34,6 +31,7 @@ public class TwoPhaseCommit extends AtomicCommit {
 				}
 				if (!jessy.getConsistency().certificationCommute(
 						n.getExecutionHistory(), msg.getExecutionHistory())) {
+					System.out.println("Pre-emptive Abort" + msg.getExecutionHistory().getTransactionHandler().getId() + " because of " + n.getExecutionHistory().getTransactionHandler().getId());
 					return false;
 				}
 			}
@@ -136,11 +134,6 @@ public class TwoPhaseCommit extends AtomicCommit {
 		}
 	}
 
-	@Override
-	public VotingQuorum getNewVotingQuorum(TransactionHandler th) {
-		return new ProcessVotingQuorum(th);
-	}
-	
 	public static String getCoordinatorId(ExecutionHistory executionHistory, Partitioner partitioner){
 		String firstWriteKey=executionHistory.getWriteSet().getKeys().iterator().next();
 		return "" + partitioner.resolve(firstWriteKey).leader();

@@ -154,7 +154,7 @@ public class PartitionVector<K> extends Vector<K> implements Externalizable {
 
 	// TODO parameterize 4 correctly
 	@Override
-	public void updateExtraObjectInCompactVector(Object object) {
+	public void updateExtraObjectInCompactVector(Vector<K> vector,Object object) {
 		/*
 		 * init with 4 entries, because for the moment, we have 4 reads.
 		 */

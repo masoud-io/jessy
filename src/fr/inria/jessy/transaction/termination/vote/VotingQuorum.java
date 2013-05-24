@@ -1,14 +1,15 @@
 package fr.inria.jessy.transaction.termination.vote;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
-import fr.inria.jessy.transaction.termination.GroupCommunicationCommit;
-import fr.inria.jessy.transaction.termination.TwoPhaseCommit;
 
 /**
  * This class receives {@link Vote} from different participations in the
@@ -23,41 +24,64 @@ import fr.inria.jessy.transaction.termination.TwoPhaseCommit;
  * @author Pierre Sutra
  * 
  */
-public abstract class VotingQuorum {
-	protected static Logger logger = Logger.getLogger(GroupVotingQuorum.class);
+public class VotingQuorum {
+	protected static Logger logger = Logger.getLogger(VotingQuorum.class);
 	
 	protected TransactionState result = TransactionState.COMMITTING;
 	protected TransactionHandler transactionHandler;
 	
-	protected Collection<String> voters;
+	protected Set<String> receivedVoters;
 	protected boolean notified=false;
 
 	public VotingQuorum(TransactionHandler th){
 		transactionHandler = th;
-		voters = new HashSet<String>();
-
+		receivedVoters = Collections.newSetFromMap(new ConcurrentHashMap<String,Boolean>());
 	}
 	
-	/**
-	 * 
-	 * It simply waits until it receives enough votes from members of all groups/replicas
-	 * concerned by the transaction.
-	 * 
-	 * @param vote
-	 */
-	public abstract void addVote(Vote vote);
+	public void addVote(Vote vote) {
+		synchronized(this){
+			System.out.println("adding vote for "+transactionHandler+" for "+vote.getVoterEntityName()+" with result "+vote.isCommitted());
+
+			if (vote.isCommitted() == false) {
+				result = TransactionState.ABORTED_BY_VOTING;
+			} else{
+				receivedVoters.add(vote.getVoterEntityName());
+			}
+
+			notified=true;
+			notifyAll();		
+		}
+	}
+
+	public TransactionState waitVoteResult(Collection<String> allVoters) {
+		synchronized(this){
+			while( result == TransactionState.COMMITTING 
+					&& receivedVoters.size() < allVoters.size() ){
+				System.out.println(transactionHandler +" waits because voters are " + receivedVoters + " and replicas are " + allVoters);
+				try {
+					notified=false;
+					this.wait(ConstantPool.JESSY_VOTING_QUORUM_TIMEOUT);
+					if (!notified){
+						return TransactionState.ABORTED_BY_TIMEOUT;
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+			
+			if( result == TransactionState.COMMITTING ){
+				if (ConstantPool.logging)
+					logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed. Groups are: " + allVoters + " . voters are : " + receivedVoters);
+				return TransactionState.COMMITTED;
+			}
+			
+			if (ConstantPool.logging)
+				logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting. Groups are: " + allVoters + " . voters are : " + receivedVoters);
+			return TransactionState.ABORTED_BY_VOTING;
+	}
 	
-	/**
-	 * 
-	 * @param concernedEntities either number of groups or number of replicas that the voting quorum should wait for.
-	 * <p>
-	 * In {@link TwoPhaseCommit}, replicas are used, and in {@link GroupCommunicationCommit} groups are used.
-	 * 
-	 * @return
-	 */
-	public abstract TransactionState waitVoteResult(Collection<String> concernedEntities) ;
-	
-	public Collection<String> getVoters() {
-		return voters;
+	public Collection<String> getReceivedVoters() {
+		return receivedVoters;
 	}
 }
