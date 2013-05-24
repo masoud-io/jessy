@@ -20,11 +20,12 @@ import org.apache.log4j.Logger;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
-import fr.inria.jessy.consistency.SER;
+import fr.inria.jessy.consistency.US;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -45,10 +46,12 @@ import fr.inria.jessy.vector.VersionVector;
  * Vector: VersionVector
  * Atomic Commitment: GroupCommunication without acyclic
  * 
+ * Note that although this class implements SER, the rules are like US, hence it extends US class. 
+ * 
  * @author Masoud Saeida Ardekani
  * 
  */
-public class SDUR extends SER implements Learner {
+public class SDUR extends US implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
@@ -58,6 +61,7 @@ public class SDUR extends SER implements Learner {
 	static {
 		votePiggybackRequired = true;
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
+		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
 	}
 
 	private MessagePropagation propagation;
@@ -178,7 +182,7 @@ public class SDUR extends SER implements Learner {
 				 * received the vote from the WCoordinator, and along with the
 				 * vote, we should have received the sequence number.
 				 */
-				logger.error("Preparing to commit without receiving the piggybacked message from WCoordinator");
+				logger.error("Preparing to commit without receiving the piggybacked message from WCoordinator " + msg.getExecutionHistory().getTransactionHandler().getId());
 				System.exit(0);
 			}
 
@@ -243,7 +247,7 @@ public class SDUR extends SER implements Learner {
 		 * Read-only transaction does not propagate
 		 */
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION
-				|| !isWCoordinator(executionHistory))
+				|| !isCoordinator(executionHistory))
 			return;
 
 		Set<String> alreadyNotified = new HashSet<String>();
@@ -287,7 +291,7 @@ public class SDUR extends SER implements Learner {
 	public void postAbort(TerminateTransactionRequestMessage msg, Vote vote){
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 		
-		if (!isWCoordinator(executionHistory))
+		if (!isCoordinator(executionHistory))
 			return;
 		
 		VersionVectorPiggyback pb = (VersionVectorPiggyback) vote
@@ -337,7 +341,7 @@ public class SDUR extends SER implements Learner {
 	@Override
 	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
-			if (isWCoordinator(msg.getExecutionHistory())) {
+			if (isCoordinator(msg.getExecutionHistory())) {
 				int sequenceNumber=0;
 
 				if (msg.getExecutionHistory().getTransactionType()!=TransactionType.INIT_TRANSACTION)
@@ -366,7 +370,7 @@ public class SDUR extends SER implements Learner {
 		 * the first write is for.
 		 */
 		VotePiggyback vp = null;
-		if (isWCoordinator(executionHistory)) {
+		if (isCoordinator(executionHistory)) {
 
 			int sequenceNumber=(Integer)object;
 
@@ -393,21 +397,31 @@ public class SDUR extends SER implements Learner {
 	 * @param executionHistory
 	 * @return
 	 */
-	private boolean isWCoordinator(ExecutionHistory executionHistory) {
+	private boolean isCoordinator(ExecutionHistory executionHistory) {
 
 		String key;
-		if (executionHistory.getWriteSet().size() > 0) {
-			key = executionHistory.getWriteSet().getKeys().iterator().next();
+		
+		if (executionHistory.getWriteSet() == null && executionHistory.getCreateSet()==null){
+			key = executionHistory.getReadSet().getKeys().iterator().next();
 			if (manager.getPartitioner().isLocal(key)) {
 				return true;
 			}
 		}
-
-		if (executionHistory.getCreateSet().size() > 0) {
-			key = executionHistory.getCreateSet().getKeys().iterator().next();
-			if (manager.getPartitioner().isLocal(key)) {
-				return true;
+		else{
+			if (executionHistory.getWriteSet().size() > 0) {
+				key = executionHistory.getWriteSet().getKeys().iterator().next();
+				if (manager.getPartitioner().isLocal(key)) {
+					return true;
+				}
 			}
+			
+			if (executionHistory.getCreateSet().size() > 0) {
+				key = executionHistory.getCreateSet().getKeys().iterator().next();
+				if (manager.getPartitioner().isLocal(key)) {
+					return true;
+				}
+			}
+			
 		}
 
 		return false;

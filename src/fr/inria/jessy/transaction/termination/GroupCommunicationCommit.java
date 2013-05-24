@@ -6,8 +6,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
-import fr.inria.jessy.transaction.TransactionHandler;
-import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 
 public class GroupCommunicationCommit extends AtomicCommit{
 
@@ -59,15 +57,22 @@ public class GroupCommunicationCommit extends AtomicCommit{
 	
 	@Override
 	public void setVoters(TerminateTransactionRequestMessage msg ,Set<String> voteReceivers, AtomicBoolean voteReceiver, Set<String> voteSenders, AtomicBoolean voteSender){
-			voteReceivers =	jessy.partitioner.resolveNames(jessy
+		
+			Set<String> tmp =	jessy.partitioner.resolveNames(jessy
 					.getConsistency().getConcerningKeys(
 							msg.getExecutionHistory(),
 							ConcernedKeysTarget.RECEIVE_VOTES));
+			for (String str:tmp){
+				voteReceivers.add(str);
+			}
 			
-			voteSenders =jessy.partitioner.resolveNames(jessy
+			tmp =jessy.partitioner.resolveNames(jessy
 					.getConsistency().getConcerningKeys(
 							msg.getExecutionHistory(),
-							ConcernedKeysTarget.SEND_VOTES)); 
+							ConcernedKeysTarget.SEND_VOTES));
+			for (String str:tmp){
+				voteSenders.add(str);
+			}
 			
 			voteReceiver.set(voteReceivers.contains(group.name()));
 			voteSender.set(voteSenders.contains(group.name()));

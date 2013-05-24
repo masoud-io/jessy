@@ -194,7 +194,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	
 
 	private void handleTerminateTransactionMessage(TerminateTransactionRequestMessage terminateRequestMessage){
-		if (ConstantPool.logging)
+//		if (ConstantPool.logging)
 			logger.error("got a TerminateTransactionRequestMessage for "
 				+ terminateRequestMessage.getExecutionHistory()
 						.getTransactionHandler().getId() + " , read keys :" + terminateRequestMessage.getExecutionHistory().getReadSet().getKeys());
@@ -512,6 +512,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				Set<String> voteSenders=new HashSet<String>();				
 				atomicCommit.setVoters(msg, voteReceivers, voteReceiver, voteSenders, voteSender);
 
+				System.out.println(msg.getExecutionHistory().getTransactionHandler().getId() + " Vote Senders " + voteSenders + " Is sender " + voteSender.get());
+				System.out.println(msg.getExecutionHistory().getTransactionHandler().getId() +  " Vote Receivers " + voteReceivers+ " Is sender " + voteReceiver.get());
 				msg.getExecutionHistory().setVoteReceiver(voteReceiver.get());
 				if (voteSender.get()==true){
 

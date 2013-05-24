@@ -112,7 +112,7 @@ public class GMU extends US{
 				 */
 				if (lastComittedEntity.getLocalVector().getValue(""+manager.getSourceId()) > tmp
 						.getLocalVector().getValue(""+manager.getSourceId())) {
-//					if (ConstantPool.logging)
+					if (ConstantPool.logging)
 						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (readSet) : Reads key "	+ tmp.getKey() + " with the vector "
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
