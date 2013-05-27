@@ -94,7 +94,15 @@ public class ConstantPool {
 	 */
 	public static final long JESSY_TERMINATED_TRANSACTIONS_LOG_SIZE=1000;
 		
+	/**
+	 * Specifies the size of queue used in GMUVector. 
+	 */
 	public static final int GMUVECTOR_LOGCOMMITVC_SIZE=1000;
+	
+	/**
+	 * Specifies the size of committedTransactions in S-DUR algorithm.
+	 */
+	public static final int SDUR_COMMITTED_TRANSACTIONS_SIZE=300;
 	
 	/**
 	 * Specifies the threshold for ignoring the condition checks before applying

@@ -5,14 +5,17 @@ import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.fractal.Learner;
 import net.sourceforge.fractal.Stream;
 import net.sourceforge.fractal.membership.Group;
+import net.sourceforge.fractal.utils.CollectionUtils;
 import net.sourceforge.fractal.utils.ExecutorPool;
 
 import org.apache.log4j.Logger;
@@ -35,6 +38,9 @@ import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
+import fr.inria.jessy.vector.CompactVector;
+import fr.inria.jessy.vector.GMUVector;
+import fr.inria.jessy.vector.ValueVector.ComparisonResult;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VersionVector;
 
@@ -58,6 +64,8 @@ public class SDUR extends US implements Learner {
 	private static Logger logger = Logger
 			.getLogger(SDUR.class);
 
+	private static AtomicInteger tempSequenceNumber=new AtomicInteger(0);
+	
 	static {
 		votePiggybackRequired = true;
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
@@ -69,6 +77,14 @@ public class SDUR extends US implements Learner {
 	private HashMap<String,VersionVectorApplyPiggyback> applyPiggyback;
 
 	private ConcurrentHashMap<UUID, VersionVectorPiggyback> receivedPiggybacks;
+	
+	/**
+	 * This dequeue contains all transactions committed.
+	 * It is required for the additional test in {@link this#certify(ExecutionHistory)}.
+	 * 
+	 * More precisely, it serves the need for execution of line 39 in Algorithm 4. 
+	 */
+	public static LinkedBlockingDeque<ExecutionHistory> committedTransactions;
 
 	public SDUR(JessyGroupManager m, DataStore store) {
 		super(m, store);
@@ -76,6 +92,9 @@ public class SDUR extends US implements Learner {
 		propagation = new MessagePropagation(this,m);
 		
 		applyPiggyback=new HashMap<String, VersionVectorApplyPiggyback>();
+		
+		
+		committedTransactions=new LinkedBlockingDeque<ExecutionHistory>(ConstantPool.SDUR_COMMITTED_TRANSACTIONS_SIZE);
 		
 		for(Group group:manager.getReplicaGroups()){
 			VersionVectorApplyPiggyback task=new VersionVectorApplyPiggyback();
@@ -132,6 +151,32 @@ public class SDUR extends US implements Learner {
 		executionHistory.getWriteSet().addEntity(
 				executionHistory.getCreateSet());
 
+		/*
+		 * Line 39 of Algorithm 4
+		 */
+		CompactVector<String> transactionSnapshot=executionHistory.getReadSet().getCompactVector();
+		ExecutionHistory pendingExecutionHistory;		
+		Iterator<ExecutionHistory> itr= committedTransactions.iterator();
+		while  (itr.hasNext()){
+			pendingExecutionHistory=itr.next();
+			
+			if (pendingExecutionHistory.getReadSet().getCompactVector().compareTo(transactionSnapshot)==ComparisonResult.LOWER_THAN){
+				break;
+			}
+			
+			boolean result=true;
+			if (executionHistory.getReadSet()!=null && pendingExecutionHistory.getWriteSet()!=null){
+				result = !CollectionUtils.isIntersectingWith(pendingExecutionHistory.getWriteSet()
+						.getKeys(), executionHistory.getReadSet().getKeys());
+			}
+			if (executionHistory.getWriteSet()!=null && pendingExecutionHistory.getReadSet()!=null){
+				result = result && !CollectionUtils.isIntersectingWith(executionHistory.getWriteSet()
+						.getKeys(), pendingExecutionHistory.getReadSet().getKeys());
+			}			
+			if (!result)
+				return false;
+		}
+		
 		JessyEntity lastComittedEntity;
 		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
 
@@ -161,6 +206,16 @@ public class SDUR extends US implements Learner {
 			}
 
 		}
+		
+		
+		/*
+		 * We need to know all concurrent transactions. 
+		 * We add them here.  
+		 */
+		if (committedTransactions.size() > ConstantPool.SDUR_COMMITTED_TRANSACTIONS_SIZE-100){
+			committedTransactions.removeLast();
+		}
+		committedTransactions.add(executionHistory);
 		
 		if (ConstantPool.logging)
 			logger.debug(executionHistory.getTransactionHandler() + " >> "
@@ -341,11 +396,14 @@ public class SDUR extends US implements Learner {
 		}
 	}
 
-	private static AtomicInteger tempSequenceNumber=new AtomicInteger(0);
-
 	@Override
 	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
+			
+			/*
+			 * Since this implementation is using Walter vectors, only the coordinator assigns the sequence number. 
+			 * 
+			 */
 			if (isCoordinator(msg.getExecutionHistory())) {
 				int sequenceNumber=0;
 
@@ -354,6 +412,7 @@ public class SDUR extends US implements Learner {
 
 				msg.setComputedObjectUponDelivery(new Integer(sequenceNumber));
 			}
+			
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
