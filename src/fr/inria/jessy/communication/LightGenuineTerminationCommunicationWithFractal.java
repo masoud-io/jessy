@@ -134,8 +134,10 @@ public class LightGenuineTerminationCommunicationWithFractal extends Termination
 						}
 					}
 					
-					if(delivered)
+					if(delivered){
 						realLearner.learn(null, rm_DeliveredTerminateTransactionRequestMessages.remove(id));
+					}
+						
 				}
 				
 			} catch (InterruptedException e) {

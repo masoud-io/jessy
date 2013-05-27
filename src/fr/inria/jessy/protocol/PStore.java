@@ -2,6 +2,7 @@ package fr.inria.jessy.protocol;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.consistency.SER;
@@ -49,9 +50,10 @@ public class PStore extends SER {
 				tmp.getLocalVector().increment();
 			}
 
-			logger.debug(executionHistory.getTransactionHandler() + " >> "
-					+ transactionType.toString()
-					+ " >> INIT_TRANSACTION COMMITTED");
+			if (ConstantPool.logging)
+				logger.debug(executionHistory.getTransactionHandler() + " >> "
+						+ transactionType.toString()
+						+ " >> INIT_TRANSACTION COMMITTED");
 			return true;
 		}
 
@@ -113,12 +115,13 @@ public class PStore extends SER {
 					if (lastComittedEntity.getLocalVector().isCompatible(
 							tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 
-						logger.debug("Certification fails for transaction "
-								+ executionHistory.getTransactionHandler().getId()
-								+ " because it has written " + tmp.getKey()
-								+ " with version " + tmp.getLocalVector()
-								+ " but the last committed version is : "
-								+ lastComittedEntity.getLocalVector());
+						if (ConstantPool.logging)
+							logger.debug("Certification fails for transaction "
+									+ executionHistory.getTransactionHandler().getId()
+									+ " because it has written " + tmp.getKey()
+									+ " with version " + tmp.getLocalVector()
+									+ " but the last committed version is : "
+									+ lastComittedEntity.getLocalVector());
 
 						return false;
 					}
@@ -131,8 +134,9 @@ public class PStore extends SER {
 
 		}
 
-		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ transactionType.toString() + " >> COMMITTED");
+		if (ConstantPool.logging)
+			logger.debug(executionHistory.getTransactionHandler() + " >> "
+					+ transactionType.toString() + " >> COMMITTED");
 		return true;
 	}
 

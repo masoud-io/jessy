@@ -39,8 +39,8 @@ public class VotingQuorum {
 	}
 	
 	public void addVote(Vote vote) {
+//		System.out.println("Adding vote for " + vote.getTransactionHandler().getId() + " from " + vote.getVoterEntityName());
 		synchronized(this){
-			System.out.println("adding vote for "+transactionHandler+" for "+vote.getVoterEntityName()+" with result "+vote.isCommitted());
 
 			if (vote.isCommitted() == false) {
 				result = TransactionState.ABORTED_BY_VOTING;
@@ -57,7 +57,6 @@ public class VotingQuorum {
 		synchronized(this){
 			while( result == TransactionState.COMMITTING 
 					&& receivedVoters.size() < allVoters.size() ){
-				System.out.println(transactionHandler +" waits because voters are " + receivedVoters + " and replicas are " + allVoters);
 				try {
 					notified=false;
 					this.wait(ConstantPool.JESSY_VOTING_QUORUM_TIMEOUT);

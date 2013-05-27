@@ -38,12 +38,12 @@ import fr.inria.jessy.vector.GMUVector;
 public class GMU extends US{
 
 	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
-	private static ConcurrentLinkedQueue<UUID> commitQueue;
+//	private static ConcurrentLinkedQueue<UUID> commitQueue;
 	
 	static {
 		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector<String>>();
-		commitQueue=new ConcurrentLinkedQueue<UUID>();
+//		commitQueue=new ConcurrentLinkedQueue<UUID>();
 		votePiggybackRequired = true;
 	}
 
@@ -161,7 +161,7 @@ public class GMU extends US{
 				vector.setValue(""+manager.getSourceId(), GMUVector.lastPrepSC.incrementAndGet());
 				//TODO FIX ME, not safe.
 				//Transactions should be added exactly in order.
-				commitQueue.add(executionHistory.getTransactionHandler().getId());
+//				commitQueue.add(executionHistory.getTransactionHandler().getId());
 			}
 
 			/*
@@ -279,18 +279,22 @@ public class GMU extends US{
 	@Override
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
 		try{
-			while (!commitQueue.peek().equals(msg.getExecutionHistory().getTransactionHandler().getId())){
-				synchronized (commitQueue) {
-					try {
-						commitQueue.wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
+//			while (!commitQueue.peek().equals(msg.getExecutionHistory().getTransactionHandler().getId())){
+//				synchronized (commitQueue) {
+//					try {
+//						commitQueue.wait();
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}
 
 			//we need one vector, lets take first one.
 			GMUVector<String> vector=(GMUVector<String>) msg.getExecutionHistory().getWriteSet().getEntities().iterator().next().getLocalVector();
+			
+			if (GMUVector.logCommitVC.size() > ConstantPool.GMUVECTOR_LOGCOMMITVC_SIZE-200)
+				GMUVector.logCommitVC.removeLast();
+			
 			GMUVector.logCommitVC.addFirst(vector.clone());
 
 			int updatedVal=vector.getValue(""+manager.getSourceId());
@@ -305,7 +309,6 @@ public class GMU extends US{
 					.getEntities()) {
 				entity.getLocalVector().getMap().clear();
 				entity.getLocalVector().getMap().put(""+manager.getSourceId(),updatedVal);
-				System.out.println("Writing " + entity.getKey() + " with " + entity.getLocalVector());
 			}
 		}
 		catch (Exception ex){
@@ -316,18 +319,18 @@ public class GMU extends US{
 
 	@Override
 	public void postCommit(ExecutionHistory executionHistory) {
-		try{
-			if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
-				commitQueue.remove(executionHistory.getTransactionHandler().getId());
-				synchronized(commitQueue){
-					commitQueue.notifyAll();
-				}
-			}
-
-		}
-		catch(Exception ex){
-			ex.printStackTrace();
-		}
+//		try{
+//			if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
+//				commitQueue.remove(executionHistory.getTransactionHandler().getId());
+//				synchronized(commitQueue){
+//					commitQueue.notifyAll();
+//				}
+//			}
+//
+//		}
+//		catch(Exception ex){
+//			ex.printStackTrace();
+//		}
 	}
 	
 	@Override
@@ -343,18 +346,18 @@ public class GMU extends US{
 	
 	@Override
 	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){
-		try{
-			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
-				commitQueue.remove(msg.getExecutionHistory().getTransactionHandler().getId());
-				synchronized(commitQueue){
-					commitQueue.notifyAll();
-				}
-			}
-
-		}
-		catch(Exception ex){
-			ex.printStackTrace();
-		}
+//		try{
+//			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
+//				commitQueue.remove(msg.getExecutionHistory().getTransactionHandler().getId());
+//				synchronized(commitQueue){
+//					commitQueue.notifyAll();
+//				}
+//			}
+//
+//		}
+//		catch(Exception ex){
+//			ex.printStackTrace();
+//		}
 	}
 
 	@Override

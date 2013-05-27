@@ -181,23 +181,26 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	 */
 	@Deprecated
 	public void learn(Stream s, Serializable v) {
-		if (v instanceof TerminateTransactionRequestMessage) {
-			handleTerminateTransactionMessage((TerminateTransactionRequestMessage)v);
-		} else if (v instanceof VoteMessage){ 
-			handleVoteMessage(v);
-		}
-		else{
-			logger.error("Fractal delivered an unexpected message");
+		try {
+			if (v instanceof TerminateTransactionRequestMessage) {
+				handleTerminateTransactionMessage((TerminateTransactionRequestMessage)v);
+			} else if (v instanceof VoteMessage){ 
+				handleVoteMessage(v);
+			}
+			else{
+				logger.error("Fractal delivered an unexpected message");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}
 	
 
 	private void handleTerminateTransactionMessage(TerminateTransactionRequestMessage terminateRequestMessage){
-//		if (ConstantPool.logging)
-			logger.error("got a TerminateTransactionRequestMessage for "
-				+ terminateRequestMessage.getExecutionHistory()
-						.getTransactionHandler().getId() + " , read keys :" + terminateRequestMessage.getExecutionHistory().getReadSet().getKeys());
+		if (ConstantPool.logging)
+			logger.error("got a TerminateTransactionRequestMessage for "+ terminateRequestMessage.getExecutionHistory()
+						.getTransactionHandler().getId() + " , read keys :" + terminateRequestMessage.getExecutionHistory().getReadSet());
 
 		terminateRequestMessage.getExecutionHistory()
 				.setStartCertificationTime(System.currentTimeMillis());
@@ -211,18 +214,18 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				 * If the previous transaction has been timed-out, this transaction will carry the id of it.
 				 * All the effects of the previous transaction should be wiped out from the system. 
 				 */
-//				TransactionHandler timedoutTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousTimedoutTransactionHandler();
-//				if (timedoutTransactionHandler!=null){
-//					for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
-//						if (req.getExecutionHistory().getTransactionHandler().equals(timedoutTransactionHandler)){
-//							garbageCollectJessyReplica(req);
-//							if (applyTransactionsToDataStore!=null)
-//								applyTransactionsToDataStore.removeFromQueue(req);
-//							break;
-//						}
-//					}
-//
-//				}
+				TransactionHandler timedoutTransactionHandler=terminateRequestMessage.getExecutionHistory().getTransactionHandler().getPreviousTimedoutTransactionHandler();
+				if (timedoutTransactionHandler!=null){
+					for (TerminateTransactionRequestMessage req: atomicDeliveredMessages){
+						if (req.getExecutionHistory().getTransactionHandler().equals(timedoutTransactionHandler)){
+							garbageCollectJessyReplica(req);
+							if (applyTransactionsToDataStore!=null)
+								applyTransactionsToDataStore.removeFromQueue(req);
+							break;
+						}
+					}
+
+				}
 				
 				if (certifyAndVote)
 					atomicDeliveredMessages.add(terminateRequestMessage);
@@ -300,7 +303,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			throws Exception {
 
 		try{
-			System.out.println("Handing termination of " + msg.getExecutionHistory().getTransactionHandler().getId());
+//			System.out.println("Handing termination of " + msg.getExecutionHistory().getTransactionHandler().getId());
 			ExecutionHistory executionHistory = msg.getExecutionHistory();
 
 			TransactionHandler th = executionHistory.getTransactionHandler();
@@ -376,7 +379,6 @@ public class DistributedTermination implements Learner, UnicastLearner {
 	private void garbageCollectJessyReplica(TerminateTransactionRequestMessage msg){
 		try{
 			synchronized (atomicDeliveredMessages) {
-				System.out.println("Removing " + msg.getExecutionHistory().getTransactionHandler().getId());
 				atomicDeliveredMessages.remove(msg);
 				atomicDeliveredMessages.notifyAll();
 			}
@@ -418,46 +420,49 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		public TransactionState call() throws Exception {
 
-			TransactionState result;
+			TransactionState result=null;
 
-			Set<String> concernedKeys = jessy.getConsistency()
-					.getConcerningKeys(executionHistory,
-							ConcernedKeysTarget.TERMINATION_CAST);
+			try {
+				Set<String> concernedKeys = jessy.getConsistency()
+						.getConcerningKeys(executionHistory,
+								ConcernedKeysTarget.TERMINATION_CAST);
 
-			/*
-			 * If there is no concerning key, it means that the transaction can
-			 * commit right away. e.g. read-only transaction with NMSI
-			 * consistency.
-			 */
-			if (concernedKeys.size() == 0) {
-
-				executionHistory.changeState(TransactionState.COMMITTED);
-				result = TransactionState.COMMITTED;
-
-			} else {
-
-				Set<String> destGroups=jessy.partitioner.resolveNames(concernedKeys);
-				
-				VotingQuorum vq=atomicCommit.broadcastTransaction(executionHistory, destGroups);
 				/*
-				 * Wait here until the result of the transaction is known.
+				 * If there is no concerning key, it means that the transaction can
+				 * commit right away. e.g. read-only transaction with NMSI
+				 * consistency.
 				 */
-				result = vq.waitVoteResult(jessy.getConsistency().getVotersToCoordinator(destGroups,executionHistory));
-				if (result==TransactionState.ABORTED_BY_TIMEOUT){
-					logger.error("Abort by timeout from votingQ " + executionHistory.getTransactionHandler());
+				if (concernedKeys.size() == 0) {
+
+					executionHistory.changeState(TransactionState.COMMITTED);
+					result = TransactionState.COMMITTED;
+
+				} else {
+
+					Set<String> destGroups=jessy.partitioner.resolveNames(concernedKeys);
+					VotingQuorum vq=atomicCommit.broadcastTransaction(executionHistory, destGroups);
+					/*
+					 * Wait here until the result of the transaction is known.
+					 */
+					result = vq.waitVoteResult(jessy.getConsistency().getVotersToCoordinator(destGroups,executionHistory));
+					if (result==TransactionState.ABORTED_BY_TIMEOUT){
+						logger.error("Abort by timeout from votingQ " + executionHistory.getTransactionHandler());
+					}
+
 				}
 
-			}
-
-			
-			if (!executionHistory.isCertifyAtCoordinator()) {
-				garbageCollectJessyInstance(executionHistory.getTransactionHandler());
-			}
-			
-			if (ConstantPool.logging)
-				if (executionHistory.getTransactionType()==TransactionType.UPDATE_TRANSACTION){
-					logger.debug("***FINISHING certification of " + executionHistory.getTransactionHandler().getId());
+				
+				if (!executionHistory.isCertifyAtCoordinator()) {
+					garbageCollectJessyInstance(executionHistory.getTransactionHandler());
 				}
+				
+				if (ConstantPool.logging)
+					if (executionHistory.getTransactionType()==TransactionType.UPDATE_TRANSACTION){
+						logger.debug("***FINISHING certification of " + executionHistory.getTransactionHandler().getId());
+					}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
 
 			return result;
@@ -475,7 +480,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		public void run() {
 
-			System.out.println("Starting transaction " + msg.getExecutionHistory().getTransactionHandler().getId() + " read set " + msg.getExecutionHistory().getReadSet() + " writeset " + msg.getExecutionHistory().getWriteSet() );
+//			System.out.println("Starting transaction " + msg.getExecutionHistory().getTransactionHandler().getId() + " read set " + msg.getExecutionHistory().getReadSet() + " writeset " + msg.getExecutionHistory().getWriteSet() );
 			try {
 
 				long start = System.currentTimeMillis();
@@ -512,8 +517,8 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				Set<String> voteSenders=new HashSet<String>();				
 				atomicCommit.setVoters(msg, voteReceivers, voteReceiver, voteSenders, voteSender);
 
-				System.out.println(msg.getExecutionHistory().getTransactionHandler().getId() + " Vote Senders " + voteSenders + " Is sender " + voteSender.get());
-				System.out.println(msg.getExecutionHistory().getTransactionHandler().getId() +  " Vote Receivers " + voteReceivers+ " Is sender " + voteReceiver.get());
+//				System.out.println(msg.getExecutionHistory().getTransactionHandler().getId() + " Vote Senders " + voteSenders + " Is sender " + voteSender.get());
+//				System.out.println(msg.getExecutionHistory().getTransactionHandler().getId() +  " Vote Receivers " + voteReceivers+ " Is sender " + voteReceiver.get());
 				msg.getExecutionHistory().setVoteReceiver(voteReceiver.get());
 				if (voteSender.get()==true){
 
@@ -540,7 +545,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 				}
 
 				if (voteReceiver.get()==true) {
-					System.out.println("Needs to wait for the votes from " + voteSenders + "for " + msg.getExecutionHistory().getTransactionHandler().getId());
+//					System.out.println("Needs to wait for the votes from " + voteSenders + "for " + msg.getExecutionHistory().getTransactionHandler().getId());
 					if (voteSenders.contains(voterName))
 						addVote(vote);
 					else
@@ -554,7 +559,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					msg.getExecutionHistory().changeState(state);					
 					jessy.getConsistency().quorumReached(msg, state);
 					atomicCommit.quorumReached(msg,state);
-					System.out.println("Got the votes for " + msg.getExecutionHistory().getTransactionHandler().getId());
+//					System.out.println("Got the votes for " + msg.getExecutionHistory().getTransactionHandler().getId());
 					if (ConstantPool.logging)
 						logger.debug("got voting quorum for " + msg.getExecutionHistory().getTransactionHandler()
 								+ " , result is " + state);

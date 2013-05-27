@@ -31,7 +31,7 @@ public class TwoPhaseCommit extends AtomicCommit {
 				}
 				if (!jessy.getConsistency().certificationCommute(
 						n.getExecutionHistory(), msg.getExecutionHistory())) {
-					System.out.println("Pre-emptive Abort" + msg.getExecutionHistory().getTransactionHandler().getId() + " because of " + n.getExecutionHistory().getTransactionHandler().getId());
+//					System.out.println("Pre-emptive abort for " + msg.getExecutionHistory().getTransactionHandler().getId() + " because " + n.getExecutionHistory().getTransactionHandler().getId());
 					return false;
 				}
 			}
@@ -126,7 +126,6 @@ public class TwoPhaseCommit extends AtomicCommit {
 	private boolean isCoordinator(TerminateTransactionRequestMessage msg){
 		String firstWriteKey=msg.getExecutionHistory().getWriteSet().getKeys().iterator().next();
 		if (jessy.partitioner.resolve(firstWriteKey).leader() == jessy.manager.getSourceId()){
-			System.out.println("Coordinator of " + msg.getExecutionHistory().getTransactionHandler().getId() + " is " + swid);
 			return true;
 		}
 		else{

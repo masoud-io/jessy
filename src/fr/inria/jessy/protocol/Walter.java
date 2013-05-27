@@ -25,7 +25,7 @@ import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.MessagePropagation;
 import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
-import fr.inria.jessy.consistency.US;
+import fr.inria.jessy.consistency.PSI;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -39,29 +39,30 @@ import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VersionVector;
 
 /**
- * SDUR implementation according to [SciasciaDSN2012] paper. 
- * It uses Walter vector implementation, and differs it by extending SER and not PSI.
+ * PSI implementation according to [Serrano2011] paper with one exception. 
+ * I.e., Uses group communication instead of two phase commit. 
  * 
- * CONS: SER
+ * CONS: PSI
  * Vector: VersionVector
- * Atomic Commitment: GroupCommunication without acyclic
+ * Atomic Commitment: GroupCommunication
  * 
- * Note that although this class implements SER, the rules are like US, hence it extends US class. 
+ * TODO if (Group size > 0) then only need to wait for one vote and not for all votes from group members. We need to change 2PC for this.
+ * TODO if group replication factor > 0, i.e., several groups replicating same objects, then wait for the votes from primary group.
  * 
  * @author Masoud Saeida Ardekani
  * 
  */
-public class SDUR extends US implements Learner {
+public class Walter extends PSI implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
 	private static Logger logger = Logger
-			.getLogger(SDUR.class);
+			.getLogger(Walter.class);
 
 	static {
 		votePiggybackRequired = true;
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
-		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
+		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
 	}
 
 	private MessagePropagation propagation;
@@ -70,7 +71,7 @@ public class SDUR extends US implements Learner {
 
 	private ConcurrentHashMap<UUID, VersionVectorPiggyback> receivedPiggybacks;
 
-	public SDUR(JessyGroupManager m, DataStore store) {
+	public Walter(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		receivedPiggybacks = new ConcurrentHashMap<UUID, VersionVectorPiggyback>();
 		propagation = new MessagePropagation(this,m);
@@ -133,7 +134,7 @@ public class SDUR extends US implements Learner {
 				executionHistory.getCreateSet());
 
 		JessyEntity lastComittedEntity;
-		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
+		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
 
 			try {
 
@@ -187,7 +188,7 @@ public class SDUR extends US implements Learner {
 				 * received the vote from the WCoordinator, and along with the
 				 * vote, we should have received the sequence number.
 				 */
-				logger.error("Preparing to commit without receiving the piggybacked message from WCoordinator " + msg.getExecutionHistory().getTransactionHandler().getId());
+				logger.error("Preparing to commit without receiving the piggybacked message from WCoordinator");
 				System.exit(0);
 			}
 
@@ -252,7 +253,7 @@ public class SDUR extends US implements Learner {
 		 * Read-only transaction does not propagate
 		 */
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION
-				|| !isCoordinator(executionHistory))
+				|| !isWCoordinator(executionHistory))
 			return;
 
 		Set<String> alreadyNotified = new HashSet<String>();
@@ -296,7 +297,7 @@ public class SDUR extends US implements Learner {
 	public void postAbort(TerminateTransactionRequestMessage msg, Vote vote){
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 		
-		if (!isCoordinator(executionHistory))
+		if (!isWCoordinator(executionHistory))
 			return;
 		
 		VersionVectorPiggyback pb = (VersionVectorPiggyback) vote
@@ -346,7 +347,7 @@ public class SDUR extends US implements Learner {
 	@Override
 	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
-			if (isCoordinator(msg.getExecutionHistory())) {
+			if (isWCoordinator(msg.getExecutionHistory())) {
 				int sequenceNumber=0;
 
 				if (msg.getExecutionHistory().getTransactionType()!=TransactionType.INIT_TRANSACTION)
@@ -375,7 +376,7 @@ public class SDUR extends US implements Learner {
 		 * the first write is for.
 		 */
 		VotePiggyback vp = null;
-		if (isCoordinator(executionHistory)) {
+		if (isWCoordinator(executionHistory)) {
 
 			int sequenceNumber=(Integer)object;
 
@@ -402,31 +403,21 @@ public class SDUR extends US implements Learner {
 	 * @param executionHistory
 	 * @return
 	 */
-	private boolean isCoordinator(ExecutionHistory executionHistory) {
+	private boolean isWCoordinator(ExecutionHistory executionHistory) {
 
 		String key;
-		
-		if (executionHistory.getWriteSet() == null && executionHistory.getCreateSet()==null){
-			key = executionHistory.getReadSet().getKeys().iterator().next();
+		if (executionHistory.getWriteSet().size() > 0) {
+			key = executionHistory.getWriteSet().getKeys().iterator().next();
 			if (manager.getPartitioner().isLocal(key)) {
 				return true;
 			}
 		}
-		else{
-			if (executionHistory.getWriteSet().size() > 0) {
-				key = executionHistory.getWriteSet().getKeys().iterator().next();
-				if (manager.getPartitioner().isLocal(key)) {
-					return true;
-				}
+
+		if (executionHistory.getCreateSet().size() > 0) {
+			key = executionHistory.getCreateSet().getKeys().iterator().next();
+			if (manager.getPartitioner().isLocal(key)) {
+				return true;
 			}
-			
-			if (executionHistory.getCreateSet().size() > 0) {
-				key = executionHistory.getCreateSet().getKeys().iterator().next();
-				if (manager.getPartitioner().isLocal(key)) {
-					return true;
-				}
-			}
-			
 		}
 
 		return false;
@@ -442,5 +433,5 @@ public class SDUR extends US implements Learner {
 					(VersionVectorPiggyback) vote
 							.getVotePiggyBack().getPiggyback());
 	}
-	
+
 }

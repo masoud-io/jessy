@@ -62,17 +62,13 @@ public class GroupCommunicationCommit extends AtomicCommit{
 					.getConsistency().getConcerningKeys(
 							msg.getExecutionHistory(),
 							ConcernedKeysTarget.RECEIVE_VOTES));
-			for (String str:tmp){
-				voteReceivers.add(str);
-			}
+			voteReceivers.addAll(tmp);
 			
 			tmp =jessy.partitioner.resolveNames(jessy
 					.getConsistency().getConcerningKeys(
 							msg.getExecutionHistory(),
 							ConcernedKeysTarget.SEND_VOTES));
-			for (String str:tmp){
-				voteSenders.add(str);
-			}
+			voteSenders.addAll(tmp);
 			
 			voteReceiver.set(voteReceivers.contains(group.name()));
 			voteSender.set(voteSenders.contains(group.name()));

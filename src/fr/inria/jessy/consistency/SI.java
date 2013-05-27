@@ -65,7 +65,8 @@ public abstract class SI extends Consistency {
 	@Override
 	public boolean certificationCommute(TransactionTouchedKeys tk1,
 			TransactionTouchedKeys tk2) {
-		return !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.writeKeys);
+		return false;
+//		return !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.writeKeys);
 	}
 		
 }

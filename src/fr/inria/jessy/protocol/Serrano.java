@@ -9,6 +9,8 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
+import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.consistency.Consistency;
@@ -30,6 +32,7 @@ public class Serrano extends SI {
 
 	static{
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
+		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
 	}
 	
 	public Serrano(JessyGroupManager m, DataStore store) {
@@ -50,8 +53,9 @@ public class Serrano extends SI {
 		 * if the transaction is a read-only transaction, it commits right away.
 		 */
 		if (transactionType == TransactionType.READONLY_TRANSACTION) {
-			logger.debug(executionHistory.getTransactionHandler() + " >> "
-					+ transactionType.toString() + " >> COMMITTED");
+			if (ConstantPool.logging)
+				logger.debug(executionHistory.getTransactionHandler() + " >> "
+						+ transactionType.toString() + " >> COMMITTED");
 			return true;
 		}
 
@@ -89,9 +93,10 @@ public class Serrano extends SI {
 				if (lastComittedEntity.getLocalVector().isCompatible(
 						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 
-					logger.debug("lastCommitted: "
-							+ lastComittedEntity.getLocalVector() + " tmp: "
-							+ tmp.getLocalVector());
+					if (ConstantPool.logging)
+						logger.debug("lastCommitted: "
+								+ lastComittedEntity.getLocalVector() + " tmp: "
+								+ tmp.getLocalVector());
 
 					return false;
 				}
@@ -102,8 +107,9 @@ public class Serrano extends SI {
 
 		}
 
-		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ transactionType.toString() + " >> COMMITTED");
+		if (ConstantPool.logging)
+			logger.debug(executionHistory.getTransactionHandler() + " >> "
+					+ transactionType.toString() + " >> COMMITTED");
 
 		return true;
 	}
@@ -183,9 +189,10 @@ public class Serrano extends SI {
 
 		ScalarVector.removeCommittingTransactionSeqNumber(newVersion);
 		
-		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ "COMMITED, lastCommittedTransactionSeqNumber:"
-				+ ScalarVector.getLastCommittedSeqNumber());
+		if (ConstantPool.logging)
+			logger.debug(executionHistory.getTransactionHandler() + " >> "
+					+ "COMMITED, lastCommittedTransactionSeqNumber:"
+					+ ScalarVector.getLastCommittedSeqNumber());
 	}
 	
 	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){

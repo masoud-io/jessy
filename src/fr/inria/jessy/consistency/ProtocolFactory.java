@@ -14,6 +14,7 @@ import fr.inria.jessy.protocol.SDUR;
 import fr.inria.jessy.protocol.Serrano;
 import fr.inria.jessy.protocol.US_DV_GC;
 import fr.inria.jessy.protocol.US_GMUVector_GC;
+import fr.inria.jessy.protocol.Walter;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.utils.Configuration;
 
@@ -44,7 +45,7 @@ public class ProtocolFactory {
 			persistenceName="psi";  //SDUR uses Version Vector that is already filled for PSI.
 		} else if (protocolName.equals("rc")) {
 			persistenceName="rc";
-		} else if (protocolName.equals("psi_vv_gc")) {
+		} else if (protocolName.equals("psi_vv_gc") || protocolName.equals("walter")) {
 			persistenceName="psi";
 		} else if (protocolName.equals("us_dv_gc")) {
 			persistenceName="us";
@@ -83,6 +84,8 @@ public class ProtocolFactory {
 			_instance = new NMSI_GMUVector_GC(m,dataStore);
 		}else if (protocolName.equals("nmsi_dv_gc")) {
 			_instance = new NMSI_DV_GC(m, dataStore);
+		} else if (protocolName.equals("walter")) {
+			_instance = new Walter(m, dataStore);
 		}
 		
 		System.out.println("Protocol " + protocolName + " is initalized with persistence directory " + persistenceName);

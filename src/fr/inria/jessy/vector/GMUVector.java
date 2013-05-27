@@ -135,7 +135,6 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 			// This is a dirty work, and in updateExtraObjectInCompactVector, we remove them, and put them in extraobject of compact vector
 			entity.getLocalVector().update(GMUVectorExtraObject.getHasRead(manager, entity.getKey()));
 			if (rr.temporaryVector!=null){
-				System.out.println("ADDING IN GMUVECTOR " + rr.temporaryVector);
 				entity.getLocalVector().update(rr.temporaryVector);
 			}
 		}

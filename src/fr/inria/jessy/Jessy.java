@@ -227,7 +227,6 @@ public abstract class Jessy {
 
 					entity = performRead(entityClass, "secondaryKey", keyValue,
 							executionHistory.getReadSet().getCompactVector());
-					System.out.println(transactionHandler.getId() + " read " + entity.getKey() + " with vector " + entity.getLocalVector());
 					if (entity == null) {
 						retryTimes++;
 						Thread.sleep(ConstantPool.JESSY_READ_RETRY_TIMEOUT);
