@@ -62,6 +62,7 @@ public class VersionVectorApplyPiggyback implements Runnable{
 	}
 	
 	private void addToQueue(VersionVectorPiggyback pb){
+		System.out.println(" RECEIVED " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to APPLY");
 		piggybackQueue.offer(pb);
 		
 		synchronized(piggybackQueue){
@@ -120,6 +121,7 @@ public class VersionVectorApplyPiggyback implements Runnable{
 
 
 				synchronized(piggybackQueue){
+					System.out.println("Cannot apply " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " because current seqNO is "  + VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()) );
 					piggybackQueue.wait();
 				}
 				piggybackQueue.offer(pb);
@@ -163,6 +165,7 @@ public class VersionVectorApplyPiggyback implements Runnable{
 			synchronized (VersionVector.committedVTS) {
 				VersionVector.committedVTS.setVector(pb.getwCoordinatorGroupName(),
 						(int)pb.getSequenceNumber());
+				System.out.println("Updated CommitVTS to " + VersionVector.committedVTS);
 
 				VersionVector.committedVTS.notifyAll();
 			}

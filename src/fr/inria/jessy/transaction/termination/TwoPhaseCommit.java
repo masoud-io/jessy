@@ -101,7 +101,7 @@ public class TwoPhaseCommit extends AtomicCommit {
 	}
 	
 	@Override
-	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
+	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state, Vote selfVote){
 		if (isCoordinator(msg)){
 			
 			Set<String> voteReceivers=	jessy.partitioner.resolveNames(jessy
@@ -110,7 +110,7 @@ public class TwoPhaseCommit extends AtomicCommit {
 							ConcernedKeysTarget.RECEIVE_VOTES));
 			voteReceivers.remove(swid);
 			boolean committed=(state==TransactionState.COMMITTED) ? true : false;
-			Vote vote=new Vote(msg.getExecutionHistory().getTransactionHandler(), committed , swid, null);
+			Vote vote=new Vote(msg.getExecutionHistory().getTransactionHandler(), committed , swid, (selfVote.getVotePiggyBack()==null? null : selfVote.getVotePiggyBack()));
 			VoteMessage voteMsg = new VoteMessage(vote, voteReceivers,
 					group.name(), jessy.manager.getSourceId());
 			

@@ -15,6 +15,7 @@ import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
+import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 
 public abstract class AtomicCommit {
@@ -120,7 +121,7 @@ public abstract class AtomicCommit {
 	
 	public abstract void sendVote(VoteMessage voteMessage, TerminateTransactionRequestMessage msg);
 	
-	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
+	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state, Vote selfVote){
 		return;
 	}
 	

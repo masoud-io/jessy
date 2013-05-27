@@ -61,6 +61,7 @@ public class HashMapDataStore implements DataStore {
 	@Override
 	public <E extends JessyEntity> void put(E entity)
 			throws NullPointerException {
+		System.out.println("inserting " + entity.getKey() + " with vector " + entity.getLocalVector());
 
 		if (store.containsKey(entity.getKey())) {
 			store.get(entity.getKey()).add(entity);
@@ -74,7 +75,7 @@ public class HashMapDataStore implements DataStore {
 	@Override
 	public <E extends JessyEntity, SK> ReadReply<E> get(
 			ReadRequest<E> readRequest) throws NullPointerException {
-
+//		System.out.println("Trying to read " + readRequest.getOneKey().getKeyValue() + " with compact " + readRequest.getReadSet());
 		if (readRequest.getReadSet()!=null && !VectorFactory.prepareRead(readRequest)){
 			E entity = null;
 			return new ReadReply<E>(entity, readRequest.getReadRequestId());
@@ -105,6 +106,7 @@ public class HashMapDataStore implements DataStore {
 				
 				if (compatibleResult == Vector.CompatibleResult.COMPATIBLE) {
 					VectorFactory.postRead(readRequest, entity);
+//					System.out.println("Reading " + entity.getKey() + " with vector " + entity.getLocalVector());
 					return new ReadReply<E>(entity,							
 							readRequest.getReadRequestId());
 				} else {

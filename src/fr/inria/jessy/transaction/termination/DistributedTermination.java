@@ -480,7 +480,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		public void run() {
 
-//			System.out.println("Starting transaction " + msg.getExecutionHistory().getTransactionHandler().getId() + " read set " + msg.getExecutionHistory().getReadSet() + " writeset " + msg.getExecutionHistory().getWriteSet() );
+			System.out.println("Starting transaction " + msg.getExecutionHistory().getTransactionHandler().getId() + " read set " + msg.getExecutionHistory().getReadSet() + " writeset " + msg.getExecutionHistory().getWriteSet() );
 			try {
 
 				long start = System.currentTimeMillis();
@@ -558,7 +558,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 							.waitVoteResult(voteSenders);
 					msg.getExecutionHistory().changeState(state);					
 					jessy.getConsistency().quorumReached(msg, state);
-					atomicCommit.quorumReached(msg,state);
+					atomicCommit.quorumReached(msg,state, vote);
 //					System.out.println("Got the votes for " + msg.getExecutionHistory().getTransactionHandler().getId());
 					if (ConstantPool.logging)
 						logger.debug("got voting quorum for " + msg.getExecutionHistory().getTransactionHandler()

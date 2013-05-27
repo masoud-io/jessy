@@ -147,7 +147,7 @@ public class Walter extends PSI implements Learner {
 				if (lastComittedEntity.getLocalVector().isCompatible(
 						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 
-					if (ConstantPool.logging)
+//					if (ConstantPool.logging)
 						logger.error("Aborting a transaction because for key " + tmp.getKey() + "local vector is "
 								+ tmp.getLocalVector()
 								+ " and last committed is "
@@ -198,6 +198,7 @@ public class Walter extends PSI implements Learner {
 			 */
 			pb = receivedPiggybacks.get(executionHistory
 					.getTransactionHandler().getId());
+			System.out.println("Pre committing Transaction " + pb.getTransactionHandler().getId() + " has pb "  + pb.getSequenceNumber() + " with " + pb.getwCoordinatorGroupName());
 
 			if (executionHistory.getTransactionType() == TransactionType.INIT_TRANSACTION) {
 				executionHistory.getWriteSet().addEntity(
@@ -248,7 +249,7 @@ public class Walter extends PSI implements Learner {
 	public void postCommit(ExecutionHistory executionHistory) {
 
 		/*
-		 * only the WCoordinator propagates the votes as in [Serrano11]
+		 * only the WCoordinator propagates the votes as in [Sovran11]
 		 * 
 		 * Read-only transaction does not propagate
 		 */
@@ -277,6 +278,7 @@ public class Walter extends PSI implements Learner {
 				.remove(executionHistory.getTransactionHandler().getId());
 
 		if (dest.size() > 0) {
+			System.out.println("Propagating " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to " + dest + " for " + executionHistory.getTransactionHandler().getId());
 			ParallelSnapshotIsolationPropagateMessage msg = new ParallelSnapshotIsolationPropagateMessage(
 					pb, dest, manager.getMyGroup().name(),
 					manager.getSourceId());			
@@ -300,14 +302,18 @@ public class Walter extends PSI implements Learner {
 		if (!isWCoordinator(executionHistory))
 			return;
 		
-		VersionVectorPiggyback pb = (VersionVectorPiggyback) vote
-						.getVotePiggyBack().getPiggyback();
+//		VersionVectorPiggyback pb = (VersionVectorPiggyback) vote
+//						.getVotePiggyBack().getPiggyback();
+		VersionVectorPiggyback pb = receivedPiggybacks
+				.remove(executionHistory.getTransactionHandler().getId());
 		
 		Set<String> dest = new HashSet<String>();
 		for (Group group : manager.getReplicaGroups()){
 			if (!manager.getMyGroup().name().equals(group.name()))
 				dest.add(group.name());
 		}
+		
+		System.out.println("Sending seq of aborted " + msg.getExecutionHistory().getTransactionHandler().getId() + " for " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to " + dest);
 		
 		ParallelSnapshotIsolationPropagateMessage propagateMsg = new ParallelSnapshotIsolationPropagateMessage(
 				pb, dest, manager.getMyGroup().name(),
@@ -383,6 +389,8 @@ public class Walter extends PSI implements Learner {
 			vp = new VotePiggyback(new VersionVectorPiggyback(
 					manager.getMyGroup().name(), sequenceNumber,
 					executionHistory));
+			
+			System.out.println("COORDINATOR OF " + executionHistory.getTransactionHandler().getId() + " is " + manager.getMyGroup());
 		}
 
 		return new Vote(executionHistory.getTransactionHandler(), isAborted,
@@ -428,10 +436,15 @@ public class Walter extends PSI implements Learner {
 	 * @inheritDoc
 	 */
 	public void voteReceived(Vote vote) {
-		if (vote.getVotePiggyBack() != null)
+		if (vote.getVotePiggyBack() != null){
 			receivedPiggybacks.put(vote.getTransactionHandler().getId(),
 					(VersionVectorPiggyback) vote
-							.getVotePiggyBack().getPiggyback());
+					.getVotePiggyBack().getPiggyback());
+			
+			System.out.println("GOT THE VOTE for " + vote.getTransactionHandler().getId() + " WITH " + ((VersionVectorPiggyback) vote
+					.getVotePiggyBack().getPiggyback()).getwCoordinatorGroupName() + " with seq " + 
+					((VersionVectorPiggyback) vote.getVotePiggyBack().getPiggyback()).getSequenceNumber() );
+		}
 	}
 
 }
