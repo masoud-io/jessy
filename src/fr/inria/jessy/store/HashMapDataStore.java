@@ -61,7 +61,7 @@ public class HashMapDataStore implements DataStore {
 	@Override
 	public <E extends JessyEntity> void put(E entity)
 			throws NullPointerException {
-		System.out.println("inserting " + entity.getKey() + " with vector " + entity.getLocalVector());
+//		System.out.println("inserting " + entity.getKey() + " with vector " + entity.getLocalVector());
 
 		if (store.containsKey(entity.getKey())) {
 			store.get(entity.getKey()).add(entity);

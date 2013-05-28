@@ -73,7 +73,7 @@ public class ConstantPool {
 	 * the read request might be lost, upon the timeout, a new read request
 	 * should be sent out to a jessy instance replicating the entity.
 	 */
-	public static final long JESSY_REMOTE_READER_TIMEOUT = 1000;
+	public static final long JESSY_REMOTE_READER_TIMEOUT = 1000000;
 	public static final TimeUnit JESSY_REMOTE_READER_TIMEOUT_TYPE = TimeUnit.MILLISECONDS;
 
 	/**
@@ -81,7 +81,7 @@ public class ConstantPool {
 	 * Since a vote request might be lost, upon the timeout, a new transaction
 	 * termination should be initialized.
 	 */
-	public static final long JESSY_TRANSACTION_TERMINATION_TIMEOUT = 5000;
+	public static final long JESSY_TRANSACTION_TERMINATION_TIMEOUT = 5000000;
 	public static final TimeUnit JESSY_TRANSACTION_TERMINATION_TIMEOUT_TYPE = TimeUnit.SECONDS;
 
 	/**
@@ -124,7 +124,7 @@ public class ConstantPool {
 	 * <p>
 	 * Note that this might violate the safety of the correctness criteria if some nodes receives the voting message, and some others does not receive it. 
 	 */
-	public static long JESSY_VOTING_QUORUM_TIMEOUT=3000;
+	public static long JESSY_VOTING_QUORUM_TIMEOUT=3000000;
 
 	/**
 	 * Number of read operations in Read-only transaction in YCSB 

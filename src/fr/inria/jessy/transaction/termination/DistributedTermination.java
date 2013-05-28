@@ -480,7 +480,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 
 		public void run() {
 
-			System.out.println("Starting transaction " + msg.getExecutionHistory().getTransactionHandler().getId() + " read set " + msg.getExecutionHistory().getReadSet() + " writeset " + msg.getExecutionHistory().getWriteSet() );
+//			System.out.println("Starting transaction " + msg.getExecutionHistory().getTransactionHandler().getId() + " read set " + msg.getExecutionHistory().getReadSet() + " writeset " + msg.getExecutionHistory().getWriteSet() );
 			try {
 
 				long start = System.currentTimeMillis();

@@ -57,6 +57,7 @@ public class VotingQuorum {
 		synchronized(this){
 			while( result == TransactionState.COMMITTING 
 					&& receivedVoters.size() < allVoters.size() ){
+//				System.out.println("Still waiting for votes " + transactionHandler.getId() + " all : " + allVoters + " but voters : " +receivedVoters );
 				try {
 					notified=false;
 					this.wait(ConstantPool.JESSY_VOTING_QUORUM_TIMEOUT);

@@ -32,6 +32,7 @@ import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
+import fr.inria.jessy.transaction.termination.TwoPhaseCommit;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
@@ -198,7 +199,7 @@ public class Walter extends PSI implements Learner {
 			 */
 			pb = receivedPiggybacks.get(executionHistory
 					.getTransactionHandler().getId());
-			System.out.println("Pre committing Transaction " + pb.getTransactionHandler().getId() + " has pb "  + pb.getSequenceNumber() + " with " + pb.getwCoordinatorGroupName());
+//			System.out.println("Pre committing Transaction " + pb.getTransactionHandler().getId() + " has pb "  + pb.getSequenceNumber() + " with " + pb.getwCoordinatorGroupName());
 
 			if (executionHistory.getTransactionType() == TransactionType.INIT_TRANSACTION) {
 				executionHistory.getWriteSet().addEntity(
@@ -278,7 +279,7 @@ public class Walter extends PSI implements Learner {
 				.remove(executionHistory.getTransactionHandler().getId());
 
 		if (dest.size() > 0) {
-			System.out.println("Propagating " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to " + dest + " for " + executionHistory.getTransactionHandler().getId());
+//			System.out.println("Propagating " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to " + dest + " for " + executionHistory.getTransactionHandler().getId());
 			ParallelSnapshotIsolationPropagateMessage msg = new ParallelSnapshotIsolationPropagateMessage(
 					pb, dest, manager.getMyGroup().name(),
 					manager.getSourceId());			
@@ -313,7 +314,7 @@ public class Walter extends PSI implements Learner {
 				dest.add(group.name());
 		}
 		
-		System.out.println("Sending seq of aborted " + msg.getExecutionHistory().getTransactionHandler().getId() + " for " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to " + dest);
+//		System.out.println("Sending seq of aborted " + msg.getExecutionHistory().getTransactionHandler().getId() + " for " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to " + dest);
 		
 		ParallelSnapshotIsolationPropagateMessage propagateMsg = new ParallelSnapshotIsolationPropagateMessage(
 				pb, dest, manager.getMyGroup().name(),
@@ -343,7 +344,10 @@ public class Walter extends PSI implements Learner {
 	public void learn(Stream s, Serializable v) {
 		if (v instanceof ParallelSnapshotIsolationPropagateMessage) {
 			ParallelSnapshotIsolationPropagateMessage msg = (ParallelSnapshotIsolationPropagateMessage) v;
-			applyPiggyback.get(msg.getParallelSnapshotIsolationPiggyback().getwCoordinatorGroupName()).asyncApply(msg.getParallelSnapshotIsolationPiggyback());
+			
+			VersionVectorPiggyback pb=msg.getParallelSnapshotIsolationPiggyback();
+			if (pb!=null)
+				applyPiggyback.get(msg.getParallelSnapshotIsolationPiggyback().getwCoordinatorGroupName()).asyncApply(pb);
 
 		}
 	}
@@ -390,7 +394,7 @@ public class Walter extends PSI implements Learner {
 					manager.getMyGroup().name(), sequenceNumber,
 					executionHistory));
 			
-			System.out.println("COORDINATOR OF " + executionHistory.getTransactionHandler().getId() + " is " + manager.getMyGroup());
+//			System.out.println("COORDINATOR OF " + executionHistory.getTransactionHandler().getId() + " is " + manager.getMyGroup());
 		}
 
 		return new Vote(executionHistory.getTransactionHandler(), isAborted,
@@ -440,11 +444,15 @@ public class Walter extends PSI implements Learner {
 			receivedPiggybacks.put(vote.getTransactionHandler().getId(),
 					(VersionVectorPiggyback) vote
 					.getVotePiggyBack().getPiggyback());
-			
-			System.out.println("GOT THE VOTE for " + vote.getTransactionHandler().getId() + " WITH " + ((VersionVectorPiggyback) vote
-					.getVotePiggyBack().getPiggyback()).getwCoordinatorGroupName() + " with seq " + 
-					((VersionVectorPiggyback) vote.getVotePiggyBack().getPiggyback()).getSequenceNumber() );
 		}
 	}
 
+	@Override
+	public Set<String> getVotersToCoordinator(
+			Set<String> termincationRequestReceivers,
+			ExecutionHistory executionHistory) {
+		termincationRequestReceivers.clear();
+		termincationRequestReceivers.add(TwoPhaseCommit.getCoordinatorId(executionHistory,manager.getPartitioner()));
+		return termincationRequestReceivers;
+	}
 }

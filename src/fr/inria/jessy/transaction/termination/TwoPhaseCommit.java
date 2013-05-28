@@ -1,7 +1,9 @@
 package fr.inria.jessy.transaction.termination;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.sourceforge.fractal.membership.Group;
@@ -17,6 +19,9 @@ public class TwoPhaseCommit extends AtomicCommit {
 
 	String swid=""+jessy.manager.getSourceId();
 	
+	//TODO FIX ME THIS IS CRAP
+	ConcurrentHashMap<UUID, Integer> causedTermination=new ConcurrentHashMap<UUID, Integer>(); 
+	
 	public TwoPhaseCommit(DistributedTermination termination) {
 		super(termination);
 	}
@@ -31,7 +36,30 @@ public class TwoPhaseCommit extends AtomicCommit {
 				}
 				if (!jessy.getConsistency().certificationCommute(
 						n.getExecutionHistory(), msg.getExecutionHistory())) {
-//					System.out.println("Pre-emptive abort for " + msg.getExecutionHistory().getTransactionHandler().getId() + " because " + n.getExecutionHistory().getTransactionHandler().getId());
+					
+					UUID caused=n.getExecutionHistory().getTransactionHandler().getId();
+					try{
+					int ii=causedTermination.get(caused);
+					System.out.println("XXXXXXX" + caused + " >> " + ii);
+					}catch(Exception ex){
+						ex.printStackTrace();
+					}
+					
+					if (causedTermination.contains(caused)){
+						int i=causedTermination.get(caused);
+						System.out.println("XXXXXXX" + caused + " >> " + i);
+						if (i>5)
+						{
+							causedTermination.remove(caused);
+							atomicDeliveredMessages.remove(n);
+							return true;
+						}
+						causedTermination.put(caused, i+1);
+					}else{
+						causedTermination.put(caused, 1);
+					}
+					
+					System.out.println("Pre-emptive abort for " + msg.getExecutionHistory().getTransactionHandler().getId() + " because " + n.getExecutionHistory().getTransactionHandler().getId());
 					return false;
 				}
 			}
@@ -77,13 +105,12 @@ public class TwoPhaseCommit extends AtomicCommit {
 			 *If this is not the coordinator, it needs to send vote to the coordinator, and receive vote from coordinator.  
 			 */
 			voteSenders.add( getCoordinatorId(msg.getExecutionHistory(), jessy.partitioner));
+			
 			if (jessy.partitioner.resolveNames(jessy
 					.getConsistency().getConcerningKeys(
 							msg.getExecutionHistory(),
-							ConcernedKeysTarget.RECEIVE_VOTES)).contains(group))
+							ConcernedKeysTarget.RECEIVE_VOTES)).contains(group.name()))
 			{
-
-				voteReceivers =new HashSet<String>();
 				voteReceivers.add( getCoordinatorId(msg.getExecutionHistory(), jessy.partitioner));
 				voteReceiver.set(true);
 			}
