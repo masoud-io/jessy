@@ -38,16 +38,9 @@ public class TwoPhaseCommit extends AtomicCommit {
 						n.getExecutionHistory(), msg.getExecutionHistory())) {
 					
 					UUID caused=n.getExecutionHistory().getTransactionHandler().getId();
-					try{
-					int ii=causedTermination.get(caused);
-					System.out.println("XXXXXXX" + caused + " >> " + ii);
-					}catch(Exception ex){
-						ex.printStackTrace();
-					}
 					
-					if (causedTermination.contains(caused)){
+					if (causedTermination.containsKey(caused)){
 						int i=causedTermination.get(caused);
-						System.out.println("XXXXXXX" + caused + " >> " + i);
 						if (i>5)
 						{
 							causedTermination.remove(caused);
@@ -59,7 +52,7 @@ public class TwoPhaseCommit extends AtomicCommit {
 						causedTermination.put(caused, 1);
 					}
 					
-					System.out.println("Pre-emptive abort for " + msg.getExecutionHistory().getTransactionHandler().getId() + " because " + n.getExecutionHistory().getTransactionHandler().getId());
+//					System.out.println("Pre-emptive abort for " + msg.getExecutionHistory().getTransactionHandler().getId() + " because " + n.getExecutionHistory().getTransactionHandler().getId());
 					return false;
 				}
 			}
