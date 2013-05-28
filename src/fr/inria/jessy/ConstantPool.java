@@ -81,7 +81,7 @@ public class ConstantPool {
 	 * Since a vote request might be lost, upon the timeout, a new transaction
 	 * termination should be initialized.
 	 */
-	public static final long JESSY_TRANSACTION_TERMINATION_TIMEOUT = 5000000;
+	public static final long JESSY_TRANSACTION_TERMINATION_TIMEOUT = 50000;
 	public static final TimeUnit JESSY_TRANSACTION_TERMINATION_TIMEOUT_TYPE = TimeUnit.SECONDS;
 
 	/**
@@ -129,13 +129,13 @@ public class ConstantPool {
 	/**
 	 * Number of read operations in Read-only transaction in YCSB 
 	 */
-	public static final short READ_ONLY_TRANSACTION_READ_OPERATION_COUNT=4;
+	public static final short READ_ONLY_TRANSACTION_READ_OPERATION_COUNT=2;
 	
 	/**
 	 * Number of read/update operations in update transaction in YCSB 
 	 */
-	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=2;
-	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=2;
+	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=1;
+	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=1;
 	
 	/**
 	 * These two variables are used in {@link Jessy} to prevent checking for objects that have been

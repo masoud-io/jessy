@@ -72,12 +72,12 @@ public class VotingQuorum {
 			
 			if( result == TransactionState.COMMITTING ){
 				if (ConstantPool.logging)
-					logger.debug("Has enought YES votes for  "+transactionHandler + " . Returning Committed. Groups are: " + allVoters + " . voters are : " + receivedVoters);
+					logger.error("Has enought YES votes for  "+transactionHandler + " . Returning Committed. Groups are: " + allVoters + " . voters are : " + receivedVoters);
 				return TransactionState.COMMITTED;
 			}
 			
 			if (ConstantPool.logging)
-				logger.debug("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting. Groups are: " + allVoters + " . voters are : " + receivedVoters);
+				logger.error("DOES NOT have enought YES votes for  "+transactionHandler + " . Returning Abort_by_Voting. Groups are: " + allVoters + " . voters are : " + receivedVoters);
 			return TransactionState.ABORTED_BY_VOTING;
 	}
 	

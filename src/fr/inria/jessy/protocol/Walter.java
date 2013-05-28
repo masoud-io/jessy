@@ -303,18 +303,24 @@ public class Walter extends PSI implements Learner {
 		if (!isWCoordinator(executionHistory))
 			return;
 		
-//		VersionVectorPiggyback pb = (VersionVectorPiggyback) vote
-//						.getVotePiggyBack().getPiggyback();
+		
 		VersionVectorPiggyback pb = receivedPiggybacks
 				.remove(executionHistory.getTransactionHandler().getId());
+
+		
+		if (pb==null){
+			int sequenceNumber=(Integer)msg.getComputedObjectUponDelivery();
+
+			pb= new VersionVectorPiggyback(manager.getMyGroup().name(), sequenceNumber,
+						executionHistory);
+				
+		}
 		
 		Set<String> dest = new HashSet<String>();
 		for (Group group : manager.getReplicaGroups()){
 			if (!manager.getMyGroup().name().equals(group.name()))
 				dest.add(group.name());
 		}
-		
-//		System.out.println("Sending seq of aborted " + msg.getExecutionHistory().getTransactionHandler().getId() + " for " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to " + dest);
 		
 		ParallelSnapshotIsolationPropagateMessage propagateMsg = new ParallelSnapshotIsolationPropagateMessage(
 				pb, dest, manager.getMyGroup().name(),
@@ -346,8 +352,8 @@ public class Walter extends PSI implements Learner {
 			ParallelSnapshotIsolationPropagateMessage msg = (ParallelSnapshotIsolationPropagateMessage) v;
 			
 			VersionVectorPiggyback pb=msg.getParallelSnapshotIsolationPiggyback();
-			if (pb!=null)
-				applyPiggyback.get(msg.getParallelSnapshotIsolationPiggyback().getwCoordinatorGroupName()).asyncApply(pb);
+			assert (pb!=null);
+			applyPiggyback.get(msg.getParallelSnapshotIsolationPiggyback().getwCoordinatorGroupName()).asyncApply(pb);
 
 		}
 	}
