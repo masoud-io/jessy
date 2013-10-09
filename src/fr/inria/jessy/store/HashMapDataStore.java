@@ -61,75 +61,79 @@ public class HashMapDataStore implements DataStore {
 	@Override
 	public <E extends JessyEntity> void put(E entity)
 			throws NullPointerException {
-//		System.out.println("inserting " + entity.getKey() + " with vector " + entity.getLocalVector());
-
-		if (store.containsKey(entity.getKey())) {
-			store.get(entity.getKey()).add(entity);
-		} else {
-			ArrayList<E> tmp = new ArrayList<E>(1);
-			tmp.add(entity);
-			store.put(entity.getKey(), tmp);
+		try {
+			if (store.containsKey(entity.getKey())) {
+				store.get(entity.getKey()).add(entity);
+			} else {
+				ArrayList<E> tmp = new ArrayList<E>(1);
+				tmp.add(entity);
+				store.put(entity.getKey(), tmp);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public <E extends JessyEntity, SK> ReadReply<E> get(
 			ReadRequest<E> readRequest) throws NullPointerException {
-//		System.out.println("Trying to read " + readRequest.getOneKey().getKeyValue() + " with compact " + readRequest.getReadSet());
-		if (readRequest.getReadSet()!=null && !VectorFactory.prepareRead(readRequest)){
-			E entity = null;
-			return new ReadReply<E>(entity, readRequest.getReadRequestId());
-		}
-			
-		CompactVector<String> readSet = readRequest.getReadSet();
-
-		if (readRequest.isOneKeyRequest) {
-			ArrayList<E> tmp = store.get(readRequest.getOneKey().getKeyValue()
-					.toString());
-
-			if (tmp == null) {
-				throw new NullPointerException("Object with key "
-						+ readRequest.getOneKey().getKeyValue()
-						+ " does not exist in the Data Store.");
-			}
-
-			int index = tmp.size() - 1;
-			E entity = (E) tmp.get(index--).clone();
-
-			if (readSet == null) {
+		
+		try {
+			if (readRequest.getReadSet()!=null && !VectorFactory.prepareRead(readRequest)){
+				E entity = null;
 				return new ReadReply<E>(entity, readRequest.getReadRequestId());
 			}
+				
+			CompactVector<String> readSet = readRequest.getReadSet();
 
-			while (entity != null) {
-				Vector.CompatibleResult compatibleResult=entity.getLocalVector().isCompatible(readSet);
-				
-				
-				if (compatibleResult == Vector.CompatibleResult.COMPATIBLE) {
-					VectorFactory.postRead(readRequest, entity);
-//					System.out.println("Reading " + entity.getKey() + " with vector " + entity.getLocalVector());
-					return new ReadReply<E>(entity,							
-							readRequest.getReadRequestId());
-				} else {
-					if (compatibleResult == Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
-						if (index == -1)
-							break;
-						entity = (E)tmp.get(index--).clone();
+			if (readRequest.isOneKeyRequest) {
+				ArrayList<E> tmp = store.get(readRequest.getOneKey().getKeyValue()
+						.toString());
+
+				if (tmp == null) {
+					throw new NullPointerException("Object with key "
+							+ readRequest.getOneKey().getKeyValue()
+							+ " does not exist in the Data Store.");
+				}
+
+				int index = tmp.size() - 1;
+				E entity = (E) tmp.get(index--).clone();
+
+				if (readSet == null) {
+					return new ReadReply<E>(entity, readRequest.getReadRequestId());
+				}
+
+				while (entity != null) {
+					Vector.CompatibleResult compatibleResult=entity.getLocalVector().isCompatible(readSet);
+					
+					
+					if (compatibleResult == Vector.CompatibleResult.COMPATIBLE) {
+						VectorFactory.postRead(readRequest, entity);
+						return new ReadReply<E>(entity,							
+								readRequest.getReadRequestId());
 					} else {
-						// NEVER_COMPATIBLE
-						
-						/*
-						 * Instead of returning null to the client, and retry again, since we are sure that the decision can
-						 * be made now, we call get again to return the correct version.
-						 * Note that {@link Vector.CompatibleResult.NEVER_COMPATIBLE} is only used in the Snapshot Isolation consistency.
-						 */
-						return get(readRequest);
-//						break;
+						if (compatibleResult == Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT) {
+							if (index == -1)
+								break;
+							entity = (E)tmp.get(index--).clone();
+						} else {
+							// NEVER_COMPATIBLE
+							
+							/*
+							 * Instead of returning null to the client, and retry again, since we are sure that the decision can
+							 * be made now, we call get again to return the correct version.
+							 * Note that {@link Vector.CompatibleResult.NEVER_COMPATIBLE} is only used in the Snapshot Isolation consistency.
+							 */
+							return get(readRequest);
+						}
 					}
 				}
-			}
 
-			entity = null;
-			return new ReadReply<E>(entity, readRequest.getReadRequestId());
+				entity = null;
+				return new ReadReply<E>(entity, readRequest.getReadRequestId());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		// TODO

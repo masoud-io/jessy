@@ -195,59 +195,76 @@ public class DistributedJessy extends Jessy {
 		ReadReply<E> readReply = null;
 		E result = null;
 
-		if (partitioner.isLocal(readRequest.getPartitioningKey())) {
+		try {
+			if (partitioner.isLocal(readRequest.getPartitioningKey())) {
 
-			logger.debug("performing local read on " + keyValue
-					+ " for request " + readRequest);
-			readReply = getDataStore().get(readRequest);
-			result = readReply.getEntity().iterator().next();
-		} else {
+				logger.debug("performing local read on " + keyValue
+						+ " for request " + readRequest);
+				readReply = getDataStore().get(readRequest);
+				result = readReply.getEntity().iterator().next();
+			} else {
 
-			logger.debug("performing remote read on " + keyValue
-					+ " for request " + readRequest.getOneKey().getKeyValue());
+				logger.debug("performing remote read on " + keyValue
+						+ " for request " + readRequest.getOneKey().getKeyValue());
 
-			Future<ReadReply<E>> future;
-			boolean isDone = false;
+				Future<ReadReply<E>> future;
+				boolean isDone = false;
 
-			long start=System.currentTimeMillis();
-			do {
+				long start=System.currentTimeMillis();
+				do {
 
-				future = remoteReader.remoteRead(readRequest);
+					future = remoteReader.remoteRead(readRequest);
 
-				try {
+					try {
 
-					readReply = future.get(
-							ConstantPool.JESSY_REMOTE_READER_TIMEOUT,
-							ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
+						readReply = future.get(
+								ConstantPool.JESSY_REMOTE_READER_TIMEOUT,
+								ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
 
-					if (readReply != null && readReply.getEntity() != null
-							&& readReply.getEntity().iterator().hasNext()) {
+						if (readReply != null && readReply.getEntity() != null
+								&& readReply.getEntity().iterator().hasNext()) {
 
-						logger.debug("read " + readRequest + " is successfull ");
-						result = readReply.getEntity().iterator().next();
-						remoteReaderLatency.add(System.currentTimeMillis()-start);
+							logger.debug("read " + readRequest + " is successfull ");
+							result = readReply.getEntity().iterator().next();
+							remoteReaderLatency.add(System.currentTimeMillis()-start);
+							isDone = true;
+						} 
+						else{
+							System.out.println("BINGO , failed to read " + keyValue);
+							System.exit(0);
+						}
+
+					} catch (TimeoutException te) {
+						System.out.println("BINGO 1 , failed to read " + keyValue);
+						System.exit(0);
+
+						/*
+						 * Nothing to do. The message should have been lost. Retry
+						 * again.
+						 */
+						logger.error("TimeoutException happened in Distributed Jessy (Perform Read)" + te.getCause());
+						failedReadCount.incr();
+					} catch (InterruptedException ie) {
+						System.out.println("BINGO 2 , failed to read " + keyValue);
+						System.exit(0);
+
+						logger.error("InterruptedException happened in Distributed Jessy (Perform Read)" + ie.getCause());
+						failedReadCount.incr();
 						isDone = true;
-					} 
+					} catch (ExecutionException ee) {
+						System.out.println("BINGO 3 , failed to read " + keyValue);
+						System.exit(0);
 
-				} catch (TimeoutException te) {					
-					/*
-					 * Nothing to do. The message should have been lost. Retry
-					 * again.
-					 */
-					logger.error("TimeoutException happened in Distributed Jessy (Perform Read)" + te.getCause());
-					failedReadCount.incr();
-				} catch (InterruptedException ie) {
-					logger.error("InterruptedException happened in Distributed Jessy (Perform Read)" + ie.getCause());
-					failedReadCount.incr();
-					isDone = true;
-				} catch (ExecutionException ee) {
-					logger.error("ExecutionException happened in Distributed Jessy (Perform Read)" + ee.getCause());
-					failedReadCount.incr();
-					isDone = true;
-				}
+						logger.error("ExecutionException happened in Distributed Jessy (Perform Read)" + ee.getCause());
+						failedReadCount.incr();
+						isDone = true;
+					}
 
-			} while (!isDone);
+				} while (!isDone);
 
+			}
+		} catch (NullPointerException e) {
+			e.printStackTrace();
 		}
 
 		return result;
@@ -379,35 +396,38 @@ public class DistributedJessy extends Jessy {
 			TransactionHandler transactionHandler) {
 		ExecutionHistory executionHistory = getExecutionHistory(transactionHandler);
 		
-		Future<TransactionState> stateFuture = distributedTermination
-				.terminateTransaction(executionHistory);
-
-		TransactionState stateResult = null;
 		try {
-			stateResult = stateFuture.get(
-					ConstantPool.JESSY_TRANSACTION_TERMINATION_TIMEOUT,
-					ConstantPool.JESSY_TRANSACTION_TERMINATION_TIMEOUT_TYPE);
-			executionHistory.changeState(stateResult);
-		} catch (TimeoutException te) {
-			distributedJessy.garbageCollectTransaction(transactionHandler);
-			executionHistory.changeState(TransactionState.ABORTED_BY_TIMEOUT);
+			Future<TransactionState> stateFuture = distributedTermination
+					.terminateTransaction(executionHistory);
+
+			TransactionState stateResult = null;
+			try {
+				stateResult = stateFuture.get(
+						ConstantPool.JESSY_TRANSACTION_TERMINATION_TIMEOUT,
+						ConstantPool.JESSY_TRANSACTION_TERMINATION_TIMEOUT_TYPE);
+				executionHistory.changeState(stateResult);
+			} catch (TimeoutException te) {
+				distributedJessy.garbageCollectTransaction(transactionHandler);
+				executionHistory.changeState(TransactionState.ABORTED_BY_TIMEOUT);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			assert (stateResult != null);
+
+			/*
+			 * Set the probes for calculating the abort rate.
+			 */
+			executionCount.incr();
+			if (stateResult == TransactionState.ABORTED_BY_VOTING)
+				abortByVoteCount.incr();
+			else if (stateResult == TransactionState.ABORTED_BY_CERTIFICATION)
+				abortByCertificationCount.incr();
+			else if (stateResult == TransactionState.ABORTED_BY_TIMEOUT)
+				abortByTimeout.incr();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		assert (stateResult != null);
 
-		/*
-		 * Set the probes for calculating the abort rate.
-		 */
-		executionCount.incr();
-		if (stateResult == TransactionState.ABORTED_BY_VOTING)
-			abortByVoteCount.incr();
-		else if (stateResult == TransactionState.ABORTED_BY_CERTIFICATION)
-			abortByCertificationCount.incr();
-		else if (stateResult == TransactionState.ABORTED_BY_TIMEOUT)
-			abortByTimeout.incr();
-
-		logger.debug(transactionHandler + " " + stateResult);
 		return executionHistory;
 	}
 

@@ -196,52 +196,54 @@ public abstract class Jessy {
 			TransactionHandler transactionHandler, Class<E> entityClass,
 			String keyValue) throws Exception {
 
-		totalReadCount.incr();
-
-		ExecutionHistory executionHistory = handler2executionHistory
-				.get(transactionHandler);
-
-		if (executionHistory == null) {
-			throw new NullPointerException("Transaction has not been started");
-		}
-
 		E entity=null;
-		
-		if (ConstantPool.CHECK_IF_HAS_BEEN_READ)
-			entity = executionHistory.getWriteEntity(keyValue);
+		try {
+			totalReadCount.incr();
 
-		// we first check it this entity has been updated in this transaction
-		// before!
-		if (entity == null) {
+			ExecutionHistory executionHistory = handler2executionHistory
+					.get(transactionHandler);
 
-			// if the entity has not been updated, we check if it has been read
-			// in the same transaction before.
-			if (ConstantPool.CHECK_IF_HAS_BEEN_WRITTEN)
-				entity = executionHistory.getReadEntity(keyValue);
+			if (executionHistory == null) {
+				throw new NullPointerException("Transaction has not been started");
+			}
 
+			if (ConstantPool.CHECK_IF_HAS_BEEN_READ)
+				entity = executionHistory.getWriteEntity(keyValue);
+
+			// we first check it this entity has been updated in this transaction
+			// before!
 			if (entity == null) {
 
-				short retryTimes = 0;
-				while (retryTimes < ConstantPool.JESSY_READ_RETRY_TIMES
-						&& entity == null) {
+				// if the entity has not been updated, we check if it has been read
+				// in the same transaction before.
+				if (ConstantPool.CHECK_IF_HAS_BEEN_WRITTEN)
+					entity = executionHistory.getReadEntity(keyValue);
 
-					entity = performRead(entityClass, "secondaryKey", keyValue,
-							executionHistory.getReadSet().getCompactVector());
-					if (entity == null) {
-						retryTimes++;
-						Thread.sleep(ConstantPool.JESSY_READ_RETRY_TIMEOUT);
+				if (entity == null) {
+
+					short retryTimes = 0;
+					while (retryTimes < ConstantPool.JESSY_READ_RETRY_TIMES
+							&& entity == null) {
+
+						entity = performRead(entityClass, "secondaryKey", keyValue,
+								executionHistory.getReadSet().getCompactVector());
+						if (entity == null) {
+							retryTimes++;
+							Thread.sleep(ConstantPool.JESSY_READ_RETRY_TIMEOUT);
+						}
 					}
 				}
 			}
-		}
 
-		if (entity != null) {
-			executionHistory.addReadEntity(entity);
-			return entity;
-		} else {
-			failedReadCount.incr();
-			return null;
+			if (entity != null) {
+				executionHistory.addReadEntity(entity);
+			} else {
+				failedReadCount.incr();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		return entity;
 	}
 
 	/**

@@ -12,6 +12,7 @@ import net.sourceforge.fractal.utils.PerformanceProbe.ValueRecorder;
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.DebuggingFlag;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequestKey;
@@ -139,8 +140,12 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 			throws NullPointerException {
 		entity.setPrimaryKey(null);
 
-		jessy.write(transactionHandler, entity);
-		isQuery = false;
+		try {
+			jessy.write(transactionHandler, entity);
+			isQuery = false;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public <E extends JessyEntity> void create(E entity) {
@@ -158,7 +163,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	 */
 	public ExecutionHistory commitTransaction() {
 		if(mainTransactionCommit==0) {
-//			System.out.println("Committing " + this.getTransactionHandler().getId());
+			if (DebuggingFlag.TRANSACTION)
+				logger.debug("Start committing " + this.getTransactionHandler().toString());
 			terminationStartTime= System.currentTimeMillis();
 		}
 		
@@ -180,7 +186,7 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 
 			try {
 
-				if (ConstantPool.logging)
+				if (executionHistory.getTransactionState()==TransactionState.ABORTED_BY_TIMEOUT && DebuggingFlag.TRANSACTION)
 					logger.warn("Re-executing aborted "
 							+ (isQuery ? "(query)" : "") + " transaction "
 							+ executionHistory.getTransactionHandler() + " . Reason : " + executionHistory.getTransactionState() );
@@ -212,7 +218,8 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 		jessy.garbageCollectTransaction(transactionHandler);
 		mainTransactionCommit--;
 		if (mainTransactionCommit==0){
-//			System.out.println("Committed " + this.getTransactionHandler().getId());
+			if (DebuggingFlag.TRANSACTION)
+				logger.debug("Finished committing " + this.getTransactionHandler().toString());
 			if (isQuery)
 				transactionTerminationTime_ReadOnly.add(System.currentTimeMillis()
 						- terminationStartTime);
@@ -271,4 +278,5 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public TransactionHandler getTransactionHandler(){
 		return transactionHandler;
 	}
+	
 }

@@ -179,10 +179,11 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 	}
 
 	public String toString() {
-		String result;
-		result = transactionState.toString() + "\n";
-		if(readSet!=null) result = result + readSet.toString() + "\n";
-		if(writeSet!=null) result = result + writeSet.toString() + "\n";
+		String result="";
+		result= "Calling method: " + Thread.currentThread().getStackTrace()[2].getMethodName() + " ";
+		result = result + " " + transactionHandler.toString() + " with status " + transactionState.toString() + " ";
+		if(readSet!=null) result = result + " Readset: " +readSet.toString() + " ";
+		if(writeSet!=null) result = result + " Writeset: " + writeSet.toString() + "\n";
 		return result;
 	}
 

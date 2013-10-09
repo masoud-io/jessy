@@ -17,6 +17,10 @@
 
 package com.yahoo.ycsb.generator;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
+import com.sun.corba.se.spi.ior.iiop.MaxStreamFormatVersionComponent;
 import com.yahoo.ycsb.Utils;
 
 /**
@@ -109,11 +113,57 @@ public class ScrambledZipfianGenerator extends IntegerGenerator
 	
 	public static void main(String[] args)
 	{
-		ScrambledZipfianGenerator gen=new ScrambledZipfianGenerator(10000);
+		//Code used to generate the distribution plot in SRDS-2013
+		int max=400000;
+		int siteSize=4 ;
+		int range=max/siteSize;
+		int ops_count=2;
 		
-		for (int i=0; i<1000000; i++)
+		HashMap<Integer, Integer> siteRatio=new HashMap<Integer, Integer>();
+		for (int i=0;i<siteSize;i++){
+			siteRatio.put(i, 0);
+		}
+		
+//		ScrambledZipfianGenerator gen=new ScrambledZipfianGenerator(max);
+		
+		UniformIntegerGenerator gen=new UniformIntegerGenerator(0,max-1);
+		
+		HashSet<Integer> keySets=null;
+		
+		int opts=0;
+		for (int i=0; i<max; i++)
 		{
-			System.out.println(""+gen.nextInt());
+
+			if (opts==0){
+				keySets=new HashSet<Integer>();
+			}
+			
+			
+			int key=gen.nextInt();
+			int siteId=0;
+			for (int j=0;j<siteSize;j++){
+				if (key>= (j* range) && key < ((j+1)*range)){
+					siteId=j;
+					
+				}
+			}
+			
+//			System.out.println(siteId +">>"+key);
+			keySets.add(siteId);
+			opts++;
+			if (opts==ops_count){
+				opts=0;
+					int tmp=siteRatio.get(keySets.size()-1);
+					siteRatio.put(keySets.size()-1, tmp+1);
+			}
+			
+		}
+		
+		int tmp=0;
+		for (int i=0;i<siteSize;i++){
+			tmp=tmp + siteRatio.get(i);
+			double output=(tmp*1.0)/(max/ops_count);
+			System.out.println((i+1) + " "+output);		
 		}
 	}
 }

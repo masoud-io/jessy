@@ -12,6 +12,7 @@ import com.yahoo.ycsb.workloads.YCSBTransactionalCreateRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalReadRequest;
 import com.yahoo.ycsb.workloads.YCSBTransactionalUpdateRequest;
 
+import fr.inria.jessy.DebuggingFlag;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.LocalJessy;
@@ -157,51 +158,100 @@ public class JessyDBClient extends DB {
 			final List<YCSBTransactionalReadRequest> readList,
 			final List<YCSBTransactionalUpdateRequest> updateList) {
 		try {
-
 			Transaction trans = new Transaction(jessy, readList.size() + updateList.size(),updateList.size(),0 ) {
 				@Override
 				public ExecutionHistory execute() {
-					for (YCSBTransactionalReadRequest request : readList) {
-						try {
-							YCSBEntity en = read(YCSBEntity.class, request.key);
-							if (en == null){
-								logger.error("Read Operation (update txs) for: "
-										+ request.key + " failed.");								
-								return null;
+					
+					try {
+						
+						/*
+						 * First, we execute the read operations,
+						 */
+						for (YCSBTransactionalReadRequest request : readList) {
+							try {
+								
+								if (DebuggingFlag.JESSY_DB_CLIENT)
+									logger.debug("Embedded transaction starts execution of read " + this.getTransactionHandler().toString() + " for key " + request.key);
+								
+								YCSBEntity en = read(YCSBEntity.class, request.key);
+								
+								if (DebuggingFlag.JESSY_DB_CLIENT)
+									logger.debug("Embedded transaction finishes execution of read " + this.getTransactionHandler().toString() + " for key " + request.key);
+
+								if (en == null){
+									if (DebuggingFlag.JESSY_DB_CLIENT)
+										logger.error("Read Operation (update txs) for: "
+												+ request.key + " failed.");								
+									return null;
+								}
+							} catch (Exception e) {
+								e.printStackTrace();
 							}
-						} catch (Exception e) {
-							e.printStackTrace();
 						}
-					}
 
-					for (YCSBTransactionalUpdateRequest request : updateList) {
-						try {
-							YCSBEntity en = read(YCSBEntity.class, request.key);
-							if (en == null){
-								logger.error("Read Operation (update txs-seond part) for: "
-										+ request.key + " failed.");								
-								return null;
+						/*
+						 * Second, and since we have read before writes, we read what we would like to write.
+						 * Then, we perform write operations.
+						 */
+						for (YCSBTransactionalUpdateRequest request : updateList) {
+							try {
+
+								if (DebuggingFlag.JESSY_DB_CLIENT)
+									logger.debug("Embedded transaction starts execution of read " + this.getTransactionHandler().toString() + " for key " + request.key);
+
+								YCSBEntity en = read(YCSBEntity.class, request.key);
+								
+								if (DebuggingFlag.JESSY_DB_CLIENT)
+									logger.debug("Embedded transaction finishes execution of read " + this.getTransactionHandler().toString() + " for key " + request.key);
+
+								
+								if (en == null){
+									if (DebuggingFlag.JESSY_DB_CLIENT)
+										logger.error("Read Operation (update txs-seond part) for: "
+												+ request.key + " failed.");								
+									return null;
+								}
+
+								en.setFields(request.values);
+								write(en);
+
+							} catch (Exception e) {
+								e.printStackTrace();
 							}
-
-							en.setFields(request.values);
-							write(en);
-
-						} catch (Exception e) {
-							e.printStackTrace();
 						}
-					}
 
-					return commitTransaction();
+						if (DebuggingFlag.JESSY_DB_CLIENT)
+							logger.debug("Embedded transaction starts committing " + this.getTransactionHandler().toString());
+						
+						return commitTransaction();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
+					return null;
 				}
 			};
 
+			if (DebuggingFlag.JESSY_DB_CLIENT)
+				logger.info("Client starts " + trans.getTransactionHandler().toString());
+			
 			ExecutionHistory history = trans.execute();
-			if (history == null)
+			
+			if (DebuggingFlag.JESSY_DB_CLIENT)
+				logger.info("Client finishes " + trans.getTransactionHandler().toString());
+			
+			if (history == null){
+				if (DebuggingFlag.JESSY_DB_CLIENT)
+					logger.error("Returned history from exeuction is Null with id "+ history.getTransactionHandler().getId());
 				return -1;
+			}
 			if (history.getTransactionState() == TransactionState.COMMITTED) {
 				return 0;
-			} else
+			} else{
+				if (DebuggingFlag.JESSY_DB_CLIENT)
+					logger.error("Returned history from exeuction is not committed with id "+ history.getTransactionHandler().getId());
 				return -1;
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
