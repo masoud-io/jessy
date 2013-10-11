@@ -15,6 +15,7 @@ public class RemoteReadFuture<E extends JessyEntity> implements
 		private Integer state; // 0 => init, 1 => done, -1 => cancelled
 		private ReadReply<E> reply;
 		private ReadRequest<E> readRequest;
+		private volatile boolean done=false;
 
 		public RemoteReadFuture(ReadRequest<E> rr) {
 			state = new Integer(0);
@@ -36,7 +37,7 @@ public class RemoteReadFuture<E extends JessyEntity> implements
 		public ReadReply<E> get() throws InterruptedException,
 				ExecutionException {
 			synchronized (state) {
-				if (state == 0)
+				if (state == 0 && !done)
 					state.wait();
 			}
 			return (state == -1) ? null : reply;
@@ -47,7 +48,7 @@ public class RemoteReadFuture<E extends JessyEntity> implements
 				TimeoutException {
 			
 			synchronized (state) {
-				if (state == 0)
+				if (state == 0 && !done)
 					state.wait(timeout);
 			}
 			return (state == -1) ? null : reply;
@@ -65,8 +66,10 @@ public class RemoteReadFuture<E extends JessyEntity> implements
 
 			synchronized (state) {
 
-				if (state == -1)
+				if (state == -1){
+					done=true;
 					return true;
+				}
 
 				if (reply == null) {
 					reply = r;
@@ -77,10 +80,12 @@ public class RemoteReadFuture<E extends JessyEntity> implements
 				if (readRequest.isOneKeyRequest()
 						|| reply.getEntity().size() == readRequest
 								.getMultiKeys().size()) {
+					done=true;
 					state.notifyAll();
+					
 					return true;
 				}
-
+				
 				return false;
 			}
 

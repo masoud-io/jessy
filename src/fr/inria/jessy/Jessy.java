@@ -225,8 +225,15 @@ public abstract class Jessy {
 					while (retryTimes < ConstantPool.JESSY_READ_RETRY_TIMES
 							&& entity == null) {
 
+						if (DebuggingFlag.JESSY)
+							logger.debug("Calling performRead Operation on " + keyValue);
+						
 						entity = performRead(entityClass, "secondaryKey", keyValue,
 								executionHistory.getReadSet().getCompactVector());
+						
+						if (DebuggingFlag.JESSY)
+							logger.debug("Ended performRead Operation on " + keyValue);
+						
 						if (entity == null) {
 							retryTimes++;
 							Thread.sleep(ConstantPool.JESSY_READ_RETRY_TIMEOUT);

@@ -126,7 +126,9 @@ public abstract class Transaction implements Callable<ExecutionHistory> {
 	public <E extends JessyEntity> E read(Class<E> entityClass, String keyValue)
 			throws Exception {
 		long start = System.currentTimeMillis();
+		
 		E entity = jessy.read(transactionHandler, entityClass, keyValue);
+
 		transactionReadOperatinTime.add(System.currentTimeMillis() - start);
 		return entity;
 	}

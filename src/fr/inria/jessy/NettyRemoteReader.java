@@ -16,9 +16,8 @@ import org.jboss.netty.channel.Channel;
 import com.yahoo.ycsb.Utils;
 import com.yahoo.ycsb.YCSBEntity;
 
-import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.communication.UnicastLearner;
 import fr.inria.jessy.communication.UnicastClientManager;
+import fr.inria.jessy.communication.UnicastLearner;
 import fr.inria.jessy.communication.UnicastServerManager;
 import fr.inria.jessy.communication.message.ReadReplyMessage;
 import fr.inria.jessy.communication.message.ReadRequestMessage;
@@ -55,10 +54,6 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 			// queue, and only one thread tries to take them from the queue and
 			// process them.
 
-//			 pool.submitMultiple(new
-//			 InnerObjectFactory<RemoteReadRequestTask>(
-//			 RemoteReadRequestTask.class, NettyRemoteReader.class, this),4);
-
 			pool.submit(new RemoteReadRequestTask());
 		} else {
 			smanager = new UnicastServerManager(j, this, ConstantPool.JESSY_NETTY_REMOTE_READER_PORT);
@@ -86,7 +81,6 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 		RemoteReadFuture remoteRead = new RemoteReadFuture(readRequest);
 		remoteReadQ.put(remoteRead);
 		return remoteRead;
-//		return sendRequest(readRequest);
 	}
 	
 	private  <E extends JessyEntity> RemoteReadFuture sendRequest(ReadRequest<E> readRequest){
@@ -122,19 +116,10 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 	private  void learnReadRequestMessage(ReadRequestMessage readRequestMessage,
 			Channel channel) {
 
-		// try {
-		// readRequestMessage.channel = channel;
-		// requestQ.put(readRequestMessage);
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
-
 		long start = System.nanoTime();
 
 		List<ReadReply<JessyEntity>> replies = jessy.getDataStore().getAll(
 				readRequestMessage.getReadRequests());
-		// List<ReadReply<JessyEntity>>
-		// replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
 
 		start = System.nanoTime();
 		channel.write(new ReadReplyMessage(replies));
@@ -144,22 +129,26 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void learnReadReplyMessage(ReadReplyMessage msg) {
 
-		List<ReadReply> list = msg.getReadReplies();
-		batching.add(list.size());
+		try{
 
-		for (ReadReply reply : list) {
+			List<ReadReply> list = msg.getReadReplies();
+			batching.add(list.size());
 
-			logger.debug("reply " + reply.getReadRequestId());
+			for (ReadReply reply : list) {
 
-			if (!pendingRemoteReads.containsKey(reply.getReadRequestId())) {
-				logger.info("received an incorrect reply or request already served");
-				continue;
+				if (!pendingRemoteReads.containsKey(reply.getReadRequestId())) {
+					logger.error("received an incorrect reply or request already served");
+					continue;
+				}
+
+				if (pendingRemoteReads.get(reply.getReadRequestId()).mergeReply(
+						reply))
+					pendingRemoteReads.remove(reply.getReadRequestId());
+
 			}
-
-			if (pendingRemoteReads.get(reply.getReadRequestId()).mergeReply(
-					reply))
-				pendingRemoteReads.remove(reply.getReadRequestId());
-
+		}
+		catch(Exception ex){
+			ex.printStackTrace();
 		}
 
 	}
@@ -264,8 +253,6 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 					long start = System.nanoTime();
 					List<ReadReply<JessyEntity>> replies = jessy.getDataStore()
 							.getAll(readRequestMessage.getReadRequests());
-					// List<ReadReply<JessyEntity>>
-					// replies=createFastYCSBReply(readRequestMessage.getReadRequests().get(0));
 
 					start = System.nanoTime();
 					readRequestMessage.channel.write(new ReadReplyMessage(
@@ -280,26 +267,6 @@ public class NettyRemoteReader extends RemoteReader implements UnicastLearner {
 
 	}
 
-	@SuppressWarnings("unused")
-	private List<ReadReply<JessyEntity>> createFastYCSBReply(
-			ReadRequest<JessyEntity> rr) {
-		List<ReadReply<JessyEntity>> replies = new ArrayList<ReadReply<JessyEntity>>();
-
-		String data = Utils.ASCIIString(1000);
-		HashMap<String, String> tmp = new HashMap<String, String>();
-		tmp.put("1", data);
-
-		JessyEntity entity = new YCSBEntity(rr.getOneKey().getKeyValue()
-				.toString(), tmp);
-
-		ReadReply<JessyEntity> reply = new ReadReply<JessyEntity>(entity,
-				rr.getReadRequestId());
-
-		replies.add(reply);
-		return replies;
-
-	}
-	
 	@Override
 	public void closeProxyConnections(){
 			cmanager.close();

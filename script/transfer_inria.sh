@@ -1,7 +1,7 @@
 
 #source /local/msaeida/workspace/Implementations/jessy/script/configuration.sh
 scriptdir="/home/rioc/saeidaar/jessy_script"
-nodes=("saeidaar@rioc")
+nodes=("saeidaar@rioc.inria.fr")
 
 let e=${#nodes[@]}-1
 for i in `seq 0 $e`

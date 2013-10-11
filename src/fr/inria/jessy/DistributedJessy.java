@@ -213,6 +213,9 @@ public class DistributedJessy extends Jessy {
 				long start=System.currentTimeMillis();
 				do {
 
+					if (DebuggingFlag.DISTRIBUTED_JESSY)
+						logger.error("Calling remoteRead Operation on " + keyValue);
+					
 					future = remoteReader.remoteRead(readRequest);
 
 					try {
@@ -220,6 +223,9 @@ public class DistributedJessy extends Jessy {
 						readReply = future.get(
 								ConstantPool.JESSY_REMOTE_READER_TIMEOUT,
 								ConstantPool.JESSY_REMOTE_READER_TIMEOUT_TYPE);
+						
+						if (DebuggingFlag.DISTRIBUTED_JESSY)
+							logger.error("Ended remoteRead Operation on " + keyValue);
 
 						if (readReply != null && readReply.getEntity() != null
 								&& readReply.getEntity().iterator().hasNext()) {

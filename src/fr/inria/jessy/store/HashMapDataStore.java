@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.sleepycat.je.DatabaseException;
+import org.apache.log4j.Logger;
 
+import com.sleepycat.je.DatabaseException;
+import com.yahoo.ycsb.JessyDBClient;
+
+import fr.inria.jessy.DebuggingFlag;
 import fr.inria.jessy.persistence.FilePersistence;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
@@ -28,6 +32,8 @@ import fr.inria.jessy.vector.VectorFactory;
  */
 public class HashMapDataStore implements DataStore {
 
+	private static Logger logger = Logger.getLogger(HashMapDataStore.class);
+	
 	ConcurrentHashMap<String, ArrayList> store;
 
 	@SuppressWarnings("unchecked")
@@ -77,6 +83,9 @@ public class HashMapDataStore implements DataStore {
 	@Override
 	public <E extends JessyEntity, SK> ReadReply<E> get(
 			ReadRequest<E> readRequest) throws NullPointerException {
+		if (DebuggingFlag.DATA_STORE){
+			logger.error("Looking up for the key: "+ readRequest.getOneKey().getKeyValue());
+		}
 		
 		try {
 			if (readRequest.getReadSet()!=null && !VectorFactory.prepareRead(readRequest)){
