@@ -29,13 +29,13 @@ import fr.inria.jessy.vector.GMUVector2;
 
 /**
  * This class implements Non-Monotonic Snapshot Isolation consistency criterion
- * along with using GMUVector introduced by [Peluso2012]
+ * along with using GMUVector2
  * 
  * 
  * @author Masoud Saeida Ardekani
  * 
  */
-public class NMSI_PV_GC extends NMSI {
+public class NMSI_GMUVector2_GC extends NMSI {
 
 	private static ConcurrentHashMap<UUID, GMUVector2<String>> receivedVectors;
 
@@ -44,7 +44,7 @@ public class NMSI_PV_GC extends NMSI {
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector2<String>>();
 	}
 
-	public NMSI_PV_GC(JessyGroupManager m, DataStore dataStore) {
+	public NMSI_GMUVector2_GC(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 	}
 

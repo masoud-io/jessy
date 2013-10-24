@@ -26,6 +26,14 @@ import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.Vector;
 
+/**
+ * FIXME: This implementation is not 100% correct. 
+ * In Serrano'07 they do not perform voting, and each replica can do certification locally, and
+ * decides to commit or abort.
+ * 
+ * @author Masoud Saeida Ardekani
+ *
+ */
 public class Serrano extends SI {
 	private static Logger logger = Logger
 			.getLogger(Serrano.class);
