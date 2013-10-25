@@ -15,19 +15,15 @@ import com.sleepycat.persist.model.Persistent;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.persistence.FilePersistence;
-import fr.inria.jessy.protocol.ApplyGMUVector2;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 
 /**
- * Used for SRDS submission
- * 
  * Used with NMSI and US with GC
  * 
  * Requires a Vector of size of number of groups!!!
  * 
- * @author Masoud Saeida Ardekani This class implements Vector used in
- *         [Peluso2012].
+ * @author Masoud Saeida Ardekani
  * 
  */
 
@@ -186,13 +182,13 @@ public class GMUVector2<K> extends Vector<K> implements Externalizable {
 
 	// TODO parameterize 4 correctly
 	@Override
-	public void updateExtraObjectInCompactVector(Vector<K> vector,Object object) {
+	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, Object compactVectorExtraObject) {
 		/*
 		 * init with 4 entries, because for the moment, we have 4 reads.
 		 */
-		if (object == null)
-			object = new HashMap<K, Boolean>(4);
-		((HashMap<K, Boolean>) object).put(selfKey, true);
+		if (compactVectorExtraObject == null)
+			compactVectorExtraObject = new HashMap<K, Boolean>(4);
+		((HashMap<K, Boolean>) compactVectorExtraObject).put(selfKey, true);
 	}
 
 	@Override

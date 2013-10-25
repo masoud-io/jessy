@@ -119,7 +119,16 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements Clone
 		out.writeObject(selfKey);
 	}
 
-	public void updateExtraObjectInCompactVector(Vector<K> vector, Object object) {
+	/**
+	 * A server sometimes need to send some additional information to the proxy.
+	 * These informations are put either in entityLocalVector or entityTemproryObject.
+	 * Ultimately, they must put in the compact vector temprory object.
+	 * 
+	 * @param entityLocalVector
+	 * @param entityTemproryObject
+	 * @param compactVectorExtraObject
+	 */
+	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, Object compactVectorExtraObject) {
 		return;
 	}
 

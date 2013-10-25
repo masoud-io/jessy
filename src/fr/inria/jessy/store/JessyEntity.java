@@ -33,6 +33,8 @@ public abstract class JessyEntity implements Externalizable, Cloneable {
 	private Vector<String> localVector;
 
 	private boolean removed = true;
+	
+	public Object temporaryObject;
 
 	@PrimaryKey(sequence = "Jessy_Sequence")
 	private PrimaryKeyType primaryKey;
@@ -96,12 +98,13 @@ public abstract class JessyEntity implements Externalizable, Cloneable {
 			ClassNotFoundException {
 		secondaryKey = (String) in.readObject();
 		localVector = (Vector<String>) in.readObject();
+		temporaryObject=in.readObject();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(secondaryKey);
 		out.writeObject(localVector);
-
+		out.writeObject(temporaryObject);
 	}
 	
 	public JessyEntity clone() {		
@@ -113,6 +116,7 @@ public abstract class JessyEntity implements Externalizable, Cloneable {
 			je.removed=this.removed;
 			je.primaryKey=this.primaryKey;
 			je.secondaryKey=this.secondaryKey;
+			je.temporaryObject=this.temporaryObject;
 			
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();

@@ -7,7 +7,9 @@ import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.persistence.FilePersistence;
 import fr.inria.jessy.protocol.GMU;
 import fr.inria.jessy.protocol.NMSI_DV_GC;
+import fr.inria.jessy.protocol.NMSI_GMUVector2_GC;
 import fr.inria.jessy.protocol.NMSI_GMUVector_GC;
+import fr.inria.jessy.protocol.NMSI_PDV_GC;
 import fr.inria.jessy.protocol.PSI_VV_GC;
 import fr.inria.jessy.protocol.PStore;
 import fr.inria.jessy.protocol.SDUR;
@@ -26,40 +28,6 @@ public class ProtocolFactory {
 
 	private static String protocolName;
 	
-	/**
-	 * Specifies the directory of files for loading the data store.
-	 * See {@link FilePersistence} for details.
-	 */
-	private static String persistenceName;
-	
-
-	static {
-		protocolName = Configuration
-				.readConfig(ConstantPool.CONSISTENCY_TYPE);
-		
-		if (protocolName.equals("serrano")) {
-			persistenceName="si2";
-		} else if (protocolName.equals("pstore")) {
-			persistenceName="ser";
-		} else if (protocolName.equals("sdur")) {
-			persistenceName="psi";  //SDUR uses Version Vector that is already filled for PSI.
-		} else if (protocolName.equals("rc")) {
-			persistenceName="rc";
-		} else if (protocolName.equals("psi_vv_gc") || protocolName.equals("walter")) {
-			persistenceName="psi";
-		} else if (protocolName.equals("us_dv_gc")) {
-			persistenceName="us";
-		} else if (protocolName.equals("us_gmv_gc")) {
-			persistenceName="us3";
-		} else if (protocolName.equals("gmu")) {
-			persistenceName="us2";
-		} else if (protocolName.equals("nmsi_gmv_gc")) {
-			persistenceName="nmsi3";
-		}else if (protocolName.equals("nmsi_dv_gc")) {
-			persistenceName="nmsi";
-		}
-	}
-
 	public static Consistency initProtocol(JessyGroupManager m, DataStore dataStore) {
 		if (_instance != null)
 			return _instance;
@@ -80,15 +48,19 @@ public class ProtocolFactory {
 			_instance = new US_GMUVector_GC(m, dataStore);
 		} else if (protocolName.equals("gmu")) {
 			_instance = new GMU(m, dataStore);
-		} else if (protocolName.equals("nmsi_gmv_gc")) {
-			_instance = new NMSI_GMUVector_GC(m,dataStore);
 		}else if (protocolName.equals("nmsi_dv_gc")) {
 			_instance = new NMSI_DV_GC(m, dataStore);
+		} else if (protocolName.equals("nmsi_gmv_gc")) {
+			_instance = new NMSI_GMUVector_GC(m,dataStore);
+		} else if (protocolName.equals("nmsi_gmv2_gc")) {
+			_instance = new NMSI_GMUVector2_GC(m, dataStore);
+		} else if (protocolName.equals("nmsi_pdv_gc")) {
+			_instance = new NMSI_PDV_GC(m,dataStore);			
 		} else if (protocolName.equals("walter")) {
 			_instance = new Walter(m, dataStore);
 		}
 		
-		System.out.println("Protocol " + protocolName + " is initalized with persistence directory " + persistenceName);
+		System.out.println("Protocol " + protocolName + " is initalized with persistence directory " + protocolName);
 		return _instance;
 	}
 
@@ -98,10 +70,6 @@ public class ProtocolFactory {
 
 	public static String getProtocolName() {
 		return protocolName;
-	}
-	
-	public static String getPersistenceName() {
-		return persistenceName;
 	}
 	
 }

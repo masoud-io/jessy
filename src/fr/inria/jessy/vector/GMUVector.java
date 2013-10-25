@@ -189,9 +189,9 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 
 	// TODO parameterize 4 correctly
 	@Override
-	public void updateExtraObjectInCompactVector(Vector<K> vector, Object object) {
+	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, Object compactVectorExtraObject) {
 		try {
-			object=(Object) GMUVectorExtraObject.getGMUVectorExtraObject((GMUVector<String>)vector);
+			compactVectorExtraObject=(Object) GMUVectorExtraObject.getGMUVectorExtraObject((GMUVector<String>)entityLocalVector);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

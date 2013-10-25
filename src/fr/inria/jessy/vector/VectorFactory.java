@@ -7,28 +7,30 @@ import fr.inria.jessy.store.ReadRequest;
 
 public class VectorFactory {
 
-	private static String persistenceName = ProtocolFactory.getPersistenceName();
+	private static String protocolName = ProtocolFactory.getProtocolName();
 	
 	private JessyGroupManager manager;
 	
 	public VectorFactory(JessyGroupManager m) {
 		manager = m;
-		if (persistenceName.equals("psi")) {
+		if (protocolName.equals("walter")) {
 			VersionVector.init(manager);
 		}
-		if (persistenceName.equals("nmsi3") || persistenceName.equals("us3")) {
+		else if (protocolName.equals("nmsi_gmv2_gc") || protocolName.equals("us_gmv2_gc")) {
 			GMUVector2.init(manager);
 		}	
-		if (persistenceName.equals("us2")) {
+		else if (protocolName.equals("nmsi_gmv_gc") || protocolName.equals("us_gmv_gc")
+				|| protocolName.equals("gmu")) {
 			GMUVector.init(manager);
 		}	
 	}	
 	
 	public static boolean prepareRead(ReadRequest rr){
-		if ( persistenceName.equals("us2")) {
+		if (protocolName.equals("nmsi_gmv_gc") || protocolName.equals("us_gmv_gc")
+				|| protocolName.equals("gmu")) {
 			return GMUVector.prepareRead(rr);
 		}
-		else if (persistenceName.equals("nmsi3") || persistenceName.equals("us3")) {
+		else if (protocolName.equals("nmsi_gmv2_gc") || protocolName.equals("us_gmv2_gc")) {
 			return GMUVector2.prepareRead(rr);
 		}
 		else
@@ -36,17 +38,31 @@ public class VectorFactory {
 	}
 	
 	public static void postRead(ReadRequest rr, JessyEntity entity){
-		if ( persistenceName.equals("us2")) {
+		if (protocolName.equals("nmsi_gmv_gc") || protocolName.equals("us_gmv_gc")
+				|| protocolName.equals("gmu")) {
 			GMUVector.postRead(rr, entity);
 		}
-		if (persistenceName.equals("nmsi3") || persistenceName.equals("us3")) {
+		if (protocolName.equals("nmsi_gmv2_gc") || protocolName.equals("us_gmv2_gc")) {
 			GMUVector2.postRead(rr, entity);
 		}
 	}
 
+	/**
+	 * This method is not NECESSARY.
+	 * It is just a dirty way to improve performance.
+	 *  
+	 * @return true if {@link Vector#updateExtraObjectInCompactVector(Vector, Object)} is implemented in the 
+	 * corresponding vector. 
+	 * 
+	 */
 	public boolean needExtraObject() {
 
-		if (persistenceName.equals("nmsi3") || persistenceName.equals("us3") || persistenceName.equals("us2")) {
+		if (protocolName.equals("nmsi_gmv_gc") || 
+				protocolName.equals("us_gmv_gc") ||
+				protocolName.equals("gmu") || 
+				protocolName.equals("nmsi_gmv2_gc") ||
+				protocolName.equals("us_gmv2_gc") || 
+				protocolName.equals("nmsi_pdv_gc")) {
 			return true;
 		}
 
