@@ -1,22 +1,11 @@
-package fr.inria.jessy.consistency;
+package fr.inria.jessy.protocol;
 
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.persistence.FilePersistence;
-import fr.inria.jessy.protocol.GMU;
-import fr.inria.jessy.protocol.NMSI_DV_GC;
-import fr.inria.jessy.protocol.NMSI_GMUVector2_GC;
-import fr.inria.jessy.protocol.NMSI_GMUVector_GC;
-import fr.inria.jessy.protocol.NMSI_PDV_GC;
-import fr.inria.jessy.protocol.PSI_VV_GC;
-import fr.inria.jessy.protocol.PStore;
-import fr.inria.jessy.protocol.SDUR;
-import fr.inria.jessy.protocol.Serrano;
-import fr.inria.jessy.protocol.US_DV_GC;
-import fr.inria.jessy.protocol.US_GMUVector_GC;
-import fr.inria.jessy.protocol.Walter;
+import fr.inria.jessy.consistency.Consistency;
+import fr.inria.jessy.consistency.RC;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.utils.Configuration;
 
@@ -29,6 +18,11 @@ public class ProtocolFactory {
 	private static String protocolName;
 	
 	public static Consistency initProtocol(JessyGroupManager m, DataStore dataStore) {
+		if (protocolName==null){
+			protocolName = Configuration
+                    .readConfig(ConstantPool.CONSISTENCY_TYPE);	
+		}
+		
 		if (_instance != null)
 			return _instance;
 

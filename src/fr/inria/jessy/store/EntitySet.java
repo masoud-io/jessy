@@ -59,7 +59,8 @@ public class EntitySet implements Messageable {
 	}
 
 	public <E extends JessyEntity> void addEntity(E entity) {
-		compactVector.update(entity.getLocalVector());
+		if (entity.getLocalVector()!=null)
+			compactVector.update(entity.getLocalVector(),entity.temporaryObject);
 		entities.put(entity.getKey(), entity);
 	}
 

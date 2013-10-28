@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import net.sourceforge.fractal.wanamcast.WanAMCastMessage;
-import fr.inria.jessy.consistency.ProtocolFactory;
+import fr.inria.jessy.protocol.ProtocolFactory;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
 

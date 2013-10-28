@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.consistency.ProtocolFactory;
+import fr.inria.jessy.protocol.ProtocolFactory;
 import fr.inria.jessy.vector.GMUVector2;
 import fr.inria.jessy.vector.ScalarVector;
 import fr.inria.jessy.vector.VersionVector;

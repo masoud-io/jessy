@@ -5,7 +5,7 @@ import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.ConstantPool.GENUINE_TERMINATION_MODE;
 import fr.inria.jessy.DistributedJessy;
-import fr.inria.jessy.consistency.ProtocolFactory;
+import fr.inria.jessy.protocol.ProtocolFactory;
 
 /**
  * This class provides a factory for generating the {@link TerminationCommunication} needed in {@link DistributedTermination}

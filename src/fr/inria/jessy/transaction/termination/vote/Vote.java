@@ -6,7 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.consistency.ProtocolFactory;
+import fr.inria.jessy.protocol.ProtocolFactory;
 import fr.inria.jessy.transaction.TransactionHandler;
 
 public class Vote implements Externalizable {

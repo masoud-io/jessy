@@ -71,6 +71,14 @@ public class NMSI_PDV_GC extends NMSI {
 		 * increments the vectors and then commits.
 		 */
 		if (transactionType == TransactionType.INIT_TRANSACTION) {
+			
+			for (JessyEntity tmp : executionHistory.getCreateSet()
+					.getEntities()) {
+				
+				PartitionDependenceVector<String> commitVC=new PartitionDependenceVector<String>(manager.getMyGroup().name(),0);
+				tmp.setLocalVector(commitVC);
+			}
+
 			return true;
 		}
 
@@ -177,7 +185,13 @@ public class NMSI_PDV_GC extends NMSI {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void voteReceived(Vote vote) {
-
+		if (vote.getVotePiggyBack().getPiggyback() == null) {
+			/*
+			 * init transaction.
+			 */
+			return;
+		}
+		
 		try {
 
 			PartitionDependenceVector<String> commitVC = (PartitionDependenceVector<String>) vote
@@ -203,7 +217,6 @@ public class NMSI_PDV_GC extends NMSI {
 
 		PartitionDependenceVector<String> commitVC = receivedVectors.get(executionHistory
 				.getTransactionHandler().getId());
-
 
 		/*
 		 * Assigning commitVC to the entities

@@ -17,7 +17,7 @@ import com.sleepycat.persist.model.SecondaryKey;
 
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.consistency.Consistency;
-import fr.inria.jessy.consistency.ProtocolFactory;
+import fr.inria.jessy.protocol.ProtocolFactory;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.DataStoreFactory;
 import fr.inria.jessy.store.JessyEntity;

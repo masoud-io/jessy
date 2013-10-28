@@ -1,7 +1,7 @@
 package fr.inria.jessy.vector;
 
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.consistency.ProtocolFactory;
+import fr.inria.jessy.protocol.ProtocolFactory;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 
