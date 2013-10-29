@@ -30,14 +30,14 @@ import fr.inria.jessy.vector.GMUVector2;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class US_GMUVector2_GC extends US {
+public class US_GMV2_GC extends US {
 
 	static {
 		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
 		votePiggybackRequired = false;
 	}
 
-	public US_GMUVector2_GC(JessyGroupManager m, DataStore dataStore) {
+	public US_GMV2_GC(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 	}
 	

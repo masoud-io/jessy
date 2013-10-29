@@ -11,6 +11,35 @@ public class VectorFactory {
 	
 	private JessyGroupManager manager;
 	
+	public static <K> Vector<K> GetVector(K selfKey) {
+
+//		if (protocolName.contains("Walter")) {
+//			return new VersionVector(manager.getMyGroup().name(), 0);
+//		}
+		if (protocolName.contains("_dv_")) {
+			return new DependenceVector<K>(selfKey);
+		}
+		if (protocolName.contains("_pdv_")) {
+			return new PartitionDependenceVector<K>(selfKey,0);
+		}
+		if (protocolName.contains("rc")) {
+			return new NullVector<K>(selfKey);
+		}
+		if (protocolName.contains("_vv_")) {
+			return new VersionVector<K>(selfKey, 0);
+		}
+		if (protocolName.contains("_sv_")) {
+			return new ScalarVector<K>();
+		}
+		if (protocolName.contains("gmv") ) {
+			return new GMUVector<K>();
+		}
+		if (protocolName.contains("lsv") ) {
+			return new LightScalarVector<K>(selfKey);
+		}
+		return null;
+	}
+	
 	public VectorFactory(JessyGroupManager m) {
 		manager = m;
 		if (protocolName.equals("walter")) {

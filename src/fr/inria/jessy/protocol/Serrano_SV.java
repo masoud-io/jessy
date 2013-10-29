@@ -34,16 +34,16 @@ import fr.inria.jessy.vector.Vector;
  * @author Masoud Saeida Ardekani
  *
  */
-public class Serrano extends SI {
+public class Serrano_SV extends SI {
 	private static Logger logger = Logger
-			.getLogger(Serrano.class);
+			.getLogger(Serrano_SV.class);
 
 	static{
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
 		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
 	}
 	
-	public Serrano(JessyGroupManager m, DataStore store) {
+	public Serrano_SV(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		Consistency.SEND_READSET_DURING_TERMINATION=false;
 	}

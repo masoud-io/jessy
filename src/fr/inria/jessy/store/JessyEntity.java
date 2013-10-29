@@ -14,6 +14,7 @@ import com.sleepycat.persist.model.SecondaryKey;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.Jessy;
 import fr.inria.jessy.vector.Vector;
+import fr.inria.jessy.vector.VectorFactory;
 
 /**
  * @author Masoud Saeida Ardekani
@@ -46,9 +47,9 @@ public abstract class JessyEntity implements Externalizable, Cloneable {
 	private JessyEntity() {
 	}
 
-	// FIXME previously the local vector was initialized 
 	public JessyEntity(String entityId) {
 		this.secondaryKey = entityId;
+		localVector=VectorFactory.GetVector(entityId);
 	}
 
 	public boolean isRemoved() {

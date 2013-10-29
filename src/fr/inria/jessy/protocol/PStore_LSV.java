@@ -23,11 +23,11 @@ import fr.inria.jessy.vector.Vector;
  * @author Masoud Saeida Ardekani
  *
  */
-public class PStore extends SER {
+public class PStore_LSV extends SER {
 
-	private static Logger logger = Logger.getLogger(PStore.class);
+	private static Logger logger = Logger.getLogger(PStore_LSV.class);
 
-	public PStore(JessyGroupManager m, DataStore dateStore) {
+	public PStore_LSV(JessyGroupManager m, DataStore dateStore) {
 		super(m, dateStore);
 	}
 
@@ -105,6 +105,11 @@ public class PStore extends SER {
 		if (executionHistory.getReadSet()!=null){
 			for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
 
+
+				if (!manager.getPartitioner().isLocal(tmp.getKey()))
+					continue;
+
+				
 				try {
 					lastComittedEntity = store
 							.get(new ReadRequest<JessyEntity>(

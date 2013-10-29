@@ -11,10 +11,9 @@ import net.sourceforge.fractal.utils.ExecutorPool;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.ConstantPool;
-import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
-import fr.inria.jessy.consistency.US;
+import fr.inria.jessy.consistency.NMSI;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -27,32 +26,27 @@ import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 import fr.inria.jessy.vector.GMUVector2;
 
 /**
- * This class implements Update Serializability consistency criterion along with
- * using GMUVector introduced by [Peluso2012]
+ * This class implements Non-Monotonic Snapshot Isolation consistency criterion
+ * along with using GMUVector introduced by [Peluso2012]
  * 
- * CONS: US
- * Vector: GMUVector
- * Atomic Commitment: GroupCommunication
  * 
  * @author Masoud Saeida Ardekani
  * 
- * TODO Certify and GMUVector should be double checked. 
- * 
  */
-public class US_GMUVector_GC extends US{
+public class NMSI_GMV_GC extends NMSI {
 
 	private static ConcurrentHashMap<UUID, GMUVector2<String>> receivedVectors;
 	private static ConcurrentHashMap<UUID, Integer> seqNos;
+	
 	private static ApplyGMUVector2 applyGMUVector;
 	
 	static {
-		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
 		votePiggybackRequired = true;
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector2<String>>();
 		seqNos=new ConcurrentHashMap<UUID, Integer>();
 	}
 
-	public US_GMUVector_GC(JessyGroupManager m, DataStore dataStore) {
+	public NMSI_GMV_GC(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 		
 		if (!m.isProxy()){
@@ -102,13 +96,11 @@ public class US_GMUVector_GC extends US{
 
 		JessyEntity lastComittedEntity;
 
-		for (JessyEntity tmp : executionHistory.getReadSet().getEntities()) {
-
+		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
 			if (!manager.getPartitioner().isLocal(tmp.getKey()))
 				continue;
 
 			try {
-
 				lastComittedEntity = store
 						.get(new ReadRequest<JessyEntity>(
 								(Class<JessyEntity>) tmp.getClass(),
@@ -126,44 +118,14 @@ public class US_GMUVector_GC extends US{
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
 					return false;
 				}
-
+				
 			} catch (NullPointerException e) {
+//				e.printStackTrace();
 				// nothing to do.
 				// the key is simply not there.
 			}
 
 		}
-		
-//		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
-//			if (!manager.getPartitioner().isLocal(tmp.getKey()))
-//				continue;
-//
-//			try {
-//				lastComittedEntity = store
-//						.get(new ReadRequest<JessyEntity>(
-//								(Class<JessyEntity>) tmp.getClass(),
-//								"secondaryKey", tmp.getKey(), null))
-//						.getEntity().iterator().next();
-//
-//				/*
-//				 * instead of locking, we simply checks against the latest
-//				 * committed values
-//				 */
-//				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-//						.getLocalVector().getValue(tmp.getKey())) {
-//					if (ConstantPool.logging)
-//						logger.error("Transaction "+ executionHistory.getTransactionHandler().getId() + "Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
-//							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
-//					return false;
-//				}
-//				
-//			} catch (NullPointerException e) {
-////				e.printStackTrace();
-//				// nothing to do.
-//				// the key is simply not there.
-//			}
-//
-//		}
 		
 		return true;
 	}

@@ -53,12 +53,12 @@ import fr.inria.jessy.vector.VersionVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class Walter extends PSI implements Learner {
+public class Walter_VV extends PSI implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
 	private static Logger logger = Logger
-			.getLogger(Walter.class);
+			.getLogger(Walter_VV.class);
 
 	static {
 		votePiggybackRequired = true;
@@ -72,7 +72,7 @@ public class Walter extends PSI implements Learner {
 
 	private ConcurrentHashMap<UUID, VersionVectorPiggyback> receivedPiggybacks;
 
-	public Walter(JessyGroupManager m, DataStore store) {
+	public Walter_VV(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		receivedPiggybacks = new ConcurrentHashMap<UUID, VersionVectorPiggyback>();
 		propagation = new MessagePropagation(this,m);

@@ -35,7 +35,7 @@ import fr.inria.jessy.vector.GMUVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class GMU extends US{
+public class GMU_GMV extends US{
 
 	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
 //	private static ConcurrentLinkedQueue<UUID> commitQueue;
@@ -47,7 +47,7 @@ public class GMU extends US{
 		votePiggybackRequired = true;
 	}
 
-	public GMU(JessyGroupManager m, DataStore dataStore) {
+	public GMU_GMV(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 		
 	}

@@ -57,12 +57,12 @@ import fr.inria.jessy.vector.VersionVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class SDUR extends US implements Learner {
+public class SDUR_VV extends US implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
 	private static Logger logger = Logger
-			.getLogger(SDUR.class);
+			.getLogger(SDUR_VV.class);
 
 	private static AtomicInteger tempSequenceNumber=new AtomicInteger(0);
 	
@@ -86,7 +86,7 @@ public class SDUR extends US implements Learner {
 	 */
 	public static LinkedBlockingDeque<ExecutionHistory> committedTransactions;
 
-	public SDUR(JessyGroupManager m, DataStore store) {
+	public SDUR_VV(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		receivedPiggybacks = new ConcurrentHashMap<UUID, VersionVectorPiggyback>();
 		propagation = new MessagePropagation(this,m);

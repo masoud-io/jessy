@@ -371,7 +371,7 @@ public class DistributedJessy extends Jessy {
 
 //			if (executionHistory.getWriteSet().size() > 0) {
 				itr = executionHistory.getWriteSet().getEntities().iterator();
-				while (itr.hasNext()) {
+				while (itr.hasNext()) {					
 					JessyEntity tmp = itr.next();
 
 					// Send the entity to the data store to be saved if it is local
