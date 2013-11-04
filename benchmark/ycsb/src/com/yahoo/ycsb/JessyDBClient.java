@@ -249,7 +249,7 @@ public class JessyDBClient extends DB {
 				return 0;
 			} else{
 				if (DebuggingFlag.JESSY_DB_CLIENT)
-					logger.error("Returned history from exeuction is not committed with id "+ history.getTransactionHandler().getId());
+					logger.error("Returned history from exeuction is not committed with id "+ history.getTransactionHandler().getId() + " STATE IS : " + history.getTransactionState());
 				return -1;
 			}
 

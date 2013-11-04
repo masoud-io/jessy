@@ -1,8 +1,12 @@
 package fr.inria.jessy.protocol;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.consistency.SER;
@@ -11,6 +15,7 @@ import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
+import fr.inria.jessy.transaction.termination.TwoPhaseCommit;
 import fr.inria.jessy.vector.Vector;
 
 /**
@@ -18,16 +23,20 @@ import fr.inria.jessy.vector.Vector;
  * 
  * CONS: SER
  * Vector: Null Vector
- * Atomic Commitment: GroupCommunication
+ * Atomic Commitment: Two phase commit
  * 
  * @author Masoud Saeida Ardekani
  *
  */
-public class PStore_LSV extends SER {
+public class PStore_LSV_2PC extends SER {
 
-	private static Logger logger = Logger.getLogger(PStore_LSV.class);
+	private static Logger logger = Logger.getLogger(PStore_LSV_2PC.class);
+	
+	static {
+		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
+	}
 
-	public PStore_LSV(JessyGroupManager m, DataStore dateStore) {
+	public PStore_LSV_2PC(JessyGroupManager m, DataStore dateStore) {
 		super(m, dateStore);
 	}
 
@@ -67,38 +76,6 @@ public class PStore_LSV extends SER {
 
 		JessyEntity lastComittedEntity;
 
-//		/*
-//		 * Firstly, the writeSet is checked.
-//		 */
-//		if (executionHistory.getWriteSet()!=null){
-//			for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
-//
-//				try {
-//					lastComittedEntity = store
-//							.get(new ReadRequest<JessyEntity>(
-//									(Class<JessyEntity>) tmp.getClass(),
-//									"secondaryKey", tmp.getKey(), null))
-//									.getEntity().iterator().next();
-//
-//					if (lastComittedEntity.getLocalVector().isCompatible(
-//							tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
-//						logger.debug("Certification fails for transaction "
-//								+ executionHistory.getTransactionHandler().getId()
-//								+ " because it has written " + tmp.getKey()
-//								+ " with version " + tmp.getLocalVector()
-//								+ " but the last committed version is : "
-//								+ lastComittedEntity.getLocalVector());
-//						return false;
-//					}
-//
-//				} catch (NullPointerException e) {
-//					// nothing to do.
-//					// the key is simply not there.
-//				}
-//
-//			}
-//		}
-
 		/*
 		 * Secondly, the readSet is checked.
 		 */
@@ -121,7 +98,7 @@ public class PStore_LSV extends SER {
 							tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 
 						if (ConstantPool.logging)
-							logger.debug("Certification fails for transaction "
+							logger.error("Certification fails for transaction "
 									+ executionHistory.getTransactionHandler().getId()
 									+ " because it has written " + tmp.getKey()
 									+ " with version " + tmp.getLocalVector()
@@ -129,7 +106,7 @@ public class PStore_LSV extends SER {
 									+ lastComittedEntity.getLocalVector());
 
 						return false;
-					}
+					}					
 
 				} catch (NullPointerException e) {
 					// nothing to do.
@@ -150,12 +127,28 @@ public class PStore_LSV extends SER {
 	public boolean applyingTransactionCommute() {
 		return true;
 	}
-
+	
 	@Override
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
+		if (msg.getExecutionHistory().getWriteSet()==null)
+			return;
 		
 		for (JessyEntity entity : msg.getExecutionHistory().getWriteSet().getEntities()) {
 			entity.getLocalVector().update(null, null);
 		}
+	}
+	
+	/**
+	 * Coordinator needs to only wait for the vote from the transaction manager. 
+	 * 	
+	 */
+	public Set<String> getVotersToCoordinator(
+			Set<String> termincationRequestReceivers,
+			ExecutionHistory executionHistory) {
+		Set<String> concernedKeys=new HashSet<String>();
+		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
+		
+		return manager.getPartitioner().resolveNames(concernedKeys);
+		
 	}
 }

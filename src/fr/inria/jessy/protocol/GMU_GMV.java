@@ -2,10 +2,10 @@ package fr.inria.jessy.protocol;
 
 import static fr.inria.jessy.transaction.ExecutionHistory.TransactionType.BLIND_WRITE;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.sourceforge.fractal.membership.Group;
 import fr.inria.jessy.ConstantPool;
@@ -364,9 +364,14 @@ public class GMU_GMV extends US{
 	public Set<String> getVotersToCoordinator(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
-		termincationRequestReceivers.clear();
-		termincationRequestReceivers.add(TwoPhaseCommit.getCoordinatorId(executionHistory,manager.getPartitioner()));
-		return termincationRequestReceivers;
+//		termincationRequestReceivers.clear();
+//		termincationRequestReceivers.add(TwoPhaseCommit.getCoordinatorId(executionHistory,manager.getPartitioner()));
+//		return termincationRequestReceivers;
+		
+		Set<String> concernedKeys=new HashSet<String>();
+		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
+		
+		return manager.getPartitioner().resolveNames(concernedKeys);
 	}
 
 }

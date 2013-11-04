@@ -8,15 +8,6 @@ import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.RC;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.utils.Configuration;
-import fr.inria.jessy.vector.DependenceVector;
-import fr.inria.jessy.vector.GMUVector;
-import fr.inria.jessy.vector.GMUVector2;
-import fr.inria.jessy.vector.LightScalarVector;
-import fr.inria.jessy.vector.NullVector;
-import fr.inria.jessy.vector.PartitionDependenceVector;
-import fr.inria.jessy.vector.ScalarVector;
-import fr.inria.jessy.vector.Vector;
-import fr.inria.jessy.vector.VersionVector;
 
 public class ProtocolFactory {
 
@@ -38,8 +29,10 @@ public class ProtocolFactory {
 
 		if (protocolName.equals("serrano_sv")) {
 			_instance = new Serrano_SV(m, dataStore);
-		} else if (protocolName.equals("pstore_lsv")) {
-			_instance = new PStore_LSV(m, dataStore);
+		} else if (protocolName.equals("pstore_lsv_gc")) {
+			_instance = new PStore_LSV_GC(m, dataStore);
+		} else if (protocolName.equals("pstore_lsv_2pc")) {
+			_instance = new PStore_LSV_2PC(m, dataStore);			
 		} else if (protocolName.equals("sdur_vv")) {
 			_instance = new SDUR_VV(m, dataStore);
 		} else if (protocolName.equals("rc")) {
@@ -65,6 +58,8 @@ public class ProtocolFactory {
 		}
 		
 		System.out.println("Protocol " + protocolName + " is initalized with persistence directory " + protocolName);
+		if (_instance!=null)
+			System.out.println("Protocol " + _instance.getClass().toString() + " is initialized.");
 		return _instance;
 	}
 

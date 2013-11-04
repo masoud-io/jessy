@@ -14,4 +14,6 @@ public class DebuggingFlag {
 	public static final boolean DISTRIBUTED_TERMINATION=false;
 	
 	public static final boolean DATA_STORE=false;
+	
+	public static final boolean TWO_PHASE_COMMIT=false;
 }

@@ -369,7 +369,7 @@ public class DistributedJessy extends Jessy {
 		try{
 			Iterator<? extends JessyEntity> itr;
 
-//			if (executionHistory.getWriteSet().size() > 0) {
+			if (executionHistory.getWriteSet()!=null){
 				itr = executionHistory.getWriteSet().getEntities().iterator();
 				while (itr.hasNext()) {					
 					JessyEntity tmp = itr.next();
@@ -378,9 +378,9 @@ public class DistributedJessy extends Jessy {
 					if (partitioner.isLocal(tmp.getKey()))
 						dataStore.put(tmp);
 				}
-//			}
+			}
 
-//			if (executionHistory.getCreateSet().size() > 0) {
+			if (executionHistory.getCreateSet()!=null){
 				itr = executionHistory.getCreateSet().getEntities().iterator();
 				while (itr.hasNext()) {
 					JessyEntity tmp = itr.next();
@@ -389,7 +389,7 @@ public class DistributedJessy extends Jessy {
 					if (partitioner.isLocal(tmp.getKey()))
 						dataStore.put(tmp);
 				}
-//			}
+			}
 		}
 		catch (Exception ex)
 		{

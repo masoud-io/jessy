@@ -6,6 +6,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.sourceforge.fractal.membership.Group;
+
+import org.apache.log4j.Logger;
+
+import fr.inria.jessy.DebuggingFlag;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
@@ -14,7 +18,18 @@ import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 
+/**
+ * we first choose the first write as the deterministic key.
+ * The leader of a group replicating a deterministic key returned by {@link this#getDetermisticKey(ExecutionHistory)} 
+ * will be the 2PC coordinator.
+ * 
+ * @author Masoud Saeida Ardekani
+ *
+ */
 public class TwoPhaseCommit extends AtomicCommit {
+
+	private static Logger logger = Logger
+			.getLogger(TwoPhaseCommit.class);
 
 	String swid=""+jessy.manager.getSourceId();
 	
@@ -114,7 +129,6 @@ public class TwoPhaseCommit extends AtomicCommit {
 	@Override
 	public void sendVote(VoteMessage voteMessage,
 			TerminateTransactionRequestMessage msg) {
-		String firstWriteKey=msg.getExecutionHistory().getWriteSet().getKeys().iterator().next();
 		voteMessage.getVote().setVoterEntityName(swid);
 		voteMulticast.sendVote(voteMessage, Integer.parseInt(getCoordinatorId(msg.getExecutionHistory(), jessy.manager.getPartitioner())), "");
 	}
@@ -137,23 +151,48 @@ public class TwoPhaseCommit extends AtomicCommit {
 			 * Send the final vote to every replica, and also to the client.
 			 * Note that here, the coordinator is the client.  
 			 */
+			if (DebuggingFlag.TWO_PHASE_COMMIT)
+				logger.error("quorumReached for " +
+						msg.getExecutionHistory().getTransactionHandler().getId().toString() + 
+						" isCertifyAtCoordinator: " + msg.getExecutionHistory().isCertifyAtCoordinator()
+						+ " coordinatorHost: " + msg.getExecutionHistory().getCoordinatorHost());
+				
+			
 			voteMulticast.sendVote(voteMsg, msg.getExecutionHistory().isCertifyAtCoordinator(), msg.getExecutionHistory().getCoordinatorSwid(), msg.getExecutionHistory().getCoordinatorHost());
 		}
 		
 	}
 	
-	private boolean isCoordinator(TerminateTransactionRequestMessage msg){
-		String firstWriteKey=msg.getExecutionHistory().getWriteSet().getKeys().iterator().next();
-		if (jessy.partitioner.resolve(firstWriteKey).leader() == jessy.manager.getSourceId()){
+	private boolean isCoordinator(TerminateTransactionRequestMessage msg){		
+		String deterministicKey=getDetermisticKey(msg.getExecutionHistory());
+		
+		if (jessy.partitioner.resolve(deterministicKey).leader() == jessy.manager.getSourceId()){
 			return true;
 		}
 		else{
 			return false;
 		}
 	}
+	
+	public static String getDetermisticKey(ExecutionHistory history){
+		String deterministicKey;
+		
+		//we first choose the first write as the determistic key.
+		//hence the leader of a group replicating this key will be the 2PC coordinator.
+		if (history.getWriteSet() !=null && history.getWriteSet().size()>0){
+			deterministicKey=history.getWriteSet().getKeys().iterator().next();
+		}
+		else if (history.getCreateSet() !=null &&  history.getCreateSet().size()>0){
+			deterministicKey=history.getCreateSet().getKeys().iterator().next();
+		}
+		else {
+			deterministicKey=history.getReadSet().getKeys().iterator().next();
+		}
+		return deterministicKey;
+	}
 
 	public static String getCoordinatorId(ExecutionHistory executionHistory, Partitioner partitioner){
-		String firstWriteKey=executionHistory.getWriteSet().getKeys().iterator().next();
+		String firstWriteKey=getDetermisticKey(executionHistory);
 		return "" + partitioner.resolve(firstWriteKey).leader();
 	}
 
