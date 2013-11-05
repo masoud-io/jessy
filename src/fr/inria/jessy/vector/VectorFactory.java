@@ -9,7 +9,7 @@ public class VectorFactory {
 
 	private static String protocolName = ProtocolFactory.getProtocolName();
 	
-	private JessyGroupManager manager;
+	private static Vector<String> tmpVector=GetVector("");
 	
 	public static <K> Vector<K> GetVector(K selfKey) {
 
@@ -31,49 +31,33 @@ public class VectorFactory {
 		if (protocolName.contains("_sv_")) {
 			return new ScalarVector<K>();
 		}
-		if (protocolName.contains("gmv") ) {
+		if (protocolName.contains("_gmv_") ) {
 			return new GMUVector<K>();
 		}
-		if (protocolName.contains("lsv") ) {
+		if (protocolName.contains("_gmv2_") ) {
+			return new GMUVector2<K>();
+		}		
+		if (protocolName.contains("_lsv_") ) {
 			return new LightScalarVector<K>(selfKey);
 		}
 		return null;
 	}
 	
-	public VectorFactory(JessyGroupManager m) {
-		manager = m;
-		if (protocolName.equals("walter")) {
-			VersionVector.init(manager);
-		}
-		else if (protocolName.equals("nmsi_gmv2_gc") || protocolName.equals("us_gmv2_gc")) {
-			GMUVector2.init(manager);
-		}	
-		else if (protocolName.equals("nmsi_gmv_gc") || protocolName.equals("us_gmv_gc")
-				|| protocolName.equals("gmu")) {
-			GMUVector.init(manager);
-		}	
+	public static void init(JessyGroupManager m) {
+		tmpVector.init(m);
 	}	
 	
+	public static void makePersistent() {
+		tmpVector.makePersistent();
+	}	
+	
+	
 	public static boolean prepareRead(ReadRequest rr){
-		if (protocolName.equals("nmsi_gmv_gc") || protocolName.equals("us_gmv_gc")
-				|| protocolName.equals("gmu")) {
-			return GMUVector.prepareRead(rr);
-		}
-		else if (protocolName.equals("nmsi_gmv2_gc") || protocolName.equals("us_gmv2_gc")) {
-			return GMUVector2.prepareRead(rr);
-		}
-		else
-			return true;
+		return tmpVector.prepareRead(rr);
 	}
 	
 	public static void postRead(ReadRequest rr, JessyEntity entity){
-		if (protocolName.equals("nmsi_gmv_gc") || protocolName.equals("us_gmv_gc")
-				|| protocolName.equals("gmu")) {
-			GMUVector.postRead(rr, entity);
-		}
-		if (protocolName.equals("nmsi_gmv2_gc") || protocolName.equals("us_gmv2_gc")) {
-			GMUVector2.postRead(rr, entity);
-		}
+		tmpVector.postRead(rr, entity);
 	}
 
 	/**
@@ -84,8 +68,13 @@ public class VectorFactory {
 	 * corresponding vector. 
 	 * 
 	 */
-	public boolean needExtraObject() {
+	public static boolean needExtraObject() {
 
+		while (protocolName==null || protocolName.equals("")){
+			protocolName = ProtocolFactory.getProtocolName();
+			System.out.println("Unable to read Protocol Name.");
+		}
+		
 		if (protocolName.equals("nmsi_gmv_gc") || 
 				protocolName.equals("us_gmv_gc") ||
 				protocolName.equals("gmu") || 

@@ -9,6 +9,11 @@ import java.util.HashMap;
 import com.sleepycat.persist.model.Persistent;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.communication.JessyGroupManager;
+import fr.inria.jessy.persistence.FilePersistence;
+import fr.inria.jessy.store.DataStore;
+import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.ReadRequest;
 
 @Persistent
 public abstract class Vector<K> extends ValueVector<K, Integer> implements Cloneable,
@@ -132,4 +137,29 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements Clone
 		return;
 	}
 
+	/**
+	 * Implements this method if the vector can be loaded from persistent storage.
+	 * This method is called only once during system initialization to initialize the vector's static members.
+	 * 
+	 * @param m
+	 */
+	public synchronized void init(JessyGroupManager m){
+		return;
+	}
+	
+	/**
+	 * Implements this method if the vector needs to be persistent.
+	 * This method is called once {@link DataStore} is being closed.
+	 */
+	public void makePersistent(){
+		return;
+	}
+	
+	public boolean prepareRead(ReadRequest rr){
+		return true;
+	}
+	
+	public void postRead(ReadRequest rr, JessyEntity entity){
+		return;
+	}
 }

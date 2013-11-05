@@ -92,19 +92,4 @@ public class FilePersistence {
 		}
 	}
 
-	/**
-	 * We only need to store commitedVTS of VersionVector and sequenceNumber of ScalarVector
-	 */
-	public static void saveJessy() {
-		System.out.println("Saving Jessy ...");
-		if (ProtocolFactory.getProtocolName().equals("psi"))
-			writeObject(VersionVector.committedVTS, "VersionVector.committedVTS");
-		else if (ProtocolFactory.getProtocolName().equals("si2") || ProtocolFactory.getProtocolName().equals("si"))
-			writeObject(ScalarVector.lastCommittedTransactionSeqNumber, "ScalarVector.lastCommittedTransactionSeqNumber");
-		else if (ProtocolFactory.getProtocolName().equals("nmsi2") || ProtocolFactory.getProtocolName().equals("us2")){
-			writeObject(GMUVector2.lastPrepSC, "GMUVector.lastPrepSC");
-			writeObject(GMUVector2.mostRecentVC, "GMUVector.mostRecentVC");			
-		}
-		
-	}
 }

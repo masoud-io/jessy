@@ -140,7 +140,7 @@ public class NMSI_GMV2_GC extends NMSI {
 	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
 			if (msg.getExecutionHistory().getTransactionType() != TransactionType.INIT_TRANSACTION) {
-				GMUVector2.init(manager);
+//				GMUVector2.init(manager);
 				GMUVector2<String> prepVC = GMUVector2.mostRecentVC.clone();
 				int prepVCAti = GMUVector2.lastPrepSC.incrementAndGet();
 				prepVC.setValue(prepVC.getSelfKey(), prepVCAti);

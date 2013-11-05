@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sleepycat.persist.model.Persistent;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.persistence.FilePersistence;
 
 /**
@@ -36,7 +38,8 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 	 */
 	public static  ConcurrentLinkedQueue<Integer> committingTransactionSeqNumber=new ConcurrentLinkedQueue<Integer>();
 	
-	static{
+	@Override
+	public synchronized void init(JessyGroupManager m){
 		if (FilePersistence.loadFromDisk){
 			lastCommittedTransactionSeqNumber=(AtomicInteger)FilePersistence.readObject("ScalarVector.lastCommittedTransactionSeqNumber");
 		}
@@ -44,6 +47,12 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 			lastCommittedTransactionSeqNumber = new AtomicInteger(0);
 		}
 	}
+	
+	@Override
+	public void makePersistent(){
+		FilePersistence.writeObject(ScalarVector.lastCommittedTransactionSeqNumber, "ScalarVector.lastCommittedTransactionSeqNumber");
+	}
+	
 	
 	public synchronized static int incrementAndGetLastCommittedSeqNumber(){
 		synchronized (lastCommittedTransactionSeqNumber) {

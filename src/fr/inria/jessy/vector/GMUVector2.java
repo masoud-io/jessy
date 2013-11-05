@@ -45,7 +45,8 @@ public class GMUVector2<K> extends Vector<K> implements Externalizable {
 	
 	public static final String versionPrefix="user";
 
-	public synchronized static void init(JessyGroupManager m){
+	@Override
+	public synchronized void init(JessyGroupManager m){
 		if(lastPrepSC!=null)
 			return;
 		manager=m;
@@ -62,8 +63,15 @@ public class GMUVector2<K> extends Vector<K> implements Externalizable {
 		logCommitVC=  new LinkedBlockingDeque<GMUVector2<String>>(ConstantPool.GMUVECTOR_LOGCOMMITVC_SIZE);
 	}
 	
+	@Override
+	public void makePersistent(){
+		FilePersistence.writeObject(GMUVector2.mostRecentVC, "GMUVector.mostRecentVC");
+		FilePersistence.writeObject(GMUVector2.lastPrepSC, "GMUVector.lastPrepSC");
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static boolean prepareRead(ReadRequest rr){
+	@Override
+	public boolean prepareRead(ReadRequest rr){
 		String myKey=manager.getMyGroup().name();
 		CompactVector<String> other=rr.getReadSet();
 		
@@ -125,7 +133,8 @@ public class GMUVector2<K> extends Vector<K> implements Externalizable {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void postRead(ReadRequest rr, JessyEntity entity){
+	@Override
+	public void postRead(ReadRequest rr, JessyEntity entity){
 		try{
 			int seqNo=entity.getLocalVector().getValue(manager.getMyGroup().name());
 			entity.getLocalVector().setMap((HashMap<String, Integer>) rr.getReadSet().getMap().clone());

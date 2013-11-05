@@ -37,8 +37,8 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 	@Deprecated
 	public VersionVector(){}
 	
-	// FIXME ugly construct
-	public synchronized static void init(JessyGroupManager m){
+	@Override
+	public synchronized void init(JessyGroupManager m){
 		
 		if(committedVTS!=null) return;
 		
@@ -127,5 +127,9 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 
 	}
 
+	@Override
+	public void makePersistent(){
+		FilePersistence.writeObject(VersionVector.committedVTS, "VersionVector.committedVTS");
+	}
 
 }

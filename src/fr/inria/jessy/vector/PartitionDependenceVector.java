@@ -102,13 +102,15 @@ public class PartitionDependenceVector<K> extends Vector<K> implements Externali
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static boolean prepareRead(ReadRequest rr){
+	@Override
+	public boolean prepareRead(ReadRequest rr){
 		rr.temporaryVector=lastCommit;
 		return true;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void postRead(ReadRequest rr, JessyEntity entity){
+	@Override
+	public void postRead(ReadRequest rr, JessyEntity entity){
 		try{
 			//we set the vector of the node as a temprory object.
 			//Later, once the proxy gets the answer, it needs to incorporate it into the compactVector extra object.

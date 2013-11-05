@@ -42,14 +42,13 @@ public abstract class Consistency {
 	
 	protected DataStore store;
 	protected JessyGroupManager manager;
-	protected VectorFactory vfactory;
 
 	protected static boolean votePiggybackRequired = false;
 	
 	public Consistency(JessyGroupManager m, DataStore s) {
 		manager = m;
 		store = s;
-		vfactory = new VectorFactory(m);
+		VectorFactory.init(m);
 	}
 
 	/**

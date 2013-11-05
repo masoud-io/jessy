@@ -2,11 +2,11 @@
 
 
 node=("$1@access-north.grid5000.fr")
-sites=("nancy" "bordeaux"  "toulouse" "rennes" "sophia" "lille" "grenoble") # "luxembourg" "lyon" "reims") #"nancy"
+sites=("bordeaux") # "rennes" "sophia" "lille" "grenoble") # "luxembourg" "lyon" "reims") #"nancy" "toulouse"
 #shfiles=("experience.sh" "jessy.sh")
 #jarfiles=(`ls *.jar | tr '\n' ' '`)
 #shfiles=(`ls *.sh | tr '\n' ' '`)
-#dirs=("Loaded_YCSB/Sequential/2" "Loaded_YCSB/Sequential/3" "Loaded_YCSB/Sequential/4" "config")
+#dirs=("Loaded_YCSB/4") # "Loaded_YCSB/Sequential/3" "Loaded_YCSB/Sequential/4" "config")
 
 let e=${#sites[@]}-1
 for i in `seq 0 $e`
@@ -44,6 +44,6 @@ echo "Sending to " ${sites[i]}
 	scp ../../../jessy.jar $node:${scriptdir}
 #	scp ../../Batelier/target/batelier-0.0.1-SNAPSHOT.jar $node:${scriptdir}/fractal.jar
 
-#		scp -v -r Loaded_YCSB/Sequential/6 $node:${scriptdir}
+		scp -v -r Loaded_YCSB/4 $node:${scriptdir}
 done
 

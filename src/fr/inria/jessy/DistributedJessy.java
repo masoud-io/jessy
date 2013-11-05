@@ -34,6 +34,7 @@ import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.vector.CompactVector;
+import fr.inria.jessy.vector.VectorFactory;
 
 public class DistributedJessy extends Jessy {
 
@@ -479,7 +480,7 @@ public class DistributedJessy extends Jessy {
 
 			if (!manager.isProxy()) {
 				super.close(this);
-				FilePersistence.saveJessy();
+				VectorFactory.makePersistent();
 				remoteReader.closeReplicaConnections();
 				logger.info("Jessy is closed.");
 			}

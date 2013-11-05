@@ -37,7 +37,8 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	
 	private static JessyGroupManager manager;
 	
-	public synchronized static void init(JessyGroupManager m){
+	@Override
+	public synchronized void init(JessyGroupManager m){
 		if(lastPrepSC!=null)
 			return;
 		manager=m;
@@ -52,8 +53,14 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 		logCommitVC=  new LinkedBlockingDeque<GMUVector<String>>(ConstantPool.GMUVECTOR_LOGCOMMITVC_SIZE);
 	}
 	
+	@Override
+	public void makePersistent(){
+		FilePersistence.writeObject(GMUVector.lastPrepSC, "GMUVector.lastPrepSC");
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static boolean prepareRead(ReadRequest rr){
+	@Override
+	public boolean prepareRead(ReadRequest rr){
 		try{
 			String myKey=""+manager.getSourceId();
 			CompactVector<String> other=rr.getReadSet();
@@ -129,7 +136,8 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void postRead(ReadRequest rr, JessyEntity entity){
+	@Override
+	public void postRead(ReadRequest rr, JessyEntity entity){
 		try{
 			//Add has read nodes to the object vector.
 			// This is a dirty work, and in updateExtraObjectInCompactVector, we remove them, and put them in extraobject of compact vector
