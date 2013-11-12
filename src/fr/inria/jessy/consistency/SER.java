@@ -24,7 +24,7 @@ import fr.inria.jessy.transaction.TransactionTouchedKeys;
  */
 public abstract class SER extends Consistency {
 
-	private static Logger logger = Logger.getLogger(SER.class);
+	protected static Logger logger = Logger.getLogger(SER.class);
 
 	public SER(JessyGroupManager m, DataStore dateStore) {
 		super(m, dateStore);

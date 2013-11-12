@@ -17,7 +17,7 @@ import fr.inria.jessy.vector.Vector;
  * Implements P-Store [Schiper2010]
  * 
  * CONS: SER
- * Vector: Null Vector
+ * Vector: Light Scalar Vector
  * Atomic Commitment: GroupCommunication
  * 
  * @author Masoud Saeida Ardekani

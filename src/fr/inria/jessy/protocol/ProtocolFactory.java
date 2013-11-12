@@ -55,6 +55,8 @@ public class ProtocolFactory {
 			_instance = new NMSI_PDV_GC(m,dataStore);			
 		} else if (protocolName.equals("walter_vv")) {
 			_instance = new Walter_VV(m, dataStore);
+		} else if (protocolName.equals("ser_pdv_gc")) {
+			_instance = new SER_PDV_GC(m, dataStore);
 		}
 		
 		System.out.println("Protocol " + protocolName + " is initalized with persistence directory " + protocolName);

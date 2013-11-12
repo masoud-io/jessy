@@ -19,10 +19,12 @@ import fr.inria.jessy.transaction.termination.TwoPhaseCommit;
 import fr.inria.jessy.vector.Vector;
 
 /**
- * Implements P-Store [Schiper2010]
+ * Implements a variation of P-Store [Schiper2010]
+ * 
+ * Instead of using atomic multicast, it uses 2PC.
  * 
  * CONS: SER
- * Vector: Null Vector
+ * Vector: Light Scalar Vector
  * Atomic Commitment: Two phase commit
  * 
  * @author Masoud Saeida Ardekani
