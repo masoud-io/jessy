@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Vector;
 
 import com.yahoo.ycsb.Client;
@@ -40,6 +41,7 @@ import com.yahoo.ycsb.generator.ZipfianGenerator;
 import com.yahoo.ycsb.measurements.Measurements;
 
 import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.DistributedJessy;
 
 /**
  * The core benchmark scenario. Represents a set of clients doing simple CRUD
@@ -77,6 +79,10 @@ import fr.inria.jessy.ConstantPool;
  * </ul>
  */
 public class TransactionalWorkload extends Workload {
+	
+	private enum TransactionType{
+		Local, Global;
+	}
 
 	/**
 	 * The name of the database table to run queries against.
@@ -253,6 +259,8 @@ public class TransactionalWorkload extends Workload {
 	boolean orderedinserts;
 
 	int recordcount;
+	
+	Random localPercentage;
 
 	/**
 	 * Initialize the scenario. Called once, in the main client thread, before
@@ -370,6 +378,8 @@ public class TransactionalWorkload extends Workload {
 			throw new WorkloadException("Distribution \"" + scanlengthdistrib
 					+ "\" not allowed for scan length");
 		}
+		
+		localPercentage=new Random();
 	}
 
 	/**
@@ -424,23 +434,59 @@ public class TransactionalWorkload extends Workload {
 		return true;
 	}
 
+	private boolean retry(TransactionType type, String parition, String key){
+		if (type==TransactionType.Global){
+			return false;
+		}
+		else{
+			if (parition.equals(DistributedJessy.getInstance().partitioner.resolve(key).name())){
+				return false;
+			}
+		}
+		return true;
+		
+	}
+	
 	private List<YCSBTransactionalReadRequest> createReadRequest(int numberOfRequests) {
 		List<YCSBTransactionalReadRequest> result = new ArrayList<YCSBTransactionalReadRequest>();
-		YCSBTransactionalReadRequest tmp;
 
+		YCSBTransactionalReadRequest tmp;
+		String partition="";
+		boolean tryAgain=false;
 		int keynum;
 		String keyname;
 		HashSet<String> fields = null;
 
+		TransactionType type=TransactionType.Global;
+		if (ConstantPool.LOCAL_TRANSACTION_PERCENT>0){
+			//there must be a portion of local transactions as well. 
+			float rand=localPercentage.nextFloat();
+			if (rand<=ConstantPool.LOCAL_TRANSACTION_PERCENT){
+				type=TransactionType.Local;
+			}
+		}
+
 		for (int i = 0; i < numberOfRequests; i++) {
 			do {
-				keynum = keychooser.nextInt();
-			} while (keynum > transactioninsertkeysequence.lastInt());
 
-			if (!orderedinserts) {
-				keynum = Utils.hash(keynum);
-			}
-			keyname = "user" + keynum;
+				do {
+					keynum = keychooser.nextInt();
+				} while (keynum > transactioninsertkeysequence.lastInt());
+
+				if (!orderedinserts) {
+					keynum = Utils.hash(keynum);
+				}
+				keyname = "user" + keynum;
+
+				if (i==0){
+					partition=DistributedJessy.getInstance().partitioner.resolve(keyname).name();
+					tryAgain=false;
+				}
+				else{
+					tryAgain=retry(type, partition, keyname);
+				}
+			}while (tryAgain);
+
 
 			fields = null;
 
@@ -456,6 +502,7 @@ public class TransactionalWorkload extends Workload {
 					new HashMap<String, String>());
 			result.add(tmp);
 		}
+
 		return result;
 	}
 
@@ -463,20 +510,40 @@ public class TransactionalWorkload extends Workload {
 		List<YCSBTransactionalUpdateRequest> result = new ArrayList<YCSBTransactionalUpdateRequest>();
 		YCSBTransactionalUpdateRequest tmp;
 
+		String partition="";
+		boolean tryAgain=false;
 		int keynum;
 		String keyname;
 		HashMap<String, String> values;
 
-		for (int r = 0; r < numberOfRequests; r++) {
-			do {
-				keynum = keychooser.nextInt();
-			} while (keynum > transactioninsertkeysequence.lastInt());
-
-			if (!orderedinserts) {
-				keynum = Utils.hash(keynum);
+		TransactionType type=TransactionType.Global;
+		if (ConstantPool.LOCAL_TRANSACTION_PERCENT>0){
+			//there must be a portion of local transactions as well. 
+			float rand=localPercentage.nextFloat();
+			if (rand<=ConstantPool.LOCAL_TRANSACTION_PERCENT){
+				type=TransactionType.Local;
 			}
-			keyname = "user" + keynum;
+		}
+		
+		for (int r = 0; r < numberOfRequests; r++) {
+			do{
+				do {
+					keynum = keychooser.nextInt();
+				} while (keynum > transactioninsertkeysequence.lastInt());
 
+				if (!orderedinserts) {
+					keynum = Utils.hash(keynum);
+				}
+				keyname = "user" + keynum;
+				if (r==0){
+					partition=DistributedJessy.getInstance().partitioner.resolve(keyname).name();
+					tryAgain=false;
+				}
+				else{
+					tryAgain=retry(type, partition, keyname);
+				}
+			}while (tryAgain);
+			
 			values = new HashMap<String, String>();
 
 			if (writeallfields) {

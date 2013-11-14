@@ -146,6 +146,13 @@ public class ConstantPool {
 	public static final boolean CHECK_IF_HAS_BEEN_WRITTEN=false;
 	
 	/**
+	 * Lower bound of percentage of local transactions in the system.
+	 */
+	public static final float LOCAL_TRANSACTION_PERCENT=0f;
+	
+	
+	
+	/**
 	 * Config.property file constants
 	 */
 	public static final String CONFIG_PROPERTY = "config.property";
