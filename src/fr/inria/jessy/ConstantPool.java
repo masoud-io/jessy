@@ -129,13 +129,13 @@ public class ConstantPool {
 	/**
 	 * Number of read operations in Read-only transaction in YCSB 
 	 */
-	public static final short READ_ONLY_TRANSACTION_READ_OPERATION_COUNT=2;
+	public static final short READ_ONLY_TRANSACTION_READ_OPERATION_COUNT=4;
 	
 	/**
 	 * Number of read/update operations in update transaction in YCSB 
 	 */
-	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=1;
-	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=1;
+	public static final short UPDATE_TRANSACTION_READ_OPERATION_COUNT=2;
+	public static final short UPDATE_TRANSACTION_WRITE_OPERATION_COUNT=2;
 	
 	/**
 	 * These two variables are used in {@link Jessy} to prevent checking for objects that have been

@@ -40,12 +40,11 @@ import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VersionVector;
 
 /**
- * PSI implementation according to [Serrano2011] paper with one exception. 
- * I.e., Uses group communication instead of two phase commit. 
+ * PSI implementation according to [Serrano2011] paper. 
  * 
  * CONS: PSI
  * Vector: VersionVector
- * Atomic Commitment: GroupCommunication
+ * Atomic Commitment: Two Phase Commit
  * 
  * TODO if (Group size > 0) then only need to wait for one vote and not for all votes from group members. We need to change 2PC for this.
  * TODO if group replication factor > 0, i.e., several groups replicating same objects, then wait for the votes from primary group.
@@ -53,12 +52,12 @@ import fr.inria.jessy.vector.VersionVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class Walter_VV extends PSI implements Learner {
+public class Walter_VV_2PC extends PSI implements Learner {
 
 	private ExecutorPool pool = ExecutorPool.getInstance();
 
 	private static Logger logger = Logger
-			.getLogger(Walter_VV.class);
+			.getLogger(Walter_VV_2PC.class);
 
 	static {
 		votePiggybackRequired = true;
@@ -72,7 +71,7 @@ public class Walter_VV extends PSI implements Learner {
 
 	private ConcurrentHashMap<UUID, VersionVectorPiggyback> receivedPiggybacks;
 
-	public Walter_VV(JessyGroupManager m, DataStore store) {
+	public Walter_VV_2PC(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		receivedPiggybacks = new ConcurrentHashMap<UUID, VersionVectorPiggyback>();
 		propagation = new MessagePropagation(this,m);
@@ -137,6 +136,9 @@ public class Walter_VV extends PSI implements Learner {
 		JessyEntity lastComittedEntity;
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
 
+			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+				continue;
+			
 			try {
 
 				lastComittedEntity = store
@@ -148,7 +150,7 @@ public class Walter_VV extends PSI implements Learner {
 				if (lastComittedEntity.getLocalVector().isCompatible(
 						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
 
-//					if (ConstantPool.logging)
+					if (ConstantPool.logging)
 						logger.error("Aborting a transaction because for key " + tmp.getKey() + "local vector is "
 								+ tmp.getLocalVector()
 								+ " and last committed is "
@@ -164,9 +166,6 @@ public class Walter_VV extends PSI implements Learner {
 
 		}
 		
-		if (ConstantPool.logging)
-			logger.debug(executionHistory.getTransactionHandler() + " >> "
-					+ transactionType.toString() + " >> COMMITTED");
 		return true;
 	}
 
@@ -199,7 +198,6 @@ public class Walter_VV extends PSI implements Learner {
 			 */
 			pb = receivedPiggybacks.get(executionHistory
 					.getTransactionHandler().getId());
-//			System.out.println("Pre committing Transaction " + pb.getTransactionHandler().getId() + " has pb "  + pb.getSequenceNumber() + " with " + pb.getwCoordinatorGroupName());
 
 			if (executionHistory.getTransactionType() == TransactionType.INIT_TRANSACTION) {
 				executionHistory.getWriteSet().addEntity(
@@ -279,7 +277,6 @@ public class Walter_VV extends PSI implements Learner {
 				.remove(executionHistory.getTransactionHandler().getId());
 
 		if (dest.size() > 0) {
-//			System.out.println("Propagating " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to " + dest + " for " + executionHistory.getTransactionHandler().getId());
 			ParallelSnapshotIsolationPropagateMessage msg = new ParallelSnapshotIsolationPropagateMessage(
 					pb, dest, manager.getMyGroup().name(),
 					manager.getSourceId());			
@@ -400,7 +397,6 @@ public class Walter_VV extends PSI implements Learner {
 					manager.getMyGroup().name(), sequenceNumber,
 					executionHistory));
 			
-//			System.out.println("COORDINATOR OF " + executionHistory.getTransactionHandler().getId() + " is " + manager.getMyGroup());
 		}
 
 		return new Vote(executionHistory.getTransactionHandler(), isAborted,

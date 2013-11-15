@@ -44,6 +44,6 @@ echo "Sending to " ${sites[i]}
 	scp ../../../jessy.jar $node:${scriptdir}
 	scp ../../Batelier/target/batelier-0.0.1-SNAPSHOT.jar $node:${scriptdir}/fractal.jar
 
-#		scp -v -r Loaded_YCSB/4/ser_pdv_gc $node:${scriptdir}/4
+#		scp -v -r Loaded_YCSB/4/psi_vv_gc $node:${scriptdir}/4
 done
 

@@ -127,6 +127,9 @@ public class PSI_VV_GC extends PSI implements Learner {
 
 		JessyEntity lastComittedEntity;
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
+			
+			if (!manager.getPartitioner().isLocal(tmp.getKey()))
+				continue;
 
 			try {
 
@@ -154,8 +157,7 @@ public class PSI_VV_GC extends PSI implements Learner {
 			}
 
 		}
-		logger.debug(executionHistory.getTransactionHandler() + " >> "
-				+ transactionType.toString() + " >> COMMITTED");
+
 		return true;
 	}
 

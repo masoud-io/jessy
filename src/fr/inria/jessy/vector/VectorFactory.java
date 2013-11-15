@@ -40,6 +40,7 @@ public class VectorFactory {
 		if (protocolName.contains("_lsv_") ) {
 			return new LightScalarVector<K>(selfKey);
 		}
+		
 		return null;
 	}
 	
