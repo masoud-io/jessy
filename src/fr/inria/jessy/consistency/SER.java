@@ -56,16 +56,17 @@ public abstract class SER extends Consistency {
 	@Override
 	public boolean certificationCommute(TransactionTouchedKeys tk1,
 			TransactionTouchedKeys tk2) {
-		boolean result=true;;
-		
-		if (tk1.readKeys!=null && tk2.writeKeys!=null){
-			result = !CollectionUtils.isIntersectingWith(tk2.writeKeys, tk1.readKeys);
-		}
-		if (tk1.writeKeys!=null && tk2.readKeys!=null){
-			result = result && !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.readKeys);
-		}
-		
-		return result;
+//		boolean result=true;
+//		
+//		if (tk1.readKeys!=null && tk2.writeKeys!=null){
+//			result = !CollectionUtils.isIntersectingWith(tk2.writeKeys, tk1.readKeys);
+//		}
+//		if (tk1.writeKeys!=null && tk2.readKeys!=null){
+//			result = result && !CollectionUtils.isIntersectingWith(tk1.writeKeys, tk2.readKeys);
+//		}
+//		
+//		return result;
+		return false;
 	}
 
 	@Override

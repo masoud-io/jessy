@@ -46,6 +46,7 @@ public class PartitionDependenceVector<K> extends Vector<K> implements Externali
 	@Override
 	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
+	
 		PDVExtraObject<K> extraObject=(PDVExtraObject<K>)other.getExtraObject();
 		if (extraObject == null || extraObject.getSnapshot()==null){
 			//this is the first read, we simply return compatible.

@@ -239,6 +239,43 @@ public class SER_PDV_GC extends SER {
 	}
 	
 	@Override
+	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
+			ConcernedKeysTarget target) {
+		Set<String> keys = new HashSet<String>();
+		if (target == ConcernedKeysTarget.TERMINATION_CAST ) {
+			keys.addAll(executionHistory.getReadSet().getKeys());
+			keys.addAll(executionHistory.getWriteSet().getKeys());
+			keys.addAll(executionHistory.getCreateSet().getKeys());
+		}else if(target == ConcernedKeysTarget.SEND_VOTES){
+			
+			if (executionHistory.getReadSet()!=null)
+				keys.addAll(executionHistory.getReadSet().getKeys());
+			
+			if (executionHistory.getWriteSet()!=null)
+				keys.addAll(executionHistory.getWriteSet().getKeys());
+			
+			if (executionHistory.getCreateSet()!=null)
+				keys.addAll(executionHistory.getCreateSet().getKeys());
+		}
+		else {
+			if (executionHistory.getWriteSet()!=null)
+				keys.addAll(executionHistory.getWriteSet().getKeys());
+			
+			if (executionHistory.getCreateSet()!=null)
+				keys.addAll(executionHistory.getCreateSet().getKeys());
+		}
+		
+		Set<String> destGroups=manager.getPartitioner().resolveNames(keys);
+		
+		if (destGroups.size()==1 && executionHistory.getTransactionType()==TransactionType.READONLY_TRANSACTION)
+		{
+			keys.clear();
+		}
+		
+		return keys;
+	}
+	
+	@Override
 	public Set<String> getVotersToCoordinator(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
