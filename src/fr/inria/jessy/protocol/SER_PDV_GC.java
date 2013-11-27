@@ -276,7 +276,7 @@ public class SER_PDV_GC extends SER {
 	}
 	
 	@Override
-	public Set<String> getVotersToCoordinator(
+	public Set<String> getVotersToJessyProxy(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
 		/*

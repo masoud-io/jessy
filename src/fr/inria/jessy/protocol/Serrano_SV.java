@@ -208,7 +208,7 @@ public class Serrano_SV extends SI {
 	}
 
 	@Override
-	public Set<String> getVotersToCoordinator(
+	public Set<String> getVotersToJessyProxy(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
 		

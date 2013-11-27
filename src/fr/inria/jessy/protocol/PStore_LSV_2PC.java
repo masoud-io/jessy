@@ -1,6 +1,5 @@
 package fr.inria.jessy.protocol;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -144,16 +143,11 @@ public class PStore_LSV_2PC extends SER {
 	 * Coordinator needs to only wait for the vote from the 2PC manager. 
 	 * 	
 	 */
-	public Set<String> getVotersToCoordinator(
+	public Set<String> getVotersToJessyProxy(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
-		Set<String> concernedKeys=new HashSet<String>();
-		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
-		
-		Set<String> results=new HashSet<String>();
-		for (String key:concernedKeys){
-			results.add(manager.getPartitioner().resolve(key).name());
-		}
-		return results;
+		termincationRequestReceivers.clear();
+		termincationRequestReceivers.add(TwoPhaseCommit.getCoordinatorId(executionHistory,manager.getPartitioner()));
+		return termincationRequestReceivers;
 	}
 }

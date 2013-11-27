@@ -20,6 +20,10 @@ import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 
 /**
+ * 
+ * This is the update everywhere implementation of 2PC.
+ * Hence all replica groups participate.
+ * 
  * we first choose the first write as the deterministic key.
  * The leader of a group replicating a deterministic key returned by {@link this#getDetermisticKey(ExecutionHistory)} 
  * will be the 2PC coordinator.

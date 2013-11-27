@@ -196,7 +196,7 @@ public abstract class Consistency {
 	 *            {@link TerminateTransactionRequestMessage}
 	 * @return
 	 */
-	public Set<String> getVotersToCoordinator(
+	public Set<String> getVotersToJessyProxy(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
 		return termincationRequestReceivers;

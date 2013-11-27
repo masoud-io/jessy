@@ -450,9 +450,9 @@ public class DistributedTermination implements Learner, UnicastLearner {
 					 */
 					
 					if (DebuggingFlag.DISTRIBUTED_TERMINATION) 
-						logger.error("Proxy will wait for votes from " + jessy.getConsistency().getVotersToCoordinator(destGroups,executionHistory) + " for " + executionHistory.getTransactionHandler().getId());
+						logger.error("Proxy will wait for votes from " + jessy.getConsistency().getVotersToJessyProxy(destGroups,executionHistory) + " for " + executionHistory.getTransactionHandler().getId());
 					
-					result = vq.waitVoteResult(jessy.getConsistency().getVotersToCoordinator(destGroups,executionHistory));
+					result = vq.waitVoteResult(jessy.getConsistency().getVotersToJessyProxy(destGroups,executionHistory));
 					
 					if (DebuggingFlag.DISTRIBUTED_TERMINATION && result==TransactionState.ABORTED_BY_TIMEOUT)
 						logger.error("Abort by timeout from votingQ " + executionHistory.getTransactionHandler());

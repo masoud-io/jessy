@@ -361,7 +361,7 @@ public class GMU_GMV extends US{
 	}
 
 	@Override
-	public Set<String> getVotersToCoordinator(
+	public Set<String> getVotersToJessyProxy(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
 //		termincationRequestReceivers.clear();
