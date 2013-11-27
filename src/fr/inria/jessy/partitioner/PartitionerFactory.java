@@ -19,8 +19,10 @@ public class PartitionerFactory {
 			return new ReplicatedModuloPartitioner(m);
 		}else if (PartitionerType.equals("sequential")) {
 			return new SequentialPartitioner(m);
+		}else if (PartitionerType.equals("replicatedsequential")) {
+			return new ReplicatedSequentialPartitioner(m);
 		}
-		
+
 		return null;
 	}
 

@@ -1,5 +1,6 @@
 package fr.inria.jessy.transaction.termination;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +67,7 @@ public class TwoPhaseCommit extends AtomicCommit {
 						causedTermination.put(caused, 1);
 					}
 					
-//					System.out.println("Pre-emptive abort for " + msg.getExecutionHistory().getTransactionHandler().getId() + " because " + n.getExecutionHistory().getTransactionHandler().getId());
+//					System.out.println("Pre-emptive abort for " + msg.getExecutionHistory().toString() + " because " + n.getExecutionHistory().toString());
 					return false;
 				}
 			}
@@ -93,11 +94,13 @@ public class TwoPhaseCommit extends AtomicCommit {
 							msg.getExecutionHistory(),
 							ConcernedKeysTarget.SEND_VOTES);
 			
-			Group g;
+			List<Group> groups;
 			for (String str:keys_for_SendVotes){
-				g=jessy.partitioner.resolve(str);
-				for (int tmpswid:g.allNodes()){
-					voteSenders.add(""+tmpswid);
+				groups=jessy.partitioner.resolveAll(str);
+				for (Group g : groups){
+					for (int tmpswid:g.allNodes()){
+						voteSenders.add(""+tmpswid);
+					}
 				}
 			}
 			

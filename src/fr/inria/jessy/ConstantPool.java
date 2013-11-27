@@ -148,7 +148,7 @@ public class ConstantPool {
 	/**
 	 * Lower bound of percentage of local transactions in the system.
 	 */
-	public static final float LOCAL_TRANSACTION_PERCENT=0.1f;
+	public static final float LOCAL_TRANSACTION_PERCENT=0f;
 	
 	
 	

@@ -141,7 +141,7 @@ public class PStore_LSV_2PC extends SER {
 	}
 	
 	/**
-	 * Coordinator needs to only wait for the vote from the transaction manager. 
+	 * Coordinator needs to only wait for the vote from the 2PC manager. 
 	 * 	
 	 */
 	public Set<String> getVotersToCoordinator(
@@ -150,7 +150,10 @@ public class PStore_LSV_2PC extends SER {
 		Set<String> concernedKeys=new HashSet<String>();
 		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
 		
-		return manager.getPartitioner().resolveNames(concernedKeys);
-		
+		Set<String> results=new HashSet<String>();
+		for (String key:concernedKeys){
+			results.add(manager.getPartitioner().resolve(key).name());
+		}
+		return results;
 	}
 }
