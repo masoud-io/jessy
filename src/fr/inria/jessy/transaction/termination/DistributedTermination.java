@@ -25,6 +25,7 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
+import fr.inria.jessy.ConstantPool.TWO_PHASE_COMMIT_TYPE;
 import fr.inria.jessy.DebuggingFlag;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.JessyGroupManager;
@@ -144,8 +145,14 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			atomicCommit=new GroupCommunicationCommit(this);
 			voterName=group.name();
 		}
-		else if (ConstantPool.ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT){
+		else if (ConstantPool.ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT &&
+				ConstantPool.TWO_PHASE_COMMIT==TWO_PHASE_COMMIT_TYPE.MULTI_MASTER){
 			atomicCommit=new TwoPhaseCommit(this);
+			voterName="" + jessy.manager.getSourceId();
+		}
+		else if (ConstantPool.ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT &&
+				ConstantPool.TWO_PHASE_COMMIT==TWO_PHASE_COMMIT_TYPE.PRIMARY_GROUP){
+			atomicCommit=new PrimaryReplicaTwoPhaseCommit(this);
 			voterName="" + jessy.manager.getSourceId();
 		}
 		

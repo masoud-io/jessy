@@ -31,17 +31,17 @@ import fr.inria.jessy.transaction.termination.vote.Vote;
  * @author Masoud Saeida Ardekani
  *
  */
-public class TwoPhaseCommit extends AtomicCommit {
+public class PrimaryReplicaTwoPhaseCommit extends AtomicCommit {
 
 	private static Logger logger = Logger
-			.getLogger(TwoPhaseCommit.class);
+			.getLogger(PrimaryReplicaTwoPhaseCommit.class);
 
 	String swid=""+jessy.manager.getSourceId();
 	
 	//TODO FIX ME THIS IS CRAP
 	ConcurrentHashMap<UUID, Integer> causedTermination=new ConcurrentHashMap<UUID, Integer>(); 
 	
-	public TwoPhaseCommit(DistributedTermination termination) {
+	public PrimaryReplicaTwoPhaseCommit(DistributedTermination termination) {
 		super(termination);
 	}
 
@@ -97,14 +97,11 @@ public class TwoPhaseCommit extends AtomicCommit {
 					.getConsistency().getConcerningKeys(
 							msg.getExecutionHistory(),
 							ConcernedKeysTarget.SEND_VOTES);
-			
-			List<Group> groups;
+						
 			for (String str:keys_for_SendVotes){
-				groups=jessy.partitioner.resolveAll(str);
-				for (Group g : groups){
-					for (int tmpswid:g.allNodes()){
-						voteSenders.add(""+tmpswid);
-					}
+				Group g=jessy.partitioner.resolve(str);
+				for (int tmpswid:g.allNodes()){
+					voteSenders.add(""+tmpswid);
 				}
 			}
 			
@@ -118,7 +115,17 @@ public class TwoPhaseCommit extends AtomicCommit {
 			/*
 			 *If this is not the coordinator, it needs to send vote to the coordinator, and receive vote from coordinator.  
 			 */
-			voteSenders.add( getCoordinatorId(msg.getExecutionHistory(), jessy.partitioner));
+			Set<String> keys_for_SendVotes =jessy
+					.getConsistency().getConcerningKeys(
+							msg.getExecutionHistory(),
+							ConcernedKeysTarget.SEND_VOTES);
+						
+			for (String str:keys_for_SendVotes){
+				Group g=jessy.partitioner.resolve(str);
+				if (g.name().equals(group.name())){
+					voteSenders.add( getCoordinatorId(msg.getExecutionHistory(), jessy.partitioner));
+				}
+			}
 			
 			if (jessy.partitioner.resolveNames(jessy
 					.getConsistency().getConcerningKeys(
