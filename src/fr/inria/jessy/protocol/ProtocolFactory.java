@@ -43,8 +43,8 @@ public class ProtocolFactory {
 			_instance = new US_DV_GC(m, dataStore);
 		} else if (protocolName.equals("us_gmv_gc")) {
 			_instance = new US_GMV_GC(m, dataStore);
-		} else if (protocolName.equals("gmu_gmv")) {
-			_instance = new GMU_GMV(m, dataStore);
+		} else if (protocolName.equals("gmu_gmv_2pc")) {
+			_instance = new GMU_GMV_2PC(m, dataStore);
 		}else if (protocolName.equals("nmsi_dv_gc")) {
 			_instance = new NMSI_DV_GC(m, dataStore);
 		} else if (protocolName.equals("nmsi_gmv_gc")) {

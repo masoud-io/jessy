@@ -72,23 +72,23 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 
 			GMUVectorExtraObject extraObject=(GMUVectorExtraObject)other.getExtraObject();
 			if (extraObject==null){
-				rr.temporaryVector=GMUVectorExtraObject.getXactVector(GMUVector.logCommitVC.peekFirst());
+				rr.temporaryVector=GMUVector.logCommitVC.peekFirst();
 				return true;
 			}
 
 			//We have not received all update transaction.
 			//We are not sure to read or not, thus we try another replica
 			if (extraObject!=null  &&
-					extraObject.xact.getValue(myKey) > GMUVector.logCommitVC.peekFirst().getValue(myKey)){
+					extraObject.getSnapshot().getValue(myKey).compareTo(GMUVector.logCommitVC.peekFirst().getValue(myKey)) >=0){
 				return false;
 			}
 
-			if (extraObject.hasReads.size() == 0) {
+			if (extraObject.getReadProcesses().size() == 0) {
 				/*
 				 * this is the first read because hasRead is not yet initialize.
 				 */
-				rr.temporaryVector=GMUVectorExtraObject.getXactVector(GMUVector.logCommitVC.peekFirst());
-			} else if (!extraObject.hasReads.contains(myKey)) {
+				rr.temporaryVector=GMUVector.logCommitVC.peekFirst();
+			} else if (!extraObject.getReadProcesses().contains(myKey)) {
 				/*
 				 * line 3,4 of Algorithm 2
 				 */
@@ -100,10 +100,10 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 					found=false;
 					vector=itr.next();
 
-					Iterator<String> hasReadItr=extraObject.hasReads.iterator();
+					Iterator<String> hasReadItr=extraObject.getReadProcesses().iterator();
 					while (hasReadItr.hasNext()) {
 						String index=hasReadItr.next();
-						if (vector.getValue(index) <= extraObject.xact.getValue(index)){
+						if (vector.getValue(index) <= ((Integer)extraObject.getSnapshot().getValue(index))){
 							found=true;
 							continue;
 						}
@@ -121,7 +121,7 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 					if (vector!=null){
 						//Add xact vector to the object vector.
 						// This is a dirty work, and in updateExtraObjectInCompactVector, we remove them, and put them in extraobject of compact vector
-						rr.temporaryVector=GMUVectorExtraObject.getXactVector(vector);
+						rr.temporaryVector=vector;
 					}
 				}
 
@@ -139,12 +139,9 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	@Override
 	public void postRead(ReadRequest rr, JessyEntity entity){
 		try{
-			//Add has read nodes to the object vector.
-			// This is a dirty work, and in updateExtraObjectInCompactVector, we remove them, and put them in extraobject of compact vector
-			entity.getLocalVector().update(GMUVectorExtraObject.getHasRead(manager, entity.getKey()));
-			if (rr.temporaryVector!=null){
-				entity.getLocalVector().update(rr.temporaryVector);
-			}
+			//we set the vector of the node as a temprory object.
+			//Later, once the proxy gets the answer, it needs to incorporate it into the compactVector extra object.
+			entity.temporaryObject=rr.temporaryVector;
 		}
 		catch(Exception ex){
 			ex.printStackTrace();
@@ -172,13 +169,13 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 			throws NullPointerException {
 
 		return CompatibleResult.COMPATIBLE;
-//		if (getSelfValue()<= other.getValue(getSelfKey())){
+//		if (getSelfValue()<= other.getValue(getSelfKey()) || (other.getValue(getSelfKey())==-1)){
 //			return CompatibleResult.COMPATIBLE;
 //		}
 //		else {
+//			System.out.println("Cannot read because getSelfValue(): " + getSelfValue() + " and other.getValue(getSelfKey()) " + other.getValue(getSelfKey()) + " and GMUVector.logCommitVC.peekFirst() " + GMUVector.logCommitVC.peekFirst());
 //			return CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
 //		}
-	
 	}
 
 	@Override
@@ -195,14 +192,21 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 		super.writeExternal(out);
 	}
 
-	// TODO parameterize 4 correctly
 	@Override
 	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, Object compactVectorExtraObject) {
-		try {
-			compactVectorExtraObject=(Object) GMUVectorExtraObject.getGMUVectorExtraObject((GMUVector<String>)entityLocalVector);
-		} catch (Exception e) {
-			e.printStackTrace();
+		GMUVectorExtraObject obj=(GMUVectorExtraObject)compactVectorExtraObject;
+		if (obj==null)
+			obj=new GMUVectorExtraObject();
+		GMUVector<K> tmpSnapshot=(GMUVector<K>)entityTemproryObject;
+		if (obj.getSnapshot()==null){
+			obj.setSnapshot(tmpSnapshot);
 		}
+		else{
+			//we must only update the entry of last partition
+			if (tmpSnapshot.getSelfValue() > (Integer)obj.getSnapshot().getValue(tmpSnapshot.getSelfKey()))
+				obj.getSnapshot().setValue(tmpSnapshot.getSelfKey(), tmpSnapshot.getSelfValue());
+		}
+		obj.addItem((GMUVector<K>) entityLocalVector);
 	}
 
 	@Override

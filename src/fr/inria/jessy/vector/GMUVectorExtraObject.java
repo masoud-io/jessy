@@ -1,79 +1,45 @@
 package fr.inria.jessy.vector;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.ArrayList;
 
-import net.sourceforge.fractal.membership.Group;
-import fr.inria.jessy.communication.JessyGroupManager;
+public class GMUVectorExtraObject<K> implements Externalizable {
+	
+	GMUVector<K> snapshot;
+	ArrayList<K> readProcesses;
 
-public class GMUVectorExtraObject {
-	
-	public static final String READ_CONSTANT="READ";
-	public static final String XACT_CONSTANT="XACT";
-	
-	/*
-	 * Specifies the visited processes/groups 
-	 */
-	public Set<String> hasReads;
-	
-	public GMUVector<String> xact;
-	
-	private GMUVectorExtraObject(){
-		hasReads=new HashSet<String>();
-		xact=new GMUVector<String>();
-	}
-	
-	public static GMUVectorExtraObject getGMUVectorExtraObject(Vector<String> vector){
-		
-		GMUVectorExtraObject result=new GMUVectorExtraObject();
-		
-		try {
-			Vector<String> tmp=vector.clone();
-			for (String str:tmp.getMap().keySet()){
-				if (str.contains(READ_CONSTANT)){
-					vector.getMap().remove(str);
-					result.hasReads.add(str.replaceFirst(READ_CONSTANT, ""));
-				}
-				
-				if (str.contains(XACT_CONSTANT)){
-					vector.getMap().remove(str);
-					result.xact.getMap().put(str.replaceFirst(XACT_CONSTANT, ""), tmp.getValue(str));
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return result;
-		
+	public GMUVectorExtraObject() {
+		readProcesses=new ArrayList<K>();
 	}
 
-	public static GMUVector<String> getXactVector(GMUVector<String> vector){
-		GMUVector<String> result=new GMUVector<String>();
-		
-		try {
-			for (String str:vector.getMap().keySet()){
-				result.getMap().put(XACT_CONSTANT + str, vector.getValue(str));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return result;
+	public void addItem(GMUVector<K> pdv) {
+		readProcesses.add(pdv.getSelfKey());
+	}
+
+	public ArrayList<K> getReadProcesses() {
+		return readProcesses;
 	}
 	
-	public static GMUVector<String> getHasRead(JessyGroupManager j,  String key){
-		GMUVector<String> result=new GMUVector<String>();
+	public GMUVector<K> getSnapshot() {
+		return snapshot;
+	}
 
-		try {
-			Group g=j.getPartitioner().resolve(key);
-			for (Integer swid:g.allNodes()){
-				result.getMap().put(READ_CONSTANT+ swid.toString(), 0);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return result;
+	public void setSnapshot(GMUVector<K> snapshot) {
+		this.snapshot = snapshot;
+	}
+
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		readProcesses = (ArrayList<K>) in
+				.readObject();
+		snapshot=(GMUVector<K>) in.readObject();
+	}
+
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(readProcesses);
+		out.writeObject(snapshot);
 	}
 }

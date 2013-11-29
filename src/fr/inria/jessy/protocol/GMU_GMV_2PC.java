@@ -35,7 +35,7 @@ import fr.inria.jessy.vector.GMUVector;
  * @author Masoud Saeida Ardekani
  * 
  */
-public class GMU_GMV extends US{
+public class GMU_GMV_2PC extends US{
 
 	private static ConcurrentHashMap<UUID, GMUVector<String>> receivedVectors;
 //	private static ConcurrentLinkedQueue<UUID> commitQueue;
@@ -47,7 +47,7 @@ public class GMU_GMV extends US{
 		votePiggybackRequired = true;
 	}
 
-	public GMU_GMV(JessyGroupManager m, DataStore dataStore) {
+	public GMU_GMV_2PC(JessyGroupManager m, DataStore dataStore) {
 		super(m, dataStore);
 		
 	}
@@ -216,7 +216,13 @@ public class GMU_GMV extends US{
 	}
 	
 	private boolean isCoordinator(TerminateTransactionRequestMessage msg){
-		String firstWriteKey=msg.getExecutionHistory().getWriteSet().getKeys().iterator().next();
+		String firstWriteKey="";
+		
+		if (msg.getExecutionHistory().getWriteSet() !=null && msg.getExecutionHistory().getWriteSet().size()>0)
+			firstWriteKey=msg.getExecutionHistory().getWriteSet().getKeys().iterator().next();
+		else if (msg.getExecutionHistory().getCreateSet() !=null && msg.getExecutionHistory().getCreateSet().size()>0)
+			firstWriteKey=msg.getExecutionHistory().getCreateSet().getKeys().iterator().next();
+		
 		if (manager.getPartitioner().resolve(firstWriteKey).leader() == manager.getSourceId()){
 			return true;
 		}
@@ -227,6 +233,9 @@ public class GMU_GMV extends US{
 	
 	@Override
 	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
+		if (msg.getExecutionHistory().getTransactionType()==TransactionType.INIT_TRANSACTION)
+			return;
+		
 		if (isCoordinator(msg) && state==TransactionState.COMMITTED){
 
 			GMUVector<String> commitVC = new GMUVector<String>(""+manager.getSourceId(), 0);
@@ -278,6 +287,9 @@ public class GMU_GMV extends US{
 	
 	@Override
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
+		if (msg.getExecutionHistory().getTransactionType()==TransactionType.INIT_TRANSACTION)
+			return;
+		
 		try{
 //			while (!commitQueue.peek().equals(msg.getExecutionHistory().getTransactionHandler().getId())){
 //				synchronized (commitQueue) {
@@ -371,7 +383,7 @@ public class GMU_GMV extends US{
 		Set<String> concernedKeys=new HashSet<String>();
 		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
 		
-		return manager.getPartitioner().resolveNames(concernedKeys);
+		return manager.getPartitioner().resolveNames(concernedKeys);		
 	}
 
 }
