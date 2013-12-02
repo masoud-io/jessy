@@ -3,16 +3,20 @@ package fr.inria.jessy.consistency;
 import java.util.HashSet;
 import java.util.Set;
 
+import fr.inria.jessy.ConstantPool;
+import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionTouchedKeys;
+import fr.inria.jessy.transaction.termination.TwoPhaseCommit;
 
 public class RC extends Consistency {
 
 	static{
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
+		ConstantPool.PROTOCOL_ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
 	}
 	
 	public RC(JessyGroupManager m, DataStore store) {
@@ -56,4 +60,14 @@ public class RC extends Consistency {
 		return keys;
 	}
 
+	@Override
+	public Set<String> getVotersToJessyProxy(
+			Set<String> termincationRequestReceivers,
+			ExecutionHistory executionHistory) {
+		Set<String> concernedKeys=new HashSet<String>();
+		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
+		
+		return manager.getPartitioner().resolveNames(concernedKeys);		
+	}
+	
 }

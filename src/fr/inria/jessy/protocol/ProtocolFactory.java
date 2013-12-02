@@ -1,7 +1,5 @@
 package fr.inria.jessy.protocol;
 
-import org.apache.log4j.Logger;
-
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.consistency.Consistency;
@@ -10,8 +8,6 @@ import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.utils.Configuration;
 
 public class ProtocolFactory {
-
-	private static Logger logger = Logger.getLogger(ProtocolFactory.class);
 
 	private static Consistency _instance;
 
@@ -28,7 +24,7 @@ public class ProtocolFactory {
 			return _instance;
 
 		if (protocolName.equals("serrano_sv")) {
-			_instance = new Serrano_SV(m, dataStore);
+			_instance = new Serrano_SV_GC(m, dataStore);
 		} else if (protocolName.equals("pstore_lsv_gc")) {
 			_instance = new PStore_LSV_GC(m, dataStore);
 		} else if (protocolName.equals("pstore_lsv_2pc")) {

@@ -141,16 +141,16 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			pool.submit(applyTransactionsToDataStore);
 		}
 		
-		if (ConstantPool.ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION){
+		if (ConstantPool.PROTOCOL_ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.ATOMIC_MULTICAST){
 			atomicCommit=new GroupCommunicationCommit(this);
 			voterName=group.name();
 		}
-		else if (ConstantPool.ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT &&
+		else if (ConstantPool.PROTOCOL_ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT &&
 				ConstantPool.TWO_PHASE_COMMIT==TWO_PHASE_COMMIT_TYPE.MULTI_MASTER){
 			atomicCommit=new TwoPhaseCommit(this);
 			voterName="" + jessy.manager.getSourceId();
 		}
-		else if (ConstantPool.ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT &&
+		else if (ConstantPool.PROTOCOL_ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT &&
 				ConstantPool.TWO_PHASE_COMMIT==TWO_PHASE_COMMIT_TYPE.PRIMARY_GROUP){
 			atomicCommit=new PrimaryReplicaTwoPhaseCommit(this);
 			voterName="" + jessy.manager.getSourceId();

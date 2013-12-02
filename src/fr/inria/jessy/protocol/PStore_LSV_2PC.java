@@ -34,7 +34,7 @@ public class PStore_LSV_2PC extends SER {
 	private static Logger logger = Logger.getLogger(PStore_LSV_2PC.class);
 	
 	static {
-		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
+		ConstantPool.PROTOCOL_ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
 	}
 
 	public PStore_LSV_2PC(JessyGroupManager m, DataStore dateStore) {

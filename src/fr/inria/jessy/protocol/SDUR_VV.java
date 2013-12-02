@@ -39,7 +39,6 @@ import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 import fr.inria.jessy.vector.CompactVector;
-import fr.inria.jessy.vector.GMUVector;
 import fr.inria.jessy.vector.ValueVector.ComparisonResult;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VersionVector;
@@ -69,7 +68,7 @@ public class SDUR_VV extends US implements Learner {
 	static {
 		votePiggybackRequired = true;
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
-		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
+		ConstantPool.PROTOCOL_ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.ATOMIC_CYLCLIC_MULTICAST;
 	}
 
 	private MessagePropagation propagation;

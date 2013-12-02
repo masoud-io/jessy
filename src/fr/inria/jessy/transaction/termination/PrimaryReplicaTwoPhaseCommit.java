@@ -10,6 +10,7 @@ import net.sourceforge.fractal.membership.Group;
 
 import org.apache.log4j.Logger;
 
+import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DebuggingFlag;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;

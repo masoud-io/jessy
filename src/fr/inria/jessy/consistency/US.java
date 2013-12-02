@@ -73,10 +73,10 @@ public abstract class US extends Consistency {
 			else {
 				/*
 				 * If it is not a read-only transaction, then the transaction
-				 * should atomic multicast to every process replicating an
+				 * should be sent to every process replicating an
 				 * object read or written by the transaction.
 				 * 
-				 * Note: Atomic multicasting to only write-set is not enough.
+				 * Note: sending to only write-set is not enough.
 				 */
 				keys.addAll(executionHistory.getReadSet().getKeys());
 				keys.addAll(executionHistory.getWriteSet().getKeys());

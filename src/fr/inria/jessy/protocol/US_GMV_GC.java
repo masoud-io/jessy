@@ -46,7 +46,7 @@ public class US_GMV_GC extends US{
 	private static ApplyGMUVector2 applyGMUVector;
 	
 	static {
-		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
+		ConstantPool.PROTOCOL_ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.ATOMIC_MULTICAST;
 		votePiggybackRequired = true;
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector2<String>>();
 		seqNos=new ConcurrentHashMap<UUID, Integer>();

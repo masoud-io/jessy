@@ -25,7 +25,7 @@ import fr.inria.jessy.vector.Vector;
 public class US_DV_GC extends US {
 
 	static{
-		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.GROUP_COMMUNICATION;
+		ConstantPool.PROTOCOL_ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.ATOMIC_MULTICAST;
 	}
 	
 	public US_DV_GC(JessyGroupManager m, DataStore dateStore) {

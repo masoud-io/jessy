@@ -62,7 +62,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 	static {
 		votePiggybackRequired = true;
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
-		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
+		ConstantPool.PROTOCOL_ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
 	}
 
 	private MessagePropagation propagation;

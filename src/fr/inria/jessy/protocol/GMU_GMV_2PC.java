@@ -13,6 +13,7 @@ import fr.inria.jessy.ConstantPool.ATOMIC_COMMIT_TYPE;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.consistency.US;
+import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -41,7 +42,7 @@ public class GMU_GMV_2PC extends US{
 //	private static ConcurrentLinkedQueue<UUID> commitQueue;
 	
 	static {
-		ConstantPool.ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
+		ConstantPool.PROTOCOL_ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.TWO_PHASE_COMMIT;
 		receivedVectors = new ConcurrentHashMap<UUID, GMUVector<String>>();
 //		commitQueue=new ConcurrentLinkedQueue<UUID>();
 		votePiggybackRequired = true;
@@ -385,5 +386,4 @@ public class GMU_GMV_2PC extends US{
 		
 		return manager.getPartitioner().resolveNames(concernedKeys);		
 	}
-
 }
