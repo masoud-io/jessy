@@ -17,37 +17,36 @@ import fr.inria.jessy.consistency.Consistency;
 import fr.inria.jessy.consistency.SI;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.ReadRequest;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 import fr.inria.jessy.vector.ScalarVector;
+import fr.inria.jessy.vector.Vector;
 
 /**
- * In [Serrano'07] they do not perform voting, and each replica can do certification locally, and
- * decides to commit or abort.
- * 
+ * This implementation is very similar to [Serrano'07] with the following difference:
+ * In Serrano there is no voting phase because each replica holds the last committed version of all objects, and can decide locally. 
+ *
  * CONS: SI
  * Vector: Scalar Vector
- * Atomic Commitment: Group Communication 
+ * Atomic Commitment: Group Communication (Atomic Multicast)
  * 
  * @author Masoud Saeida Ardekani
  *
  */
-public class Serrano_SV_GC extends SI {
-	
-	private static Logger logger = Logger.getLogger(Serrano_SV_GC.class);
-	
-	private static ConcurrentHashMap<String, Integer> lastCommitted;
+public class SI_SV_GC extends SI {
+	private static Logger logger = Logger
+			.getLogger(SI_SV_GC.class);
 
 	static{
 		READ_KEYS_REQUIRED_FOR_COMMUTATIVITY_TEST=false;
 		ConstantPool.PROTOCOL_ATOMIC_COMMIT=ATOMIC_COMMIT_TYPE.ATOMIC_MULTICAST;
-		lastCommitted=new ConcurrentHashMap<String, Integer>();
 	}
 	
-	public Serrano_SV_GC(JessyGroupManager m, DataStore store) {
+	public SI_SV_GC(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		Consistency.SEND_READSET_DURING_TERMINATION=false;
 	}
@@ -91,14 +90,27 @@ public class Serrano_SV_GC extends SI {
 		JessyEntity lastComittedEntity;
 		for (JessyEntity tmp : executionHistory.getWriteSet().getEntities()) {
 
-			if (!lastCommitted.containsKey(tmp.getKey()))
+			if (!manager.getPartitioner().isLocal(tmp.getKey()))
 				continue;
 			
 			try {
 
-				if (lastCommitted.get(tmp.getKey()) < tmp.getLocalVector().getSelfValue())
-					return false;
+				lastComittedEntity = store
+						.get(new ReadRequest<JessyEntity>(
+								(Class<JessyEntity>) tmp.getClass(),
+								"secondaryKey", tmp.getKey(), null))
+						.getEntity().iterator().next();
 
+				if (lastComittedEntity.getLocalVector().isCompatible(
+						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
+
+					if (ConstantPool.logging)
+						logger.debug("lastCommitted: "
+								+ lastComittedEntity.getLocalVector() + " tmp: "
+								+ tmp.getLocalVector());
+
+					return false;
+				}
 			} catch (NullPointerException e) {
 				// nothing to do.
 				// the key is simply not there.
@@ -168,7 +180,7 @@ public class Serrano_SV_GC extends SI {
 	 * (3) the scalar vector of all updated or created entities
 	 */
 	@SuppressWarnings("rawtypes")
-	
+	@Override
 	public void prepareToCommit(TerminateTransactionRequestMessage msg) {
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 
@@ -194,20 +206,10 @@ public class Serrano_SV_GC extends SI {
 					+ ScalarVector.getLastCommittedSeqNumber());
 	}
 	
-	@Override
 	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){
 		ScalarVector.removeCommittingTransactionSeqNumber((Integer)msg.getComputedObjectUponDelivery());
 	}
 
-	@Override
-	public void postCommit(ExecutionHistory executionHistory) {
-		for (JessyEntity entity: executionHistory.getWriteSet().getEntities()){			
-			lastCommitted.put(entity.getKey(),entity.getLocalVector().getSelfValue());
-		}
-	}
-
-
-	
 	@Override
 	public Set<String> getVotersToJessyProxy(
 			Set<String> termincationRequestReceivers,
@@ -269,35 +271,6 @@ public class Serrano_SV_GC extends SI {
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
-		}
-	}
-	
-	@Override
-	public Set<String> getConcerningKeys(ExecutionHistory executionHistory,
-			ConcernedKeysTarget target) {
-
-		Set<String> keys = new HashSet<String>(1);
-		if (target == ConcernedKeysTarget.TERMINATION_CAST) {
-
-			/*
-			 * If it is a read-only transaction, we return an empty set. But if
-			 * it is not an empty set, then we have to return a set that
-			 * contains a key every group. We do this to simulate the atomic
-			 * broadcast behavior. Because, later, this transaction will atomic
-			 * multicast to all the groups.
-			 */
-			if (executionHistory.getWriteSet().size() == 0
-					&& executionHistory.getCreateSet().size() == 0)
-				return new HashSet<String>(0);
-
-			keys=manager.getPartitioner().generateKeysInAllGroups();
-			return keys;
-		} else if (target == ConcernedKeysTarget.SEND_VOTES) {
-			keys=manager.getPartitioner().generateLocalKey();
-			return keys;
-		} else {
-			keys=manager.getPartitioner().generateLocalKey();
-			return keys;
 		}
 	}
 	

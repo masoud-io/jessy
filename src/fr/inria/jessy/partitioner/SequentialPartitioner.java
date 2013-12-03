@@ -138,4 +138,18 @@ public class SequentialPartitioner extends Partitioner {
 		return keys;
 	}
 
+	@Override
+	public Set<String> generateLocalKey() {
+		Set<String> keys=new HashSet<String>();
+		
+		for (int i = 0; i < manager.getReplicaGroups().size(); i++) {
+			int key=(i*numberOfObjectsPerGroup)+1;
+			if (isLocal(""+key)){				
+				keys.add(""+key);
+				return keys;
+			}
+		}
+		return keys;
+	}
+	
 }

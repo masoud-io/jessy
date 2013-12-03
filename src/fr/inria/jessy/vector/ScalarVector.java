@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sleepycat.persist.model.Persistent;
@@ -81,7 +80,12 @@ public class ScalarVector<K> extends Vector<K> implements Externalizable {
 	@SuppressWarnings("unchecked")
 	public ScalarVector() {
 		super((K) "k");
-		super.setValue(selfKey, lastCommittedTransactionSeqNumber.get());
+		if (lastCommittedTransactionSeqNumber!=null){			
+			super.setValue(selfKey, lastCommittedTransactionSeqNumber.get());
+		}
+		else{
+			super.setValue(selfKey, 0);
+		}
 	}
 
 	/**

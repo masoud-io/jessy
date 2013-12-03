@@ -141,7 +141,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 			pool.submit(applyTransactionsToDataStore);
 		}
 		
-		if (ConstantPool.PROTOCOL_ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.ATOMIC_MULTICAST){
+		if (ConstantPool.PROTOCOL_ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.ATOMIC_MULTICAST || ConstantPool.PROTOCOL_ATOMIC_COMMIT==ATOMIC_COMMIT_TYPE.ATOMIC_CYLCLIC_MULTICAST){
 			atomicCommit=new GroupCommunicationCommit(this);
 			voterName=group.name();
 		}

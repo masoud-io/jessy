@@ -23,14 +23,14 @@ public class ProtocolFactory {
 		if (_instance != null)
 			return _instance;
 
-		if (protocolName.equals("serrano_sv")) {
+		if (protocolName.equals("serrano_sv_gc")) {
 			_instance = new Serrano_SV_GC(m, dataStore);
 		} else if (protocolName.equals("pstore_lsv_gc")) {
 			_instance = new PStore_LSV_GC(m, dataStore);
 		} else if (protocolName.equals("pstore_lsv_2pc")) {
 			_instance = new PStore_LSV_2PC(m, dataStore);			
-		} else if (protocolName.equals("sdur_vv")) {
-			_instance = new SDUR_VV(m, dataStore);
+		} else if (protocolName.equals("sdur_vv_gc")) {
+			_instance = new SDUR_VV_GC(m, dataStore);
 		} else if (protocolName.equals("rc")) {
 			_instance = new RC(m, dataStore);
 		} else if (protocolName.equals("psi_vv_gc")) {

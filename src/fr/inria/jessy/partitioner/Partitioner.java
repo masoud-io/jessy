@@ -47,4 +47,6 @@ public abstract class Partitioner {
 	public abstract Set<String> resolveNames(Set<String> keys);
 	
 	public abstract Set<String> generateKeysInAllGroups();
+	
+	public abstract Set<String> generateLocalKey();
 }

@@ -221,4 +221,9 @@ public class KeySpacePartitioner  extends Partitioner{
 		return null;
 	}
 	
+	@Override
+	public Set<String> generateLocalKey() {
+		//TODO
+		return null;
+	}
 }

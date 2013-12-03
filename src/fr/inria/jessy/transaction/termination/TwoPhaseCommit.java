@@ -38,7 +38,7 @@ public class TwoPhaseCommit extends AtomicCommit {
 
 	String swid=""+jessy.manager.getSourceId();
 	
-	//TODO FIX ME THIS IS CRAP
+	//TODO FIX ME, added to solve deadlocks!
 	ConcurrentHashMap<UUID, Integer> causedTermination=new ConcurrentHashMap<UUID, Integer>(); 
 	
 	public TwoPhaseCommit(DistributedTermination termination) {
