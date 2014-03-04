@@ -2,7 +2,7 @@
 
 
 node=("$1@access-north.grid5000.fr")
-sites=("nancy" "toulouse" "bordeaux" "rennes" "sophia" "lille" "grenoble") # "luxembourg" "lyon" "reims") 
+sites=("nancy") # "toulouse" "bordeaux" "rennes" "sophia" "lille" "grenoble") # "luxembourg" "lyon" "reims") 
 #shfiles=("experience.sh" "jessy.sh")
 #jarfiles=(`ls *.jar | tr '\n' ' '`)
 #shfiles=(`ls *.sh | tr '\n' ' '`)
@@ -44,6 +44,7 @@ echo "Sending to " ${sites[i]}
 	scp ../../../jessy.jar $node:${scriptdir}
 	scp ../../Batelier/target/batelier-0.0.1-SNAPSHOT.jar $node:${scriptdir}/fractal.jar
 
-#		scp -v -r Loaded_YCSB/4/psi_vv_gc $node:${scriptdir}/4
+#		scp -v -r Loaded_YCSB/4/serrano_sv_gc $node:${scriptdir}/4/
+#		scp -v -r Loaded_YCSB/4/sdur_vv_gc $node:${scriptdir}/4/
 done
 

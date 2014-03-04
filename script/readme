@@ -1,0 +1,9 @@
+To load data, and write them in a file using the scripts:
+1. Set config.properties and ycsb parameters.
+2. Change the input argument in jessy.sh from "loadfromdisk" to "savetodisk"
+3. in experience.sh, change the sleep time in stopExp function, and increase it. 
+This is required to let servers write the loaded data into disk.
+If this value is not big enough (more than seconds), servers will terminate before dumping in-memory objects.
+4. Uncomment the loading phase in experience.sh     
+5. Uncomment line CLAUNCHER_SUCCEED=1. Otherwise, script thinks there is a problem with the execution, and retries again.
+6. You can also comment the benchmarking phase if you only need to save data and quit.   
