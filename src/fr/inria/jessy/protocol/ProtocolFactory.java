@@ -48,7 +48,9 @@ public class ProtocolFactory {
 		} else if (protocolName.equals("nmsi_gmv2_gc")) {
 			_instance = new NMSI_GMV2_GC(m, dataStore);
 		} else if (protocolName.equals("nmsi_pdv_gc")) {
-			_instance = new NMSI_PDV_GC(m,dataStore);			
+			_instance = new NMSI_PDV_GC(m,dataStore);		
+		} else if (protocolName.equals("nmsi_pdv_2pc")) {
+			_instance = new NMSI_PDV_2PC(m,dataStore);			
 		} else if (protocolName.equals("walter_vv_2pc")) {
 			_instance = new Walter_VV_2PC(m, dataStore);
 		} else if (protocolName.equals("ser_pdv_gc")) {
