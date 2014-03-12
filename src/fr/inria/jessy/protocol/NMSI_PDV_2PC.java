@@ -57,13 +57,10 @@ public class NMSI_PDV_2PC extends NMSI_PDV_GC {
 	@Override
 	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state, Vote vote){
 		/*
-		 * txn manager needs to collect all votes, computes the final vector, and send it to everybody.
+		 * Transaction manager needs to collect all votes, computes the final vector, and send it to everybody.
 		 * 
 		 */
 		PartitionDependenceVector<String> commitVC = receivedVectors.get(vote.getTransactionHandler().getId());
-		if (commitVC==null){
-			System.out.println("commitvc is null for  " + vote.getTransactionHandler().getId());
-		}
 		vote.setVotePiggyBack(new VotePiggyback(commitVC));
 	}
 }

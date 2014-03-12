@@ -3,7 +3,6 @@
 	<classpathentry excluding="fr/inria/jessy/communication/VoteMulticastWithFractal.java|fr/inria/jessy/transaction/termination/vote/GroupVotingQuorum.java|fr/inria/jessy/transaction/termination/vote/ProcessVotingQuorum.java" kind="src" path="src"/>
 	<classpathentry excluding="com/yahoo/ycsb/CassandraClient10.java|com/yahoo/ycsb/InfinispanClient.java|com/yahoo/ycsb/MongoDbClient.java|com/yahoo/ycsb/NHBaseClient.java|com/yahoo/ycsb/RedisClient.java|com/yahoo/ycsb/VoldemortClient.java" kind="src" path="benchmark/ycsb/src"/>
 	<classpathentry excluding="ycsb/src/" kind="src" path="benchmark"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/je-5.0.34.jar" sourcepath="/local/msaeida/JavaPackages/Berkeley DB je-5.0.34"/>
 	<classpathentry kind="lib" path="lib/junit-4.10.jar" sourcepath="/data/msaeida/Java Packages/junit4.10/junit/tests"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar" sourcepath="/local/msaeida/JavaPackages/apache-log4j-1.2.16 (2)"/>
@@ -14,5 +13,6 @@
 	<classpathentry kind="lib" path="lib/high-scale-lib.jar"/>
 	<classpathentry kind="lib" path="lib/concurrentlinkedhashmap-lru-1.3.2.jar" sourcepath="/local/msaeida/JavaPackages/concurrentlinkedhashmap/src.zip"/>
 	<classpathentry kind="lib" path="lib/fractal.jar" sourcepath="/Batilier"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-7-openjdk-amd64"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
