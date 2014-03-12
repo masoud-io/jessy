@@ -579,7 +579,7 @@ public class DistributedTermination implements Learner, UnicastLearner {
 							msg.getExecutionHistory().getTransactionHandler())
 							.waitVoteResult(voteSenders);
 					msg.getExecutionHistory().changeState(state);					
-					jessy.getConsistency().quorumReached(msg, state);
+					jessy.getConsistency().quorumReached(msg, state, vote);
 					atomicCommit.quorumReached(msg,state, vote);
 					
 					if (DebuggingFlag.DISTRIBUTED_TERMINATION)

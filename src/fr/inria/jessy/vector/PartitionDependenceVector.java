@@ -99,7 +99,14 @@ public class PartitionDependenceVector<K> extends Vector<K> implements Externali
 	@Override
 	public fr.inria.jessy.vector.Vector.CompatibleResult isCompatible(
 			Vector<K> other) throws NullPointerException {
-		return null;
+		if (this.getSelfValue()==0 && other.getSelfValue()==0){
+			/*
+			 * This is the initial version of the object. 
+			 */
+			return CompatibleResult.COMPATIBLE;
+		}
+		
+		return (this.compareTo(other)==ComparisonResult.EQUAL_TO)? CompatibleResult.COMPATIBLE :CompatibleResult.NEVER_COMPATIBLE;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

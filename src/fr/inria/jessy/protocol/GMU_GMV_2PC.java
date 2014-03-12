@@ -233,7 +233,7 @@ public class GMU_GMV_2PC extends US{
 	}
 	
 	@Override
-	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
+	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state, Vote vote){
 		if (msg.getExecutionHistory().getTransactionType()==TransactionType.INIT_TRANSACTION)
 			return;
 		

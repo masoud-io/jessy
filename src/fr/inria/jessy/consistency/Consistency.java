@@ -18,6 +18,7 @@ import fr.inria.jessy.transaction.TransactionTouchedKeys;
 import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
+import fr.inria.jessy.vector.PartitionDependenceVector;
 import fr.inria.jessy.vector.VectorFactory;
 
 public abstract class Consistency {
@@ -226,7 +227,7 @@ public abstract class Consistency {
 		return;
 	}
 	
-	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state){
+	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state, Vote vote){
 		
 	}
 

@@ -24,6 +24,7 @@ import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 import fr.inria.jessy.vector.PartitionDependenceVector;
+import fr.inria.jessy.vector.Vector.CompatibleResult;
 
 /**
  * This class implements Non-Monotonic Snapshot Isolation consistency criterion.
@@ -33,7 +34,7 @@ import fr.inria.jessy.vector.PartitionDependenceVector;
  */
 public class NMSI_PDV_GC extends NMSI {
 
-	private static ConcurrentHashMap<UUID, PartitionDependenceVector<String>> receivedVectors;
+	protected static ConcurrentHashMap<UUID, PartitionDependenceVector<String>> receivedVectors;
 
 	static {
 		votePiggybackRequired = true;
@@ -109,11 +110,12 @@ public class NMSI_PDV_GC extends NMSI {
 				 * instead of locking, we simply checks against the latest
 				 * committed values
 				 */
-				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp
-						.getLocalVector().getSelfValue()) {
+				if (tmp.getLocalVector().isCompatible(lastComittedEntity.getLocalVector())!=CompatibleResult.COMPATIBLE){
+					
 					if (ConstantPool.logging)
-						logger.error("Certification fails (writeSet) : Reads key "	+ tmp.getKey() + " with the vector "
-							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector());
+						logger.error("Certification fails (writeSet) : Reads key "	+ tmp.getKey() 
+								+ " with the vector "
+							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector() + " transaction " + executionHistory.getTransactionHandler().getId());
 					return false;
 				}
 
@@ -149,10 +151,11 @@ public class NMSI_PDV_GC extends NMSI {
 				for (JessyEntity entity: msg.getExecutionHistory().getReadSet().getEntities()){
 					vector.update(entity.getLocalVector());
 				}
-				vector.update(PartitionDependenceVector.lastCommit);
+				vector.update(PartitionDependenceVector.lastCommit.clone());
 				vector.setSelfKey(manager.getMyGroup().name());
 				vector.setValue(vector.getSelfKey(), seqNo);
-				msg.setComputedObjectUponDelivery(vector);
+				msg.setComputedObjectUponDelivery(vector.clone());
+				
 			}
 		}
 		catch (Exception ex){
@@ -197,15 +200,13 @@ public class NMSI_PDV_GC extends NMSI {
 			PartitionDependenceVector<String> commitVC = (PartitionDependenceVector<String>) vote
 					.getVotePiggyBack().getPiggyback();
 
-			/*
-			 * Corresponds to line 19
-			 */
 
 			PartitionDependenceVector<String> receivedVector = receivedVectors.putIfAbsent(
 					vote.getTransactionHandler().getId(), commitVC);
 			if (receivedVector != null) {
 				receivedVector.update(commitVC);
 			}
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

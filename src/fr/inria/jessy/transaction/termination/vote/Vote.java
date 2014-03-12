@@ -47,6 +47,10 @@ public class Vote implements Externalizable {
 		return votePiggyback;
 	}
 	
+	public void setVotePiggyBack(VotePiggyback votePiggyback) {
+		this.votePiggyback=votePiggyback;
+	}
+	
 	public void setVoterEntityName(String voterEntityName){
 		this.voterEntityName=voterEntityName;
 	}
