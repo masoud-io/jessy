@@ -121,8 +121,15 @@ public class VersionVectorApplyPiggyback implements Runnable{
 				VersionVector.committedVTS.setVector(pb.getwCoordinatorGroupName(), tmp+1 );
 			}
 
-			if ((VersionVector.committedVTS
-					.getValue(pb.getwCoordinatorGroupName()) < pb.getSequenceNumber()- 1)){
+			/*
+			 * We can continue if committedVTS(proxy) < pb-1
+			 * or
+			 * if committedVTS(proxy)==-1 (meaning there is no entry, and -1 is the default value) and ob==1 (meaning it is the first transaction)
+			 */
+			if ((VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()) < pb.getSequenceNumber()- 1)
+					&& 
+				!(VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName())==-1 && pb.getSequenceNumber()>1))
+			{
 				
 				if (ConstantPool.logging)
 					logger.error("late sequence: Transaction "

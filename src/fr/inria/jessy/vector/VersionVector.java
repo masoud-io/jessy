@@ -8,6 +8,8 @@ import com.sleepycat.persist.model.Persistent;
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.persistence.FilePersistence;
+import fr.inria.jessy.store.JessyEntity;
+import fr.inria.jessy.store.ReadRequest;
 
 /**
  * A classical version vector. To be used by PSI.
@@ -82,32 +84,64 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 	@Override
 	public CompatibleResult isCompatible(CompactVector<K> other)
 			throws NullPointerException {
-		if (other == null)
-			throw new NullPointerException("Input Vector is Null");
-
-		if (other.size() == 0) {
-			/*
-			 * if other vector size is zero, then this is the very first read.
-			 * Thus, we set the StartVTS
-			 * 
-			 * Notice that we cannot simply set the committedVTS to local vector
-			 * because we need a clone of it, and ConcurrentHashMap does not
-			 * have a clone implementation.
-			 */
-			Iterator<String> itr = committedVTS.getVector().keySet().iterator();
-			while (itr.hasNext()) {
-				String key = itr.next();
-				int value = committedVTS.getValue(key);
-				this.setValue((K) key, (Integer) value);
-			}
-
 			return Vector.CompatibleResult.COMPATIBLE;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public boolean prepareRead(ReadRequest rr){
+		try{
+			VersionVector<String> vector=(VersionVector<String>) rr.getReadSet().getExtraObject();
+			if (vector==null || vector.size()==0){
+				//first read. we go ahead and read.
+				return true;
+			}			
+			else{
+				CompactVector<K> other=rr.getReadSet();
+				if (getValue(selfKey) <= other.getValue(selfKey))
+					return true;
+				else
+					return false;
+			}
+			
+					
+		}
+		catch(Exception ex){
+			ex.printStackTrace();
 		}
 
-		if (getValue(selfKey) <= other.getValue(selfKey))
-			return Vector.CompatibleResult.COMPATIBLE;
-		else
-			return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
+		return false;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public void postRead(ReadRequest rr, JessyEntity entity){
+		
+		try{
+			if (rr.getReadSet().size()==0){
+				//this is the first read.
+				//we need to set the transaction snapshot. 
+				//we set the vector of the node as a temprory object.
+				//Later, once the proxy gets the answer, it needs to incorporate it into the compactVector extra object.
+				VersionVector<String> vector=new VersionVector<String>();
+				Iterator<String> itr = committedVTS.getVector().keySet().iterator();
+				while (itr.hasNext()) {
+					String key = itr.next();
+					int value = committedVTS.getValue(key);
+					vector.setValue(key, value);
+				}
+				
+				entity.temporaryObject=vector;
+			}
+		}
+		catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, Object compactVectorExtraObject) {
+		compactVectorExtraObject=entityTemproryObject;
 	}
 
 	/**

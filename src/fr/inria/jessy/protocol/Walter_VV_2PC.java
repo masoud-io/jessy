@@ -36,7 +36,6 @@ import fr.inria.jessy.transaction.termination.TwoPhaseCommit;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
-import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VersionVector;
 
 /**
@@ -147,8 +146,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 								"secondaryKey", tmp.getKey(), null))
 						.getEntity().iterator().next();
 
-				if (lastComittedEntity.getLocalVector().isCompatible(
-						tmp.getLocalVector()) != Vector.CompatibleResult.COMPATIBLE) {
+				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp.getLocalVector().getSelfValue()){
 
 					if (ConstantPool.logging)
 						logger.error("Aborting a transaction because for key " + tmp.getKey() + "local vector is "
@@ -177,7 +175,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION)
 			return;
-
+		
 		try {
 			VersionVectorPiggyback pb;
 			if (!receivedPiggybacks.keySet().contains(
@@ -188,7 +186,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 				 * received the vote from the WCoordinator, and along with the
 				 * vote, we should have received the sequence number.
 				 */
-				logger.error("Preparing to commit without receiving the piggybacked message from WCoordinator");
+				logger.error("Preparing to commit without receiving the piggybacked message from WCoordinator: " + msg.getExecutionHistory().getTransactionHandler().getId());
 				System.exit(0);
 			}
 
@@ -253,7 +251,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 		 * Read-only transaction does not propagate
 		 */
 		if (executionHistory.getTransactionType() == TransactionType.READONLY_TRANSACTION
-				|| !isWCoordinator(executionHistory))
+				|| !TwoPhaseCommit.isCoordinator(executionHistory, manager))
 			return;
 
 		Set<String> alreadyNotified = new HashSet<String>();
@@ -297,7 +295,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 	public void postAbort(TerminateTransactionRequestMessage msg, Vote vote){
 		ExecutionHistory executionHistory=msg.getExecutionHistory();
 		
-		if (!isWCoordinator(executionHistory))
+		if (!TwoPhaseCommit.isCoordinator(executionHistory, manager))
 			return;
 		
 		
@@ -360,7 +358,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 	@Override
 	public boolean transactionDeliveredForTermination(ConcurrentLinkedHashMap<UUID, Object> terminatedTransactions, ConcurrentHashMap<TransactionHandler, VotingQuorum>  quorumes, TerminateTransactionRequestMessage msg){
 		try{
-			if (isWCoordinator(msg.getExecutionHistory())) {
+			if (TwoPhaseCommit.isCoordinator(msg.getExecutionHistory(), manager)) {
 				int sequenceNumber=0;
 
 				if (msg.getExecutionHistory().getTransactionType()!=TransactionType.INIT_TRANSACTION)
@@ -389,7 +387,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 		 * the first write is for.
 		 */
 		VotePiggyback vp = null;
-		if (isWCoordinator(executionHistory)) {
+		if (TwoPhaseCommit.isCoordinator(executionHistory, manager)) {
 
 			int sequenceNumber=(Integer)object;
 
@@ -404,48 +402,18 @@ public class Walter_VV_2PC extends PSI implements Learner {
 	}
 
 	/**
-	 * Returns if the first write operation of the transaction is on an entity
-	 * replicated by the local jessy instance. If so, this instance is called
-	 * <i>WCoordinator</i> of the transaction, and is responsible for
-	 * piggybacking new sequence number on top of its votes.
-	 * 
-	 * <p>
-	 * Note that the first read cannot play this role because it might not write
-	 * on the same object, thus won't receive the vote request during
-	 * certification.
-	 * 
-	 * @param executionHistory
-	 * @return
-	 */
-	private boolean isWCoordinator(ExecutionHistory executionHistory) {
-
-		String key;
-		if (executionHistory.getWriteSet().size() > 0) {
-			key = executionHistory.getWriteSet().getKeys().iterator().next();
-			if (manager.getPartitioner().isLocal(key)) {
-				return true;
-			}
-		}
-
-		if (executionHistory.getCreateSet().size() > 0) {
-			key = executionHistory.getCreateSet().getKeys().iterator().next();
-			if (manager.getPartitioner().isLocal(key)) {
-				return true;
-			}
-		}
-
-		return false;
-
-	}
-
-	/**
 	 * @inheritDoc
 	 */
 	public void voteReceived(Vote vote) {
-		if (vote.getVotePiggyBack() != null){
-			receivedPiggybacks.put(vote.getTransactionHandler().getId(),
-					(VersionVectorPiggyback) vote
-					.getVotePiggyBack().getPiggyback());
+		try{
+			if (vote.getVotePiggyBack() != null){
+				receivedPiggybacks.put(vote.getTransactionHandler().getId(),
+						(VersionVectorPiggyback) vote
+						.getVotePiggyBack().getPiggyback());
+			}
+		}
+		catch(Exception ex){
+			ex.printStackTrace();
 		}
 	}
 

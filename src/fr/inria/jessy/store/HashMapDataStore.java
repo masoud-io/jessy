@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sleepycat.je.DatabaseException;
-import com.yahoo.ycsb.JessyDBClient;
 
 import fr.inria.jessy.DebuggingFlag;
 import fr.inria.jessy.persistence.FilePersistence;

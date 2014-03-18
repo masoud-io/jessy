@@ -81,7 +81,8 @@ public class VectorFactory {
 				protocolName.equals("gmu") || 
 				protocolName.equals("nmsi_gmv2_gc") ||
 				protocolName.equals("us_gmv2_gc") || 
-				protocolName.equals("nmsi_pdv_gc")) {
+				protocolName.equals("nmsi_pdv_gc")|| 
+				protocolName.equals("walter_vv_2pc")) {
 			return true;
 		}
 

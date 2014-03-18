@@ -11,6 +11,7 @@ import net.sourceforge.fractal.membership.Group;
 import org.apache.log4j.Logger;
 
 import fr.inria.jessy.DebuggingFlag;
+import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.communication.message.VoteMessage;
 import fr.inria.jessy.consistency.Consistency.ConcernedKeysTarget;
@@ -184,7 +185,7 @@ public class TwoPhaseCommit extends AtomicCommit {
 	public static String getDetermisticKey(ExecutionHistory history){
 		String deterministicKey;
 		
-		//we first choose the first write as the determistic key.
+		//we first choose the first write as the deterministic key.
 		//hence the leader of a group replicating this key will be the 2PC coordinator.
 		if (history.getWriteSet() !=null && history.getWriteSet().size()>0){
 			deterministicKey=history.getWriteSet().getKeys().iterator().next();
@@ -201,6 +202,11 @@ public class TwoPhaseCommit extends AtomicCommit {
 	public static String getCoordinatorId(ExecutionHistory executionHistory, Partitioner partitioner){
 		String firstWriteKey=getDetermisticKey(executionHistory);
 		return "" + partitioner.resolve(firstWriteKey).leader();
+	}
+	
+	public static boolean isCoordinator(ExecutionHistory executionHistory, JessyGroupManager manager){
+		int leaderId=Integer.parseInt(getCoordinatorId(executionHistory, manager.getPartitioner())); 
+		return (leaderId==manager.getSourceId())? true: false;
 	}
 
 }
