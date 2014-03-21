@@ -1,0 +1,9 @@
+Exception: Object *** does not exist in the Data Store
+Possible problems:
+1. value of  recordcount in config/YCSB/workloads/transactionalworkloada does not match number of servers, replication mechanism.
+2. Pre-loaded data files are corrupted.
+
+
+ NullPointerException: at fr.inria.jessy.store.HashMapDataStore.get
+ Possible problems:
+ 1. Pre-loaded data files are not loaded, hence the data store is null. 

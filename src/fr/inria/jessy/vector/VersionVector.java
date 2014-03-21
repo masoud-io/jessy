@@ -68,8 +68,28 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 		if (other == null) {
 			throw new NullPointerException("Input Vector is Null");
 		}
+		
+		K key= (K)committedVTS.getSelfKey();
 
-		if (this.getValue(selfKey).compareTo(other.getValue(selfKey)) <= 0)
+		if ((this.getValue(key)== 0 || this.getValue(key)== -1)
+				&& (other.getValue(key)== 0 || other.getValue(key)== -1))
+		{
+			/*
+			 * This test is for objects with initial version. 
+			 * For example consider object user1 is replicated at two groups g1 and g2.
+			 * Hence their initial versions are <g1,0> and <g2,0> accordingly.
+			 * Thus if proxy reads from g2, and the transaction coordinator is g1 (in 2pc), 
+			 * then the two versions are different.
+			 * In other words, when g1 reads the last committed version of user1, it return <g1,0>, 
+			 * but the last read return <g1,-1> because g1 does not exist in user1 version. 
+			 * and -1 is the default return value.  
+			 */
+
+			return Vector.CompatibleResult.COMPATIBLE;
+		}
+		
+		
+		if (this.getValue(key) >= other.getValue(key))
 			return Vector.CompatibleResult.COMPATIBLE;
 		else
 			return Vector.CompatibleResult.NOT_COMPATIBLE_TRY_NEXT;
@@ -90,15 +110,15 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public boolean prepareRead(ReadRequest rr){
+		K key= (K)committedVTS.getSelfKey();
 		try{
-			VersionVector<String> vector=(VersionVector<String>) rr.getReadSet().getExtraObject();
+			VersionVector<K> vector=(VersionVector<K>) rr.getReadSet().getExtraObject();
 			if (vector==null || vector.size()==0){
 				//first read. we go ahead and read.
 				return true;
 			}			
 			else{
-				CompactVector<K> other=rr.getReadSet();
-				if (getValue(selfKey) <= other.getValue(selfKey))
+				if (getValue(key) <= vector.getValue(key))
 					return true;
 				else
 					return false;
@@ -140,8 +160,12 @@ public class VersionVector<K> extends Vector<K> implements Cloneable, Externaliz
 	}
 	
 	@Override
-	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, Object compactVectorExtraObject) {
-		compactVectorExtraObject=entityTemproryObject;
+	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, ExtraObjectContainer compactVectorExtraObjectContainer) {
+		if (entityTemproryObject!=null){
+			//The first read has been done, and we need to set the transaction snapshot. 
+			//We do this by setting the extra object in compact vector. 
+			compactVectorExtraObjectContainer.extraObject  =((VersionVector<String>)entityTemproryObject).clone();
+		}
 	}
 
 	/**

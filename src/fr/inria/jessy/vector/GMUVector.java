@@ -193,8 +193,8 @@ public class GMUVector<K> extends Vector<K> implements Externalizable {
 	}
 
 	@Override
-	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, Object compactVectorExtraObject) {
-		GMUVectorExtraObject obj=(GMUVectorExtraObject)compactVectorExtraObject;
+	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, ExtraObjectContainer compactVectorExtraObject) {
+		GMUVectorExtraObject obj=(GMUVectorExtraObject)compactVectorExtraObject.extraObject;
 		if (obj==null)
 			obj=new GMUVectorExtraObject();
 		GMUVector<K> tmpSnapshot=(GMUVector<K>)entityTemproryObject;

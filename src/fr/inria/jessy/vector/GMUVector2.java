@@ -191,13 +191,13 @@ public class GMUVector2<K> extends Vector<K> implements Externalizable {
 
 	// TODO parameterize 4 correctly
 	@Override
-	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, Object compactVectorExtraObject) {
+	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, ExtraObjectContainer compactVectorExtraObjectContainer) {
 		/*
 		 * init with 4 entries, because for the moment, we have 4 reads.
 		 */
-		if (compactVectorExtraObject == null)
-			compactVectorExtraObject = new HashMap<K, Boolean>(4);
-		((HashMap<K, Boolean>) compactVectorExtraObject).put(selfKey, true);
+		if (compactVectorExtraObjectContainer.extraObject == null)
+			compactVectorExtraObjectContainer.extraObject = new HashMap<K, Boolean>(4);
+		((HashMap<K, Boolean>) compactVectorExtraObjectContainer.extraObject).put(selfKey, true);
 	}
 
 	@Override

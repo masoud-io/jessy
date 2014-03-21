@@ -20,7 +20,7 @@ import fr.inria.jessy.ConstantPool;
  * 
  */
 public class ConcurrentVersionVector<K> implements Externalizable,
-		Comparable<CompactVector<K>> {
+		Comparable<Vector<K>> {
 
 	private static final long serialVersionUID = -ConstantPool.JESSY_MID;
 	
@@ -73,8 +73,8 @@ public class ConcurrentVersionVector<K> implements Externalizable,
 	}
 
 	@Override
-	public int compareTo(CompactVector<K> o) {
-		for (K k : o.getKeys()) {
+	public int compareTo(Vector<K> o) {
+		for (K k : o.map.keySet()) {
 			if (map.contains(k) && map.get(k).compareTo(o.getValue(k)) < 0)
 				return -1;
 		}

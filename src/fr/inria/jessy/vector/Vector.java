@@ -10,7 +10,6 @@ import com.sleepycat.persist.model.Persistent;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.communication.JessyGroupManager;
-import fr.inria.jessy.persistence.FilePersistence;
 import fr.inria.jessy.store.DataStore;
 import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.store.ReadRequest;
@@ -131,9 +130,9 @@ public abstract class Vector<K> extends ValueVector<K, Integer> implements Clone
 	 * 
 	 * @param entityLocalVector
 	 * @param entityTemproryObject
-	 * @param compactVectorExtraObject
+	 * @param compactVectorExtraObjectContainer
 	 */
-	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, Object compactVectorExtraObject) {
+	public void updateExtraObjectInCompactVector(Vector<K> entityLocalVector, Object entityTemproryObject, ExtraObjectContainer compactVectorExtraObjectContainer) {
 		return;
 	}
 

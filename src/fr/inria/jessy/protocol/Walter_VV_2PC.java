@@ -36,6 +36,7 @@ import fr.inria.jessy.transaction.termination.TwoPhaseCommit;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotePiggyback;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
+import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VersionVector;
 
 /**
@@ -146,7 +147,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 								"secondaryKey", tmp.getKey(), null))
 						.getEntity().iterator().next();
 
-				if (lastComittedEntity.getLocalVector().getSelfValue() > tmp.getLocalVector().getSelfValue()){
+				if (tmp.getLocalVector().isCompatible(lastComittedEntity.getLocalVector())!=Vector.CompatibleResult.COMPATIBLE){
 
 					if (ConstantPool.logging)
 						logger.error("Aborting a transaction because for key " + tmp.getKey() + "local vector is "

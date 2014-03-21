@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.transaction.ExecutionHistory.TransactionType;
-import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.VersionVector;
 
 /**
@@ -50,6 +49,7 @@ public class VersionVectorApplyPiggyback implements Runnable{
 						+ " : "+ piggyback.getSequenceNumber()+ " while current sequence number is "+ VersionVector.committedVTS.getValue(piggyback.getwCoordinatorGroupName()));
 			return;
 		}
+
 		synchronized(piggyback){
 			try {
 				addToQueue(piggyback);
@@ -59,10 +59,10 @@ public class VersionVectorApplyPiggyback implements Runnable{
 				e.printStackTrace();
 			}
 		}
+		
 	}
 	
 	private void addToQueue(VersionVectorPiggyback pb){
-//		System.out.println(" RECEIVED " + pb.getwCoordinatorGroupName() + " with " + pb.getSequenceNumber() + " to APPLY");
 		piggybackQueue.offer(pb);
 		
 		synchronized(piggybackQueue){
@@ -72,7 +72,6 @@ public class VersionVectorApplyPiggyback implements Runnable{
 	
 	@Override
 	public void run() {
-//		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		VersionVectorPiggyback pb;
 		while (true){
 			try {
@@ -128,7 +127,7 @@ public class VersionVectorApplyPiggyback implements Runnable{
 			 */
 			if ((VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName()) < pb.getSequenceNumber()- 1)
 					&& 
-				!(VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName())==-1 && pb.getSequenceNumber()>1))
+				!(VersionVector.committedVTS.getValue(pb.getwCoordinatorGroupName())==-1 && pb.getSequenceNumber()==1))
 			{
 				
 				if (ConstantPool.logging)
@@ -151,7 +150,7 @@ public class VersionVectorApplyPiggyback implements Runnable{
 			 */
 			if (pb.getTransactionType()!=TransactionType.INIT_TRANSACTION){
 				
-				CompactVector<String> startVTS = pb.getReadsetCompactVector();
+				VersionVector<String> startVTS = (VersionVector<String>) pb.getReadsetCompactVector().getExtraObject();
 
 				if (VersionVector.committedVTS.compareTo(startVTS) < 0	) {
 					/*

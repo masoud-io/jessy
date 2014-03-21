@@ -39,7 +39,7 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	 * 
 	 * e.g., in GMUVector implementation, we stores hasRead hashmap.
 	 */
-	private Object extraObject;
+	private ExtraObjectContainer extraObjectContainer;
 
 	static {
 		requireExtraObject = VectorFactory.needExtraObject();
@@ -50,12 +50,14 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	public CompactVector() {
 		super(_bydefault);
 		keys = new ArrayList<K>(1);
+		extraObjectContainer=new ExtraObjectContainer();
 
 	}
 
 	public void update(Vector<K> entityLocalvector, Object entityTemproryObject) {
-		if (requireExtraObject)
-			entityLocalvector.updateExtraObjectInCompactVector(entityLocalvector,entityTemproryObject, extraObject);
+		if (requireExtraObject){
+			entityLocalvector.updateExtraObjectInCompactVector(entityLocalvector,entityTemproryObject, extraObjectContainer);
+		}
 		super.update(entityLocalvector);
 		keys.add(entityLocalvector.getSelfKey());
 	}
@@ -73,7 +75,7 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 	}
 
 	public Object getExtraObject() {
-		return extraObject;
+		return extraObjectContainer.extraObject;
 	}
 
 	@Override
@@ -81,7 +83,7 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 		super.writeExternal(out);
 		out.writeObject(keys);
 		if (requireExtraObject) {
-			out.writeObject(extraObject);
+			out.writeObject(extraObjectContainer);
 		}
 	}
 
@@ -92,7 +94,7 @@ public class CompactVector<K> extends ValueVector<K, Integer> implements
 		super.setBydefault(_bydefault);
 		keys = (List<K>) in.readObject();
 		if (requireExtraObject) {
-			extraObject = (Object) in.readObject();
+			extraObjectContainer = (ExtraObjectContainer) in.readObject();
 		}
 	}
 

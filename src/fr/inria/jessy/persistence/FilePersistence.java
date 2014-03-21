@@ -73,7 +73,7 @@ public class FilePersistence {
 		String filePath = storageDirectory + objectName;
 		File file = new File(filePath);
 		if (!file.exists()) {
-			System.out.println("File "+file+" does not exist.");
+			System.out.println("***ERROR***: File "+file+" does not exist.");
 			return null;
 		}
 		
