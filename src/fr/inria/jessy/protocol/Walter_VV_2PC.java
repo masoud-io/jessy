@@ -74,7 +74,7 @@ public class Walter_VV_2PC extends PSI implements Learner {
 	public Walter_VV_2PC(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		receivedPiggybacks = new ConcurrentHashMap<UUID, VersionVectorPiggyback>();
-		propagation = new MessagePropagation(this,m);
+		propagation = new MessagePropagation("ParallelSnapshotIsolationPropagateMessage", this,m);
 		
 		applyPiggyback=new HashMap<String, VersionVectorApplyPiggyback>();
 		

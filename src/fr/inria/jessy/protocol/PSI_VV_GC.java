@@ -69,7 +69,7 @@ public class PSI_VV_GC extends PSI implements Learner {
 	public PSI_VV_GC(JessyGroupManager m, DataStore store) {
 		super(m, store);
 		receivedPiggybacks = new ConcurrentHashMap<UUID, VersionVectorPiggyback>();
-		propagation = new MessagePropagation(this,m);
+		propagation = new MessagePropagation("ParallelSnapshotIsolationPropagateMessage", this,m);
 		
 		applyPiggyback=new HashMap<String, VersionVectorApplyPiggyback>();
 		

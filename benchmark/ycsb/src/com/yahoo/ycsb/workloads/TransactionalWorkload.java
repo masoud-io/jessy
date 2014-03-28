@@ -498,6 +498,10 @@ public class TransactionalWorkload extends Workload {
 				fields.add(fieldname);
 			}
 
+			//FIX ME
+			if (keyname.equals("user100000") || keyname.equals("user200000") || keyname.equals("user300000"))
+				continue;
+				
 			tmp = new YCSBTransactionalReadRequest(table, keyname, fields,
 					new HashMap<String, String>());
 			result.add(tmp);
@@ -559,6 +563,12 @@ public class TransactionalWorkload extends Workload {
 				String data = Utils.ASCIIString(fieldlength);
 				values.put(fieldname, data);
 			}
+			
+
+			//FIX ME
+			if (keyname.equals("user100000") || keyname.equals("user200000") || keyname.equals("user300000"))
+				continue;
+			
 			tmp=new YCSBTransactionalUpdateRequest(table, keyname, values);
 			result.add(tmp);
 		}

@@ -1,8 +1,8 @@
 package fr.inria.jessy.communication;
 
 import net.sourceforge.fractal.Learner;
+import net.sourceforge.fractal.multicast.MulticastMessage;
 import net.sourceforge.fractal.multicast.MulticastStream;
-import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMessage;
 
 /**
  * In Genuine implementations of protocols such as PSI, and in order to ensure
@@ -15,11 +15,11 @@ import fr.inria.jessy.communication.message.ParallelSnapshotIsolationPropagateMe
 public class MessagePropagation {
 	private MulticastStream mCastStream;
 
-	public MessagePropagation(Learner learner, JessyGroupManager m) {
+	public MessagePropagation(String msgType, Learner learner, JessyGroupManager m) {
 		mCastStream = m.fractal.getOrCreateMulticastStream(
 				m.getMyGroup().name(),
 				m.getMyGroup().name());
-		mCastStream.registerLearner("ParallelSnapshotIsolationPropagateMessage", learner);
+		mCastStream.registerLearner(msgType, learner);
 		mCastStream.start();
 	}
 
@@ -30,7 +30,7 @@ public class MessagePropagation {
 	 * 
 	 * @param msg
 	 */
-	public void propagate(ParallelSnapshotIsolationPropagateMessage msg) {
+	public void propagate(MulticastMessage msg) {
 		mCastStream.multicast(msg);
 	}
 
