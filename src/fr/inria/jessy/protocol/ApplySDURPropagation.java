@@ -71,9 +71,7 @@ public class ApplySDURPropagation extends Thread{
 		try{
 			while (true){
 				String UUIDhead=pendings.take().toString();
-				System.out.println("Starting to apply " + UUIDhead);
 				while (!containers.containsKey(UUIDhead) || !containers.get(UUIDhead).canProceed(UUIDhead)){
-					System.out.println("Cannot apply "  + UUIDhead +" because containsHead:" + containers.containsKey(UUIDhead));
 					synchronized (containers){
 						containers.wait();
 					}
