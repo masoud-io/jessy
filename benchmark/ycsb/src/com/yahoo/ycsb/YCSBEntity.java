@@ -41,6 +41,12 @@ public class YCSBEntity extends JessyEntity implements Externalizable {
 	public YCSBEntity(String entityId) {
 		super(entityId);
 	}
+	
+	/* Constructor */
+	public YCSBEntity(JessyEntity jessyEntity) {
+		super(jessyEntity.getKey());
+		this.setLocalVector(jessyEntity.getLocalVector());
+	}
 
 	/* Constructor Using a hashmap already Definded */
 	public YCSBEntity(String entityId, HashMap<String, String> insFields) {

@@ -7,9 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sleepycat.je.DatabaseException;
+import com.yahoo.ycsb.YCSBEntity;
 
 import fr.inria.jessy.DebuggingFlag;
+import fr.inria.jessy.DistributedJessy;
+import fr.inria.jessy.partitioner.Partitioner;
 import fr.inria.jessy.persistence.FilePersistence;
+import fr.inria.jessy.protocol.ProtocolFactory;
 import fr.inria.jessy.vector.CompactVector;
 import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
@@ -35,6 +39,8 @@ public class HashMapDataStore implements DataStore {
 	
 	ConcurrentHashMap<String, ArrayList> store;
 
+	Partitioner partitioner;
+	
 	@SuppressWarnings("unchecked")
 	public HashMapDataStore() {
 		if (FilePersistence.loadFromDisk)
@@ -99,9 +105,31 @@ public class HashMapDataStore implements DataStore {
 						.toString());
 
 				if (tmp == null) {
-					throw new NullPointerException("Object with key "
-							+ readRequest.getOneKey().getKeyValue()
-							+ " does not exist in the Data Store.");
+					String key=readRequest.getOneKey().getKeyValue().toString();
+					
+					if (partitioner==null && DistributedJessy.jessyGroupManager!=null)
+						partitioner=DistributedJessy.jessyGroupManager.getPartitioner();
+					else if (DistributedJessy.jessyGroupManager==null)
+						throw new NullPointerException("Partitioner is not set.");
+					
+					
+					if (!partitioner.isLocal(key)){						
+						throw new NullPointerException("Object with key "
+								+ readRequest.getOneKey().getKeyValue()
+								+ " does not belong to this replica.");
+					}
+					else{
+						System.out.println("Creating object for " + key);
+						//We simply create the object on the fly.
+						//This is to get rid of the loading phase.
+						//TODO, this is just crap!
+						//FIXME
+						JessyEntity e=ProtocolFactory.getProtocolInstance().createEntity(key);
+						YCSBEntity ycsbEntity=new YCSBEntity(e);
+						
+						tmp=new ArrayList<E>();
+						tmp.add((E)ycsbEntity);
+					}
 				}
 
 				int index = tmp.size() - 1;

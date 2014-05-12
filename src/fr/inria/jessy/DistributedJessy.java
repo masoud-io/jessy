@@ -492,6 +492,7 @@ public class DistributedJessy extends Jessy {
 		}
 	}
 
+	public static JessyGroupManager jessyGroupManager;
 	/**
 	 * Main entry point to Distributed Jessy Runtime.
 	 * 
@@ -503,6 +504,7 @@ public class DistributedJessy extends Jessy {
 			PropertyConfigurator.configure("log4j.properties");
 			
 			JessyGroupManager m = new JessyGroupManager();
+			jessyGroupManager=m;
 			
 			for (String str :args){
 				if (str.toLowerCase().contains("savetodisk")){

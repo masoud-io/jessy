@@ -11,6 +11,7 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import fr.inria.jessy.communication.JessyGroupManager;
 import fr.inria.jessy.communication.message.TerminateTransactionRequestMessage;
 import fr.inria.jessy.store.DataStore;
+import fr.inria.jessy.store.JessyEntity;
 import fr.inria.jessy.transaction.ExecutionHistory;
 import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
@@ -19,6 +20,7 @@ import fr.inria.jessy.transaction.termination.DistributedTermination;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
 import fr.inria.jessy.vector.PartitionDependenceVector;
+import fr.inria.jessy.vector.Vector;
 import fr.inria.jessy.vector.VectorFactory;
 
 public abstract class Consistency {
@@ -230,5 +232,16 @@ public abstract class Consistency {
 	public void quorumReached(TerminateTransactionRequestMessage msg,TransactionState state, Vote vote){
 		
 	}
+	
+	public JessyEntity createEntity(String key){
+		JessyEntity e=new JessyEntity(key) {
 
+			@Override
+			public void clearValue() {
+				return;				
+			}
+		};
+		
+		return e;
+	}
 }

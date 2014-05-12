@@ -248,4 +248,13 @@ public class NMSI_PDV_GC extends NMSI {
 					.getId());
 
 	}
+	
+
+	@Override
+	public JessyEntity createEntity(String key){
+		JessyEntity e=super.createEntity(key);
+		e.setLocalVector(new PartitionDependenceVector<String>(manager.getMyGroup().name(), 0));
+		
+		return e;
+	}
 }
