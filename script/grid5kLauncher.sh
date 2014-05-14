@@ -188,6 +188,11 @@ clients="clients=("$clients")"
 echo '</nodelist>' >> myfractal.xml
 echo '</BootstrapIdentity>' >> myfractal.xml
 echo '</FRACTAL>' >> myfractal.xml
+
+
+./shufflemyfractal.sh
+
+
 echo "fractal configuration file is done"
 
 sed -i "s/nodes=.*/${nodeStr}/g" configuration.sh
