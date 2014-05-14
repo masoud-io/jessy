@@ -377,13 +377,13 @@ public class GMU_GMV_2PC extends US{
 	public Set<String> getVotersToJessyProxy(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
-//		termincationRequestReceivers.clear();
-//		termincationRequestReceivers.add(TwoPhaseCommit.getCoordinatorId(executionHistory,manager.getPartitioner()));
-//		return termincationRequestReceivers;
+		termincationRequestReceivers.clear();
+		termincationRequestReceivers.add(TwoPhaseCommit.getCoordinatorId(executionHistory,manager.getPartitioner()));
+		return termincationRequestReceivers;
 		
-		Set<String> concernedKeys=new HashSet<String>();
-		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
-		
-		return manager.getPartitioner().resolveNames(concernedKeys);		
+//		Set<String> concernedKeys=new HashSet<String>();
+//		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
+//		
+//		return manager.getPartitioner().resolveNames(concernedKeys);		
 	}
 }

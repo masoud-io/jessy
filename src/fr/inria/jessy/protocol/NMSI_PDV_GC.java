@@ -112,7 +112,7 @@ public class NMSI_PDV_GC extends NMSI {
 				 */
 				if (tmp.getLocalVector().isCompatible(lastComittedEntity.getLocalVector())!=CompatibleResult.COMPATIBLE){
 					
-					if (ConstantPool.logging)
+//					if (ConstantPool.logging)
 						logger.error("Certification fails (writeSet) : Reads key "	+ tmp.getKey() 
 								+ " with the vector "
 							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector() + " transaction " + executionHistory.getTransactionHandler().getId());

@@ -31,6 +31,7 @@ import fr.inria.jessy.transaction.TransactionHandler;
 import fr.inria.jessy.transaction.TransactionState;
 import fr.inria.jessy.transaction.termination.vote.Vote;
 import fr.inria.jessy.transaction.termination.vote.VotingQuorum;
+import fr.inria.jessy.vector.PartitionDependenceVector;
 import fr.inria.jessy.vector.VersionVector;
 
 /**
@@ -382,5 +383,17 @@ public class SDUR_VV_GC extends US  implements Learner{
 			keys.addAll(executionHistory.getCreateSet().getKeys());
 			return keys;
 		}
+	}
+	
+	@Override
+	public JessyEntity createEntity(String key){
+		JessyEntity e=super.createEntity(key);
+		
+		VersionVector<String> vector=new VersionVector<String>();
+		vector.setValue(manager.getMyGroup().name(), 0);
+		
+		e.setLocalVector(vector);
+		
+		return e;
 	}
 }

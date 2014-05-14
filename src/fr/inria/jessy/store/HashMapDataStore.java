@@ -119,7 +119,7 @@ public class HashMapDataStore implements DataStore {
 								+ " does not belong to this replica.");
 					}
 					else{
-						System.out.println("Creating object for " + key);
+//						System.out.println("Creating object for " + key);
 						//We simply create the object on the fly.
 						//This is to get rid of the loading phase.
 						//TODO, this is just crap!

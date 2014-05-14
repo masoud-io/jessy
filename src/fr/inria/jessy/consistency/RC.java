@@ -64,10 +64,14 @@ public class RC extends Consistency {
 	public Set<String> getVotersToJessyProxy(
 			Set<String> termincationRequestReceivers,
 			ExecutionHistory executionHistory) {
-		Set<String> concernedKeys=new HashSet<String>();
-		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
+		termincationRequestReceivers.clear();
+		termincationRequestReceivers.add(TwoPhaseCommit.getCoordinatorId(executionHistory,manager.getPartitioner()));
+		return termincationRequestReceivers;
 		
-		return manager.getPartitioner().resolveNames(concernedKeys);		
+//		Set<String> concernedKeys=new HashSet<String>();
+//		concernedKeys.add(TwoPhaseCommit.getDetermisticKey(executionHistory));
+//		
+//		return manager.getPartitioner().resolveNames(concernedKeys);		
 	}
 	
 }

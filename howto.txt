@@ -1,0 +1,34 @@
+In the following, we explain how to run the experiments in grid5000 testbed. 
+
+General:
+ConstantPool.java: Set read/update transactions parameters 
+
+SDUR_VV_GC:
+configuration.sh: Set cons to "sdur_vv_gc"
+config.property: Set partitioner_type to sequential
+config.property: Set replication_factor to 1
+config.property: Set group_size to x where x is the number of replicas inside each group. 
+Each group will then replicate the very same set of objects. 
+
+NMSI_PDV_2PC:
+configuration.sh: Set cons to "nmsi_pdv_2pc"
+config.property: Set partitioner_type to replicatedsequential
+config.property: Set replication_factor to x where x is the number of replicas replicating the same objects.
+config.property: Set group_size to 1. 
+There will be one replica per group.  
+
+
+GMU_GMV_2PC:
+configuration.sh: Set cons to "gmu_gmv_2pc"
+config.property: Set partitioner_type to replicatedsequential
+config.property: Set replication_factor to x where x is the number of replicas replicating the same objects.
+config.property: Set group_size to 1. 
+There will be one replica per group.
+
+
+Walter_VV_2PC:
+configuration.sh: Set cons to "walter_vv_2pc"
+config.property: Set partitioner_type to replicatedsequential
+config.property: Set replication_factor to x where x is the number of replicas replicating the same objects.
+config.property: Set group_size to 1. 
+There will be one replica per group.    
