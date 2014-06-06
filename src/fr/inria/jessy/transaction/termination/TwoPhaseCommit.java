@@ -54,8 +54,9 @@ public class TwoPhaseCommit extends AtomicCommit {
 				if (n.equals(msg)) {
 					continue;
 				}
-				if (!jessy.getConsistency().certificationCommute(
-						n.getExecutionHistory(), msg.getExecutionHistory())) {
+				if ((n.getExecutionHistory().getTransactionState()!=TransactionState.COMMITTED) &&
+						(!jessy.getConsistency().certificationCommute(
+						n.getExecutionHistory(), msg.getExecutionHistory()))) {
 					
 					UUID caused=n.getExecutionHistory().getTransactionHandler().getId();
 					

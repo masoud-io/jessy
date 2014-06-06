@@ -113,9 +113,9 @@ public class NMSI_PDV_GC extends NMSI {
 				if (tmp.getLocalVector().isCompatible(lastComittedEntity.getLocalVector())!=CompatibleResult.COMPATIBLE){
 					
 //					if (ConstantPool.logging)
-						logger.error("Certification fails (writeSet) : Reads key "	+ tmp.getKey() 
-								+ " with the vector "
-							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector() + " transaction " + executionHistory.getTransactionHandler().getId());
+//						logger.error("Certification fails (writeSet) : Reads key "	+ tmp.getKey() 
+//								+ " with the vector "
+//							+ tmp.getLocalVector() + " while the last committed vector is "	+ lastComittedEntity.getLocalVector() + " transaction " + executionHistory.getTransactionHandler().getId());
 					return false;
 				}
 
@@ -230,6 +230,7 @@ public class NMSI_PDV_GC extends NMSI {
 		}
 	}
 
+	@Override
 	public void postCommit(ExecutionHistory executionHistory) {
 		if (executionHistory.getTransactionType() != TransactionType.INIT_TRANSACTION) {
 			PartitionDependenceVector<String> commitVC = receivedVectors.get(executionHistory
@@ -249,7 +250,18 @@ public class NMSI_PDV_GC extends NMSI {
 
 	}
 	
+	@Override
+	public void postAbort(TerminateTransactionRequestMessage msg, Vote Vote){
+		/*
+		 * Garbage collect the received vectors. We don't need them anymore.
+		 */
+		if (receivedVectors.containsKey(msg.getExecutionHistory()
+				.getTransactionHandler().getId()))
+			receivedVectors.remove(msg.getExecutionHistory().getTransactionHandler()
+					.getId());
 
+	}
+	
 	@Override
 	public JessyEntity createEntity(String key){
 		JessyEntity e=super.createEntity(key);
