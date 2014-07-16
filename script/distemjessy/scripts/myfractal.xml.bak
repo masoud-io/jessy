@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<FRACTAL>
+<BootstrapIdentity>
+<nodelist>
+<node id="0" ip="172.16.34.10"/>
+<node id="1" ip="172.16.34.11"/>
+<node id="2" ip="172.16.34.12"/>
+<node id="3" ip="172.16.34.13"/>
+<node id="4" ip="172.16.34.14"/>
+<node id="5" ip="172.16.34.15"/>
+<node id="6" ip="172.16.34.16"/>
+<node id="7" ip="172.16.34.17"/>
+<node id="8" ip="172.16.34.18"/>
+</nodelist>
+</BootstrapIdentity>
+</FRACTAL>

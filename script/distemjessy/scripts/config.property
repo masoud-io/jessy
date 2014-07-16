@@ -1,0 +1,36 @@
+#config.properties
+#the hooks are defined in ConstantPool.java!!!
+
+# datastore_type: "hashmap" | "berkeleydb"
+datastore_type = hashmap
+
+#consistency type: "nmsi" | "si" | "ser" | "rc" | "psi" | "us" | 
+#"si2" snapshot isolation with Atomic-Multicast to every group
+#"nmsi2" non-monotonic snapshot isolation with GMUVector from [Peluso2012] 
+#"us2" Update serializability with GMUVector from [Peluso2012]
+consistency_type = rc
+
+#partitioner type: "keyspace" | "modulo" | "replicatedModulo" | "sequential"
+partitioner_type = replicatedsequential
+a
+#replication factor
+replication_factor = 2
+
+#retry to execute and commit the transaction upon its abort.
+#re-execution happens only if the transaction is aborted by the certification and not by the client.
+# retry_commit : "true" | "false"
+retry_commit=true
+
+fractal_file=myfractal.xml
+
+#group_size: Number of processes per group
+group_size = 1
+
+#nomber of warehouses in TPC-C. 10 is the default
+warehouses_number = 1
+
+#measurements
+#swich on/off all operation wide measurements
+operation_wide_measurements = false
+#swich on/off all transaction wide measurements
+transaction_wide_measurements = true

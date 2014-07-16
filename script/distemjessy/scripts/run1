@@ -1,0 +1,1010 @@
+starting grid5kLaucher...
+
+trying to reserve nodes at... 2013-01-26 12:40:00
+I will sleep for: 0 minutes
+sleep: invalid option -- '1'
+Try `sleep --help' for more information.
+done
+Grid reservation id:  42109
+
+**********************
+* deploy on lille *
+**********************
+server: 3
+client: 6
+
+Not all jobs are running on lille, I wait 5 seconds
+server: chinqchint-20.lille.grid5000.fr
+server: chinqchint-21.lille.grid5000.fr
+server: chinqchint-22.lille.grid5000.fr
+client: chinqchint-25.lille.grid5000.fr
+client: chinqchint-26.lille.grid5000.fr
+client: chinqchint-27.lille.grid5000.fr
+client: chinqchint-30.lille.grid5000.fr
+client: chinqchint-7.lille.grid5000.fr
+client: chinqchint-8.lille.grid5000.fr
+
+**********************
+* deploy on grenoble *
+**********************
+server: 3
+client: 6
+
+Not all jobs are running on grenoble, I wait 5 seconds
+server: edel-12.grenoble.grid5000.fr
+server: edel-13.grenoble.grid5000.fr
+server: edel-14.grenoble.grid5000.fr
+client: edel-15.grenoble.grid5000.fr
+client: edel-16.grenoble.grid5000.fr
+client: edel-17.grenoble.grid5000.fr
+client: edel-18.grenoble.grid5000.fr
+client: edel-19.grenoble.grid5000.fr
+client: edel-22.grenoble.grid5000.fr
+
+**********************
+* deploy on toulouse *
+**********************
+server: 3
+client: 6
+
+server: pastel-100.toulouse.grid5000.fr
+server: pastel-104.toulouse.grid5000.fr
+server: pastel-105.toulouse.grid5000.fr
+client: pastel-107.toulouse.grid5000.fr
+client: pastel-109.toulouse.grid5000.fr
+client: pastel-111.toulouse.grid5000.fr
+client: pastel-113.toulouse.grid5000.fr
+client: pastel-114.toulouse.grid5000.fr
+client: pastel-94.toulouse.grid5000.fr
+
+**********************
+* deploy on sophia *
+**********************
+server: 3
+client: 6
+
+server: sol-29.sophia.grid5000.fr
+server: sol-30.sophia.grid5000.fr
+server: sol-31.sophia.grid5000.fr
+client: sol-32.sophia.grid5000.fr
+client: sol-33.sophia.grid5000.fr
+client: sol-34.sophia.grid5000.fr
+client: sol-35.sophia.grid5000.fr
+client: sol-37.sophia.grid5000.fr
+client: sol-38.sophia.grid5000.fr
+
+fractal configuration file is done
+configuration.sh file is done
+exported oarJobKeyFile  /tmp/oargrid//oargrid_ssh_key_msaeidaardekani_42109
+synchronizing keys and data...
+synchronizing lille...
+synchronizing grenoble...
+synchronizing toulouse...
+synchronizing sophia...
+
+**************************************************************************************
+*** grid5kLaucher: myfractal and configuration.sh are done, launching experience... ***
+**************************************************************************************
+Starting servers ...
+Benchmarking phase ...
+using 80 thread(s) per machine
+synchronizing keys and data...
+launching on chinqchint-20.lille.grid5000.fr
+launching on chinqchint-21.lille.grid5000.fr
+launching on chinqchint-22.lille.grid5000.fr
+launching on edel-12.grenoble.grid5000.fr
+launching on edel-13.grenoble.grid5000.fr
+launching on edel-14.grenoble.grid5000.fr
+launching on pastel-100.toulouse.grid5000.fr
+launching on pastel-104.toulouse.grid5000.fr
+launching on pastel-105.toulouse.grid5000.fr
+launching on sol-29.sophia.grid5000.fr
+launching on sol-30.sophia.grid5000.fr
+launching on sol-31.sophia.grid5000.fr
+synchronizing configuration in grenoble...
+synchronizing configuration in toulouse...
+synchronizing configuration in sophia...
+Waiting Before Launching Clients
+Launching Clients
+launching on chinqchint-25.lille.grid5000.fr
+launching on chinqchint-26.lille.grid5000.fr
+launching on chinqchint-27.lille.grid5000.fr
+launching on chinqchint-30.lille.grid5000.fr
+launching on chinqchint-7.lille.grid5000.fr
+launching on chinqchint-8.lille.grid5000.fr
+launching on edel-15.grenoble.grid5000.fr
+launching on edel-16.grenoble.grid5000.fr
+launching on edel-17.grenoble.grid5000.fr
+launching on edel-18.grenoble.grid5000.fr
+launching on edel-19.grenoble.grid5000.fr
+launching on edel-22.grenoble.grid5000.fr
+launching on pastel-107.toulouse.grid5000.fr
+launching on pastel-109.toulouse.grid5000.fr
+launching on pastel-111.toulouse.grid5000.fr
+launching on pastel-113.toulouse.grid5000.fr
+launching on pastel-114.toulouse.grid5000.fr
+launching on pastel-94.toulouse.grid5000.fr
+launching on sol-32.sophia.grid5000.fr
+launching on sol-33.sophia.grid5000.fr
+launching on sol-34.sophia.grid5000.fr
+launching on sol-35.sophia.grid5000.fr
+launching on sol-37.sophia.grid5000.fr
+launching on sol-38.sophia.grid5000.fr
+Clauncher finishes successfully. Returning to experience.
+stopping on chinqchint-20.lille.grid5000.fr
+stopping on chinqchint-21.lille.grid5000.fr
+stopping on chinqchint-22.lille.grid5000.fr
+stopping on chinqchint-25.lille.grid5000.fr
+stopping on chinqchint-26.lille.grid5000.fr
+stopping on chinqchint-27.lille.grid5000.fr
+stopping on chinqchint-30.lille.grid5000.fr
+stopping on chinqchint-7.lille.grid5000.fr
+stopping on chinqchint-8.lille.grid5000.fr
+stopping on edel-12.grenoble.grid5000.fr
+stopping on edel-13.grenoble.grid5000.fr
+stopping on edel-14.grenoble.grid5000.fr
+stopping on edel-15.grenoble.grid5000.fr
+stopping on edel-16.grenoble.grid5000.fr
+stopping on edel-17.grenoble.grid5000.fr
+stopping on edel-18.grenoble.grid5000.fr
+stopping on edel-19.grenoble.grid5000.fr
+stopping on edel-22.grenoble.grid5000.fr
+stopping on pastel-100.toulouse.grid5000.fr
+stopping on pastel-104.toulouse.grid5000.fr
+stopping on pastel-105.toulouse.grid5000.fr
+stopping on pastel-107.toulouse.grid5000.fr
+stopping on pastel-109.toulouse.grid5000.fr
+stopping on pastel-111.toulouse.grid5000.fr
+stopping on pastel-113.toulouse.grid5000.fr
+stopping on pastel-114.toulouse.grid5000.fr
+stopping on pastel-94.toulouse.grid5000.fr
+stopping on sol-29.sophia.grid5000.fr
+stopping on sol-30.sophia.grid5000.fr
+stopping on sol-31.sophia.grid5000.fr
+stopping on sol-32.sophia.grid5000.fr
+stopping on sol-33.sophia.grid5000.fr
+stopping on sol-34.sophia.grid5000.fr
+stopping on sol-35.sophia.grid5000.fr
+stopping on sol-37.sophia.grid5000.fr
+stopping on sol-38.sophia.grid5000.fr
+trnasfering experiment files to the main launcher frontend...
+Fetching execution result of  chinqchint-20.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-21.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-22.lille.grid5000.fr  from  lille
+Fetching execution result of  edel-12.grenoble.grid5000.fr  from  grenoble
+scp: /home/msaeidaardekani/jessy/scripts/edel-12.grenoble.grid5000.fr: No such file or directory
+Fetching execution result of  edel-13.grenoble.grid5000.fr  from  grenoble
+scp: /home/msaeidaardekani/jessy/scripts/edel-13.grenoble.grid5000.fr: No such file or directory
+Fetching execution result of  edel-14.grenoble.grid5000.fr  from  grenoble
+scp: /home/msaeidaardekani/jessy/scripts/edel-14.grenoble.grid5000.fr: No such file or directory
+Fetching execution result of  pastel-100.toulouse.grid5000.fr  from  toulouse
+scp: /home/msaeidaardekani/jessy/scripts/pastel-100.toulouse.grid5000.fr: No such file or directory
+Fetching execution result of  pastel-104.toulouse.grid5000.fr  from  toulouse
+scp: /home/msaeidaardekani/jessy/scripts/pastel-104.toulouse.grid5000.fr: No such file or directory
+Fetching execution result of  pastel-105.toulouse.grid5000.fr  from  toulouse
+scp: /home/msaeidaardekani/jessy/scripts/pastel-105.toulouse.grid5000.fr: No such file or directory
+Fetching execution result of  sol-29.sophia.grid5000.fr  from  sophia
+scp: /home/msaeidaardekani/jessy/scripts/sol-29.sophia.grid5000.fr: No such file or directory
+Fetching execution result of  sol-30.sophia.grid5000.fr  from  sophia
+scp: /home/msaeidaardekani/jessy/scripts/sol-30.sophia.grid5000.fr: No such file or directory
+Fetching execution result of  sol-31.sophia.grid5000.fr  from  sophia
+scp: /home/msaeidaardekani/jessy/scripts/sol-31.sophia.grid5000.fr: No such file or directory
+Fetching execution result of  chinqchint-25.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-26.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-27.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-30.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-7.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-8.lille.grid5000.fr  from  lille
+Fetching execution result of  edel-15.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-16.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-17.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-18.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-19.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-22.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  pastel-107.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-109.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-111.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-113.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-114.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-94.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  sol-32.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-33.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-34.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-35.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-37.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-38.sophia.grid5000.fr  from  sophia
+using 80 thread(s) per machine is finished. Collecting stats
+Starting servers ...
+Benchmarking phase ...
+using 90 thread(s) per machine
+synchronizing keys and data...
+synchronizing configuration in lille...
+launching on chinqchint-20.lille.grid5000.fr
+launching on chinqchint-21.lille.grid5000.fr
+launching on chinqchint-22.lille.grid5000.fr
+launching on edel-12.grenoble.grid5000.fr
+launching on edel-13.grenoble.grid5000.fr
+launching on edel-14.grenoble.grid5000.fr
+launching on pastel-100.toulouse.grid5000.fr
+launching on pastel-104.toulouse.grid5000.fr
+launching on pastel-105.toulouse.grid5000.fr
+launching on sol-29.sophia.grid5000.fr
+launching on sol-30.sophia.grid5000.fr
+launching on sol-31.sophia.grid5000.fr
+synchronizing configuration in grenoble...
+synchronizing configuration in toulouse...
+synchronizing configuration in sophia...
+Waiting Before Launching Clients
+Launching Clients
+launching on chinqchint-25.lille.grid5000.fr
+launching on chinqchint-26.lille.grid5000.fr
+launching on chinqchint-27.lille.grid5000.fr
+launching on chinqchint-30.lille.grid5000.fr
+launching on chinqchint-7.lille.grid5000.fr
+launching on chinqchint-8.lille.grid5000.fr
+launching on edel-15.grenoble.grid5000.fr
+launching on edel-16.grenoble.grid5000.fr
+launching on edel-17.grenoble.grid5000.fr
+launching on edel-18.grenoble.grid5000.fr
+launching on edel-19.grenoble.grid5000.fr
+launching on edel-22.grenoble.grid5000.fr
+launching on pastel-107.toulouse.grid5000.fr
+launching on pastel-109.toulouse.grid5000.fr
+launching on pastel-111.toulouse.grid5000.fr
+launching on pastel-113.toulouse.grid5000.fr
+launching on pastel-114.toulouse.grid5000.fr
+launching on pastel-94.toulouse.grid5000.fr
+launching on sol-32.sophia.grid5000.fr
+launching on sol-33.sophia.grid5000.fr
+launching on sol-34.sophia.grid5000.fr
+launching on sol-35.sophia.grid5000.fr
+launching on sol-37.sophia.grid5000.fr
+launching on sol-38.sophia.grid5000.fr
+Clauncher catches Timeout
+stopping on chinqchint-25.lille.grid5000.fr
+stopping on chinqchint-26.lille.grid5000.fr
+stopping on chinqchint-27.lille.grid5000.fr
+stopping on chinqchint-30.lille.grid5000.fr
+stopping on chinqchint-7.lille.grid5000.fr
+stopping on chinqchint-8.lille.grid5000.fr
+stopping on edel-15.grenoble.grid5000.fr
+stopping on edel-16.grenoble.grid5000.fr
+stopping on edel-17.grenoble.grid5000.fr
+stopping on edel-18.grenoble.grid5000.fr
+stopping on edel-19.grenoble.grid5000.fr
+stopping on edel-22.grenoble.grid5000.fr
+stopping on pastel-107.toulouse.grid5000.fr
+stopping on pastel-109.toulouse.grid5000.fr
+stopping on pastel-111.toulouse.grid5000.fr
+stopping on pastel-113.toulouse.grid5000.fr
+stopping on pastel-114.toulouse.grid5000.fr
+stopping on pastel-94.toulouse.grid5000.fr
+stopping on sol-32.sophia.grid5000.fr
+stopping on sol-33.sophia.grid5000.fr
+stopping on sol-34.sophia.grid5000.fr
+stopping on sol-35.sophia.grid5000.fr
+stopping on sol-37.sophia.grid5000.fr
+stopping on sol-38.sophia.grid5000.fr
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)java.io.IOException: Connection reset by peer
+
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)	at sun.nio.ch.FileDispatcher.read0(Native Method)
+
+	at java.lang.Thread.run(Thread.java:662)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+stopping on chinqchint-20.lille.grid5000.fr
+stopping on chinqchint-21.lille.grid5000.fr
+stopping on chinqchint-22.lille.grid5000.fr
+stopping on chinqchint-25.lille.grid5000.fr
+stopping on chinqchint-26.lille.grid5000.fr
+stopping on chinqchint-27.lille.grid5000.fr
+stopping on chinqchint-30.lille.grid5000.fr
+stopping on chinqchint-7.lille.grid5000.fr
+stopping on chinqchint-8.lille.grid5000.fr
+stopping on edel-12.grenoble.grid5000.fr
+stopping on edel-13.grenoble.grid5000.fr
+stopping on edel-14.grenoble.grid5000.fr
+stopping on edel-15.grenoble.grid5000.fr
+stopping on edel-16.grenoble.grid5000.fr
+stopping on edel-17.grenoble.grid5000.fr
+stopping on edel-18.grenoble.grid5000.fr
+stopping on edel-19.grenoble.grid5000.fr
+stopping on edel-22.grenoble.grid5000.fr
+stopping on pastel-100.toulouse.grid5000.fr
+stopping on pastel-104.toulouse.grid5000.fr
+stopping on pastel-105.toulouse.grid5000.fr
+stopping on pastel-107.toulouse.grid5000.fr
+stopping on pastel-109.toulouse.grid5000.fr
+stopping on pastel-111.toulouse.grid5000.fr
+stopping on pastel-113.toulouse.grid5000.fr
+stopping on pastel-114.toulouse.grid5000.fr
+stopping on pastel-94.toulouse.grid5000.fr
+stopping on sol-29.sophia.grid5000.fr
+stopping on sol-30.sophia.grid5000.fr
+stopping on sol-31.sophia.grid5000.fr
+stopping on sol-32.sophia.grid5000.fr
+stopping on sol-33.sophia.grid5000.fr
+stopping on sol-34.sophia.grid5000.fr
+stopping on sol-35.sophia.grid5000.fr
+stopping on sol-37.sophia.grid5000.fr
+stopping on sol-38.sophia.grid5000.fr
+Starting servers ...
+Benchmarking phase ...
+launching on chinqchint-20.lille.grid5000.fr
+launching on chinqchint-21.lille.grid5000.fr
+launching on chinqchint-22.lille.grid5000.fr
+launching on edel-12.grenoble.grid5000.fr
+using 90 thread(s) per machine
+synchronizing keys and data...
+launching on edel-13.grenoble.grid5000.fr
+launching on edel-14.grenoble.grid5000.fr
+launching on pastel-100.toulouse.grid5000.fr
+launching on pastel-104.toulouse.grid5000.fr
+launching on pastel-105.toulouse.grid5000.fr
+launching on sol-29.sophia.grid5000.fr
+launching on sol-30.sophia.grid5000.fr
+launching on sol-31.sophia.grid5000.fr
+synchronizing configuration in lille...
+synchronizing configuration in grenoble...
+synchronizing configuration in toulouse...
+synchronizing configuration in sophia...
+Waiting Before Launching Clients
+Launching Clients
+launching on chinqchint-25.lille.grid5000.fr
+launching on chinqchint-26.lille.grid5000.fr
+launching on chinqchint-27.lille.grid5000.fr
+launching on chinqchint-30.lille.grid5000.fr
+launching on chinqchint-7.lille.grid5000.fr
+launching on chinqchint-8.lille.grid5000.fr
+launching on edel-15.grenoble.grid5000.fr
+launching on edel-16.grenoble.grid5000.fr
+launching on edel-17.grenoble.grid5000.fr
+launching on edel-18.grenoble.grid5000.fr
+launching on edel-19.grenoble.grid5000.fr
+launching on edel-22.grenoble.grid5000.fr
+launching on pastel-107.toulouse.grid5000.fr
+launching on pastel-109.toulouse.grid5000.fr
+launching on pastel-111.toulouse.grid5000.fr
+launching on pastel-113.toulouse.grid5000.fr
+launching on pastel-114.toulouse.grid5000.fr
+launching on pastel-94.toulouse.grid5000.fr
+launching on sol-32.sophia.grid5000.fr
+launching on sol-33.sophia.grid5000.fr
+launching on sol-34.sophia.grid5000.fr
+launching on sol-35.sophia.grid5000.fr
+launching on sol-37.sophia.grid5000.fr
+launching on sol-38.sophia.grid5000.fr
+Clauncher finishes successfully. Returning to experience.
+stopping on chinqchint-20.lille.grid5000.fr
+stopping on chinqchint-21.lille.grid5000.fr
+stopping on chinqchint-22.lille.grid5000.fr
+stopping on chinqchint-25.lille.grid5000.fr
+stopping on chinqchint-26.lille.grid5000.fr
+stopping on chinqchint-27.lille.grid5000.fr
+stopping on chinqchint-30.lille.grid5000.fr
+stopping on chinqchint-7.lille.grid5000.fr
+stopping on chinqchint-8.lille.grid5000.fr
+stopping on edel-12.grenoble.grid5000.fr
+stopping on edel-13.grenoble.grid5000.fr
+stopping on edel-14.grenoble.grid5000.fr
+stopping on edel-15.grenoble.grid5000.fr
+stopping on edel-16.grenoble.grid5000.fr
+stopping on edel-17.grenoble.grid5000.fr
+stopping on edel-18.grenoble.grid5000.fr
+stopping on edel-19.grenoble.grid5000.fr
+stopping on edel-22.grenoble.grid5000.fr
+stopping on pastel-100.toulouse.grid5000.fr
+stopping on pastel-104.toulouse.grid5000.fr
+stopping on pastel-105.toulouse.grid5000.fr
+stopping on pastel-107.toulouse.grid5000.fr
+stopping on pastel-109.toulouse.grid5000.fr
+stopping on pastel-111.toulouse.grid5000.fr
+stopping on pastel-113.toulouse.grid5000.fr
+stopping on pastel-114.toulouse.grid5000.fr
+stopping on pastel-94.toulouse.grid5000.fr
+stopping on sol-29.sophia.grid5000.fr
+stopping on sol-30.sophia.grid5000.fr
+stopping on sol-31.sophia.grid5000.fr
+stopping on sol-32.sophia.grid5000.fr
+stopping on sol-33.sophia.grid5000.fr
+stopping on sol-34.sophia.grid5000.fr
+stopping on sol-35.sophia.grid5000.fr
+stopping on sol-37.sophia.grid5000.fr
+stopping on sol-38.sophia.grid5000.fr
+trnasfering experiment files to the main launcher frontend...
+Fetching execution result of  chinqchint-20.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-21.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-22.lille.grid5000.fr  from  lille
+Fetching execution result of  edel-12.grenoble.grid5000.fr  from  grenoble
+scp: /home/msaeidaardekani/jessy/scripts/edel-12.grenoble.grid5000.fr: No such file or directory
+Fetching execution result of  edel-13.grenoble.grid5000.fr  from  grenoble
+scp: /home/msaeidaardekani/jessy/scripts/edel-13.grenoble.grid5000.fr: No such file or directory
+Fetching execution result of  edel-14.grenoble.grid5000.fr  from  grenoble
+scp: /home/msaeidaardekani/jessy/scripts/edel-14.grenoble.grid5000.fr: No such file or directory
+Fetching execution result of  pastel-100.toulouse.grid5000.fr  from  toulouse
+scp: /home/msaeidaardekani/jessy/scripts/pastel-100.toulouse.grid5000.fr: No such file or directory
+Fetching execution result of  pastel-104.toulouse.grid5000.fr  from  toulouse
+scp: /home/msaeidaardekani/jessy/scripts/pastel-104.toulouse.grid5000.fr: No such file or directory
+Fetching execution result of  pastel-105.toulouse.grid5000.fr  from  toulouse
+scp: /home/msaeidaardekani/jessy/scripts/pastel-105.toulouse.grid5000.fr: No such file or directory
+Fetching execution result of  sol-29.sophia.grid5000.fr  from  sophia
+scp: /home/msaeidaardekani/jessy/scripts/sol-29.sophia.grid5000.fr: No such file or directory
+Fetching execution result of  sol-30.sophia.grid5000.fr  from  sophia
+scp: /home/msaeidaardekani/jessy/scripts/sol-30.sophia.grid5000.fr: No such file or directory
+Fetching execution result of  sol-31.sophia.grid5000.fr  from  sophia
+scp: /home/msaeidaardekani/jessy/scripts/sol-31.sophia.grid5000.fr: No such file or directory
+Fetching execution result of  chinqchint-25.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-26.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-27.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-30.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-7.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-8.lille.grid5000.fr  from  lille
+Fetching execution result of  edel-15.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-16.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-17.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-18.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-19.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-22.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  pastel-107.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-109.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-111.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-113.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-114.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-94.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  sol-32.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-33.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-34.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-35.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-37.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-38.sophia.grid5000.fr  from  sophia
+using 90 thread(s) per machine is finished. Collecting stats
+Starting servers ...
+Benchmarking phase ...
+using 100 thread(s) per machine
+synchronizing keys and data...
+synchronizing configuration in lille...
+launching on chinqchint-20.lille.grid5000.fr
+launching on chinqchint-21.lille.grid5000.fr
+launching on chinqchint-22.lille.grid5000.fr
+launching on edel-12.grenoble.grid5000.fr
+launching on edel-13.grenoble.grid5000.fr
+launching on edel-14.grenoble.grid5000.fr
+launching on pastel-100.toulouse.grid5000.fr
+launching on pastel-104.toulouse.grid5000.fr
+launching on pastel-105.toulouse.grid5000.fr
+launching on sol-29.sophia.grid5000.fr
+launching on sol-30.sophia.grid5000.fr
+launching on sol-31.sophia.grid5000.fr
+synchronizing configuration in grenoble...
+synchronizing configuration in toulouse...
+synchronizing configuration in sophia...
+Waiting Before Launching Clients
+Launching Clients
+launching on chinqchint-25.lille.grid5000.fr
+launching on chinqchint-26.lille.grid5000.fr
+launching on chinqchint-27.lille.grid5000.fr
+launching on chinqchint-30.lille.grid5000.fr
+launching on chinqchint-7.lille.grid5000.fr
+launching on chinqchint-8.lille.grid5000.fr
+launching on edel-15.grenoble.grid5000.fr
+launching on edel-16.grenoble.grid5000.fr
+launching on edel-17.grenoble.grid5000.fr
+launching on edel-18.grenoble.grid5000.fr
+launching on edel-19.grenoble.grid5000.fr
+launching on edel-22.grenoble.grid5000.fr
+launching on pastel-107.toulouse.grid5000.fr
+launching on pastel-109.toulouse.grid5000.fr
+launching on pastel-111.toulouse.grid5000.fr
+launching on pastel-113.toulouse.grid5000.fr
+launching on pastel-114.toulouse.grid5000.fr
+launching on pastel-94.toulouse.grid5000.fr
+launching on sol-32.sophia.grid5000.fr
+launching on sol-33.sophia.grid5000.fr
+launching on sol-34.sophia.grid5000.fr
+launching on sol-35.sophia.grid5000.fr
+launching on sol-37.sophia.grid5000.fr
+launching on sol-38.sophia.grid5000.fr
+Clauncher catches Timeout
+stopping on chinqchint-25.lille.grid5000.fr
+stopping on chinqchint-26.lille.grid5000.fr
+stopping on chinqchint-27.lille.grid5000.fr
+stopping on chinqchint-30.lille.grid5000.fr
+stopping on chinqchint-7.lille.grid5000.fr
+stopping on chinqchint-8.lille.grid5000.fr
+stopping on edel-15.grenoble.grid5000.fr
+stopping on edel-16.grenoble.grid5000.fr
+stopping on edel-17.grenoble.grid5000.fr
+stopping on edel-18.grenoble.grid5000.fr
+stopping on edel-19.grenoble.grid5000.fr
+stopping on edel-22.grenoble.grid5000.fr
+stopping on pastel-107.toulouse.grid5000.fr
+stopping on pastel-109.toulouse.grid5000.fr
+stopping on pastel-111.toulouse.grid5000.fr
+stopping on pastel-113.toulouse.grid5000.fr
+stopping on pastel-114.toulouse.grid5000.fr
+stopping on pastel-94.toulouse.grid5000.fr
+stopping on sol-32.sophia.grid5000.fr
+stopping on sol-33.sophia.grid5000.fr
+stopping on sol-34.sophia.grid5000.fr
+stopping on sol-35.sophia.grid5000.fr
+stopping on sol-37.sophia.grid5000.fr
+stopping on sol-38.sophia.grid5000.fr
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+UnicastClientChannelHandler[id: 0x2063d30d, /172.16.112.105:37715 => /172.16.112.114:4251] EXCEPTION: java.io.IOException: Connection reset by peerUnicastClientChannelHandler[id: 0x6f1af5b3, /172.16.112.100:43893 => /172.16.112.114:4251] EXCEPTION: java.io.IOException: Connection reset by peerjava.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peerjava.io.IOException: Connection reset by peer
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+UnicastClientChannelHandler[id: 0x344d0d8d, /172.16.112.104:49831 => /172.16.112.114:4251] EXCEPTION: java.io.IOException: Connection reset by peer
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcher.read0(Native Method)java.io.IOException: Connection reset by peer
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+
+	at sun.nio.ch.FileDispatcher.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:21)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:202)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:169)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:243)
+	at org.jboss.netty.channel.socket.nio.NioWorker.read(NioWorker.java:59)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.processSelectedKeys(AbstractNioWorker.java:465)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:332)
+	at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:35)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)
+	at java.lang.Thread.run(Thread.java:662)
+stopping on chinqchint-20.lille.grid5000.fr
+stopping on chinqchint-21.lille.grid5000.fr
+stopping on chinqchint-22.lille.grid5000.fr
+stopping on chinqchint-25.lille.grid5000.fr
+stopping on chinqchint-26.lille.grid5000.fr
+stopping on chinqchint-27.lille.grid5000.fr
+stopping on chinqchint-30.lille.grid5000.fr
+stopping on chinqchint-7.lille.grid5000.fr
+stopping on chinqchint-8.lille.grid5000.fr
+stopping on edel-12.grenoble.grid5000.fr
+stopping on edel-13.grenoble.grid5000.fr
+stopping on edel-14.grenoble.grid5000.fr
+stopping on edel-15.grenoble.grid5000.fr
+stopping on edel-16.grenoble.grid5000.fr
+stopping on edel-17.grenoble.grid5000.fr
+stopping on edel-18.grenoble.grid5000.fr
+stopping on edel-19.grenoble.grid5000.fr
+stopping on edel-22.grenoble.grid5000.fr
+stopping on pastel-100.toulouse.grid5000.fr
+stopping on pastel-104.toulouse.grid5000.fr
+stopping on pastel-105.toulouse.grid5000.fr
+stopping on pastel-107.toulouse.grid5000.fr
+stopping on pastel-109.toulouse.grid5000.fr
+stopping on pastel-111.toulouse.grid5000.fr
+stopping on pastel-113.toulouse.grid5000.fr
+stopping on pastel-114.toulouse.grid5000.fr
+stopping on pastel-94.toulouse.grid5000.fr
+stopping on sol-29.sophia.grid5000.fr
+stopping on sol-30.sophia.grid5000.fr
+stopping on sol-31.sophia.grid5000.fr
+stopping on sol-32.sophia.grid5000.fr
+stopping on sol-33.sophia.grid5000.fr
+stopping on sol-34.sophia.grid5000.fr
+stopping on sol-35.sophia.grid5000.fr
+stopping on sol-37.sophia.grid5000.fr
+stopping on sol-38.sophia.grid5000.fr
+Starting servers ...
+Benchmarking phase ...
+launching on chinqchint-20.lille.grid5000.fr
+launching on chinqchint-21.lille.grid5000.fr
+launching on chinqchint-22.lille.grid5000.fr
+launching on edel-12.grenoble.grid5000.fr
+launching on edel-13.grenoble.grid5000.fr
+using 100 thread(s) per machine
+launching on edel-14.grenoble.grid5000.fr
+synchronizing keys and data...
+launching on pastel-100.toulouse.grid5000.fr
+launching on pastel-104.toulouse.grid5000.fr
+launching on pastel-105.toulouse.grid5000.fr
+launching on sol-29.sophia.grid5000.fr
+launching on sol-30.sophia.grid5000.fr
+launching on sol-31.sophia.grid5000.fr
+synchronizing configuration in lille...
+synchronizing configuration in grenoble...
+synchronizing configuration in toulouse...
+synchronizing configuration in sophia...
+Waiting Before Launching Clients
+Launching Clients
+launching on chinqchint-25.lille.grid5000.fr
+launching on chinqchint-26.lille.grid5000.fr
+launching on chinqchint-27.lille.grid5000.fr
+launching on chinqchint-30.lille.grid5000.fr
+launching on chinqchint-7.lille.grid5000.fr
+launching on chinqchint-8.lille.grid5000.fr
+launching on edel-15.grenoble.grid5000.fr
+launching on edel-16.grenoble.grid5000.fr
+launching on edel-17.grenoble.grid5000.fr
+launching on edel-18.grenoble.grid5000.fr
+launching on edel-19.grenoble.grid5000.fr
+launching on edel-22.grenoble.grid5000.fr
+launching on pastel-107.toulouse.grid5000.fr
+launching on pastel-109.toulouse.grid5000.fr
+launching on pastel-111.toulouse.grid5000.fr
+launching on pastel-113.toulouse.grid5000.fr
+launching on pastel-114.toulouse.grid5000.fr
+launching on pastel-94.toulouse.grid5000.fr
+launching on sol-32.sophia.grid5000.fr
+launching on sol-33.sophia.grid5000.fr
+launching on sol-34.sophia.grid5000.fr
+launching on sol-35.sophia.grid5000.fr
+launching on sol-37.sophia.grid5000.fr
+launching on sol-38.sophia.grid5000.fr
+Connection to chinqchint-22.lille.grid5000.fr closed by remote host.
+Connection to chinqchint-21.lille.grid5000.fr closed by remote host.
+Connection to chinqchint-20.lille.grid5000.fr closed by remote host.
+Connection to edel-12.grenoble.grid5000.fr closed by remote host.
+Connection to edel-14.grenoble.grid5000.fr closed by remote host.
+Connection to edel-13.grenoble.grid5000.fr closed by remote host.
+Connection to sol-29.sophia.grid5000.fr closed by remote host.
+Connection to sol-33.sophia.grid5000.fr closed by remote host.
+Connection to sol-30.sophia.grid5000.fr closed by remote host.
+Connection to sol-38.sophia.grid5000.fr closed by remote host.
+Clauncher finishes successfully. Returning to experience.
+Connection to sol-31.sophia.grid5000.fr closed by remote host.
+stopping on chinqchint-20.lille.grid5000.fr
+stopping on chinqchint-21.lille.grid5000.fr
+stopping on chinqchint-22.lille.grid5000.fr
+stopping on chinqchint-25.lille.grid5000.fr
+stopping on chinqchint-26.lille.grid5000.fr
+stopping on chinqchint-27.lille.grid5000.fr
+stopping on chinqchint-30.lille.grid5000.fr
+stopping on chinqchint-7.lille.grid5000.fr
+stopping on chinqchint-8.lille.grid5000.fr
+stopping on edel-12.grenoble.grid5000.fr
+stopping on edel-13.grenoble.grid5000.fr
+stopping on edel-14.grenoble.grid5000.fr
+stopping on edel-15.grenoble.grid5000.fr
+stopping on edel-16.grenoble.grid5000.fr
+stopping on edel-17.grenoble.grid5000.fr
+stopping on edel-18.grenoble.grid5000.fr
+stopping on edel-19.grenoble.grid5000.fr
+stopping on edel-22.grenoble.grid5000.fr
+stopping on pastel-100.toulouse.grid5000.fr
+stopping on pastel-104.toulouse.grid5000.fr
+stopping on pastel-105.toulouse.grid5000.fr
+stopping on pastel-107.toulouse.grid5000.fr
+stopping on pastel-109.toulouse.grid5000.fr
+stopping on pastel-111.toulouse.grid5000.fr
+stopping on pastel-113.toulouse.grid5000.fr
+stopping on pastel-114.toulouse.grid5000.fr
+stopping on pastel-94.toulouse.grid5000.fr
+stopping on sol-29.sophia.grid5000.fr
+stopping on sol-30.sophia.grid5000.fr
+stopping on sol-31.sophia.grid5000.fr
+stopping on sol-32.sophia.grid5000.fr
+stopping on sol-33.sophia.grid5000.fr
+stopping on sol-34.sophia.grid5000.fr
+stopping on sol-35.sophia.grid5000.fr
+stopping on sol-37.sophia.grid5000.fr
+stopping on sol-38.sophia.grid5000.fr
+trnasfering experiment files to the main launcher frontend...
+Fetching execution result of  chinqchint-20.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-21.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-22.lille.grid5000.fr  from  lille
+Fetching execution result of  edel-12.grenoble.grid5000.fr  from  grenoble
+scp: /home/msaeidaardekani/jessy/scripts/edel-12.grenoble.grid5000.fr: No such file or directory
+Fetching execution result of  edel-13.grenoble.grid5000.fr  from  grenoble
+scp: /home/msaeidaardekani/jessy/scripts/edel-13.grenoble.grid5000.fr: No such file or directory
+Fetching execution result of  edel-14.grenoble.grid5000.fr  from  grenoble
+scp: /home/msaeidaardekani/jessy/scripts/edel-14.grenoble.grid5000.fr: No such file or directory
+Fetching execution result of  pastel-100.toulouse.grid5000.fr  from  toulouse
+scp: /home/msaeidaardekani/jessy/scripts/pastel-100.toulouse.grid5000.fr: No such file or directory
+Fetching execution result of  pastel-104.toulouse.grid5000.fr  from  toulouse
+scp: /home/msaeidaardekani/jessy/scripts/pastel-104.toulouse.grid5000.fr: No such file or directory
+Fetching execution result of  pastel-105.toulouse.grid5000.fr  from  toulouse
+scp: /home/msaeidaardekani/jessy/scripts/pastel-105.toulouse.grid5000.fr: No such file or directory
+Fetching execution result of  sol-29.sophia.grid5000.fr  from  sophia
+scp: /home/msaeidaardekani/jessy/scripts/sol-29.sophia.grid5000.fr: No such file or directory
+Fetching execution result of  sol-30.sophia.grid5000.fr  from  sophia
+scp: /home/msaeidaardekani/jessy/scripts/sol-30.sophia.grid5000.fr: No such file or directory
+Fetching execution result of  sol-31.sophia.grid5000.fr  from  sophia
+scp: /home/msaeidaardekani/jessy/scripts/sol-31.sophia.grid5000.fr: No such file or directory
+Fetching execution result of  chinqchint-25.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-26.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-27.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-30.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-7.lille.grid5000.fr  from  lille
+Fetching execution result of  chinqchint-8.lille.grid5000.fr  from  lille
+Fetching execution result of  edel-15.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-16.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-17.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-18.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-19.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  edel-22.grenoble.grid5000.fr  from  grenoble
+Fetching execution result of  pastel-107.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-109.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-111.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-113.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-114.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  pastel-94.toulouse.grid5000.fr  from  toulouse
+Fetching execution result of  sol-32.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-33.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-34.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-35.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-37.sophia.grid5000.fr  from  sophia
+Fetching execution result of  sol-38.sophia.grid5000.fr  from  sophia
+using 100 thread(s) per machine is finished. Collecting stats
+******************************************************************************
+grid5kLaucher: done, deleting jobs
+******************************************************************************
+[OAR_GRIDDEL] I am deleting the job 524168 on the cluster sophia ... ALREADY TERMINATED
+[OAR_GRIDDEL] I am deleting the job 1195897 on the cluster lille ... ALREADY TERMINATED
+[OAR_GRIDDEL] I am deleting the job 387689 on the cluster toulouse ... ALREADY TERMINATED
+[OAR_GRIDDEL] I am deleting the job 1410910 on the cluster grenoble ... ALREADY TERMINATED

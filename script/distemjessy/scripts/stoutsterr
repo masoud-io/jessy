@@ -1,0 +1,14 @@
+collectMeasurements.sh: line 17: bordereau-14.bordeaux.grid5000.fr.sterr: No such file or directory
+collectMeasurements.sh: line 17: bordereau-17.bordeaux.grid5000.fr.sterr: No such file or directory
+collectMeasurements.sh: line 17: bordereau-90.bordeaux.grid5000.fr.sterr: No such file or directory
+collectMeasurements.sh: line 17: borderline-8.bordeaux.grid5000.fr.sterr: No such file or directory
+processing bordereau-14.bordeaux.grid5000.fr.sterr file for [overall] measurements
+collectMeasurements.sh: line 53: bordereau-14.bordeaux.grid5000.fr.sterr: No such file or directory
+processing bordereau-17.bordeaux.grid5000.fr.sterr file for [overall] measurements
+collectMeasurements.sh: line 53: bordereau-17.bordeaux.grid5000.fr.sterr: No such file or directory
+processing bordereau-90.bordeaux.grid5000.fr.sterr file for [overall] measurements
+collectMeasurements.sh: line 53: bordereau-90.bordeaux.grid5000.fr.sterr: No such file or directory
+processing borderline-8.bordeaux.grid5000.fr.sterr file for [overall] measurements
+collectMeasurements.sh: line 53: borderline-8.bordeaux.grid5000.fr.sterr: No such file or directory
+(standard_in) 2: syntax error
+(standard_in) 5: syntax error

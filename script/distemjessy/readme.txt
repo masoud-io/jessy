@@ -1,0 +1,17 @@
+STEPS to setup distem and launch jessy :
+
+1 At the site's frontend (say lille) , reserve nodes : oarsub -t deploy -l slash_18=1+nodes=PNODES,walltime=HH:MM:SS -I
+   PNODES = number of sites that you want , when 1 site = 1 pnode
+          = number of vnodes , when 1 pnode = 1 vnodes
+
+   User has to keep note of the total number of pnodes to be reserved and based on it the mapping would be taken care of
+
+2  ../distem_platform_setup uw 25 2 2 ie 125 2 2 br 125 2 2 sg 225 2 2
+Each four tuple stands for sitename, site latency (in ms), #servers, #clients
+After this step you'd be logged in as the root and are now at the experimental frontend
+
+
+3  cd distemjessy/scripts
+   ./distemgrid5kExecutor
+
+This launches the experiment. Please note files configuration.sh, config.property needs to be set before the experiments.

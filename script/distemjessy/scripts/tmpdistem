@@ -1,0 +1,734 @@
+[0] Auto selecting ssh key '/home/dmalikireddy/.ssh/id_rsa'
+[0] Copying SSH key pair files
+[3] Establishing SSH connections to all nodes
+[3] Updating debian packages list
+[11] Installing debian build packages on chinqchint-7.lille.grid5000.fr
+[23] Retrieving 'https://gforge.inria.fr/git/distem/distem.git' repository on chinqchint-7.lille.grid5000.fr
+[37] Building debian package of distem on chinqchint-7.lille.grid5000.fr
+[50] Copying generated debian package distem_1.0+git20140715115212_amd64.deb
+[50] Installing generated debian package distem_1.0+git20140715115212_amd64.deb
+[64] Cleaning installation files on chinqchint-7.lille.grid5000.fr
+[64] Installing debian misc packages
+[64] Starting coordinator daemon on chinqchint-7.lille.grid5000.fr
+[68] Initializing node chinqchint-7.lille.grid5000.fr
+[75] Initializing nodes chirloute-3.lille.grid5000.fr,chirloute-5.lille.grid5000.fr,chirloute-8.lille.grid5000.fr
+[85] Install done
+[85] Copying script file in '/tmp/filetw1Gl6' on chinqchint-7.lille.grid5000.fr
+[85] Executing script file '/tmp/filetw1Gl6' on chinqchint-7.lille.grid5000.fr
+[chinqchint-7.lille.grid5000.fr] r_uw
+uw_S0
+uw_S1
+uw_C0
+uw_C1
+r_ie
+ie_S0
+ie_S1
+ie_C0
+ie_C1
+r_br
+br_S0
+br_S1
+br_C0
+br_C1
+r_sg
+sg_S0
+sg_S1
+sg_C0
+sg_C1
+Creating sub-networks
+[{"name"=>"global",
+  "address"=>"10.136.0.0/21",
+  "vnodes"=>[],
+  "vroutes"=>[],
+  "vxlan_id"=>0},
+ {"name"=>"uw",
+  "address"=>"10.136.8.0/21",
+  "vnodes"=>[],
+  "vroutes"=>[],
+  "vxlan_id"=>0},
+ {"name"=>"ie",
+  "address"=>"10.136.16.0/21",
+  "vnodes"=>[],
+  "vroutes"=>[],
+  "vxlan_id"=>0},
+ {"name"=>"br",
+  "address"=>"10.136.24.0/21",
+  "vnodes"=>[],
+  "vroutes"=>[],
+  "vxlan_id"=>0},
+ {"name"=>"sg",
+  "address"=>"10.136.32.0/19",
+  "vnodes"=>[],
+  "vroutes"=>[],
+  "vxlan_id"=>0}]
+Sub-network creation done
+Creating virtual nodes
+Virtual nodes creation done
+Creating virtual interfaces
+uw
+uw
+uw
+uw
+ie
+ie
+ie
+ie
+br
+br
+br
+br
+sg
+sg
+sg
+sg
+Virtual interfaces creation done
+Completing virtual routes
+Virtual route creation completed
+Starting virtual nodes
+Setting global /etc/hosts
+Setting global ARP tables
+Network setup complete
+[{"id"=>"0",
+  "name"=>"r_uw",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"r_uw",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/r_uw",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"0",
+     "name"=>"if0",
+     "vnode"=>"r_uw",
+     "address"=>"10.136.0.1/21",
+     "macaddress"=>"fe:42:32:00:00:00",
+     "vnetwork"=>"global",
+     "input"=>{"latency"=>{"delay"=>"25ms"}},
+     "output"=>{"latency"=>{"delay"=>"25ms"}},
+     "bridge"=>"br0"},
+    {"id"=>"4",
+     "name"=>"if1",
+     "vnode"=>"r_uw",
+     "address"=>"10.136.8.1/21",
+     "macaddress"=>"fe:42:32:00:00:04",
+     "vnetwork"=>"uw",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"GATEWAY",
+  "host"=>"172.16.35.3",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"1",
+  "name"=>"uw_S0",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"uw_S0",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/uw_S0",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"8",
+     "name"=>"if1",
+     "vnode"=>"uw_S0",
+     "address"=>"10.136.8.2/21",
+     "macaddress"=>"fe:42:32:00:00:08",
+     "vnetwork"=>"uw",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.3",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"2",
+  "name"=>"uw_S1",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"uw_S1",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/uw_S1",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"9",
+     "name"=>"if1",
+     "vnode"=>"uw_S1",
+     "address"=>"10.136.8.3/21",
+     "macaddress"=>"fe:42:32:00:00:09",
+     "vnetwork"=>"uw",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.3",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"
+[chinqchint-7.lille.grid5000.fr] }},
+ {"id"=>"3",
+  "name"=>"uw_C0",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"uw_C0",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/uw_C0",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"10",
+     "name"=>"if1",
+     "vnode"=>"uw_C0",
+     "address"=>"10.136.8.4/21",
+     "macaddress"=>"fe:42:32:00:00:0a",
+     "vnetwork"=>"uw",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.3",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"4",
+  "name"=>"uw_C1",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"uw_C1",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/uw_C1",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"11",
+     "name"=>"if1",
+     "vnode"=>"uw_C1",
+     "address"=>"10.136.8.5/21",
+     "macaddress"=>"fe:42:32:00:00:0b",
+     "vnetwork"=>"uw",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.3",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"5",
+  "name"=>"r_ie",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"r_ie",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/r_ie",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"1",
+     "name"=>"if0",
+     "vnode"=>"r_ie",
+     "address"=>"10.136.0.2/21",
+     "macaddress"=>"fe:42:32:00:00:01",
+     "vnetwork"=>"global",
+     "input"=>{"latency"=>{"delay"=>"125ms"}},
+     "output"=>{"latency"=>{"delay"=>"125ms"}},
+     "bridge"=>"br0"},
+    {"id"=>"5",
+     "name"=>"if1",
+     "vnode"=>"r_ie",
+     "address"=>"10.136.16.1/21",
+     "macaddress"=>"fe:42:32:00:00:05",
+     "vnetwork"=>"ie",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"GATEWAY",
+  "host"=>"172.16.35.5",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"
+[chinqchint-7.lille.grid5000.fr] }},
+ {"id"=>"6",
+  "name"=>"ie_S0",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"ie_S0",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/ie_S0",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"12",
+     "name"=>"if1",
+     "vnode"=>"ie_S0",
+     "address"=>"10.136.16.2/21",
+     "macaddress"=>"fe:42:32:00:00:0c",
+     "vnetwork"=>"ie",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.5",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"7",
+  "name"=>"ie_S1",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"ie_S1",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/ie_S1",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"13",
+     "name"=>"if1",
+     "vnode"=>"ie_S1",
+     "address"=>"10.136.16.3/21",
+     "macaddress"=>"fe:42:32:00:00:0d",
+     "vnetwork"=>"ie",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.5",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"8",
+  "name"=>"ie_C0",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"ie_C0",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/ie_C0",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"14",
+     "name"=>"if1",
+     "vnode"=>"ie_C0",
+     "address"=>"10.136.16.4/21",
+     "macaddress"=>"fe:42:32:00:00:0e",
+     "vnetwork"=>"ie",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.5",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"
+[chinqchint-7.lille.grid5000.fr] }},
+ {"id"=>"9",
+  "name"=>"ie_C1",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"ie_C1",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/ie_C1",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"15",
+     "name"=>"if1",
+     "vnode"=>"ie_C1",
+     "address"=>"10.136.16.5/21",
+     "macaddress"=>"fe:42:32:00:00:0f",
+     "vnetwork"=>"ie",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.5",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"10",
+  "name"=>"r_br",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"r_br",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/r_br",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"2",
+     "name"=>"if0",
+     "vnode"=>"r_br",
+     "address"=>"10.136.0.3/21",
+     "macaddress"=>"fe:42:32:00:00:02",
+     "vnetwork"=>"global",
+     "input"=>{"latency"=>{"delay"=>"125ms"}},
+     "output"=>{"latency"=>{"delay"=>"125ms"}},
+     "bridge"=>"br0"},
+    {"id"=>"6",
+     "name"=>"if1",
+     "vnode"=>"r_br",
+     "address"=>"10.136.24.1/21",
+     "macaddress"=>"fe:42:32:00:00:06",
+     "vnetwork"=>"br",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"GATEWAY",
+  "host"=>"172.16.35.8",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"11",
+  "name"=>"br_S0",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"br_S0",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/br_S0",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"16",
+     "name"=>"if1",
+     "vnode"=>"br_S0",
+     "address"=>"10.136.24.2/21",
+     "macaddress"=>"fe:42:32:00:00:10",
+     "vnetwork"=>"br",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.8",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"
+[chinqchint-7.lille.grid5000.fr] }},
+ {"id"=>"12",
+  "name"=>"br_S1",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"br_S1",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/br_S1",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"17",
+     "name"=>"if1",
+     "vnode"=>"br_S1",
+     "address"=>"10.136.24.3/21",
+     "macaddress"=>"fe:42:32:00:00:11",
+     "vnetwork"=>"br",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.8",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"13",
+  "name"=>"br_C0",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"br_C0",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/br_C0",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"18",
+     "name"=>"if1",
+     "vnode"=>"br_C0",
+     "address"=>"10.136.24.4/21",
+     "macaddress"=>"fe:42:32:00:00:12",
+     "vnetwork"=>"br",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.8",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"14",
+  "name"=>"br_C1",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"br_C1",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/br_C1",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"19",
+     "name"=>"if1",
+     "vnode"=>"br_C1",
+     "address"=>"10.136.24.5/21",
+     "macaddress"=>"fe:42:32:00:00:13",
+     "vnetwork"=>"br",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.35.8",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"
+[chinqchint-7.lille.grid5000.fr] }},
+ {"id"=>"15",
+  "name"=>"r_sg",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"r_sg",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/r_sg",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"3",
+     "name"=>"if0",
+     "vnode"=>"r_sg",
+     "address"=>"10.136.0.4/21",
+     "macaddress"=>"fe:42:32:00:00:03",
+     "vnetwork"=>"global",
+     "input"=>{"latency"=>{"delay"=>"225ms"}},
+     "output"=>{"latency"=>{"delay"=>"225ms"}},
+     "bridge"=>"br0"},
+    {"id"=>"7",
+     "name"=>"if1",
+     "vnode"=>"r_sg",
+     "address"=>"10.136.32.1/19",
+     "macaddress"=>"fe:42:32:00:00:07",
+     "vnetwork"=>"sg",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"GATEWAY",
+  "host"=>"172.16.34.7",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"16",
+  "name"=>"sg_S0",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"sg_S0",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/sg_S0",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"20",
+     "name"=>"if1",
+     "vnode"=>"sg_S0",
+     "address"=>"10.136.32.2/19",
+     "macaddress"=>"fe:42:32:00:00:14",
+     "vnetwork"=>"sg",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.34.7",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"17",
+  "name"=>"sg_S1",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"sg_S1",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/sg_S1",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"21",
+     "name"=>"if1",
+     "vnode"=>"sg_S1",
+     "address"=>"10.136.32.3/19",
+     "macaddress"=>"fe:42:32:00:00:15",
+     "vnetwork"=>"sg",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.34.7",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"
+[chinqchint-7.lille.grid5000.fr] }},
+ {"id"=>"18",
+  "name"=>"sg_C0",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"sg_C0",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/sg_C0",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"22",
+     "name"=>"if1",
+     "vnode"=>"sg_C0",
+     "address"=>"10.136.32.4/19",
+     "macaddress"=>"fe:42:32:00:00:16",
+     "vnetwork"=>"sg",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.34.7",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}},
+ {"id"=>"19",
+  "name"=>"sg_C1",
+  "status"=>"RUNNING",
+  "vfilesystem"=>
+   {"vnode"=>"sg_C1",
+    "image"=>"file:///home/dmalikireddy/public/node-1-fsimage.tar.gz",
+    "shared"=>false,
+    "path"=>"/tmp/distem/rootfs-unique/sg_C1",
+    "sharedpath"=>nil,
+    "cow"=>false,
+    "disk_throttling"=>nil},
+  "vifaces"=>
+   [{"id"=>"23",
+     "name"=>"if1",
+     "vnode"=>"sg_C1",
+     "address"=>"10.136.32.5/19",
+     "macaddress"=>"fe:42:32:00:00:17",
+     "vnetwork"=>"sg",
+     "input"=>nil,
+     "output"=>nil,
+     "bridge"=>"br0"}],
+  "vcpu"=>nil,
+  "vmem"=>nil,
+  "mode"=>"NORMAL",
+  "host"=>"172.16.34.7",
+  "ssh_key"=>
+   {"public"=>
+     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/F8EtKohKAXuG0ftrkJG2veQkxyJo9aFGhwEpZERhPt4rgZHk4IjUIA9J0X8DHu04MviXxtc+FSaGxSaAUFKMz3q9MKpyLMnV5pppiHMLb/V+v+gy0+P4AaXMx8KAL4Y8uz6VyXBakesHOWmJxFhUg4HxsjKzRl5/UVPMNGV2MTBgjVSSembSXwtn3iZmJyoJWLMxMiCgyHzuT4Fo9GObTpx9Xd+WCtYzp7bacupDYfM+QKUQ7NeVmhYGKCtGJfdf+tOBd+OaQqg2/Y0dL13nqraqRUDttRHR2WQFt4cx+Gr54c8ySpSL2AAB2uzo0S4N8fO4X7alvItr7lYQcgxX Generated passwordless ssh key to move between sites\n",
+    "private"=>
+     "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAvxfBLSqISgF7htH7a5CRtr3kJMciaPWhRocBKWREYT7eK4GR\n5OCI1CAPSdF/Ax7tODL4l8bXPhUmhsUmgFBSjM96vTCqcizJ1eaaaYhzC2/1fr/o\nMtPj+AGlzMfCgC+GPLs+lclwWpHrBzlpicRYVIOB8bIys0Zef1FTzDRldjEwYI1U\nknpm0l8LZ94mZicqCVizMTIgoMh87k+BaPRjm06cfV3flgrWM6e22nLqQ2HzPkCl\nEOzXlZoWBigrRiX3X/rTgXfjmkKoNv2NHS9d56q2qkVA7bUR0dlkBbeHMfhq+eHP\nMkqUi9gAAdrs6NEuDfHzuF+2pbyLa+5WEHIMVwIDAQABAoIBAQCmTvk74tFcfy/P\npT6IXfjDLz64V2r2KBhlNifnqzDr5XgcKxcbN+M9om1L1H0S7T6Nc6bxCQfZKzUt\ng7W/ZKiDjisHLqyY06wRcjIe+LcPVDA3ULO4ULsN4/k1YQFA6JuOjXOpjvguiuIe\nlnPoh65MV2unO2xupCan7dLdXRiUpDdUL1JJ2w6t6/bAbskmkTbshTbMYI1+29wO\nHGg4ZHzP+ExQm05CiWvwknC9dMsJPT2iADyxXhzeU1UXy/44UAwZb5eWbpovHu8D\n05Nv1NcvinHWGBewmglFnClBWrPfNG3JGReY2G3PU51FgPjEl7Jpbn7qWYiebm1w\nGXliez2JAoGBAOdASJ89Y3cC2s4HQIfx6Ly2M+WyHDeRFa5amey/wQaqhPkirCak\npYp82k1mKdob0TDGMmPlKEecQ7pfDMnEAxowndlRm3srCOK3L3MvpFrn6EY+syxb\nY24kG0/AyffBEUkJCAcGIROwUhikVsWajTebI/FWivNb1ewW1wygsQ2FAoGBANOL\nOyH0Cq1A5Jr3STfTwg7iArwnyUp7mty3Hroadce7xWwbqFVe0n1lL2dmKIVG5/fa\nFeZIzJKu1bwIxI8RXt3OhSyuLeLT246BR3I4XvacDsnFad20CnSMaQtO6icVaWWg\ncW85Lr9LqWUJnps/9GOrx6E+BE7Fre007r3i1NsrAoGBALj1v6At95o+3Echocma\nAS6/BK9ZUBxZnN/Bc4/ap0bvqD+kLdESq50i03BIoHzk9uJuA+vGY/syzzEHyTCv\n6FNQQ1CIZzWSbB75qagVmP1ks3FLwP9fcR2tH3MgnendsDecU6Fak6YtxtwSxZxz\nSzQIkCz9rVGMSIP2mLZu6G4JAoGAVSuPaUIqMksYP1QkhHebgAZ692pFXtmZJhgM\nJP2WQg5VlAsmoQiGUro0dbrpwY8kweNqQcc5pi0CHKyjBr8FpOQLNkwCaXrGwP9H\n1rLfeQan5ZC36O0d8IK/oC/rkkTKpIIOaatqKNa7otRWqUb8jEyTGVYwwc5RElnn\nbUgwTvUCgYEAyITLYRXlZpfoGC6FI1uPzd/pFpBqUF+5b3+otzMYb+S4RDkj2h0n\n7M5uqUXivaihdNbXPZlJAepv9hvc2SruwN6TVuPJBKq5+JjECkfiIk+grXdlK6pv\n1DHMs4VPIk6bpx9mzAz1knfu0EMG+Z8p5vt7ETnv+/g93/CLwLSeArg=\n-----END RSA PRIVATE KEY-----\n"}}]
+[201] Script execution done
+Coordinator: chinqchint-7.lille.grid5000.fr
