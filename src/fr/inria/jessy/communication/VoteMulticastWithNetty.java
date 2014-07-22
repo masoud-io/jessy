@@ -1,9 +1,9 @@
 package fr.inria.jessy.communication;
 
 import java.util.Collection;
+import java.util.Set;
 
 import net.sourceforge.fractal.membership.Group;
-
 import fr.inria.jessy.ConstantPool;
 import fr.inria.jessy.DistributedJessy;
 import fr.inria.jessy.communication.message.VoteMessage;
@@ -36,7 +36,7 @@ public class VoteMulticastWithNetty extends VoteMulticast{
 			String coordinatorHost) {
 		if (cManager ==null){
 			if (!distributedJessy.manager.isProxy()){
-				cManager = new UnicastClientManager(distributedJessy,null,
+				initializecManager(distributedJessy,null,
 						ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, distributedJessy.manager.getAllReplicaGroup().allNodes());
 			}
 		}
@@ -51,11 +51,18 @@ public class VoteMulticastWithNetty extends VoteMulticast{
 	
 	public void sendVote(VoteMessage voteMessage,int  swid, String host) {
 		if (cManager ==null){
-				cManager = new UnicastClientManager(distributedJessy,null,
+			initializecManager(distributedJessy,null,
 						ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, distributedJessy.manager.getAllReplicaGroup().allNodes());
 		}
 		
 		cManager.unicast(voteMessage, swid, host);
+	}
+	
+	private synchronized void initializecManager(DistributedJessy j, UnicastLearner learner, int port,
+			Set<Integer> server_swid){
+		if (cManager==null)
+			cManager = new UnicastClientManager(distributedJessy,null,
+					ConstantPool.JESSY_NETTY_VOTING_PHASE_PORT, distributedJessy.manager.getAllReplicaGroup().allNodes());
 	}
 	
 	private void multiCast(Object obj, Collection<String> dest){
