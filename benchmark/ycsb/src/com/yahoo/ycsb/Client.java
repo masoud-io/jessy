@@ -729,6 +729,8 @@ public class Client
 
 		Vector<Thread> threads=new Vector<Thread>();
 
+
+		int  plusOneThreads=opcount %threadcount;
 		for (int threadid=0; threadid<threadcount; threadid++)
 		{
 			DB db=null;
@@ -742,10 +744,15 @@ public class Client
 				System.exit(0);
 			}
 
-			Thread t=new ClientThread(db,dotransactions,workload,threadid,threadcount,props,opcount/threadcount,targetperthreadperms);
+			Thread t;
+			if (threadid<=plusOneThreads)
+				t=new ClientThread(db,dotransactions,workload,threadid,threadcount,props,opcount/threadcount+1,targetperthreadperms);
+			else
+				t=new ClientThread(db,dotransactions,workload,threadid,threadcount,props,opcount/threadcount,targetperthreadperms);
+			
 
 			threads.add(t);
-			//t.start();
+			//t.start(); 
 		}
 
 		StatusThread statusthread=null;
