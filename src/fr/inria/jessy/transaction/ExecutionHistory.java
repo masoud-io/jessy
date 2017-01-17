@@ -260,6 +260,7 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 		}
 		else if (getTransactionType()==TransactionType.BLIND_WRITE){
 			writeSet = (EntitySet) in.readObject();
+			createSet = (EntitySet) in.readObject();
 		}
 
 	}
@@ -292,6 +293,7 @@ public class ExecutionHistory extends ExecutionHistoryMeasurements implements Me
 		}
 		else if (getTransactionType()==TransactionType.BLIND_WRITE){
 			out.writeObject(writeSet);
+			out.writeObject(createSet);
 		}
 
 	}

@@ -143,26 +143,7 @@ public class ZipfianGenerator extends IntegerGenerator
 		base=min;
 		zipfianconstant=_zipfianconstant;
 
-		String ip="";
-		try {
-			// Get global interface
-			Process p = Runtime.getRuntime().exec("netstat -rn");
-		    BufferedReader output = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		    String line;
-		    while((line=output.readLine())!=null ){
-				if(Pattern.compile("^0.0.0.0").matcher(line).find()){
-				    NetworkInterface ni = NetworkInterface.getByName(line.split("\\s+")[7]);
-				    ip=IPUtils.getIPforInterface(ni).iterator().next();
-				    ip=ip.replace(".", "");
-				    break;
-				}		
-		    }
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Unable to determine a global scope IP.");
-		}
-		
-		random=new Random(Long.parseLong(ip));	 
+		random = new Random(Long.parseLong(getIPv4Address().replace(".", "")));
 
 		theta=zipfianconstant;
 
@@ -178,6 +159,35 @@ public class ZipfianGenerator extends IntegerGenerator
 		//System.out.println("XXXX 3 XXXX");
 		nextInt();
 		//System.out.println("XXXX 4 XXXX");
+	}
+
+	public static String getIPv4Address() throws RuntimeException {
+		Enumeration<NetworkInterface> nets;
+		try {
+			nets = NetworkInterface.getNetworkInterfaces();
+	        for (NetworkInterface netint : Collections.list(nets)) {
+	        	if(!netint.isLoopback() && !netint.isPointToPoint() && !netint.isVirtual() && netint.isUp()
+	        	&& !(netint.getDisplayName().indexOf("awdl") == 0)
+	        	&& !(netint.getDisplayName().indexOf("vbox") == 0)) {
+	        		//for(InetAddress inetAddress : Collections.list(netint.getInetAddresses()))
+	        		Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+	        		for(InetAddress inetAddress : Collections.list(inetAddresses)) {
+	        			if(inetAddress instanceof Inet6Address) {
+	        				System.out.println("[joao] WARNING: Skipping IPv6 addresses");
+	        			}
+	        			if(inetAddress instanceof Inet4Address
+	        			&& !inetAddress.isAnyLocalAddress()
+	        			&& !inetAddress.isLoopbackAddress()
+	        			&& !inetAddress.isMulticastAddress())
+	        				return inetAddress.getHostAddress();
+	        		}
+	        	}
+	        }
+			throw new RuntimeException("Unable to determine a global-scope IPv4 address!");
+		} catch (SocketException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Unable to determine a global-scope IPv4 address!");
+		}
 	}
 	
 	/**************************************************************************/
